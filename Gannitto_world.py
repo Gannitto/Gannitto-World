@@ -1072,9 +1072,6 @@ class Cave:
         else:
             return None
             
-
-#objects.append(Cave(0, -256, 10000, 10000))
-
 class Portal:
     def __init__(self):
         self.x = (x + mouse_x - Width // 2) // 128
