@@ -124,7 +124,7 @@ def save(darken:bool=True, save_world_settings:bool=False):
 	world_name - Тоже надо указать, если сохраняются данные мира
 	"""
 
-	Saver.save_objects(path + "Gannitto world/files/Statistics.save", statistics)
+	Saver.save_objects(path + "Gannitto world/files/Settings/Statistics.save", statistics)
 	
 	if world_name is not None:
 		
@@ -138,7 +138,7 @@ def save(darken:bool=True, save_world_settings:bool=False):
 
 			Saver.save_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Mobs.save", mobs)
 			Saver.save_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Rects.save", big_rects)
-			Saver.save_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Info.save", [x, y, Backrooms.InBackrooms, Backrooms.Level, in_cave, speed, HP, start_time, Ron.X, Ron.Y, Ron.Home])
+			Saver.save_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Info.save", [player.x, player.y, Backrooms.InBackrooms, Backrooms.Level, in_cave, speed, HP, start_time, Ron.X, Ron.Y, Ron.Home])
 			Saver.save_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Objects.save", objects)
 			Saver.save_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Inventory.save", inventory.whole_inventory)
 			Saver.save_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Resourses.save", inventory.resourses)
@@ -166,9 +166,11 @@ def chat_message(message: str):
 	chat.append(message)
 	chat_tick = len(message) // 1.5 * FPS
 
-display_image = lambda X, Y, W, H: (X - x + Width // 2 - W // 2, y - Y + Height // 2 - H // 2)
+display_image = lambda X, Y, W, H: (X - player.x + Width // 2 - W // 2, player.y - Y + Height // 2 - H // 2)
 
-def tp(X: int, Y: int): global x, y; x, y; x, y = X, Y
+def tp(X: int, Y: int):
+	global player
+	player.x, player.y = X, Y
 
 # def set_time(a): global game_time; game_time += a TODO
 
@@ -460,18 +462,18 @@ class Object:
 		self.add_path = add_path
 		self.scale_x = scale_x
 	
-	def main(self, x, y):
+	def main(self):
 
-		if x - Width // 2 - self.w // 2 <= self.x <= x + Width // 2 + self.w // 2 and y - Height // 2 <= self.y + Height // 2:
-			win.blit(self.image, (self.x - x + Width // 2 - self.w // 2, y - self.y + Height // 2 - self.h // 2))
+		if player.x - Width // 2 - self.w // 2 <= self.x <= player.x + Width // 2 + self.w // 2 and player.y - Height // 2 <= self.y + Height // 2:
+			win.blit(self.image, (self.x - player.x + Width // 2 - self.w // 2, player.y - self.y + Height // 2 - self.h // 2))
 
 		if Settings["Display"][3]:
-			pygame.draw.rect(win, (0, 0, 0), (self.x - x + Width // 2 - self.w // 2, y - self.y + Height // 2 - self.h // 2, self.w, self.h), 3)
+			pygame.draw.rect(win, (0, 0, 0), (self.x - player.x + Width // 2 - self.w // 2, player.y - self.y + Height // 2 - self.h // 2, self.w, self.h), 3)
 
 	def get_left_pressed(self):
 
 		click = pygame.mouse.get_pressed()
-		if click[0] and self.x - x + Width // 2 - self.image.get_width() // 2 <= mouse_x <= self.x - x + Width // 2 + self.w // 2 and y - self.y + Height // 2 - self.h // 2 <= mouse_y <= y - self.y + Height // 2 + self.h // 2:
+		if click[0] and self.x - player.x + Width // 2 - self.image.get_width() // 2 <= mouse_x <= self.x - player.x + Width // 2 + self.w // 2 and player.y - self.y + Height // 2 - self.h // 2 <= mouse_y <= player.y - self.y + Height // 2 + self.h // 2:
 			return True
 		else:
 			return False
@@ -479,7 +481,7 @@ class Object:
 	def get_right_pressed(self):
 
 		click = pygame.mouse.get_pressed()
-		if click[2] == 1 and self.x - x + Width // 2 - self.image.get_width() // 2 <= mouse_x <= self.x - x + Width // 2 + self.w // 2 and y - self.y + Height // 2 - self.h // 2 <= mouse_y <= y - self.y + Height // 2 + self.h // 2:
+		if click[2] == 1 and self.x - player.x + Width // 2 - self.image.get_width() // 2 <= mouse_x <= self.x - player.x + Width // 2 + self.w // 2 and player.y - self.y + Height // 2 - self.h // 2 <= mouse_y <= player.y - self.y + Height // 2 + self.h // 2:
 			return True
 		else:
 			return False
@@ -511,7 +513,7 @@ class Particle:
 				 x_bias_condition: str="True", y_bias_condition: str="True",
 				 else_x_bias: str="0", else_y_bias: str="0",
 				 rotate: int=None,
-				 display_mode: str="self.x - x + Width // 2 - self.image.get_width() // 2, y - self.y + Height // 2 - self.image.get_height() // 2",
+				 display_mode: str="self.x - player.x + Width // 2 - self.image.get_width() // 2, player.y - self.y + Height // 2 - self.image.get_height() // 2",
 				 tick_command: str="",
 				 tick_command_locals: dict={},
 				 tick_command_globals: dict={},
@@ -679,7 +681,7 @@ class Particle:
 		else:
 
 			for i in wall_list:
-				if i.x - 300 < x < i.x + 300 and i.y - 300 < y < i.y + 300:
+				if i.x - 300 < player.x < i.x + 300 and i.y - 300 < player.y < i.y + 300:
 					a = False
 			
 			if eval(self.x_bias_condition) and a:
@@ -715,7 +717,152 @@ class Particle:
 	# 	if click[button] and pygame.Rect(eval(self.display_mode)[0], eval(self.display_mode)[1], self.w, self.h).collidepoint(mouse_x, mouse_y):
 	# 		return True
 	# 	return False
+
+# Работа с анимациями	
+class PlayerAnimations:
+
+	def __init__(self):
+		# Ключ: направление, Значение: список кадров
+		self.animations = {}
+		
+		# Загружаем все анимации
+		self.load_animations()
+	
+	def load_animations(self):
+		directions = ["Down", "Up", "Left", "Right"]
+		
+		for direction in directions:
+
+			frames = []
 			
+			for frame_num in range(1, 7):
+				try:
+					path_to_image = f"{path}Gannitto world/files/Images/Players/Hiro/Normal/{direction}/{frame_num}.png"
+					image = pygame.image.load(path_to_image)
+					frames.append(image)
+				except pygame.error:
+					# Если файл не найден, используем заглушку
+					print(f"Warning: Could not load {direction}/{frame_num}.png")
+					# Создаем заглушку (красный квадрат для отладки)
+					surface = pygame.Surface((64, 64))
+					surface.fill((255, 0, 0))
+					frames.append(surface)
+			
+			self.animations[direction] = frames
+		
+		# Загружаем диагональные направления (если есть)
+		diagonal_directions = ["Down-left", "Down-right", "Up-left", "Up-right"]
+		for direction in diagonal_directions:
+			try:
+				path_to_image = f"{path}Gannitto world/files/Images/Players/Hiro/Normal/{direction}/1.png"
+				image = pygame.image.load(path_to_image)
+				# Для диагоналей обычно только 1 кадр, но можно и больше
+				self.animations[direction] = [image]
+			except pygame.error:
+				# Если нет диагональной анимации, используем обычную
+				base_direction = direction.split("-")[0]  # "Down" из "Down-left"
+				self.animations[direction] = self.animations[base_direction]
+
+player_animations = PlayerAnimations()
+
+class Player:
+    def __init__(self, X=0, Y=0):
+        self.x = X
+        self.y = Y
+        self.speed = 5
+        
+        # Анимация
+        self.direction = "Down"  # Текущее направление
+        self.frame_index = 0     # Текущий кадр
+        self.animation_speed = 0.1  # Скорость анимации (секунды между кадрами)
+        self.animation_timer = 0    # Таймер для анимации
+        
+        # Игровые параметры
+        self.HP = 100
+        self.god_mode = False
+        self.is_moving = False
+        
+        # Используем анимации из глобального объекта
+        self.animations = player_animations.animations
+        
+        # Текущий спрайт
+        self.image = self.get_current_frame()
+        self.rect = self.image.get_rect(center=(Width / 2, Height / 2))
+    
+    def get_current_frame(self):
+        """Возвращает текущий кадр анимации"""
+        try:
+            # Получаем список кадров для текущего направления
+            frames = self.animations[self.direction]
+            # Возвращаем текущий кадр (с циклическим перебором)
+            return frames[self.frame_index % len(frames)]
+        except (KeyError, IndexError):
+            # Если что-то пошло не так, возвращаем заглушку
+            surface = pygame.Surface((64, 64))
+            surface.fill((255, 0, 255))  # Магента для отладки
+            return surface
+    
+    def update_animation(self, dt):
+        """Обновляет анимацию на основе времени"""
+        if self.is_moving:
+            # Увеличиваем таймер
+            self.animation_timer += dt
+            
+            # Если прошло достаточно времени - меняем кадр
+            if self.animation_timer >= self.animation_speed:
+                self.animation_timer = 0
+                self.frame_index += 1
+        
+        # Обновляем изображение
+        self.image = self.get_current_frame()
+        self.rect = self.image.get_rect(center=(Width / 2, Height / 2))
+    
+    def move(self, dx, dy):
+        """Двигает игрока и обновляет направление"""
+        self.is_moving = True
+        
+        # Обновляем позицию
+        self.x += dx * self.speed
+        self.y += dy * self.speed
+        
+        # Определяем направление
+        if dx > 0 and dy == 0:
+            self.direction = "Right"
+        elif dx < 0 and dy == 0:
+            self.direction = "Left"
+        elif dy > 0 and dx == 0:
+            self.direction = "Down"
+        elif dy < 0 and dx == 0:
+            self.direction = "Up"
+        elif dx > 0 and dy > 0:
+            self.direction = "Down-right"
+        elif dx < 0 and dy > 0:
+            self.direction = "Down-left"
+        elif dx > 0 and dy < 0:
+            self.direction = "Up-right"
+        elif dx < 0 and dy < 0:
+            self.direction = "Up-left"
+    
+    def stop(self):
+        """Останавливает движение"""
+        self.is_moving = False
+        # Сбрасываем анимацию на первый кадр (стоя)
+        self.frame_index = 0
+        self.animation_timer = 0
+    
+    def render(self, screen, offset_x, offset_y):
+        """Отрисовывает игрока на экране"""
+        # Позиция на экране с учетом камеры
+        screen_x = self.x - offset_x + Width // 2 - self.image.get_width() // 2
+        screen_y = self.y - offset_y + Height // 2 - self.image.get_height() // 2
+        
+        screen.blit(self.image, (screen_x, screen_y))
+        
+        # Если включен режим отладки - рисуем хитбокс
+        if Settings["Display"][3]:
+            pygame.draw.rect(screen, (0, 255, 0), (screen_x, screen_y, self.image.get_width(), self.image.get_height()), 2)
+
+
 class SlimeEnemy:
 
 	def __init__(self, mob_x: int, mob_y: int):
@@ -749,7 +896,7 @@ class SlimeEnemy:
 
 			if self.attak is not None:
 
-				if x - 128 < self.attak[0] < x + 128 and y - 128 < self.attak[1] < y + 128 and self.attak[2] == 1:
+				if player.x - 128 < self.attak[0] < player.x + 128 and player.y - 128 < self.attak[1] < player.y + 128 and self.attak[2] == 1:
 					if not god_mode:
 						HP -= 10
 						HP_animation_tick = 1
@@ -760,7 +907,7 @@ class SlimeEnemy:
 				if self.attak[2] == 1:
 
 					a = True
-					if x < self.attak[0]:
+					if player.x < self.attak[0]:
 					
 						for i in wall_list:
 							if i.x - 256 < self.attak[0] < i.x + 300 and i.y - 256 < self.attak[1] < i.y + 256:
@@ -775,7 +922,7 @@ class SlimeEnemy:
 					else:
 
 						a = True
-						if x < self.attak[0]:
+						if player.x < self.attak[0]:
 					
 							for i in wall_list:
 								if i.x - 300 < self.attak[0] < i.x + 256 and i.y - 256 < self.attak[1] < i.y + 256:
@@ -788,10 +935,10 @@ class SlimeEnemy:
 						if a: 
 							self.attak[0] += self.speed * 10
 
-					if y < self.attak[1]:
+					if player.y < self.attak[1]:
 
 						a = True
-						if x < self.attak[0]:
+						if player.x < self.attak[0]:
 					
 							for i in wall_list:
 								if i.x - 256 < self.attak[0] < i.x + 256 and i.y - 256 < self.attak[1] < i.y + 300:
@@ -809,7 +956,7 @@ class SlimeEnemy:
 					if self.x < self.attak[1]:
 
 						a = True
-						if x < self.attak[0]:
+						if player.x < self.attak[0]:
 					
 							for i in wall_list:
 								if i.x - 256 < self.attak[0] < i.x + 300 and i.y - 256 < self.attak[1] < i.y + 256:
@@ -824,7 +971,7 @@ class SlimeEnemy:
 					else:
 
 						a = True
-						if x < self.attak[0]:
+						if player.x < self.attak[0]:
 					
 							for i in wall_list:
 								if i.x - 300 < self.attak[0] < i.x + 256 and i.y - 256 < self.attak[1] < i.y + 256:
@@ -840,7 +987,7 @@ class SlimeEnemy:
 					if self.y < self.attak[1]:
 
 						a = True
-						if x < self.attak[0]:
+						if player.x < self.attak[0]:
 					
 							for i in wall_list:
 								if i.x - 256 < self.attak[0] < i.x + 256 and i.y - 256 < self.attak[1] < i.y + 300:
@@ -855,7 +1002,7 @@ class SlimeEnemy:
 					else:
 
 						a = True
-						if x < self.attak[0]:
+						if player.x < self.attak[0]:
 					
 							for i in wall_list:
 								if i.x - 256 < self.attak[0] < i.x + 256 and i.y - 300 < self.attak[1] < i.y + 256:
@@ -871,7 +1018,7 @@ class SlimeEnemy:
 				if self.x - 300 < self.attak[0] < self.x + 300 and self.y - 300 < self.attak[1] < self.y + 300 and self.attak[2] == 2:
 					self.attak = None
 
-			elif random.randint(1, 50) == 1 and x - 1000 < self.x < x + 1000 and y - 1000 < self.y < y + 1000:
+			elif random.randint(1, 50) == 1 and player.x - 1000 < self.x < player.x + 1000 and playery - 1000 < self.y < player.y + 1000:
 				self.attak = [self.x, self.y, 1]
 
 		except TypeError:
@@ -892,7 +1039,7 @@ class SlimeEnemy:
 			else:
 				self.reset_offset -= 1
 			
-			if x + self.offset_x > self.x:
+			if player.x + self.offset_x > self.x:
 				
 				a = True
 				for i in wall_list:
@@ -903,7 +1050,7 @@ class SlimeEnemy:
 				if a:
 					self.x += self.speed // FPS
 
-			elif x + self.offset_x < self.x:
+			elif player.x + self.offset_x < self.x:
 				
 				a = True
 				for i in wall_list:
@@ -914,7 +1061,7 @@ class SlimeEnemy:
 				if a:
 					self.x -= self.speed
 		
-			if y + self.offset_y > self.y:
+			if player.y + self.offset_y > self.y:
 				
 				a = True
 				for i in wall_list:
@@ -925,7 +1072,7 @@ class SlimeEnemy:
 				if a: 
 					self.y += self.speed
 
-			elif y + self.offset_y < self.y - y:
+			elif player.y + self.offset_y < self.y - player.y:
 				
 				a = True
 				for i in wall_list:
@@ -940,12 +1087,12 @@ class SlimeEnemy:
 				self.speed += 1
 		
 		if self.attak is not None:
-			win.blit(self.animation_images[(self.animation_count - self.animation_count % 5) // 5], (self.attak[0] - x + Width // 2 - 64, y - self.attak[1] + Height // 2 - 32))
+			win.blit(self.animation_images[(self.animation_count - self.animation_count % 5) // 5], (self.attak[0] - player.x + Width // 2 - 64, player.y - self.attak[1] + Height // 2 - 32))
 		else:
-			win.blit(self.animation_images[(self.animation_count - self.animation_count % 5) // 5], (self.x - x + Width // 2 - 64, y - self.y + Height // 2 - 32))
+			win.blit(self.animation_images[(self.animation_count - self.animation_count % 5) // 5], (self.x - player.x + Width // 2 - 64, player.y - self.y + Height // 2 - 32))
 
 		if Settings["Display"][3]:
-			pygame.draw.rect(win, (0, 0, 0), (self.x - x + Width // 2 - 64, y - self.y + Height // 2 - 24, 128, 128), 3)
+			pygame.draw.rect(win, (0, 0, 0), (self.x - player.x + Width // 2 - 64, player.y - self.y + Height // 2 - 24, 128, 128), 3)
 			
 	def __getstate__(self):
 		
@@ -990,7 +1137,7 @@ class SpiderEnemy:
 		if self.animation_count == 20:
 			self.animation_count = 0
 		
-		if random.randint(1, 50) == 1 and x - 1000 < self.x < x + 1000 and y - 1000 < self.y < y + 1000:
+		if random.randint(1, 50) == 1 and player.x - 1000 < self.x < player.x + 1000 and player.y - 1000 < self.y < player.y + 1000:
 			self.attak = True
 			
 		if self.reset_offset == 0:
@@ -1006,7 +1153,7 @@ class SpiderEnemy:
 		else:
 			self.reset_offset -= 1
 		
-		if x + self.offset_x > self.x:
+		if player.x + self.offset_x > self.x:
 			
 			a = True
 			for i in wall_list:
@@ -1018,7 +1165,7 @@ class SpiderEnemy:
 				self.x += self.speed
 				b = "Right"
 
-		elif x + self.offset_x < self.x:
+		elif player.x + self.offset_x < self.x:
 			
 			a = True
 			for i in wall_list:
@@ -1030,7 +1177,7 @@ class SpiderEnemy:
 				self.x -= self.speed
 				b = "Left"
 		
-		if y + self.offset_y > self.y:
+		if player.y + self.offset_y > self.y:
 			
 			a = True
 			for i in wall_list:
@@ -1041,7 +1188,7 @@ class SpiderEnemy:
 			if a: 
 				self.y += self.speed
 
-		elif y + self.offset_y < self.y - y:
+		elif player.y + self.offset_y < self.y - player.y:
 			
 			a = True
 			for i in wall_list:
@@ -1060,28 +1207,28 @@ class SpiderEnemy:
 
 			self.position = "Right"
 
-			if random.randint(1, 50) == 1 and x - 256 < self.x < x + 256 and y - 256 < self.y < y + 256:
+			if random.randint(1, 50) == 1 and player.x - 256 < self.x < player.x + 256 and player.y - 256 < self.y < player.y + 256:
 				if not god_mode:
 					HP -= 15
 					HP_animation_tick = 1
-				win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Objects/Spider 2 attak.png"), (128, 128)), (self.x - x + Width // 2 - 64, y - self.y + Height // 2 - 32))
+				win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Objects/Spider 2 attak.png"), (128, 128)), (self.x - player.x + Width // 2 - 64, player.y - self.y + Height // 2 - 32))
 			else:
-				win.blit(self.right_animation_images[(self.animation_count - self.animation_count % 5) // 5], (self.x - x + Width // 2 - 64, y - self.y + Height // 2 - 32))
+				win.blit(self.right_animation_images[(self.animation_count - self.animation_count % 5) // 5], (self.x - player.x + Width // 2 - 64, y - self.y + Height // 2 - 32))
 
 		else:
 			
 			self.position = "Left"
 
-			if random.randint(1, 50) == 1 and x - 256 < self.x < x + 256 and y - 256 < self.y < y + 256:
+			if random.randint(1, 50) == 1 and player.x - 256 < self.x < player.x + 256 and player.y - 256 < self.y < player.y + 256:
 				if not god_mode:
 					HP -= 15
 					HP_animation_tick = 1
-				win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Objects/Spider attak.png"), (128, 128)), (self.x - x + Width // 2 - 64, y - self.y + Height // 2 - 32))
+				win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Objects/Spider attak.png"), (128, 128)), (self.x - player.x + Width // 2 - 64, player.y - self.y + Height // 2 - 32))
 			else:
-				win.blit(self.left_animation_images[(self.animation_count - self.animation_count % 5) // 5], (self.x - x + Width // 2 - 64, y - self.y + Height // 2 - 32))
+				win.blit(self.left_animation_images[(self.animation_count - self.animation_count % 5) // 5], (self.x - player.x + Width // 2 - 64, player.y - self.y + Height // 2 - 32))
 
 		if Settings["Display"][3]:
-			pygame.draw.rect(win, (0, 0, 0), (self.x - x + Width // 2 - 64, y - self.y + Height // 2 - 24, 128, 128), 3)
+			pygame.draw.rect(win, (0, 0, 0), (self.x - player.x + Width // 2 - 64, player.y - self.y + Height // 2 - 24, 128, 128), 3)
 			
 	def __getstate__(self):
 		
@@ -1126,7 +1273,7 @@ class ButterflyEnemy:
 		else:
 			self.reset_offset -= 1
 		
-		if x + self.offset_x > self.x:
+		if player.x + self.offset_x > self.x:
 
 			a = True
 			for i in wall_list:
@@ -1137,7 +1284,7 @@ class ButterflyEnemy:
 				if a:
 					self.x += 1
 
-		elif x + self.offset_x < self.x:
+		elif player.x + self.offset_x < self.x:
 
 			a = True
 			for i in wall_list:
@@ -1148,7 +1295,7 @@ class ButterflyEnemy:
 			if a:
 				self.x -= 1
 		
-		if y + self.offset_y > self.y:
+		if player.y + self.offset_y > self.y:
 
 			a = True
 			for i in wall_list:
@@ -1159,7 +1306,7 @@ class ButterflyEnemy:
 			if a:
 				self.y += 1
 
-		elif y + self.offset_y < self.y - y:
+		elif player.y + self.offset_y < self.y - player.y:
 
 			a = True
 			for i in wall_list:
@@ -1170,9 +1317,9 @@ class ButterflyEnemy:
 			if a:
 				self.y -= 1
 		
-		win.blit(self.animation_images[(self.animation_count - self.animation_count % 2) // 2], (self.x - x + Width // 2 - 64, y - self.y + Height // 2 - 32))
+		win.blit(self.animation_images[(self.animation_count - self.animation_count % 2) // 2], (self.x - player.x + Width // 2 - 64, player.y - self.y + Height // 2 - 32))
 		if Settings["Display"][3]:
-			pygame.draw.rect(win, (0, 0, 0), (self.x - x + Width // 2 - 32, y - self.y + Height // 2 - 32, 64, 64), 3)
+			pygame.draw.rect(win, (0, 0, 0), (self.x - player.x + Width // 2 - 32, player.y - self.y + Height // 2 - 32, 64, 64), 3)
 
 class Bullet:
 
@@ -1206,14 +1353,14 @@ class Bullet:
 		self.x -= int(self.x_vel)
 		self.y += int(self.y_vel)
 		
-		win.blit(self.image, (self.x - x + Width // 2 - 32, y - self.y + Height // 2 - 32))
+		win.blit(self.image, (self.x - player.x + Width // 2 - 32, player.y - self.y + Height // 2 - 32))
 
 		if Settings["Display"][3]:
-			pygame.draw.rect(win, (0, 0, 0), (self.x - x + Width // 2 - 32, y - self.y + Height // 2 - 32, 64, 64), 3)
+			pygame.draw.rect(win, (0, 0, 0), (self.x - player.x + Width // 2 - 32, player.y - self.y + Height // 2 - 32, 64, 64), 3)
 
 class Button:
 
-	def __init__(self, x: int, y: int, image1: pygame.Surface, image2: pygame.Surface, surface, alignment=False, sound=True, sleep_time=0.15, info=None):
+	def __init__(self, X: int, Y: int, image1: pygame.Surface, image2: pygame.Surface, surface, alignment=False, sound=True, sleep_time=0.15, info=None):
 
 		"""
 		Кнопка.
@@ -1232,8 +1379,8 @@ class Button:
 		self.w = image1.get_width()
 		self.h = image2.get_height()
 
-		self.x = x
-		self.y = y
+		self.x = X
+		self.y = Y
 
 		self.image = image1
 		self.image1 = image1
@@ -1367,14 +1514,14 @@ class BackroomsPortal:
 
 	def main(self):
 
-		win.blit(Backrooms_portal_images[self.image], (self.x - x + Width // 2 - 128, y - self.y + Height // 2 - 128))
+		win.blit(Backrooms_portal_images[self.image], (self.x - player.x + Width // 2 - 128, player.y - self.y + Height // 2 - 128))
 
 		self.image += 1
 		if self.image == 10:
 			self.image = 0
 
 		if Settings["Display"][3]:
-			pygame.draw.rect(win, (0, 0, 0), (self.x - x + Width // 2 - 128, y - self.y + Height // 2 - 128, 256, 256), 3)
+			pygame.draw.rect(win, (0, 0, 0), (self.x - player.x + Width // 2 - 128, player.y - self.y + Height // 2 - 128, 256, 256), 3)
 
 class Wire:
 
@@ -1382,8 +1529,8 @@ class Wire:
 
 		self.in_motherboard = in_motherboard
 		if self.in_motherboard is None:
-			self.x = (x + mouse_x - Width // 2) // 64
-			self.y = (y - mouse_y + Height // 2) // 64
+			self.x = (player.x + mouse_x - Width // 2) // 64
+			self.y = (player.y - mouse_y + Height // 2) // 64
 		else:
 			self.x = (mouse_x - Width // 2 - 300) // 18.75
 			self.y = (mouse_y + Width // 2 - 300) // 18.75
@@ -1496,8 +1643,8 @@ class Wire:
 		
 		if self.in_motherboard is None:
 
-			win.blit(textInfo.render(self.condition, True, (0, 0, 0)), (self.x * 64 + Width // 2 - x, y - self.y * 64 + Height // 2 - 16))
-			win.blit(self.image, (self.x * 64 + Width // 2 - x, y - self.y * 64 + Height // 2 - 16))
+			win.blit(textInfo.render(self.condition, True, (0, 0, 0)), (self.x * 64 + Width // 2 - player.x, player.y - self.y * 64 + Height // 2 - 16))
+			win.blit(self.image, (self.x * 64 + Width // 2 - player.x, player.y - self.y * 64 + Height // 2 - 16))
 		else:
 			...#win.blit(pygame.transform.scale(self.image, (18.75, 18.75)), (Width // 2 + 300 + self.x * 18.75, 0 - Height // 2 + self.y * 18.75 + 18.75 * 2 + 9.4))
 
@@ -1506,8 +1653,8 @@ class Lever:
 	def __init__(self, in_motherboard):
 
 		self.in_motherboard = in_motherboard
-		self.x = (x + mouse_x - Width // 2) // 64
-		self.y = (y - mouse_y + Height // 2) // 64
+		self.x = (player.x + mouse_x - Width // 2) // 64
+		self.y = (player.y - mouse_y + Height // 2) // 64
 		self.condition = False
 		self.image1 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Objects/Lever 1.png"), (64, 64))
 		self.image2 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Objects/Lever 2.png"), (64, 64))
@@ -1533,7 +1680,7 @@ class Lever:
 				if mechanism.x - self.x in [1, -1] and mechanism.y == self.y and mechanism.num != self.num:
 					self.neigbords.append(mechanism)
 
-		if click[0] and self.x * 64 + Width // 2 - x <= mouse_x <= self.x * 64 + Width // 2 - x + 64 and y - self.y * 64 + Height // 2 - 16 <= mouse_y <= y - self.y * 64 + Height // 2 - 16 + 64:
+		if click[0] and self.x * 64 + Width // 2 - player.x <= mouse_x <= self.x * 64 + Width // 2 - player.x + 64 and player.y - self.y * 64 + Height // 2 - 16 <= mouse_y <= player.y - self.y * 64 + Height // 2 - 16 + 64:
 
 			if self.image == self.image1:
 				self.image = self.image2
@@ -1543,7 +1690,7 @@ class Lever:
 				self.condition = None
 			time.sleep(0.15)
 
-		win.blit(self.image, (self.x * 64 + Width // 2 - x, y - self.y * 64 + Height // 2 - 16))
+		win.blit(self.image, (self.x * 64 + Width // 2 - player.x, player.y - self.y * 64 + Height // 2 - 16))
 
 class Wall:
 
@@ -1606,7 +1753,7 @@ class Wall:
 		
 		if self.is_door:
 
-			if click[0] and self.x + Width // 2 - x <= mouse_x <= self.x + Width // 2 - x + 256 and y - self.y + Height // 2 - 128 <= mouse_y <= y - self.y + Height // 2 + 128:
+			if click[0] and self.x + Width // 2 - player.x <= mouse_x <= self.x + Width // 2 - player.x + 256 and player.y - self.y + Height // 2 - 128 <= mouse_y <= player.y - self.y + Height // 2 + 128:
 
 				if self.open:
 					self.open = False
@@ -1684,7 +1831,7 @@ class Wall:
 			elif len(self.neigbords) == 4:
 				self.image = self.images[10]
 		
-		win.blit(self.image, (self.x + Width // 2 - 128 - x, y - self.y + Height // 2 - 128))
+		win.blit(self.image, (self.x + Width // 2 - 128 - player.x, player.y - self.y + Height // 2 - 128))
 		
 	def __getstate__(self):
 		
@@ -1729,8 +1876,8 @@ class Random_box:
 
 	def __init__(self, in_motherboard):
 		
-		self.x = (x + mouse_x - Width // 2) // 64
-		self.y = (y - mouse_y + Height // 2) // 64
+		self.x = (player.x + mouse_x - Width // 2) // 64
+		self.y = (player.y - mouse_y + Height // 2) // 64
 
 		self.on = False
 		self.image = Random_box_1
@@ -1765,14 +1912,14 @@ class Random_box:
 		else:
 			self.image = Random_box_1
 		
-		win.blit(self.image, (self.x * 64 + Width // 2 - x, y - self.y * 64 + Height // 2 - 16))
+		win.blit(self.image, (self.x * 64 + Width // 2 - player.x, player.y - self.y * 64 + Height // 2 - 16))
 
 class LogicGate:
 
 	def __init__(self, in_motherboard):
 
-		self.x = (x + mouse_x - Width // 2) // 64
-		self.y = (y - mouse_y + Height // 2) // 64
+		self.x = (player.x + mouse_x - Width // 2) // 64
+		self.y = (player.y - mouse_y + Height // 2) // 64
 
 		self.image = Wire_11
 		self.neigbords = []
@@ -1843,16 +1990,16 @@ class LogicGate:
 			self.condition = None
 		
 		if self.in_motherboard:
-			...#win.blit(self.image, (self.x * 64 + Width // 2 - x, y - self.y * 64 + Height // 2 - 16))
+			...#win.blit(self.image, (self.x * 64 + Width // 2 - player.x, player.y - self.y * 64 + Height // 2 - 16))
 		else:
-			win.blit(self.image, (self.x * 64 + Width // 2 - x, y - self.y * 64 + Height // 2 - 16))
+			win.blit(self.image, (self.x * 64 + Width // 2 - player.x, player.y - self.y * 64 + Height // 2 - 16))
 
 class Motherboard:
 
 	def __init__(self, in_motherboard):
 
-		self.x = (x + mouse_x - Width // 2) // 64
-		self.y = (y - mouse_y + Height // 2) // 64
+		self.x = (player.x + mouse_x - Width // 2) // 64
+		self.y = (player.y - mouse_y + Height // 2) // 64
 
 		self.condition = "Off"
 		self.image = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Objects/Motherboard.png"), (64, 64))
@@ -1952,16 +2099,16 @@ class Motherboard:
 		self.get_pressed()
 
 		if self.in_motherboard:
-			...#win.blit(self.image, (self.x * 64 + Width // 2 - x, y - self.y * 64 + Height // 2 - 16))
+			...#win.blit(self.image, (self.x * 64 + Width // 2 - player.x, player.y - self.y * 64 + Height // 2 - 16))
 		else:
-			win.blit(self.image, (self.x * 64 + Width // 2 - x, y - self.y * 64 + Height // 2 - 16))
+			win.blit(self.image, (self.x * 64 + Width // 2 - player.x, player.y - self.y * 64 + Height // 2 - 16))
 
 	def get_pressed(self):
 		global in_motherboard, mouse_x, mouse_y, click
 		mouse_x, mouse_y = pygame.mouse.get_pos()
 		#click = pygame.mouse.get_pos()
 		if self.in_motherboard is None:
-			if self.x * 64 + Width // 2 - x <= mouse_x <= self.x * 64 + Width // 2 - x + 64 and y - self.y * 64 + Height // 2 - 16 <= mouse_y <= y - self.y * 64 + Height // 2 - 16 + 64 and in_motherboard is None and click[0]:
+			if self.x * 64 + Width // 2 - player.x <= mouse_x <= self.x * 64 + Width // 2 - player.x + 64 and player.y - self.y * 64 + Height // 2 - 16 <= mouse_y <= player.y - self.y * 64 + Height // 2 - 16 + 64 and in_motherboard is None and click[0]:
 				in_motherboard = self
 		else:
 			...
@@ -1998,14 +2145,14 @@ class Cave:
 
 	def main(self):
 
-		if x - Width // 2 <= self.x <= x + Width // 2 and y - Height // 2 <= self.y + Height // 2:
-			win.blit(self.image, (self.x - x + Width // 2 - self.w // 2, y - self.y + Height // 2 - self.h // 2))
+		if player.x - Width // 2 <= self.x <= player.x + Width // 2 and player.y - Height // 2 <= self.y + Height // 2:
+			win.blit(self.image, (self.x - player.x + Width // 2 - self.w // 2, player.y - self.y + Height // 2 - self.h // 2))
 		
 	def get_in(self):
 
 		global mouse_x, mouse_y
 		mouse_x, mouse_y = pygame.mouse.get_pos()
-		if self.x <= x <= self.x + 128 and self.y <= y <= self.y + 128 and self.x - x + Width // 2 - self.w // 2 <= mouse_x <= self.x - x + Width // 2 - self.w // 2 + 128 and y - self.y + Height // 2 - self.h // 2 <= mouse_y <= y - self.y + Height // 2 - self.h // 2 + 128 and pygame.mouse.get_pressed()[0]:
+		if self.x <= player.x <= self.x + 128 and self.y <= player.y <= self.y + 128 and self.x - player.x + Width // 2 - self.w // 2 <= mouse_x <= self.x - player.x + Width // 2 - self.w // 2 + 128 and player.y - self.y + Height // 2 - self.h // 2 <= mouse_y <= player.y - self.y + Height // 2 - self.h // 2 + 128 and pygame.mouse.get_pressed()[0]:
 			return self.num
 		else:
 			return None
@@ -2027,8 +2174,8 @@ class Portal:
 
 	def __init__(self):
 
-		self.x = (x + mouse_x - Width // 2) // 128
-		self.y = (y + mouse_y - Height // 2) // 256
+		self.x = (player.x + mouse_x - Width // 2) // 128
+		self.y = (player.y + mouse_y - Height // 2) // 256
 		self.num = len(objects)
 		a = False
 		for object in objects:
@@ -2041,22 +2188,22 @@ class Portal:
 
 	def main(self):
 
-		global x, y
+		global player
 
 		for object in objects:
 			if object.__class__ == Portal and object.num != self.num - 1:
-				if self.x * 128 <= x <= self.x * 128 + 128 and self.y * 256 - 256 <= y <= self.y * 256:
+				if self.x * 128 <= player.x <= self.x * 128 + 128 and self.y * 256 - 256 <= player.y <= self.y * 256:
 					x = object.x * 128
 					y = object.y * 256 - 257
 		
-		win.blit(self.image, (self.x * 128 + Width // 2 - x, y - self.y * 256 + Height // 2))
+		win.blit(self.image, (self.x * 128 + Width // 2 - player.x, player.y - self.y * 256 + Height // 2))
 
 class Vending_machine:
 
 	def __init__(self) -> None:
 
-		self.x = (x + mouse_x - Width // 2) // 304
-		self.y = (y + mouse_y - Height // 2) // 560
+		self.x = (player.x + mouse_x - Width // 2) // 304
+		self.y = (player.y + mouse_y - Height // 2) // 560
 		self.owner = Settings["User"][0]
 		self.image = Vending_machine_image
 
@@ -2128,7 +2275,7 @@ def settings():
 				else: alt_pressed = True
 				time.sleep(0.1)
 
-			if keys[eval("pygame.K_" + hot_keys["Change screen"])]:
+			if keys[hot_keys["Change screen"]]:
 				if screenmode == "FULLSCREEN":
 					win = pygame.display.set_mode((1000,700), pygame.RESIZABLE)
 					screenmode = "RESIZABLE"
@@ -2144,7 +2291,7 @@ def settings():
 			show_reset_settings()
 			
 			if back_button.get_pressed() or keys[pygame.K_ESCAPE]:
-				Saver.save_objects(path + "Gannitto world/files/Settings.save", Settings)
+				Saver.save_objects(path + "Gannitto world/files/Settings/Settings.save", Settings)
 				win_darken(win.copy())
 				menu()
 				
@@ -2294,7 +2441,7 @@ def settings():
 				else: alt_pressed = True
 				time.sleep(0.1)
 
-			if keys[eval("pygame.K_" + hot_keys["Change screen"])]:
+			if keys[hot_keys["Change screen"]]:
 				if screenmode == "FULLSCREEN":
 					win = pygame.display.set_mode((1000,700), pygame.RESIZABLE)
 					screenmode = "RESIZABLE"
@@ -2310,7 +2457,7 @@ def settings():
 			show_reset_settings()
 			
 			if back_button.get_pressed() or keys[pygame.K_ESCAPE]:
-				Saver.save_objects(path + "Gannitto world/files/Settings.save", Settings)
+				Saver.save_objects(path + "Gannitto world/files/Settings/Settings.save", Settings)
 				win_darken(win.copy())
 				menu()
 			   
@@ -2533,7 +2680,7 @@ def settings():
 				if alt_pressed: alt_pressed = False
 				else: alt_pressed = True
 				time.sleep(0.1)
-			if keys[eval("pygame.K_" + hot_keys["Change screen"])]:
+			if keys[hot_keys["Change screen"]]:
 				if screenmode == "FULLSCREEN":
 					win = pygame.display.set_mode((1000,700), pygame.RESIZABLE)
 					screenmode = "RESIZABLE"
@@ -2547,7 +2694,7 @@ def settings():
 			pygame.draw.line(win, (139, 155, 180), (307, 103), (Width, 103), 8)
 			back_button.main()
 			if back_button.get_pressed() or keys[pygame.K_ESCAPE]:
-				Saver.save_objects(path + "Gannitto world/files/Settings.save", Settings)
+				Saver.save_objects(path + "Gannitto world/files/Settings/Settings.save", Settings)
 				win_darken(win.copy())
 				menu()
 			show_reset_settings()
@@ -2649,7 +2796,7 @@ def settings():
 				else: alt_pressed = True
 				time.sleep(0.1)
 				
-			if keys[eval("pygame.K_" + hot_keys["Change screen"])]:
+			if keys[hot_keys["Change screen"]]:
 				if screenmode == "FULLSCREEN":
 					win = pygame.display.set_mode((1000,700), pygame.RESIZABLE)
 					screenmode = "RESIZABLE"
@@ -2668,7 +2815,7 @@ def settings():
 			pygame.draw.line(win, (139, 155, 180), (307, 103), (Width, 103), 8)
 			back_button.main()
 			if back_button.get_pressed() or keys[pygame.K_ESCAPE]:
-				Saver.save_objects(path + "Gannitto world/files/Settings.save", Settings)
+				Saver.save_objects(path + "Gannitto world/files/Settings/Settings.save", Settings)
 				win_darken(win.copy())
 				menu()
 			show_reset_settings()
@@ -2801,7 +2948,7 @@ def settings():
 				else: alt_pressed = True
 				time.sleep(0.1)
 				
-			if keys[eval("pygame.K_" + hot_keys["Change screen"])]:
+			if keys[hot_keys["Change screen"]]:
 				if screenmode == "FULLSCREEN":
 					win = pygame.display.set_mode((1000,700), pygame.RESIZABLE)
 					screenmode = "RESIZABLE"
@@ -2822,7 +2969,7 @@ def settings():
 			show_reset_settings()
 			
 			if back_button.get_pressed() or keys[pygame.K_ESCAPE]:
-				Saver.save_objects(path + "Gannitto world/files/Settings.save", Settings)
+				Saver.save_objects(path + "Gannitto world/files/Settings/Settings.save", Settings)
 				win_darken(win.copy())
 				menu()
 				
@@ -2908,7 +3055,7 @@ def settings():
 				else: alt_pressed = True
 				time.sleep(0.1)
 				
-			if keys[eval("pygame.K_" + hot_keys["Change screen"])]:
+			if keys[hot_keys["Change screen"]]:
 				if screenmode == "FULLSCREEN":
 					win = pygame.display.set_mode((1000,700), pygame.RESIZABLE)
 					screenmode = "RESIZABLE"
@@ -2922,7 +3069,7 @@ def settings():
 			pygame.draw.line(win, (139, 155, 180), (307, 103), (Width, 103), 8)
 			back_button.main()
 			if back_button.get_pressed() or keys[pygame.K_ESCAPE]:
-				Saver.save_objects(path + "Gannitto world/files/Settings.save", Settings)
+				Saver.save_objects(path + "Gannitto world/files/Settings/Settings.save", Settings)
 				win_darken(win.copy())
 				menu()
 			show_reset_settings()
@@ -3004,7 +3151,7 @@ def settings():
 			
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
-					Saver.save_objects(path + "Gannitto world/files/Hot keys.save", hot_keys)
+					Saver.save_objects(path + "Gannitto world/files/Settings/Hot keys.save", hot_keys)
 					save()
 					sys.exit()
 
@@ -3015,7 +3162,7 @@ def settings():
 				else: alt_pressed = True
 				time.sleep(0.1)
 				
-			if keys[eval("pygame.K_" + hot_keys["Change screen"])]:
+			if keys[hot_keys["Change screen"]]:
 				if screenmode == "FULLSCREEN":
 					win = pygame.display.set_mode((1000,700), pygame.RESIZABLE)
 					screenmode = "RESIZABLE"
@@ -3030,8 +3177,8 @@ def settings():
 					looked_key = None
 					time.sleep(0.1)
 				else:
-					Saver.save_objects(path + "Gannitto world/files/Settings.save", Settings)
-					Saver.save_objects(path + "Gannitto world/files/Hot keys.save", hot_keys)
+					Saver.save_objects(path + "Gannitto world/files/Settings/Settings.save", Settings)
+					Saver.save_objects(path + "Gannitto world/files/Settings/Hot keys.save", hot_keys)
 					win_darken(win.copy())
 					menu()
 				
@@ -3198,16 +3345,16 @@ def settings():
 				if click[0]:
 					hot_keys = {
 	
-						"Multyplayer menu": "m",
-						"TAB menu": "TAB",
-						"Help": "F1",
-						"Menu": "F2",
-						"Screenshot": "F3",
-						"Change screen": "F11",
-						"Throw away the item": "e",
-						"Use item": "SPACE",
-						"Inventory": "i",
-						"Set Ron home": "HOME"
+						"Multyplayer menu": pygame.K_m,
+						"TAB menu": pygame.K_TAB,
+						"Help": pygame.K_F1,
+						"Menu": pygame.K_F2,
+						"Screenshot": pygame.K_F3,
+						"Change screen": pygame.K_F11,
+						"Throw away the item": pygame.K_e,
+						"Use item": pygame.K_SPACE,
+						"Inventory": pygame.K_i,
+						"Set Ron home": pygame.K_HOME
 	
 						}
 			else:
@@ -3236,7 +3383,7 @@ def settings():
 				elif changed_key != looked_key and looked_key is not None and not chek_blocked_keys(changed_key):
 					for key, val in hot_keys.items():
 						if val.lower() == looked_key.lower():
-							hot_keys[key] = changed_key
+							hot_keys[key] = getattr(pygame, f"K_{changed_key}", None)
 							break
 					looked_key = None
 					
@@ -3306,7 +3453,7 @@ def settings():
 				else: alt_pressed = True
 				time.sleep(0.1)
 				
-			if keys[eval("pygame.K_" + hot_keys["Change screen"])]:
+			if keys[hot_keys["Change screen"]]:
 				if screenmode == "FULLSCREEN":
 					win = pygame.display.set_mode((1000,700), pygame.RESIZABLE)
 					screenmode = "RESIZABLE"
@@ -3320,7 +3467,7 @@ def settings():
 			pygame.draw.line(win, (139, 155, 180), (307, 103), (Width, 103), 8)
 			back_button.main()
 			if back_button.get_pressed() or keys[pygame.K_ESCAPE]:
-				Saver.save_objects(path + "Gannitto world/files/Settings.save", Settings)
+				Saver.save_objects(path + "Gannitto world/files/Settings/Settings.save", Settings)
 				win_darken(win.copy())
 				menu()
 			show_reset_settings()
@@ -3457,7 +3604,7 @@ def change_a_character():
 				else: alt_pressed = True
 				time.sleep(0.1)
 				
-			if keys[eval("pygame.K_" + hot_keys["Change screen"])]:
+			if keys[hot_keys["Change screen"]]:
 				if screenmode == "FULLSCREEN":
 					win = pygame.display.set_mode((1000,700), pygame.RESIZABLE)
 					screenmode = "RESIZABLE"
@@ -3550,7 +3697,7 @@ def change_a_character():
 					sys.exit()
 			
 			keys = pygame.key.get_pressed()
-			if keys[eval("pygame.K_" + hot_keys["Change screen"])]:
+			if keys[hot_keys["Change screen"]]:
 				if screenmode == "FULLSCREEN":
 					win = pygame.display.set_mode((1000,700), pygame.RESIZABLE)
 					screenmode = "RESIZABLE"
@@ -3601,13 +3748,16 @@ def change_a_character():
 backrooms_portal = BackroomsPortal(-500, 500)
 multyplayer = False
 
+hot_keys = Saver.load_objects(path + "Gannitto world/files/Settings/Hot keys.save")
+player = Player()
+dt = 0
 
 
 # Основной цикл игры
 
 def start_game():
 	
-	global Hiro_run, win, Hiro_rect, changed_slot, x, y, menu_open, multyplayer_menu_open, screenmode, inventory_open, hold_left, backrooms, text_color, bullet_num, craft_items_list, craft_amounts_list, craft_images_list, screenshot_num, mechanisms, mouse_x, mouse_y, item_settings_open, multyplayer_panel, big_rects, objects, mobs, speed, in_cave, chat_tick, craft_list_open, craft_list_page, click, in_motherboard, os, mouse_click_image, HP, HP_TICK, world_name, player_bullets, effects, color, multyplayer_mode, multyplayer, Hiro, game_time, animation, start_time, wall_list, weather, new_particles, HP_animation_tick, inside_files, difficulty, god_mode, alt_pressed, walk
+	global Hiro_run, win, Hiro_rect, changed_slot, menu_open, multyplayer_menu_open, screenmode, inventory_open, hold_left, backrooms, text_color, bullet_num, craft_items_list, craft_amounts_list, craft_images_list, screenshot_num, mechanisms, mouse_x, mouse_y, item_settings_open, multyplayer_panel, big_rects, objects, mobs, speed, in_cave, chat_tick, craft_list_open, craft_list_page, click, in_motherboard, os, mouse_click_image, HP, HP_TICK, world_name, player_bullets, effects, color, multyplayer_mode, multyplayer, Hiro, game_time, animation, start_time, wall_list, weather, new_particles, HP_animation_tick, inside_files, difficulty, god_mode, alt_pressed, walk, dt, player
 
 	night_playing = False
 	input_text = ""
@@ -3623,10 +3773,11 @@ def start_game():
 	prev_bullets = []
 	prev_rects = []
 
+	dx = 0
+	dy = 0
+
 	new_particles = []
 
-
-	
 	# Загрузка данных мира
 
 	from Inventory import Resourse
@@ -3635,7 +3786,7 @@ def start_game():
 		
 		mobs = Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Mobs.save")
 		big_rects = Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Rects.save")
-		x, y, Backrooms.InBackrooms, Backrooms.Level, in_cave, speed, HP, start_time, Ron.X, Ron.Y, Ron.Home = Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Info.save")
+		player.x, player.y, Backrooms.InBackrooms, Backrooms.Level, in_cave, speed, HP, start_time, Ron.X, Ron.Y, Ron.Home = Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Info.save")
 		difficulty, god_mode = Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Settings.save")
 		objects = Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Objects.save")
 		inventory.whole_inventory = Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Inventory.save")
@@ -3713,6 +3864,7 @@ def start_game():
 		down_b = Button(Width - 148, Height - 74, arrow_down, arrow_down, win, sound=False, sleep_time=0)
 		right_b = Button(Width - 74, Height - 74, arrow_right, arrow_right, win, sound=False, sleep_time=0)
 
+		dt = clock.tick(60) / 1000.0
 		game_time = int(time.time() - start_time)
 
 		if game_time > 1200:
@@ -3731,8 +3883,8 @@ def start_game():
 					chat_input = False
 					if input_text[0:2] == "/ " and god_mode:
 						try:
-							# eval(input_text[2:])
-							# команды временно отключены, так как из-за eval возникает проблема безопасности
+							eval(input_text[2:])
+							# команды лучше не использовать, так как из-за eval возникает проблема безопасности
 							pass
 						except Exception as e:
 							chat_message(laungveges("<<< Команда " + Settings["User"][0] + f" получила ошибку {e}" + ". >>>", "<<< " + Settings["User"][0] + f"'s command got an {e}" + "error. >>>", "")) ##
@@ -3788,28 +3940,28 @@ def start_game():
 			else: alt_pressed = True
 			time.sleep(0.1)
 
-		if keys[eval("pygame.K_" + hot_keys["Change screen"])]:
+		if keys[hot_keys["Change screen"]]:
 
 			if screenmode == "FULLSCREEN":
 				win = pygame.display.set_mode((1000,700), pygame.RESIZABLE)
 				screenmode = "RESIZABLE"
-				win.blit(Hiro, Hiro_rect)
+				player.render(win, camera.x, camera.y)
 				Hiro_rect = Hiro.get_rect(center=(500, 350))
 			else:
 				win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 				screenmode = "FULLSCREEN"
-				win.blit(Hiro, Hiro_rect)
+				player.render(win, camera.x, camera.y)
 				Hiro_rect = Hiro.get_rect(center=(Width / 2, Height / 2))
 			time.sleep(0.1)
 
-		if keys[eval("pygame.K_" + hot_keys["Help"])]:
+		if keys[hot_keys["Help"]]:
 			music_channel.stop()
 			pygame.mixer.Sound.stop(Backrooms_lamps)
 			statistics[1] += (time.time() - start_time) / 3600
 			save(False)
 			settings()
 
-		if keys[eval("pygame.K_" + hot_keys["Menu"])]:
+		if keys[hot_keys["Menu"]]:
 			if menu_open: menu_open = False
 			else: menu_open = True
 			time.sleep(0.1)
@@ -3817,7 +3969,7 @@ def start_game():
 		if keys[pygame.K_c]:
 			chat_input = True
 		
-		if keys[eval("pygame.K_" + hot_keys["Inventory"])] and not chat_input:
+		if keys[hot_keys["Inventory"]] and not chat_input:
 
 			if inventory_open:
 				
@@ -3836,10 +3988,10 @@ def start_game():
 
 			time.sleep(0.1)
 		
-		if keys[eval("pygame.K_" + hot_keys["Throw away the item"])] and inventory.whole_inventory[changed_slot] is not None and not chat_input:   # TODO
+		if keys[hot_keys["Throw away the item"]] and inventory.whole_inventory[changed_slot] is not None and not chat_input:   # TODO
 			
 			if Backrooms.InBackrooms:
-				backrooms_objects.append(Object(inventory.whole_inventory[changed_slot].name, x, y, "Gannitto world/files/Images/Items/" + inventory.whole_inventory[changed_slot].name + ".png", special_flags="Item"))
+				backrooms_objects.append(Object(inventory.whole_inventory[changed_slot].name, player.x, player.y, "Gannitto world/files/Images/Items/" + inventory.whole_inventory[changed_slot].name + ".png", special_flags="Item"))
 			else:
 				
 				match Hiro_run:
@@ -3857,7 +4009,7 @@ def start_game():
 						x_bias_ = "self.calculated_variable[0]"
 						y_bias_ = "self.calculated_variable[1]"
 						
-				particles.append(Particle(x, y, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Items/" + inventory.whole_inventory[changed_slot].name + ".png"), (64, 64)), x_bias_, y_bias_, variable_to_calculate="(30 - self.ticks * 3, 15 - self.ticks * 5)", track_ticks=True, end_time=0.5, end_command="objects.append(Object(particle.special_flags, particle.x, particle.y, 'Gannitto world/files/Images/Items/' + particle.special_flags + '.png', special_flags='Item'))", end_command_globals_in_the_end=("objects", "Object"), special_flags=inventory.whole_inventory[changed_slot].name))
+				particles.append(Particle(player.x, player.y, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Items/" + inventory.whole_inventory[changed_slot].name + ".png"), (64, 64)), x_bias_, y_bias_, variable_to_calculate="(30 - self.ticks * 3, 15 - self.ticks * 5)", track_ticks=True, end_time=0.5, end_command="objects.append(Object(particle.special_flags, particle.x, particle.y, 'Gannitto world/files/Images/Items/' + particle.special_flags + '.png', special_flags='Item'))", end_command_globals_in_the_end=("objects", "Object"), special_flags=inventory.whole_inventory[changed_slot].name))
 				
 				del x_bias_
 				del y_bias_
@@ -3868,10 +4020,10 @@ def start_game():
 
 			time.sleep(0.15)
 
-		if False and keys[eval("pygame.K_" + hot_keys["Throw away stack of items"])] and inventory.whole_inventory[changed_slot] is not None and not chat_input:   # TODO
+		if False and keys[hot_keys["Throw away stack of items"]] and inventory.whole_inventory[changed_slot] is not None and not chat_input:   # TODO
 		
 			if Backrooms.InBackrooms:
-				backrooms_objects.append(Object(inventory.whole_inventory[changed_slot].name, x, y, "Gannitto world/files/Images/Items/" + inventory.whole_inventory[changed_slot].name + ".png", special_flags="Item"))
+				backrooms_objects.append(Object(inventory.whole_inventory[changed_slot].name, player.x, player.y, "Gannitto world/files/Images/Items/" + inventory.whole_inventory[changed_slot].name + ".png", special_flags="Item"))
 			else:
 			
 				match Hiro_run:
@@ -3889,7 +4041,7 @@ def start_game():
 						x_bias_ = "self.calculated_variable[0]"
 						y_bias_ = "self.calculated_variable[1]"
 					
-				particles.append(Particle(x, y, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Items/" + inventory.whole_inventory[changed_slot].name + ".png"), (64, 64)), x_bias_, y_bias_, variable_to_calculate="(30 - self.ticks * 3, 15 - self.ticks * 5)", track_ticks=True, end_time=0.5, end_command="objects.append(Object(particle.special_flags, particle.x, particle.y, 'Gannitto world/files/Images/Items/' + particle.special_flags + '.png', special_flags='Item'))", end_command_globals_in_the_end=("objects", "Object"), special_flags=inventory.whole_inventory[changed_slot].name))
+				particles.append(Particle(player.x, player.y, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Items/" + inventory.whole_inventory[changed_slot].name + ".png"), (64, 64)), x_bias_, y_bias_, variable_to_calculate="(30 - self.ticks * 3, 15 - self.ticks * 5)", track_ticks=True, end_time=0.5, end_command="objects.append(Object(particle.special_flags, particle.x, particle.y, 'Gannitto world/files/Images/Items/' + particle.special_flags + '.png', special_flags='Item'))", end_command_globals_in_the_end=("objects", "Object"), special_flags=inventory.whole_inventory[changed_slot].name))
 			
 				del x_bias_
 				del y_bias_
@@ -3927,13 +4079,13 @@ def start_game():
 				# inventory.whole_inventory = [None] * 40
 				# menu()
 
-		if keys[eval("pygame.K_" + hot_keys["Multyplayer menu"])] and not chat_input:
+		if keys[hot_keys["Multyplayer menu"]] and not chat_input:
 
 			multyplayer_menu_open = True
 			time.sleep(0.1)
 		
-		if keys[eval("pygame.K_" + hot_keys["Set Ron home"])] and not chat_input:
-			Ron.Home = [x, y]
+		if keys[hot_keys["Set Ron home"]] and not chat_input:
+			Ron.Home = [player.x, player.y]
 
 		if not chat_input:
 
@@ -3947,201 +4099,222 @@ def start_game():
 			if keys[pygame.K_8]: changed_slot = 7
 			if keys[pygame.K_9]: changed_slot = 8
 			if keys[pygame.K_0]: changed_slot = 9
+			
+			# Старая механика ходьбы
 
-			if keys[pygame.K_DOWN] or keys[pygame.K_s] or (down_b.get_pressed() and Settings["Game"][1]):
+			# if keys[pygame.K_DOWN] or keys[pygame.K_s] or (down_b.get_pressed() and Settings["Game"][1]):
 
-				a = True
-				if Backrooms.InBackrooms:
-					for i in range(Width // 2 - 80, Width // 2 + 80):
-						if win.get_at((i, Height // 2 + 127)) == wall_color:
-							a = False
-							break
+			# 	a = True
+			# 	if Backrooms.InBackrooms:
+			# 		for i in range(Width // 2 - 80, Width // 2 + 80):
+			# 			if win.get_at((i, Height // 2 + 127)) == wall_color:
+			# 				a = False
+			# 				break
 
-				if in_cave is not None and y <= objects[in_cave + 1].own_height // 2 * -1 + 150:
-					a = False
+			# 	if in_cave is not None and player.y <= objects[in_cave + 1].own_height // 2 * -1 + 150:
+			# 		a = False
 
-				if a:
+			# 	if a:
 					
-					y -= speed // FPS
+			# 		y -= speed // FPS
 					
-					for i in wall_list:
-						if i.x - 300 < x < i.x + 300 and i.y - 100 < y < i.y + 300:
-							y += speed // FPS
+			# 		for i in wall_list:
+			# 			if i.x - 300 < player.x < i.x + 300 and i.y - 100 < player.y < i.y + 300:
+			# 				y += speed // FPS
 							
-					if walk <= 0:
+			# 		if walk <= 0:
 
-						Hiro_run = "Down"
-						if costum == 7: 
-							costum = 0
-						costum += 1
+			# 			Hiro_run = "Down"
+			# 			if costum == 7: 
+			# 				costum = 0
+			# 			costum += 1
 
-						if costum == 1:
-							Hiro = Hiro_down_run_1
-						elif costum == 2:
-							Hiro = Hiro_down_run_2
-						elif costum == 3:
-							Hiro = Hiro_down_run_3
-						elif costum == 4:
-							Hiro = Hiro_down_run_4
-						elif costum == 5:
-							Hiro = Hiro_down_run_5
-						elif costum == 6:
-							Hiro = Hiro_down_run_6
+			# 			if costum == 1:
+			# 				Hiro = Hiro_down_run_1
+			# 			elif costum == 2:
+			# 				Hiro = Hiro_down_run_2
+			# 			elif costum == 3:
+			# 				Hiro = Hiro_down_run_3
+			# 			elif costum == 4:
+			# 				Hiro = Hiro_down_run_4
+			# 			elif costum == 5:
+			# 				Hiro = Hiro_down_run_5
+			# 			elif costum == 6:
+			# 				Hiro = Hiro_down_run_6
 					
-						walk = FPS * 0.1
+			# 			walk = FPS * 0.1
 
-			elif keys[pygame.K_UP] or keys[pygame.K_w] or (up_b.get_pressed() and Settings["Game"][1]):
+			# elif keys[pygame.K_UP] or keys[pygame.K_w] or (up_b.get_pressed() and Settings["Game"][1]):
 
-				a = True
+			# 	a = True
 
-				if Backrooms.InBackrooms:
-					for i in range(Width // 2 - 80, Width // 2 + 80):
-						if win.get_at((i, Height // 2 - 127)) == wall_color:
-							a = False
-							break
+			# 	if Backrooms.InBackrooms:
+			# 		for i in range(Width // 2 - 80, Width // 2 + 80):
+			# 			if win.get_at((i, Height // 2 - 127)) == wall_color:
+			# 				a = False
+			# 				break
 
-				if in_cave is not None and y >= objects[in_cave + 1].own_height // 2 - 100:
-					a = False
+			# 	if in_cave is not None and player.y >= objects[in_cave + 1].own_height // 2 - 100:
+			# 		a = False
 
-				if a:
+			# 	if a:
 					
-					y += speed // FPS
+			# 		y += speed // FPS
 					
-					for i in wall_list:
-						if i.x - 300 < x < i.x + 300 and i.y - 300 < y < i.y + 100:
-							y -= speed // FPS
+			# 		for i in wall_list:
+			# 			if i.x - 300 < player.x < i.x + 300 and i.y - 300 < player.y < i.y + 100:
+			# 				y -= speed // FPS
 
-					if walk <= 0:
-						Hiro_run = "Up"
-						if costum == 7:
-							costum = 0
-						costum += 1
+			# 		if walk <= 0:
+			# 			Hiro_run = "Up"
+			# 			if costum == 7:
+			# 				costum = 0
+			# 			costum += 1
 
-						if costum == 1:
-							Hiro = Hiro_up_run_1
-						elif costum == 2:
-							Hiro = Hiro_up_run_2
-						elif costum == 3:
-							Hiro = Hiro_up_run_3
-						elif costum == 4:
-							Hiro = Hiro_up_run_4
-						elif costum == 5:
-							Hiro = Hiro_up_run_5
-						elif costum == 6:
-							Hiro = Hiro_up_run_6
+			# 			if costum == 1:
+			# 				Hiro = Hiro_up_run_1
+			# 			elif costum == 2:
+			# 				Hiro = Hiro_up_run_2
+			# 			elif costum == 3:
+			# 				Hiro = Hiro_up_run_3
+			# 			elif costum == 4:
+			# 				Hiro = Hiro_up_run_4
+			# 			elif costum == 5:
+			# 				Hiro = Hiro_up_run_5
+			# 			elif costum == 6:
+			# 				Hiro = Hiro_up_run_6
 					
-						walk = FPS * 0.1
+			# 			walk = FPS * 0.1
 
-			elif keys[pygame.K_LEFT] or keys[pygame.K_a] or (left_b.get_pressed() and Settings["Game"][1]):
+			# elif keys[pygame.K_LEFT] or keys[pygame.K_a] or (left_b.get_pressed() and Settings["Game"][1]):
 
-				a = True
+			# 	a = True
 
-				if Backrooms.InBackrooms:
-					for i in range(Height // 2 - 100, Height // 2 + 100):
-						if win.get_at((Width // 2 - 100, i)) in [Color(180, 160, 50), Color(50, 50, 50)]:
-							a = False
-							break
+			# 	if Backrooms.InBackrooms:
+			# 		for i in range(Height // 2 - 100, Height // 2 + 100):
+			# 			if win.get_at((Width // 2 - 100, i)) in [Color(180, 160, 50), Color(50, 50, 50)]:
+			# 				a = False
+			# 				break
 
-				if in_cave is not None and x <= objects[in_cave + 1].own_width // 2 * -1 + 150:
-					a = False
+			# 	if in_cave is not None and player.x <= objects[in_cave + 1].own_width // 2 * -1 + 150:
+			# 		a = False
 
-				if a:
+			# 	if a:
 					
-					x -= speed // FPS
+			# 		x -= speed // FPS
 					
-					for i in wall_list:
-						if i.x - 100 < x < i.x + 256 and i.y - 300 < y < i.y + 300:
-							x += speed // FPS
+			# 		for i in wall_list:
+			# 			if i.x - 100 < player.x < i.x + 256 and i.y - 300 < player.y < i.y + 300:
+			# 				x += speed // FPS
 
-					if walk <= 0:
+			# 		if walk <= 0:
 
-						Hiro_run = "Left"
-						if costum == 7:
-							costum = 0
-						costum += 1
+			# 			Hiro_run = "Left"
+			# 			if costum == 7:
+			# 				costum = 0
+			# 			costum += 1
 
-						if costum == 1:
-							Hiro = Hiro_left_run_1
-						elif costum == 2:
-							Hiro = Hiro_left_run_2
-						elif costum == 3:
-							Hiro = Hiro_left_run_3
-						elif costum == 4:
-							Hiro = Hiro_left_run_4
-						elif costum == 5:
-							Hiro = Hiro_left_run_5
-						elif costum == 6:
-							Hiro = Hiro_left_run_6
+			# 			if costum == 1:
+			# 				Hiro = Hiro_left_run_1
+			# 			elif costum == 2:
+			# 				Hiro = Hiro_left_run_2
+			# 			elif costum == 3:
+			# 				Hiro = Hiro_left_run_3
+			# 			elif costum == 4:
+			# 				Hiro = Hiro_left_run_4
+			# 			elif costum == 5:
+			# 				Hiro = Hiro_left_run_5
+			# 			elif costum == 6:
+			# 				Hiro = Hiro_left_run_6
 					
-						walk = FPS * 0.1
+			# 			walk = FPS * 0.1
 
-			elif (keys[pygame.K_RIGHT] or keys[pygame.K_d]) or (right_b.get_pressed() and Settings["Game"][1]):
+			# elif (keys[pygame.K_RIGHT] or keys[pygame.K_d]) or (right_b.get_pressed() and Settings["Game"][1]):
 
-				a = True
+			# 	a = True
 
-				if Backrooms.InBackrooms:
-					for i in range(Height // 2 - 100, Height // 2 + 100):
-						if win.get_at((Width // 2 + 107, i)) == wall_color:
-							a = False
-							break
+			# 	if Backrooms.InBackrooms:
+			# 		for i in range(Height // 2 - 100, Height // 2 + 100):
+			# 			if win.get_at((Width // 2 + 107, i)) == wall_color:
+			# 				a = False
+			# 				break
 
-				if in_cave is not None and x >= objects[in_cave + 1].own_width // 2 - 150:
-					a = False
+			# 	if in_cave is not None and player.x >= objects[in_cave + 1].own_width // 2 - 150:
+			# 		a = False
 
-				if a:
+			# 	if a:
 					
-					x += speed // FPS
+			# 		x += speed // FPS
 					
-					for i in wall_list:
-						if i.x - 300 < x < i.x + 100 and i.y - 300 < y < i.y + 300:
-							x -= speed // FPS
+			# 		for i in wall_list:
+			# 			if i.x - 300 < player.x < i.x + 100 and i.y - 300 < player.y < i.y + 300:
+			# 				x -= speed // FPS
 
-					if walk <= 0:
+			# 		if walk <= 0:
 
-						Hiro_run = "Right"
-						if costum == 7:
-							costum = 0
-						costum += 1
+			# 			Hiro_run = "Right"
+			# 			if costum == 7:
+			# 				costum = 0
+			# 			costum += 1
 
-						if costum == 1:
-							Hiro = Hiro_right_run_1
-						elif costum == 2:
-							Hiro = Hiro_right_run_2
-						elif costum == 3:
-							Hiro = Hiro_right_run_3
-						elif costum == 4:
-							Hiro = Hiro_right_run_4
-						elif costum == 5:
-							Hiro = Hiro_right_run_5
-						elif costum == 6:
-							Hiro = Hiro_right_run_6
+			# 			if costum == 1:
+			# 				Hiro = Hiro_right_run_1
+			# 			elif costum == 2:
+			# 				Hiro = Hiro_right_run_2
+			# 			elif costum == 3:
+			# 				Hiro = Hiro_right_run_3
+			# 			elif costum == 4:
+			# 				Hiro = Hiro_right_run_4
+			# 			elif costum == 5:
+			# 				Hiro = Hiro_right_run_5
+			# 			elif costum == 6:
+			# 				Hiro = Hiro_right_run_6
 					
-						walk = FPS * 0.1
+			# 			walk = FPS * 0.1
 
-			else:
+			# else:
 
-				costum = 0
+			# 	costum = 0
 
-				if Hiro_run == "Down-left":
-					Hiro = Hiro_down_left
-				elif Hiro_run == "Down-right":
-					Hiro = Hiro_down_right
-				elif Hiro_run == "Down":
-					Hiro = Hiro_down_run_1
-				elif Hiro_run == "Up-left":
-					Hiro = Hiro_up_left
-				elif Hiro_run == "Up-right":
-					Hiro = Hiro_up_right_run_1
-				elif Hiro_run == "Up":
-					Hiro = Hiro_up_run_1
-				elif Hiro_run == "Left":
-					Hiro = Hiro_left_run_1
-				elif Hiro_run == "Right":
-					Hiro = Hiro_right_run_1
+			# 	if Hiro_run == "Down-left":
+			# 		Hiro = Hiro_down_left
+			# 	elif Hiro_run == "Down-right":
+			# 		Hiro = Hiro_down_right
+			# 	elif Hiro_run == "Down":
+			# 		Hiro = Hiro_down_run_1
+			# 	elif Hiro_run == "Up-left":
+			# 		Hiro = Hiro_up_left
+			# 	elif Hiro_run == "Up-right":
+			# 		Hiro = Hiro_up_right_run_1
+			# 	elif Hiro_run == "Up":
+			# 		Hiro = Hiro_up_run_1
+			# 	elif Hiro_run == "Left":
+			# 		Hiro = Hiro_left_run_1
+			# 	elif Hiro_run == "Right":
+			# 		Hiro = Hiro_right_run_1
 		
-		if walk > 0:
-			walk -= 1
+		# if walk > 0:
+			# walk -= 1
+	
+		if keys[pygame.K_a]:
+			dx = -1
+		if keys[pygame.K_d]:
+			dx = 1
+		if keys[pygame.K_w]:
+			dy = -1
+		if keys[pygame.K_s]:
+			dy = 1
 		
+		# Если есть движение - двигаем игрока
+		if dx != 0 or dy != 0:
+			player.move(dx, dy)
+		else:
+			player.stop()
+		
+		# Обновляем анимацию
+		player.update_animation(dt)
+
+		win.fill((0, 0, 0))
 
 		if Width // 2 - 100 <= mouse_x <= Width // 2 + 100 and Height // 2 - 100 <= mouse_y <= Height // 2 + 100 and not any((item_settings_open, Ron.window[0], in_motherboard, craft_list_open)):
 			mouse_object = laungveges("Это вы", "It's you", "Бұл сіз")
@@ -4159,7 +4332,7 @@ def start_game():
 				for ii in range(-3, 3):
 
 					if biom_name is not None:
-						win.blit(textures[biom_name], (Width - x % 256 + i * 256, y % 256 + ii * 256))
+						win.blit(textures[biom_name], (Width - player.x % 256 + i * 256, player.y % 256 + ii * 256))
 
 						if game_time > 600 and not night_playing:
 							music_channel.stop()
@@ -4203,18 +4376,18 @@ def start_game():
 								pygame.mixer.Sound.play(random.choice([Swamp_walking1, Swamp_walking2, Swamp_walking3]), maxtime=1000)
 
 					else:
-						win.blit(textInfo.render(laungveges("Пожалуйста, подождите, биом ещё генерируется...", "Please, wait, the biom is still genegating...", "Күте тұрыңыз, биома әлі де жасалуда..."), True, (0, 0, 0)), (Width - x % 512 + i * 512, y % 256 + ii * 256))
+						win.blit(textInfo.render(laungveges("Пожалуйста, подождите, биом ещё генерируется...", "Please, wait, the biom is still genegating...", "Күте тұрыңыз, биома әлі де жасалуда..."), True, (0, 0, 0)), (Width - player.x % 512 + i * 512, player.y % 256 + ii * 256))
 
 			if biom_name is None:
 
-				big_rects.append(Big_rect.BigRect(x - x % 100000, y - y % 100000))
+				big_rects.append(Big_rect.BigRect(player.x - player.x % 100000, player.y - player.y % 100000))
 				objects = big_rects[len(big_rects) - 1].generate(objects)
 
 		else:
 
 			for i in range(-6, 6):
 				for ii in range(-3, 3):
-					win.blit(textures["Backrooms " + str(Backrooms.Level)], (Width - x % 256 + i * 256, y % 256 + ii * 256))
+					win.blit(textures["Backrooms " + str(Backrooms.Level)], (Width - player.x % 256 + i * 256, player.y % 256 + ii * 256))
 		
 		for mechanism in mechanisms:
 			mechanism.main()
@@ -4222,7 +4395,7 @@ def start_game():
 		if not Backrooms.InBackrooms and in_cave is None:
 
 			backrooms_portal.main()
-			if backrooms_portal.x - 128 <= x <= backrooms_portal.x + 128 and backrooms_portal.y - 128 <= y <= backrooms_portal.y + 128:
+			if backrooms_portal.x - 128 <= player.x <= backrooms_portal.x + 128 and backrooms_portal.y - 128 <= player.y <= backrooms_portal.y + 128:
 
 				Backrooms.InBackrooms = True
 				color = colors["Backrooms"]
@@ -4244,13 +4417,13 @@ def start_game():
 
 		elif Backrooms.InBackrooms:
 			
-			if int(x / 2000) != Backrooms.room_x:
-				Backrooms.get_rooms(int(x / 2000), int(y / 2000))
-			if int(y / 2000) != Backrooms.room_y:
-				Backrooms.get_rooms(int(x / 2000), int(y / 2000))
+			if int(player.x / 2000) != Backrooms.room_x:
+				Backrooms.get_rooms(int(player.x / 2000), int(player.y / 2000))
+			if int(player.y / 2000) != Backrooms.room_y:
+				Backrooms.get_rooms(int(player.x / 2000), int(player.y / 2000))
 
-			Backrooms.room_x = int(x / 2000)
-			Backrooms.room_y = int(y / 2000)
+			Backrooms.room_x = int(player.x / 2000)
+			Backrooms.room_y = int(player.y / 2000)
 
 			match Backrooms.Level:
 				case 0:
@@ -4263,7 +4436,7 @@ def start_game():
 					win.fill((50, 50, 50))
 
 			for room in Backrooms.rooms:
-				room.main(x, y)
+				room.main(player.x, player.y)
 
 			if random.randint(1, 1000) == 1:
 				pygame.mixer.Sound.play(Backrooms_rand_sound_1)
@@ -4314,7 +4487,7 @@ def start_game():
 					aa += 1
 
 			if aa == 4:
-				Backrooms.get_rooms(int(x / 2000), int(y / 2000))
+				Backrooms.get_rooms(int(player.x / 2000), int(player.y / 2000))
 
 			if aa == 3 and keys[pygame.K_n] and random.randint(1, 30) == 30:
 
@@ -4352,7 +4525,7 @@ def start_game():
 					if object.get_in() is not None:
 						a = object.get_in()
 
-			if in_cave is not None and -64 <= x <= 64 and -64 <= y <= 64 and click[0]:
+			if in_cave is not None and -64 <= player.x <= 64 and -64 <= player.y <= 64 and click[0]:
 
 				x = objects[in_cave + 1].x
 				y = objects[in_cave + 1].y - 128
@@ -4379,19 +4552,19 @@ def start_game():
 					if i.__class__ == Cave:
 						break
 				
-				pygame.draw.rect(win, (100, 100, 100), (objects[in_cave + 1].own_width // 2 * -1 - x + Width // 2, y - objects[in_cave + 1].own_height // 2 + Height // 2, objects[in_cave + 1].own_width, objects[in_cave + 1].own_height))
-				win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Objects/Cave.png"), (128, 128)), (0 - x + Width // 2 - objects[in_cave + 1].w // 2, y - 0 + Height // 2 - objects[in_cave].h // 2))
+				pygame.draw.rect(win, (100, 100, 100), (objects[in_cave + 1].own_width // 2 * -1 - player.x + Width // 2, player.y - objects[in_cave + 1].own_height // 2 + Height // 2, objects[in_cave + 1].own_width, objects[in_cave + 1].own_height))
+				win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Objects/Cave.png"), (128, 128)), (0 - player.x + Width // 2 - objects[in_cave + 1].w // 2, player.y - 0 + Height // 2 - objects[in_cave].h // 2))
 
 				i = -1
 
 				for object in objects[in_cave + 1].objects:
 
 					i += 1
-					object.main(x, y)
+					object.main()
 
 					if object.__class__ == Object:
 
-						if object.x - x + Width // 2 - object.w // 2 <= mouse_x <= object.x - x + Width // 2 + object.w // 2 and y - object.y + Height // 2 - object.h // 2 <= mouse_y <= y - object.y + Height // 2 + object.h // 2:
+						if object.x - player.x + Width // 2 - object.w // 2 <= mouse_x <= object.x - player.x + Width // 2 + object.w // 2 and player.y - object.y + Height // 2 - object.h // 2 <= mouse_y <= player.y - object.y + Height // 2 + object.h // 2:
 
 							if object.special_flags == "Item":
 
@@ -4481,21 +4654,21 @@ def start_game():
 				for i, object in enumerate(objects):
 
 					if object.object_class == "Object":
-						object.main(x, y)
+						object.main()
 
-						if object.special_flags == "Item" and Settings["Game"][0] and x - 150 < object.x < x + 150 and y - 150 < object.y < y + 150:
-							particles.append(Particle(object.x, object.y, object.image, "round(self.calculated_variable[0])", "round(self.calculated_variable[1])", variable_to_calculate="((self.special_flags[0] // 2) / 10 / 10 * self.ticks, (self.special_flags[1] // 2) / 10 / 10 * self.ticks, (-self.special_flags[0] // 2) / 10 / 10 * (self.ticks - 10), (-self.special_flags[1] // 2) / 10 / 10 * (self.ticks - 10))", track_ticks=True, end_x=x, end_y=y, end_zone=30, end_command="(inventory.increate('" + object.name + "'),pygame.mixer.Sound.play(Pick_an_item))", special_flags=(x - object.x, y - object.y, (0 - 17) // (0 - 10))))
+						if object.special_flags == "Item" and Settings["Game"][0] and player.x - 150 < object.x < player.x + 150 and player.y - 150 < object.y < player.y + 150:
+							particles.append(Particle(object.x, object.y, object.image, "round(self.calculated_variable[0])", "round(self.calculated_variable[1])", variable_to_calculate="((self.special_flags[0] // 2) / 10 / 10 * self.ticks, (self.special_flags[1] // 2) / 10 / 10 * self.ticks, (-self.special_flags[0] // 2) / 10 / 10 * (self.ticks - 10), (-self.special_flags[1] // 2) / 10 / 10 * (self.ticks - 10))", track_ticks=True, end_x=player.x, end_y=player.y, end_zone=30, end_command="(inventory.increate('" + object.name + "'),pygame.mixer.Sound.play(Pick_an_item))", special_flags=(player.x - object.x, player.y - object.y, (0 - 17) // (0 - 10))))
 							objects.remove(object)
 
-						if object.x - x + Width // 2 - object.image.get_width() // 2 <= mouse_x <= object.x - x + Width // 2 + object.image.get_width() // 2 and y - object.y + Height // 2 - object.image.get_height() // 2 <= mouse_y <= y - object.y + Height // 2 + object.image.get_height() // 2:
+						if object.x - player.x + Width // 2 - object.image.get_width() // 2 <= mouse_x <= object.x - player.x + Width // 2 + object.image.get_width() // 2 and player.y - object.y + Height // 2 - object.image.get_height() // 2 <= mouse_y <= player.y - object.y + Height // 2 + object.image.get_height() // 2:
 
 							if object.special_flags == "Item":
 								mouse_object = laungveges("Нажми, чтобы подобрать " + object.name, "Click to pick the " + object.name, object.name + " алу үшін басыңыз")
 								
 								if click[0]:
 									
-									# , "fabs(x - self.x) > fabs(self.special_flags[0] / 2)", "fabs(y - self.y) > fabs(self.special_flags[1] / 2)", "round(self.calculated_variable[2])", "round(self.calculated_variable[3])"
-									particles.append(Particle(object.x, object.y, object.image, "round(self.calculated_variable[0])", "round(self.calculated_variable[1])", variable_to_calculate="((self.special_flags[0] // 2) / 10 / 10 * self.ticks, (self.special_flags[1] // 2) / 10 / 10 * self.ticks, (-self.special_flags[0] // 2) / 10 / 10 * (self.ticks - 10), (-self.special_flags[1] // 2) / 10 / 10 * (self.ticks - 10))", track_ticks=True, end_x=x, end_y=y, end_zone=30, end_command="(inventory.increate('" + object.name + "'),pygame.mixer.Sound.play(Pick_an_item))", special_flags=(x - object.x, y - object.y, (0 - 17) // (0 - 10))))
+									# , "fabs(player.x - self.x) > fabs(self.special_flags[0] / 2)", "fabs(player.y - self.y) > fabs(self.special_flags[1] / 2)", "round(self.calculated_variable[2])", "round(self.calculated_variable[3])"
+									particles.append(Particle(object.x, object.y, object.image, "round(self.calculated_variable[0])", "round(self.calculated_variable[1])", variable_to_calculate="((self.special_flags[0] // 2) / 10 / 10 * self.ticks, (self.special_flags[1] // 2) / 10 / 10 * self.ticks, (-self.special_flags[0] // 2) / 10 / 10 * (self.ticks - 10), (-self.special_flags[1] // 2) / 10 / 10 * (self.ticks - 10))", track_ticks=True, end_x=player.x, end_y=player.y, end_zone=30, end_command="(inventory.increate('" + object.name + "'),pygame.mixer.Sound.play(Pick_an_item))", special_flags=(player.x - object.x, player.y - object.y, (0 - 17) // (0 - 10))))
 									
 									if in_cave is not None and object.num <= in_cave: in_cave -= 1
 									for ii in objects:
@@ -4762,9 +4935,9 @@ def start_game():
 			for object in backrooms_objects:
 
 				i += 1
-				object.main(x, y)
+				object.main()
 
-				if click[0] and object.x - x + Width // 2 - object.w // 2 <= mouse_x <= object.x - x + Width // 2 + object.w // 2 and y - object.y + Height // 2 - object.h // 2 <= mouse_y <= y - object.y + Height // 2 + object.h // 2:
+				if click[0] and object.x - player.x + Width // 2 - object.w // 2 <= mouse_x <= object.x - player.x + Width // 2 + object.w // 2 and player.y - object.y + Height // 2 - object.h // 2 <= mouse_y <= player.y - object.y + Height // 2 + object.h // 2:
 
 					if object.special_flags == "Item":
 
@@ -4939,7 +5112,7 @@ def start_game():
 									elif object.x - 300 < mob.attak[0] < object.x + 300 and object.y - 300 < mob.attak[1] < object.y + 300:
 										mob.HP = 0
 
-								pygame.draw.circle(win, (200, 0, 0, 0.3), (object.x - x + Width // 2 - 32, y - object.y + Height // 2 - 32), 150)
+								pygame.draw.circle(win, (200, 0, 0, 0.3), (object.x - player.x + Width // 2 - 32, player.y - object.y + Height // 2 - 32), 150)
 
 								del objects[objects.index(object)]
 								break
@@ -4969,11 +5142,11 @@ def start_game():
 		if not Backrooms.InBackrooms and in_cave is None and (not multyplayer or multyplayer_mode == "My game"):
 
 			if (game_time < 600 and random.randint(1, 5000) == 1) or (game_time > 600 and random.randint(1, 800) == 1):
-				try:mobs.append(SlimeEnemy(random.randint(x - Width, x + Width), random.randint(y - Height, y + Height)))
+				try:mobs.append(SlimeEnemy(random.randint(player.x - Width, player.x + Width), random.randint(player.y - Height, player.y + Height)))
 				except:pass
 
 			elif game_time > 600 and random.randint(1, 1000) == 1:
-				try:mobs.append(SpiderEnemy(random.randint(x - Width, x + Width), random.randint(y - Height, y + Height)))
+				try:mobs.append(SpiderEnemy(random.randint(player.x - Width, player.x + Width), random.randint(player.y - Height, player.y + Height)))
 				except:pass
 
 		for bullet in player_bullets:
@@ -5025,8 +5198,8 @@ def start_game():
 										temp.set_at((a, b), (200, 0, 0, 80))
 
 							particles.append(Particle(mob.x + random.randint(-64, 64), mob.y + random.randint(-64, 64), text("-15", 0, 0, (180, 10, 10), return_surface=True), y_bias=3, end_time=0.5))
-							win.blit(temp, (mob.x - x + Width // 2 - 64, y - mob.y + Height // 2 - 32))
-							win.blit(text(str(mob.HP), 0, 0, (180, 10, 10), return_surface=True), (mob.x + 58 - x + Width // 2 - 64, y - mob.y + Height // 2 - 32))
+							win.blit(temp, (mob.x - player.x + Width // 2 - 64, player.y - mob.y + Height // 2 - 32))
+							win.blit(text(str(mob.HP), 0, 0, (180, 10, 10), return_surface=True), (mob.x + 58 - player.x + Width // 2 - 64, player.y - mob.y + Height // 2 - 32))
 
 							# try:
 
@@ -5121,14 +5294,14 @@ def start_game():
 								a = pygame.Surface((16, 24))
 								a.fill((0, 0, 0))
 								a.set_alpha(90)
-								particles.append(Particle(x + 16, y + 96, a, end_time=3))
+								particles.append(Particle(player.x + 16, player.y + 96, a, end_time=3))
 
 							case 4 | 6:
 
 								a = pygame.Surface((16, 24))
 								a.fill((0, 0, 0))
 								a.set_alpha(90)
-								particles.append(Particle(x - 32, y + 96, a, end_time=3))
+								particles.append(Particle(player.x - 32, player.y + 96, a, end_time=3))
 
 					case 2:
 
@@ -5256,11 +5429,11 @@ def start_game():
 
 		# Рон
 
-		Ron.walk(x, y)
-		Ron.show(x, y)
+		Ron.walk(player.x, player.y)
+		Ron.show(player.x, player.y)
 
-		objects = Ron.check_items(x, y, objects)
-		mobs, player_bullets = Ron.check_mobs(mobs, Width, Height, FPS, player_bullets, Bullet, x, y)
+		objects = Ron.check_items(player.x, player.y, objects)
+		mobs, player_bullets = Ron.check_mobs(mobs, Width, Height, FPS, player_bullets, Bullet, player.x, player.y)
 
 		# Механика использования еды и некоторых предметов через пробел
 
@@ -5272,7 +5445,7 @@ def start_game():
 
 			win.blit(inventory.whole_inventory[changed_slot].image, (Width - 370, Height - 74))
 		
-		if (inventory.whole_inventory[changed_slot] is not None and (keys[eval("pygame.K_" + hot_keys["Use item"])] or (click[0] and Settings["Game"][1]))) and not chat_input:
+		if (inventory.whole_inventory[changed_slot] is not None and (keys[hot_keys["Use item"]] or (click[0] and Settings["Game"][1]))) and not chat_input:
 
 			if inventory.whole_inventory[changed_slot].type == "Food":
 				
@@ -5295,7 +5468,7 @@ def start_game():
 								inventory.whole_inventory[i].amount -= 1
 							else:
 								inventory.whole_inventory[i] = None
-							player_bullets.append(Bullet(x, y, mouse_x, mouse_y, "Bullet"))
+							player_bullets.append(Bullet(player.x, player.y, mouse_x, mouse_y, "Bullet"))
 							bullet_num += 1
 							time.sleep(0.15)
 							break
@@ -5313,7 +5486,7 @@ def start_game():
 								inventory.whole_inventory[i].amount -= 1
 							else:
 								inventory.whole_inventory[i] = None
-							player_bullets.append(Bullet(x, y, mouse_x, mouse_y, "Arrow"))
+							player_bullets.append(Bullet(player.x, player.y, mouse_x, mouse_y, "Arrow"))
 							bullet_num += 1
 							time.sleep(0.15)
 							break
@@ -5332,7 +5505,7 @@ def start_game():
 				case "Grenade":
 
 					time.sleep(0.15)
-					objects.append(Object("Grenade", x, y, "Gannitto world/files/Images/Items/Grenade.png", special_flags=(x + mouse_x - Width // 2, y - mouse_y + Height // 2)))
+					objects.append(Object("Grenade", player.x, player.y, "Gannitto world/files/Images/Items/Grenade.png", special_flags=(player.x + mouse_x - Width // 2, player.y - mouse_y + Height // 2)))
 
 					if inventory.whole_inventory[changed_slot].amount > 1:
 						inventory.whole_inventory[changed_slot].amount -= 1
@@ -5343,7 +5516,7 @@ def start_game():
 		
 
 
-		if keys[eval("pygame.K_" + hot_keys["Screenshot"])] and keys[pygame.K_LALT]:
+		if keys[hot_keys["Screenshot"]] and keys[pygame.K_LALT]:
 			
 			try:
 				pygame.image.save(win, "C://Users/" + getpass.getuser() + "/Pictures/Your Screenshot at " + time.asctime().replace(":", " ") + ".png")
@@ -5361,25 +5534,25 @@ def start_game():
 		if keys[pygame.K_UP] or keys[pygame.K_w] or up_b.get_pressed():
 
 			for i in wall_list:
-				if i.x - 256 < x < i.x + 256 and i.y - 256 < y < i.y + 256:
+				if i.x - 256 < player.x < i.x + 256 and i.y - 256 < player.y < i.y + 256:
 					text(laungveges("К сожалению, вы не можете ходить через стены", "Unfortunately you can't walk through walls", "Өкінішке орай, сіз қабырғалардан өте алмайсыз"), Width // 2, Height // 2, (200, 30, 30), alignment=True)
 
 		if keys[pygame.K_DOWN] or keys[pygame.K_s] or down_b.get_pressed():
 
 			for i in wall_list:
-				if i.x - 256 < x < i.x + 256 and i.y - 256 < y < i.y + 256:
+				if i.x - 256 < player.x < i.x + 256 and i.y - 256 < player.y < i.y + 256:
 					text(laungveges("К сожалению, вы не можете ходить через стены", "Unfortunately you can't walk through walls", "Өкінішке орай, сіз қабырғалардан өте алмайсыз"), Width // 2, Height // 2, (200, 30, 30), alignment=True)
 
 		if keys[pygame.K_LEFT] or keys[pygame.K_a] or left_b.get_pressed():
 
 			for i in wall_list:
-				if i.x - 256 < x < i.x + 256 and i.y - 256 < y < i.y + 256:
+				if i.x - 256 < player.x < i.x + 256 and i.y - 256 < player.y < i.y + 256:
 					text(laungveges("К сожалению, вы не можете ходить через стены", "Unfortunately you can't walk through walls", "Өкінішке орай, сіз қабырғалардан өте алмайсыз"), Width // 2, Height // 2, (200, 30, 30), alignment=True)
 		
 		if keys[pygame.K_RIGHT] or keys[pygame.K_d] or right_b.get_pressed():
 			
 			for i in wall_list:
-				if i.x - 256 < x < i.x + 256 and i.y - 256 < y < i.y + 256:
+				if i.x - 256 < player.x < i.x + 256 and i.y - 256 < player.y < i.y + 256:
 					text(laungveges("К сожалению, вы не можете ходить через стены", "Unfortunately you can't walk through walls", "Өкінішке орай, сіз қабырғалардан өте алмайсыз"), Width // 2, Height // 2, (200, 30, 30), alignment=True)
 
 		
@@ -5457,7 +5630,7 @@ def start_game():
 
 		# Меню на клавише TAB
 
-		if keys[eval("pygame.K_" + hot_keys["TAB menu"])] and not chat_input:
+		if keys[hot_keys["TAB menu"]] and not chat_input:
 
 			pygame.image.save(win, path + "Gannitto world/files/Cache/Win.png")
 			radius = 0   # Расстояние, на котором кнопки находятся относительно центра экрана
@@ -5990,7 +6163,7 @@ def start_game():
 			for item in inventory.whole_inventory:
 				if item is not None:
 					for _ in range(item.amount):
-						objects.append(Object(item.name, random.randint(x - 300, x + 300), random.randint(y - 300, y + 300), item.image_path, special_flags="Item", add_path=False))
+						objects.append(Object(item.name, random.randint(player.x - 300, player.x + 300), random.randint(player.y - 300, player.y + 300), item.image_path, special_flags="Item", add_path=False))
 			inventory.whole_inventory = [None] * 40
 			HP = 100
 			x = 0
@@ -6079,7 +6252,7 @@ def start_game():
 		if inventory.whole_inventory[changed_slot] is not None:
 			text(inventory.whole_inventory[changed_slot].name, 10, 320 if inventory_open else 80)
 
-		if Ron.X - x + Width // 2 - 128 <= mouse_x <= Ron.X - x + Width // 2 + 128 and y - Ron.Y + Height // 2 - 128 <= mouse_y <= y - Ron.Y + Height // 2 + 128 and click[0]:
+		if Ron.X - player.x + Width // 2 - 128 <= mouse_x <= Ron.X - player.x + Width // 2 + 128 and player.y - Ron.Y + Height // 2 - 128 <= mouse_y <= player.y - Ron.Y + Height // 2 + 128 and click[0]:
 			Ron.window[0] = True
 
 		if Ron.window[0]:
@@ -6096,7 +6269,7 @@ def start_game():
 				win.blit(bigTextInfo.render(laungveges("Установить точку дома", "Set a home point", "Негізгі нүктені орнатыңыз"), True, (0, 100, 0)), (200, 150))
 				
 				if click[0]:
-					Ron.Home = [x, y]
+					Ron.Home = [player.x, player.y]
 
 			if Ron.Home is not None:
 				win.blit(bigTextInfo.render(laungveges("Текущая точка дома: ", "Current home point: ", "Ағымдағы негізгі нүкте: ") + str(Ron.Home[0] // 50) + "; " + str(Ron.Home[1] // 50), True, (0, 150, 0)), (200, 200))
@@ -6155,8 +6328,8 @@ def start_game():
 
 		if menu_open:
 
-			text(f"""X {x // 50}
-Y {y // 50}
+			text(f"""X {player.x // 50}
+Y {player.y // 50}
 Ron X {Ron.X // 50}
 Ron Y {Ron.Y // 50}
 FPS {FPS}""" + (f"""
@@ -6166,11 +6339,11 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Wire":
 
 			if in_motherboard is None:
-				pygame.draw.rect(win, text_color, ((x // 64) * 64 - x + mouse_x - mouse_x % 64, y - (y // 64) * 64 + mouse_y - mouse_y % 64, 64, 64), 4)
+				pygame.draw.rect(win, text_color, ((player.x // 64) * 64 - player.x + mouse_x - mouse_x % 64, player.y - (player.y // 64) * 64 + mouse_y - mouse_y % 64, 64, 64), 4)
 				a = True
 				if click[0]:
 					for mechanism in mechanisms:
-						if mechanism.x == (x + mouse_x - Width // 2) // 64 and mechanism.y == (y - mouse_y + Height // 2) // 64:
+						if mechanism.x == (player.x + mouse_x - Width // 2) // 64 and mechanism.y == (player.y - mouse_y + Height // 2) // 64:
 							a = False
 							break
 				
@@ -6195,12 +6368,12 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 
 		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Lever":
 
-			pygame.draw.rect(win, text_color, ((x // 64) * 64 - x + mouse_x - mouse_x % 64, y - (y // 64) * 64 + mouse_y - mouse_y % 64, 64, 64), 4)
+			pygame.draw.rect(win, text_color, ((player.x // 64) * 64 - player.x + mouse_x - mouse_x % 64, player.y - (player.y // 64) * 64 + mouse_y - mouse_y % 64, 64, 64), 4)
 
 			a = True
 			if click[0]:
 				for mechanism in mechanisms:
-					if mechanism.x == (x + mouse_x - Width // 2) // 64 and mechanism.y == (y - mouse_y + Height // 2) // 64:
+					if mechanism.x == (player.x + mouse_x - Width // 2) // 64 and mechanism.y == (player.y - mouse_y + Height // 2) // 64:
 						a = False
 				
 				if a:
@@ -6211,25 +6384,25 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 
 		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Wrench":
 
-			pygame.draw.rect(win, text_color, ((x // 64) * 64 - x + mouse_x - mouse_x % 64, y - (y // 64) * 64 + mouse_y - mouse_y % 64, 64, 64), 4)
+			pygame.draw.rect(win, text_color, ((player.x // 64) * 64 - player.x + mouse_x - mouse_x % 64, player.y - (player.y // 64) * 64 + mouse_y - mouse_y % 64, 64, 64), 4)
 
 			if click[0]:
 				for mechanism in mechanisms:
-					if mechanism.x == (x + mouse_x - Width // 2) // 64 and mechanism.y == (y - mouse_y + Height // 2) // 64:
+					if mechanism.x == (player.x + mouse_x - Width // 2) // 64 and mechanism.y == (player.y - mouse_y + Height // 2) // 64:
 						if (inventory.whole_inventory[changed_slot].settings == ["Only wire"] and mechanism.__class__ == Wire) or inventory.whole_inventory[changed_slot].settings == [] or (inventory.whole_inventory[changed_slot].settings == ["All mechanisms, but wire"] and mechanism.__class__ != Wire):
 							del mechanisms[mechanism.num]
 						break
 
 		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Random box":
 
-			pygame.draw.rect(win, text_color, ((x // 64) * 64 - x + mouse_x - mouse_x % 64, y - (y // 64) * 64 + mouse_y - mouse_y % 64, 64, 64), 4)
+			pygame.draw.rect(win, text_color, ((player.x // 64) * 64 - player.x + mouse_x - mouse_x % 64, player.y - (player.y // 64) * 64 + mouse_y - mouse_y % 64, 64, 64), 4)
 
 			a = True
 
 			if click[0]:
 
 				for mechanism in mechanisms:
-					if mechanism.x == (x + mouse_x - Width // 2) // 64 and mechanism.y == (y - mouse_y + Height // 2) // 64:
+					if mechanism.x == (player.x + mouse_x - Width // 2) // 64 and mechanism.y == (player.y - mouse_y + Height // 2) // 64:
 						a = False
 				
 				if a:
@@ -6240,12 +6413,12 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 
 		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Motherboard":
 
-			pygame.draw.rect(win, text_color, ((x // 64) * 64 - x + mouse_x - mouse_x % 64, y - (y // 64) * 64 + mouse_y - mouse_y % 64, 64, 64), 4)
+			pygame.draw.rect(win, text_color, ((player.x // 64) * 64 - player.x + mouse_x - mouse_x % 64, player.y - (player.y // 64) * 64 + mouse_y - mouse_y % 64, 64, 64), 4)
 
 			a = True
 			if click[0]:
 				for mechanism in mechanisms:
-					if mechanism.x == (x + mouse_x - Width // 2) // 64 and mechanism.y == (y - mouse_y + Height // 2) // 64:
+					if mechanism.x == (player.x + mouse_x - Width // 2) // 64 and mechanism.y == (player.y - mouse_y + Height // 2) // 64:
 						a = False
 				
 				if a:
@@ -6256,15 +6429,15 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 
 		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Portal gun":
 
-			pygame.draw.rect(win, text_color, ((x // 128) * 128 - x + mouse_x - mouse_x % 128, y - (y // 256) * 256 + mouse_y - mouse_y % 256, 128, 256), 4)
+			pygame.draw.rect(win, text_color, ((player.x // 128) * 128 - player.x + mouse_x - mouse_x % 128, player.y - (player.y // 256) * 256 + mouse_y - mouse_y % 256, 128, 256), 4)
 
 			if click[0]:
 
 				a = 0
 				for object in objects:
-					if pygame.Rect((x + mouse_x - Width // 2) // 256 * 256 + 128, (y - mouse_y + Height // 2) // 256 * 256 + 128, 256, 256).colliderect(pygame.Rect(object.x, object.y, object.w, object.h)):
+					if pygame.Rect((player.x + mouse_x - Width // 2) // 256 * 256 + 128, (player.y - mouse_y + Height // 2) // 256 * 256 + 128, 256, 256).colliderect(pygame.Rect(object.x, object.y, object.w, object.h)):
 						if object.special_flags == "Item":
-							particles.append(Particle(object.x, object.y, object.image, "round(self.calculated_variable[0])", "round(self.calculated_variable[1])", variable_to_calculate="((self.special_flags[0] // 2) / 10 / 10 * self.ticks, (self.special_flags[1] // 2) / 10 / 10 * self.ticks, (-self.special_flags[0] // 2) / 10 / 10 * (self.ticks - 10), (-self.special_flags[1] // 2) / 10 / 10 * (self.ticks - 10))", track_ticks=True, end_x=x, end_y=y, end_zone=30, end_command="(inventory.increate('" + object.name + "'),pygame.mixer.Sound.play(Pick_an_item))", special_flags=(x - object.x, y - object.y, (0 - 17) // (0 - 10))))
+							particles.append(Particle(object.x, object.y, object.image, "round(self.calculated_variable[0])", "round(self.calculated_variable[1])", variable_to_calculate="((self.special_flags[0] // 2) / 10 / 10 * self.ticks, (self.special_flags[1] // 2) / 10 / 10 * self.ticks, (-self.special_flags[0] // 2) / 10 / 10 * (self.ticks - 10), (-self.special_flags[1] // 2) / 10 / 10 * (self.ticks - 10))", track_ticks=True, end_x=player.x, end_y=player.y, end_zone=30, end_command="(inventory.increate('" + object.name + "'),pygame.mixer.Sound.play(Pick_an_item))", special_flags=(player.x - object.x, player.y - object.y, (0 - 17) // (0 - 10))))
 							objects.remove(object)
 							pygame.mixer.Sound.play(Pick_an_item)
 						else:
@@ -6295,7 +6468,7 @@ if self.special_flags[2]:
 		inventory.increate("Bucket", 1)
 		self.special_flags[2] = False
 		pygame.mixer.Sound.play(pygame.mixer.Sound(path + "Gannitto world/files/Sounds/Watering plants " + str(random.randint(1, 2)) + ".mp3"))""", True, """
-if particle.special_flags[2]: particles.append(Particle(particle.x, particle.y, pygame.transform.scale(pygame.image.load(path + 'Gannitto world/files/Images/Objects/' + particle.special_flags[0] + ' 4.png'), (128, 128)), can_interfere_with_placing=True, save_particle=True, del_self_condition="click[0] and pygame.Rect(particle.x - x + Width // 2 - particle.image.get_width() // 2, y - particle.y + Height // 2 - particle.image.get_height() // 2, particle.w, particle.h).collidepoint(mouse_x, mouse_y)", end_command='pygame.mixer.Sound.play(pygame.mixer.Sound(path + "Gannitto world/files/Sounds/Breaking.mp3"))'))
+if particle.special_flags[2]: particles.append(Particle(particle.x, particle.y, pygame.transform.scale(pygame.image.load(path + 'Gannitto world/files/Images/Objects/' + particle.special_flags[0] + ' 4.png'), (128, 128)), can_interfere_with_placing=True, save_particle=True, del_self_condition="click[0] and pygame.Rect(particle.x - player.x + Width // 2 - particle.image.get_width() // 2, player.y - particle.y + Height // 2 - particle.image.get_height() // 2, particle.w, particle.h).collidepoint(mouse_x, mouse_y)", end_command='pygame.mixer.Sound.play(pygame.mixer.Sound(path + "Gannitto world/files/Sounds/Breaking.mp3"))'))
 else: particles.append(Particle(particle.x, particle.y, pygame.transform.scale(pygame.image.load(path + 'Gannitto world/files/Images/Objects/' + particle.special_flags[0] + ' 3.png'), (128, 128)), can_interfere_with_placing=True, save_particle=True, tick_command='''
 if click[0] and pygame.Rect(eval(self.display_mode)[0], eval(self.display_mode)[1], self.w, self.h).collidepoint(mouse_x, mouse_y):
 	for _ in range(random.randint(1, 3)):
@@ -6303,7 +6476,7 @@ if click[0] and pygame.Rect(eval(self.display_mode)[0], eval(self.display_mode)[
 	if self.special_flags[0] == "Wheat":
 		for _ in range(random.randint(0, 2)):
 			objects.append(Object("Wheat seeds", self.x + random.randint(-30, 30), self.y + random.randint(-30, 30), "Gannitto world/files/Images/Items/Wheat seeds.png", special_flags="Item"))
-	''', tick_command_globals={"random": random}, tick_command_globals_in_the_end=("Object", "objects", "click", "x", "y", "Width", "Height", "mouse_x", "mouse_y"), del_self_condition="click[0] and pygame.Rect(particle.x - x + Width // 2 - particle.image.get_width() // 2, y - particle.y + Height // 2 - particle.image.get_height() // 2, particle.w, particle.h).collidepoint(mouse_x, mouse_y)", special_flags=particle.special_flags))
+	''', tick_command_globals={"random": random}, tick_command_globals_in_the_end=("Object", "objects", "click", "x", "y", "Width", "Height", "mouse_x", "mouse_y"), del_self_condition="click[0] and pygame.Rect(particle.x - player.x + Width // 2 - particle.image.get_width() // 2, player.y - particle.y + Height // 2 - particle.image.get_height() // 2, particle.w, particle.h).collidepoint(mouse_x, mouse_y)", special_flags=particle.special_flags))
 """]),
 			 "Carrot,Onion,Tomato", "Seed", particle_to_build=True, needed_object="Farmland", remove_part=" seeds")
 		
@@ -6315,51 +6488,51 @@ if click[0] and pygame.Rect(eval(self.display_mode)[0], eval(self.display_mode)[
 		
 		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name in ["Wooden wall", "Brick wall", "Stone brick wall"]:
 
-			pygame.draw.rect(win, text_color, ((x // 256) * 256 - x + mouse_x - mouse_x % 256, y - (y // 256) * 256 + mouse_y - mouse_y % 256, 256, 256), 4)
+			pygame.draw.rect(win, text_color, ((player.x // 256) * 256 - player.x + mouse_x - mouse_x % 256, player.y - (player.y // 256) * 256 + mouse_y - mouse_y % 256, 256, 256), 4)
 
 			if click[0]:
 				for object in objects:
-					if pygame.Rect((x + mouse_x - Width // 2) // 256 * 256 + 128, (y - mouse_y + Height // 2) // 256 * 256 + 128, 256, 256).colliderect(pygame.Rect(object.x, object.y, object.w, object.h)):
+					if pygame.Rect((player.x + mouse_x - Width // 2) // 256 * 256 + 128, (player.y - mouse_y + Height // 2) // 256 * 256 + 128, 256, 256).colliderect(pygame.Rect(object.x, object.y, object.w, object.h)):
 						if object.special_flags == "Item":
-							particles.append(Particle(object.x, object.y, object.image, "round(self.calculated_variable[0])", "round(self.calculated_variable[1])", variable_to_calculate="((self.special_flags[0] // 2) / 10 / 10 * self.ticks, (self.special_flags[1] // 2) / 10 / 10 * self.ticks, (-self.special_flags[0] // 2) / 10 / 10 * (self.ticks - 10), (-self.special_flags[1] // 2) / 10 / 10 * (self.ticks - 10))", track_ticks=True, end_x=x, end_y=y, end_zone=30, end_command="(inventory.increate('" + object.name + "'),pygame.mixer.Sound.play(Pick_an_item))", special_flags=(x - object.x, y - object.y, (0 - 17) // (0 - 10))))
+							particles.append(Particle(object.x, object.y, object.image, "round(self.calculated_variable[0])", "round(self.calculated_variable[1])", variable_to_calculate="((self.special_flags[0] // 2) / 10 / 10 * self.ticks, (self.special_flags[1] // 2) / 10 / 10 * self.ticks, (-self.special_flags[0] // 2) / 10 / 10 * (self.ticks - 10), (-self.special_flags[1] // 2) / 10 / 10 * (self.ticks - 10))", track_ticks=True, end_x=player.x, end_y=player.y, end_zone=30, end_command="(inventory.increate('" + object.name + "'),pygame.mixer.Sound.play(Pick_an_item))", special_flags=(player.x - object.x, player.y - object.y, (0 - 17) // (0 - 10))))
 							objects.remove(object)
 							pygame.mixer.Sound.play(Pick_an_item)
 						else:
 							break
 					
 				else:
-					objects.append(Wall(inventory.whole_inventory[changed_slot].name, (x + mouse_x - Width // 2) // 256 * 256 + 128, (y - mouse_y + Height // 2) // 256 * 256 + 128))
+					objects.append(Wall(inventory.whole_inventory[changed_slot].name, (player.x + mouse_x - Width // 2) // 256 * 256 + 128, (player.y - mouse_y + Height // 2) // 256 * 256 + 128))
 					inventory.whole_inventory[changed_slot].amount -= 1
 					if inventory.whole_inventory[changed_slot].amount == 0:
 						inventory.whole_inventory[changed_slot] = None
 
 		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name in ["Wooden door"]:
 
-			pygame.draw.rect(win, text_color, ((x // 256) * 256 - x + mouse_x - mouse_x % 256, y - (y // 256) * 256 + mouse_y - mouse_y % 256, 256, 256), 4)
+			pygame.draw.rect(win, text_color, ((player.x // 256) * 256 - player.x + mouse_x - mouse_x % 256, player.y - (player.y // 256) * 256 + mouse_y - mouse_y % 256, 256, 256), 4)
 
 			if click[0]:
 				for object in objects:
-					if pygame.Rect((x + mouse_x - Width // 2) // 256 * 256 + 128, (y - mouse_y + Height // 2) // 256 * 256 + 128, 256, 256).colliderect(pygame.Rect(object.x, object.y, object.w, object.h)):
+					if pygame.Rect((player.x + mouse_x - Width // 2) // 256 * 256 + 128, (player.y - mouse_y + Height // 2) // 256 * 256 + 128, 256, 256).colliderect(pygame.Rect(object.x, object.y, object.w, object.h)):
 						if object.special_flags == "Item":
-							particles.append(Particle(object.x, object.y, object.image, "round(self.calculated_variable[0])", "round(self.calculated_variable[1])", variable_to_calculate="((self.special_flags[0] // 2) / 10 / 10 * self.ticks, (self.special_flags[1] // 2) / 10 / 10 * self.ticks, (-self.special_flags[0] // 2) / 10 / 10 * (self.ticks - 10), (-self.special_flags[1] // 2) / 10 / 10 * (self.ticks - 10))", track_ticks=True, end_x=x, end_y=y, end_zone=30, end_command="(inventory.increate('" + object.name + "'),pygame.mixer.Sound.play(Pick_an_item))", special_flags=(x - object.x, y - object.y, (0 - 17) // (0 - 10))))
+							particles.append(Particle(object.x, object.y, object.image, "round(self.calculated_variable[0])", "round(self.calculated_variable[1])", variable_to_calculate="((self.special_flags[0] // 2) / 10 / 10 * self.ticks, (self.special_flags[1] // 2) / 10 / 10 * self.ticks, (-self.special_flags[0] // 2) / 10 / 10 * (self.ticks - 10), (-self.special_flags[1] // 2) / 10 / 10 * (self.ticks - 10))", track_ticks=True, end_x=player.x, end_y=player.y, end_zone=30, end_command="(inventory.increate('" + object.name + "'),pygame.mixer.Sound.play(Pick_an_item))", special_flags=(player.x - object.x, player.y - object.y, (0 - 17) // (0 - 10))))
 							objects.remove(object)
 							pygame.mixer.Sound.play(Pick_an_item)
 						else:
 							break
 					
 				else:
-					objects.append(Wall(inventory.whole_inventory[changed_slot].name, (x + mouse_x - Width // 2) // 256 * 256 + 128, (y - mouse_y + Height // 2) // 256 * 256 + 128, True))
+					objects.append(Wall(inventory.whole_inventory[changed_slot].name, (player.x + mouse_x - Width // 2) // 256 * 256 + 128, (player.y - mouse_y + Height // 2) // 256 * 256 + 128, True))
 					inventory.whole_inventory[changed_slot].amount -= 1
 					if inventory.whole_inventory[changed_slot].amount == 0:
 						inventory.whole_inventory[changed_slot] = None
 
 		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name in ["Stone hammer"]:
 
-			pygame.draw.rect(win, text_color, ((x // 256) * 256 - x + mouse_x - mouse_x % 256, y - (y // 256) * 256 + mouse_y - mouse_y % 256, 256, 256), 4)
+			pygame.draw.rect(win, text_color, ((player.x // 256) * 256 - player.x + mouse_x - mouse_x % 256, player.y - (player.y // 256) * 256 + mouse_y - mouse_y % 256, 256, 256), 4)
 
 			if click[0]:
 				for object in objects:
-					if object.x == (x + mouse_x - Width // 2) - (x + mouse_x - Width // 2) % 256 and object.y == (y - mouse_y + Height // 2) - (y - mouse_y + Height // 2) % 256 and object.name[-4:] == "Wall":
+					if object.x == (player.x + mouse_x - Width // 2) - (player.x + mouse_x - Width // 2) % 256 and object.y == (player.y - mouse_y + Height // 2) - (player.y - mouse_y + Height // 2) % 256 and object.name[-4:] == "Wall":
 						inventory.increate(object.wall_type)
 						objects.remove(object)
 						break
@@ -6605,7 +6778,7 @@ if click[0] and pygame.Rect(eval(self.display_mode)[0], eval(self.display_mode)[
 						mechanisms = []
 						player_bullets = []
 						effects = []
-						#x, y, speed
+						#player.x, player.y, speed
 						
 					except:
 						
@@ -6686,7 +6859,7 @@ if click[0] and pygame.Rect(eval(self.display_mode)[0], eval(self.display_mode)[
 				for i in big_rects:
 					new_rects += str(i.x) + "!" + str(i.y) + "!" + i.biom + "#"
 
-				message = str(Ron.X) + ", " + str(Ron.Y) + ", " + str(Ron.Home) + ", " + str(start_time) + ", " + new_rects + ", " + new_objects + "|" + str(x) + ", " + str(y) + ", " + Hiro_run + ", " + str(costum) + "|"
+				message = str(Ron.X) + ", " + str(Ron.Y) + ", " + str(Ron.Home) + ", " + str(start_time) + ", " + new_rects + ", " + new_objects + "|" + str(player.x) + ", " + str(player.y) + ", " + Hiro_run + ", " + str(costum) + "|"
 				
 				for player in Multyplayer.players:
 
@@ -6699,16 +6872,16 @@ if click[0] and pygame.Rect(eval(self.display_mode)[0], eval(self.display_mode)[
 						player.costum = data[3]
 						if player.costum == "0":
 							player.costum = "1"
-						win.blit(eval("Hiro_" + player.run.lower() + "_run_" + str(player.costum)), (player.x - x + Width // 2 - 128, y - player.y + Height // 2 - 128))
+						win.blit(eval("Hiro_" + player.run.lower() + "_run_" + str(player.costum)), (player.x - player.x + Width // 2 - 128, player.y - player.y + Height // 2 - 128))
 						message += str(player.x) + ", " + str(player.y) + ", " + player.run + ", " + str(player.ostum) + "|"
 						player.errors = 0
 
 					except:
 
 						try:
-							win.blit(eval("Hiro_" + player.run.lower() + "_run_" + str(player.costum)), (player.x - x + Width // 2 - 128, y - player.y + Height // 2 - 128))
+							win.blit(eval("Hiro_" + player.run.lower() + "_run_" + str(player.costum)), (player.x - player.x + Width // 2 - 128, player.y - player.y + Height // 2 - 128))
 						except:
-							win.blit(eval("Hiro_" + player.run.lower() + "_run_1"), (player.x - x + Width // 2 - 128, y - player.y + Height // 2 - 128))
+							win.blit(eval("Hiro_" + player.run.lower() + "_run_1"), (player.x - player.x + Width // 2 - 128, player.y - player.y + Height // 2 - 128))
 
 						player.errors += 1
 
@@ -6732,7 +6905,7 @@ if click[0] and pygame.Rect(eval(self.display_mode)[0], eval(self.display_mode)[
 					
 			else:
 
-				message = str(x) + ", " + str(y) + ", " + Hiro_run + ", " + str(costum)
+				message = str(player.x) + ", " + str(player.y) + ", " + Hiro_run + ", " + str(costum)
 
 				try:
 					sock.send(message.encode())
@@ -6778,7 +6951,7 @@ if click[0] and pygame.Rect(eval(self.display_mode)[0], eval(self.display_mode)[
 							if data2[3] == "0":
 								data2[3] = "1" 
 								
-							win.blit(eval("Hiro_" + data2[2].lower() + "_run_" + str(data2[3])), (int(data2[0]) - x + Width // 2 - 128, y - int(data2[1]) + Height // 2 - 128))
+							win.blit(eval("Hiro_" + data2[2].lower() + "_run_" + str(data2[3])), (int(data2[0]) - player.x + Width // 2 - 128, player.y - int(data2[1]) + Height // 2 - 128))
 
 				except:
 					pass
@@ -6795,7 +6968,7 @@ if click[0] and pygame.Rect(eval(self.display_mode)[0], eval(self.display_mode)[
 			
 			win.blit(inventory.whole_inventory[inventory.start_cell].image, (mouse_x - 32, mouse_y - 32))
 		
-		if keys[eval("pygame.K_" + hot_keys["Screenshot"])] and not keys[pygame.K_LALT]:
+		if keys[hot_keys["Screenshot"]] and not keys[pygame.K_LALT]:
 			
 			try:
 				pygame.image.save(win, "C://Users/" + getpass.getuser() + "/Pictures/Your Screenshot at " + time.asctime().replace(":", " ") + ".png")
@@ -7341,7 +7514,7 @@ def menu():
 				worlds()
 		
 		keys = pygame.key.get_pressed()
-		if keys[eval("pygame.K_" + hot_keys["Change screen"])]:
+		if keys[hot_keys["Change screen"]]:
 			if screenmode == "FULLSCREEN":
 				win = pygame.display.set_mode((1000,700), pygame.RESIZABLE)
 				screenmode = "RESIZABLE"

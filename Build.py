@@ -28,7 +28,7 @@ def build(
 	"""
 	
 	from Inventory import inventory
-	changed_slot, x, y, objects, particles, Width, Height = build_tuple
+	changed_slot, player, objects, particles, Width, Height = build_tuple
 	from Gannitto_world import Particle, Pick_an_item
 	from Functions import win_fill
 	
@@ -39,7 +39,7 @@ def build(
 		if changed_slot_name in item_name.split(",") or inventory.whole_inventory[changed_slot].type in item_type.split(","):
 			
 			mouse_x, mouse_y = pygame.mouse.get_pos()
-			win_fill(rect=((x + mouse_x - Width // 2) // object_to_build.w * object_to_build.w - x + Width // 2, y - (y - mouse_y + Height // 2) // object_to_build.h * object_to_build.h + Height // 2 - object_to_build.h, object_to_build.w, object_to_build.h))
+			win_fill(rect=((player.x + mouse_x - Width // 2) // object_to_build.w * object_to_build.w - player.x + Width // 2, player.y - (player.y - mouse_y + Height // 2) // object_to_build.h * object_to_build.h + Height // 2 - object_to_build.h, object_to_build.w, object_to_build.h))
 		
 			if pygame.mouse.get_pressed()[0]:
 			
@@ -47,9 +47,9 @@ def build(
 				
 					if i < len(objects) or object.can_interfere_with_placing:
 
-						if pygame.Rect((x + mouse_x - Width // 2) // object_to_build.w * object_to_build.w + object_to_build.w // 2, (y - mouse_y + Height // 2) // object_to_build.h * object_to_build.h + object_to_build.h // 2, object_to_build.w, object_to_build.h).colliderect(pygame.Rect(object.x, object.y, object.w, object.h)):
+						if pygame.Rect((player.x + mouse_x - Width // 2) // object_to_build.w * object_to_build.w + object_to_build.w // 2, (player.y - mouse_y + Height // 2) // object_to_build.h * object_to_build.h + object_to_build.h // 2, object_to_build.w, object_to_build.h).colliderect(pygame.Rect(object.x, object.y, object.w, object.h)):
 							if pick_up_items and object.special_flags == "Item":
-								particles.append(Particle(object.x, object.y, object.image, "round(self.calculated_variable[0])", "round(self.calculated_variable[1])", variable_to_calculate="((self.special_flags[0] // 2) / 10 / 10 * self.ticks, (self.special_flags[1] // 2) / 10 / 10 * self.ticks, (-self.special_flags[0] // 2) / 10 / 10 * (self.ticks - 10), (-self.special_flags[1] // 2) / 10 / 10 * (self.ticks - 10))", track_ticks=True, end_x=x, end_y=y, end_zone=30, end_command="(inventory.increate('" + object.name + "'),pygame.mixer.Sound.play(Pick_an_item))", special_flags=(x - object.x, y - object.y, (0 - 17) // (0 - 10))))
+								particles.append(Particle(object.x, object.y, object.image, "round(self.calculated_variable[0])", "round(self.calculated_variable[1])", variable_to_calculate="((self.special_flags[0] // 2) / 10 / 10 * self.ticks, (self.special_flags[1] // 2) / 10 / 10 * self.ticks, (-self.special_flags[0] // 2) / 10 / 10 * (self.ticks - 10), (-self.special_flags[1] // 2) / 10 / 10 * (self.ticks - 10))", track_ticks=True, end_x=player.x, end_y=player.y, end_zone=30, end_command="(inventory.increate('" + object.name + "'),pygame.mixer.Sound.play(Pick_an_item))", special_flags=(player.x - object.x, player.y - object.y, (0 - 17) // (0 - 10))))
 								objects.remove(object)
 								pygame.mixer.Sound.play(Pick_an_item)
 							elif needed_object == object.name:
@@ -65,7 +65,7 @@ def build(
 						if inventory.whole_inventory[changed_slot].amount == 0:
 							inventory.whole_inventory[changed_slot] = None
 					
-						object_to_build.x, object_to_build.y = ((x + mouse_x - Width // 2) // object_to_build.w * object_to_build.w + object_to_build.w // 2, (y - mouse_y + Height // 2) // object_to_build.h * object_to_build.h + object_to_build.h // 2)
+						object_to_build.x, object_to_build.y = ((player.x + mouse_x - Width // 2) // object_to_build.w * object_to_build.w + object_to_build.w // 2, (player.y - mouse_y + Height // 2) // object_to_build.h * object_to_build.h + object_to_build.h // 2)
 						if particle_to_build: particles.append(object_to_build)
 						else: objects.append(object_to_build)
 						eval(command)

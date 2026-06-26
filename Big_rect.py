@@ -374,8 +374,8 @@ class BigRect:
 
 
 	def main(self):
-		from Globals import x, y
-		if self.x - 50000 <= x <= self.x + 50000 and self.y - 50000 <= y <= self.y + 50000:
+		from Gannitto_world import player
+		if self.x - 50000 <= player.x <= self.x + 50000 and self.y - 50000 <= player.y <= self.y + 50000:
 			return self.biom
 		else:
 			return None

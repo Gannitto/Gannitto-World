@@ -27,8 +27,6 @@ except FileNotFoundError:
 	
 	Saver.save_objects(path + "Gannitto world/files/Settings.save", Settings)
 
-x = 0
-y = 0
 speed = 1000
 HP = 100
 HP_TICK = 90
@@ -82,7 +80,7 @@ particles = []
 HP_animation_tick = 0
 slot_animations = [[False, 15] for _ in range(30)]   # Используется для анимации при наведении на слот
 special_slot_animations = {"Craft list slot": [False, 0.6], "Game menu slot": [False, 0.6], "Menu slot": [False, 0.6], "Multyplayer slot": [False, 0.6], "Close slot": [False, 0.6], "Reference slot": [False, 0.6], "Close slot": [False, 0.6], "Split items slot": [False, 0.6]}   # Используется для анимации при наведении на слот, который выполняет какое-либо действие
-build_tuple = "(changed_slot, x, y, objects, particles, Width, Height)"
+build_tuple = "(changed_slot, player, objects, particles, Width, Height)"
 
 try:
 

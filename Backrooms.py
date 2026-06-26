@@ -17,13 +17,13 @@ room_y = 0
 
 class Room():
 
-	def __init__(self, x: int, y: int):
+	def __init__(self, X: int, Y: int):
 
 		class RoomObject():
 
-			def __init__(self, x: int, y: int, w: int, h: int):
-				self.x = x
-				self.y = y
+			def __init__(self, X: int, Y: int, w: int, h: int):
+				self.x = X
+				self.y = Y
 				self.w = w
 				self.h = h
 				self.biggest = False
@@ -44,15 +44,15 @@ class Room():
 							self.color = (200, 180, 70)
 						case 1:
 							self.color = (50, 50, 50)
-		self.x = x
-		self.y = y
+		self.x = X
+		self.y = Y
 
-		self.rect1 = RoomObject(x * 1000, y * 1000, randint(100, 900), 1000)
-		self.rect2 = RoomObject(x * 1000 + self.rect1.w, y * 1000, 1000 - self.rect1.w, 1000)
-		self.rect1_1 = RoomObject(x * 1000, y * 1000, self.rect1.w, randint(100, 900))
-		self.rect1_2 = RoomObject(x * 1000, self.rect1_1.h, self.rect1.w, 1000 - self.rect1_1.h)
-		self.rect2_1 = RoomObject(x * 1000 + self.rect1.w, y * 1000, self.rect2.w, randint(100, 1000))
-		self.rect2_2 = RoomObject(x * 1000 + self.rect1.w, y * 1000 + self.rect2_1.h, self.rect2.w, 1000 - self.rect2_1.h)
+		self.rect1 = RoomObject(X * 1000, Y * 1000, randint(100, 900), 1000)
+		self.rect2 = RoomObject(X * 1000 + self.rect1.w, Y * 1000, 1000 - self.rect1.w, 1000)
+		self.rect1_1 = RoomObject(X * 1000, Y * 1000, self.rect1.w, randint(100, 900))
+		self.rect1_2 = RoomObject(X * 1000, self.rect1_1.h, self.rect1.w, 1000 - self.rect1_1.h)
+		self.rect2_1 = RoomObject(X * 1000 + self.rect1.w, Y * 1000, self.rect2.w, randint(100, 1000))
+		self.rect2_2 = RoomObject(X * 1000 + self.rect1.w, Y * 1000 + self.rect2_1.h, self.rect2.w, 1000 - self.rect2_1.h)
 		
 		if self.rect1_1.w * self.rect1_1.h > self.rect1_2.w * self.rect1_2.h and self.rect1_1.w * self.rect1_1.h > self.rect2_1.w * self.rect2_1.h and self.rect1_1.w * self.rect1_1.h > self.rect2_2.w * self.rect2_2.h:
 			self.rect1_1.biggest = True
@@ -155,7 +155,7 @@ class Room():
 
 		"""Shows the room"""
 
-		from Gannitto_world import x, y, win
+		from Gannitto_world import player, win
 		from itertools import product
 		
 		b = pygame.transform.scale(pygame.image.load("Images/Bioms/Backrooms " + str(Level) + " wall.png"), (256, 256))
@@ -163,54 +163,54 @@ class Room():
 		if not self.rect1_1.biggest:
 			if self.rect1_1_1.type == 1:
 				a = pygame.Surface((self.rect1_1_1.w, self.rect1_1_1.h))
-				for x, y in product(range(0, self.rect1_1_1.w, b.get_width()), range(0, self.rect1_1_1.h, b.get_height())):
-					a.blit(b, (x, y))
+				for player.x, player.y in product(range(0, self.rect1_1_1.w, b.get_width()), range(0, self.rect1_1_1.h, b.get_height())):
+					a.blit(b, (player.x, player.y))
 				win.blit(a, (self.rect1_1_1.x - player_x, player_y - self.rect1_1_1.y))
 			if self.rect1_1_2.type == 1:
 				a = pygame.Surface((self.rect1_1_2.w, self.rect1_1_2.h))
-				for x, y in product(range(0, self.rect1_1_2.w, b.get_width()), range(0, self.rect1_1_2.h, b.get_height())):
-					a.blit(b, (x, y))
+				for player.x, player.y in product(range(0, self.rect1_1_2.w, b.get_width()), range(0, self.rect1_1_2.h, b.get_height())):
+					a.blit(b, (player.x, player.y))
 				win.blit(a, (self.rect1_1_2.x - player_x, player_y - self.rect1_1_2.y))
 		if not self.rect1_2.biggest:
 			if self.rect1_2_1.type == 1:
 				a = pygame.Surface((self.rect1_2_1.w, self.rect1_2_1.h))
-				for x, y in product(range(0, self.rect1_2_1.w, b.get_width()), range(0, self.rect1_2_1.h, b.get_height())):
-					a.blit(b, (x, y))
+				for player.x, player.y in product(range(0, self.rect1_2_1.w, b.get_width()), range(0, self.rect1_2_1.h, b.get_height())):
+					a.blit(b, (player.x, player.y))
 				win.blit(a, (self.rect1_2_1.x - player_x, player_y - self.rect1_2_1.y))
 			if self.rect1_2_2.type == 1:
 				a = pygame.Surface((self.rect1_2_2.w, self.rect1_2_2.h))
-				for x, y in product(range(0, self.rect1_2_2.w, b.get_width()), range(0, self.rect1_2_2.h, b.get_height())):
-					a.blit(b, (x, y))
+				for player.x, player.y in product(range(0, self.rect1_2_2.w, b.get_width()), range(0, self.rect1_2_2.h, b.get_height())):
+					a.blit(b, (player.x, player.y))
 				win.blit(a, (self.rect1_2_2.x - player_x, player_y - self.rect1_2_2.y))
 		if not self.rect2_1.biggest:
 			if self.rect2_1_1.type == 1:
 				a = pygame.Surface((self.rect2_1_1.w, self.rect2_1_1.h))
-				for x, y in product(range(0, self.rect2_1_1.w, b.get_width()), range(0, self.rect2_1_1.h, b.get_height())):
-					a.blit(b, (x, y))
+				for player.x, player.y in product(range(0, self.rect2_1_1.w, b.get_width()), range(0, self.rect2_1_1.h, b.get_height())):
+					a.blit(b, (player.x, player.y))
 				win.blit(a, (self.rect2_1_1.x - player_x, player_y - self.rect2_1_1.y))
 			if self.rect2_1_2.type == 1:
 				a = pygame.Surface((self.rect2_1_2.w, self.rect2_1_2.h))
-				for x, y in product(range(0, self.rect2_1_2.w, b.get_width()), range(0, self.rect2_1_2.h, b.get_height())):
-					a.blit(b, (x, y))
+				for player.x, player.y in product(range(0, self.rect2_1_2.w, b.get_width()), range(0, self.rect2_1_2.h, b.get_height())):
+					a.blit(b, (player.x, player.y))
 				win.blit(a, (self.rect2_1_2.x - player_x, player_y - self.rect2_1_2.y))
 		if not self.rect2_2.biggest:
 			if self.rect2_2_1.type == 1:
 				a = pygame.Surface((self.rect2_2_1.w, self.rect2_2_1.h))
-				for x, y in product(range(0, self.rect2_2_1.w, b.get_width()), range(0, self.rect2_2_1.h, b.get_height())):
-					a.blit(b, (x, y))
+				for player.x, player.y in product(range(0, self.rect2_2_1.w, b.get_width()), range(0, self.rect2_2_1.h, b.get_height())):
+					a.blit(b, (player.x, player.y))
 				win.blit(a, (self.rect2_2_1.x - player_x, player_y - self.rect2_2_1.y))
 			if self.rect2_2_2.type == 1:
 				a = pygame.Surface((self.rect2_2_2.w, self.rect2_2_2.h))
-				for x, y in product(range(0, self.rect2_2_2.w, b.get_width()), range(0, self.rect2_2_2.h, b.get_height())):
-					a.blit(b, (x, y))
+				for player.x, player.y in product(range(0, self.rect2_2_2.w, b.get_width()), range(0, self.rect2_2_2.h, b.get_height())):
+					a.blit(b, (player.x, player.y))
 				win.blit(a, (self.rect2_2_2.x - player_x, player_y - self.rect2_2_2.y))
 
 class Wall:
 
-	def __init__(self, x, y, type: int, Width: int = 1000, Height: int = 1000):
+	def __init__(self, X, Y, type: int, Width: int = 1000, Height: int = 1000):
 
-		self.x = x
-		self.y = y
+		self.x = X
+		self.y = Y
 		self.type = type
 		if self.type == 0:
 			match Level:
@@ -234,8 +234,8 @@ class Wall:
 
 		a = pygame.Surface((self.Width, self.Height))
 		b = pygame.transform.scale(pygame.image.load("Images/Bioms/Backrooms " + str(Level) + " wall.png"), (256, 256))
-		for x, y in product(range(0, self.Width, b.get_width()), range(0, self.Height, b.get_height())):
-			a.blit(b, (x, y))
+		for X, Y in product(range(0, self.Width, b.get_width()), range(0, self.Height, b.get_height())):
+			a.blit(b, (X, Y))
 
 		win.blit(a, (self.x * 1000 - player_x, player_y - self.y))
 		#pygame.draw.rect(win, self.color, (self.x * 1000 - player_x, player_y - self.y, self.Width, self.Height))
