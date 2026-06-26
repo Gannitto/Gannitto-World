@@ -735,7 +735,7 @@ class PlayerAnimations:
 			for frame_num in range(1, 7):
 				try:
 					path_to_image = f"{path}Gannitto world/files/Images/Players/Hiro/Normal/{direction}/{frame_num}.png"
-					image = pygame.image.load(path_to_image)
+					image = pygame.transform.scale(pygame.image.load(path_to_image), (256, 256))
 					frames.append(image)
 				except pygame.error:
 					# Если файл не найден, используем заглушку
@@ -752,7 +752,7 @@ class PlayerAnimations:
 		for direction in diagonal_directions:
 			try:
 				path_to_image = f"{path}Gannitto world/files/Images/Players/Hiro/Normal/{direction}/1.png"
-				image = pygame.image.load(path_to_image)
+				image = pygame.transform.scale(pygame.image.load(path_to_image), (256, 256))
 				# Для диагоналей обычно только 1 кадр, но можно и больше
 				self.animations[direction] = [image]
 			except pygame.error:
@@ -846,16 +846,15 @@ class Player:
 		self.frame_index = 0
 		self.animation_timer = 0
 	
-	def render(self, screen, offset_x, offset_y):
+	def render(self, screen):
 		"""Отрисовывает игрока на экране"""
-		screen_x = self.x - offset_x + Width // 2 - self.image.get_width() // 2
-		screen_y = self.y - offset_y + Height // 2 - self.image.get_height() // 2
 		
-		screen.blit(self.image, (screen_x, screen_y))
+		screen.blit(self.image, (Width / 2 - 128, Height / 2 - 128))
 		
 		# Если включен режим отладки - рисуем хитбокс
 		if Settings["Display"][3]:
-			pygame.draw.rect(screen, (0, 255, 0), (screen_x, screen_y, self.image.get_width(), self.image.get_height()), 2)
+			pygame.draw.rect(screen, (0, 255, 0), (Width / 2 - 128, Height / 2 - 128, self.image.get_width(), self.image.get_height()), 2)
+
 
 
 class SlimeEnemy:
@@ -4295,7 +4294,8 @@ def start_game():
 		
 		# if walk > 0:
 			# walk -= 1
-	
+		dx = 0
+		dy = 0
 		if keys[pygame.K_a]:
 			dx = -1
 		if keys[pygame.K_d]:
@@ -5247,7 +5247,11 @@ def start_game():
 						objects.append(Object("Thread", mob.x + random.randint(-30, 30), mob.y + random.randint(-30, 30), "Gannitto world/files/Images/Items/Thread.png", special_flags="Item"))
 						del mobs[i]
 
-		win.blit(shadow(Hiro, Hiro_run + str(costum), len_shadow=50), Hiro_rect)
+		# Отрисовка игрока
+		
+		# win.blit(shadow(Hiro, Hiro_run + str(costum), len_shadow=50), Hiro_rect)
+		player.render(win)
+
 
 		# Анимации Хиро
 

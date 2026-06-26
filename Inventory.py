@@ -57,7 +57,8 @@ class Recipe:
 
 		"""Проверяет, может ли быть какой-то результат от данных ингридеентов"""
 		
-		from Globals import craft_items_list, craft_amounts_list, objects, x, y
+		from Globals import craft_items_list, craft_amounts_list, objects
+		from Gannitto_world import player
 		if craft_items_list == self.ingredients and craft_amounts_list == self.ingredients_amounts:
 			a = True
 			b = None
@@ -67,7 +68,7 @@ class Recipe:
 			if self.need_object != None:
 				a = False
 				for object in objects:
-					if x - 1000 <= object.x <= x + 1000 and y - 1000 <= object.y <= y + 1000 and object.name == self.need_object:
+					if player.x - 1000 <= object.x <= player.x + 1000 and player.y - 1000 <= object.y <= player.y + 1000 and object.name == self.need_object:
 						a = True
 						b = object.name
 						break
@@ -934,10 +935,10 @@ class Inventory:
 					self.end_cell = yy * 10 + xx
 					self.end_cell_inventory = 0
 		
-		for x in range(2, 9):
-			cell_x = 10 + x * 80
+		for X in range(2, 9):
+			cell_x = 10 + X * 80
 			if cell_x <= mouse__x <= cell_x + 64 and 250 <= mouse__y <= 314:
-				self.end_cell = x - 2
+				self.end_cell = X - 2
 				self.end_cell_inventory = 1
 		return self.swap_cells(craft_items_list, craft_amounts_list, craft_images_list)
 	
