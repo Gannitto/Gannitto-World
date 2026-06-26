@@ -185,45 +185,45 @@ pygame.display.set_caption("Gannitto world")
 
 walk = 0
 
-Hiro_down_run_1 = pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Down/1.png")
-Hiro_down_run_2 = pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Down/2.png")
-Hiro_down_run_3 = pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Down/3.png")
-Hiro_down_run_4 = pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Down/4.png")
-Hiro_down_run_5 = pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Down/5.png")
-Hiro_down_run_6 = pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Down/6.png")
+Hiro_down_run_1 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Down/1.png"), (256, 256))
+Hiro_down_run_2 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Down/2.png"), (256, 256))
+Hiro_down_run_3 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Down/3.png"), (256, 256))
+Hiro_down_run_4 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Down/4.png"), (256, 256))
+Hiro_down_run_5 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Down/5.png"), (256, 256))
+Hiro_down_run_6 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Down/6.png"), (256, 256))
 
-Hiro_down_left = pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Down-left/1.png")
-Hiro_down_right = pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Down-right/1.png")
+Hiro_down_left = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Down-left/1.png"), (256, 256))
+Hiro_down_right = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Down-right/1.png"), (256, 256))
 
-Hiro_left_run_1 = pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Left/1.png")
-Hiro_left_run_2 = pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Left/2.png")
-Hiro_left_run_3 = pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Left/3.png")
-Hiro_left_run_4 = pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Left/4.png")
-Hiro_left_run_5 = pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Left/5.png")
-Hiro_left_run_6 = pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Left/6.png")
+Hiro_left_run_1 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Left/1.png"), (256, 256))
+Hiro_left_run_2 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Left/2.png"), (256, 256))
+Hiro_left_run_3 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Left/3.png"), (256, 256))
+Hiro_left_run_4 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Left/4.png"), (256, 256))
+Hiro_left_run_5 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Left/5.png"), (256, 256))
+Hiro_left_run_6 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Left/6.png"), (256, 256))
 
-Hiro_right_run_1 = pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Right/1.png")
-Hiro_right_run_2 = pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Right/2.png")
-Hiro_right_run_3 = pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Right/3.png")
-Hiro_right_run_4 = pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Right/4.png")
-Hiro_right_run_5 = pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Right/5.png")
-Hiro_right_run_6 = pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Right/6.png")
+Hiro_right_run_1 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Right/1.png"), (256, 256))
+Hiro_right_run_2 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Right/2.png"), (256, 256))
+Hiro_right_run_3 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Right/3.png"), (256, 256))
+Hiro_right_run_4 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Right/4.png"), (256, 256))
+Hiro_right_run_5 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Right/5.png"), (256, 256))
+Hiro_right_run_6 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Right/6.png"), (256, 256))
 
-Hiro_up_run_1 = pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Up/1.png")
-Hiro_up_run_2 = pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Up/2.png")
-Hiro_up_run_3 = pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Up/3.png")
-Hiro_up_run_4 = pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Up/4.png")
-Hiro_up_run_5 = pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Up/5.png")
-Hiro_up_run_6 = pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Up/6.png")
+Hiro_up_run_1 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Up/1.png"), (256, 256))
+Hiro_up_run_2 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Up/2.png"), (256, 256))
+Hiro_up_run_3 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Up/3.png"), (256, 256))
+Hiro_up_run_4 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Up/4.png"), (256, 256))
+Hiro_up_run_5 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Up/5.png"), (256, 256))
+Hiro_up_run_6 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Up/6.png"), (256, 256))
 
-Hiro_up_left = pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Up-left/1.png")
+Hiro_up_left = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Up-left/1.png"), (256, 256))
 
-Hiro_up_right_run_1 = pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Up-right/1.png")
-Hiro_up_right_run_2 = pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Up-right/2.png")
-Hiro_up_right_run_3 = pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Up-right/3.png")
-Hiro_up_right_run_4 = pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Up-right/4.png")
-Hiro_up_right_run_5 = pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Up-right/5.png")
-Hiro_up_right_run_6 = pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Up-right/6.png")
+Hiro_up_right_run_1 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Up-right/1.png"), (256, 256))
+Hiro_up_right_run_2 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Up-right/2.png"), (256, 256))
+Hiro_up_right_run_3 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Up-right/3.png"), (256, 256))
+Hiro_up_right_run_4 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Up-right/4.png"), (256, 256))
+Hiro_up_right_run_5 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Up-right/5.png"), (256, 256))
+Hiro_up_right_run_6 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Up-right/6.png"), (256, 256))
 
 Hiro = Hiro_down_run_1
 Hiro_run = "Down"
@@ -261,7 +261,7 @@ Portal_1 = pygame.transform.scale(Portal_1, (128, 256))
 Portal_2 = pygame.image.load(path + "Gannitto world/files/Images/Objects/Portal 2.png")
 Portal_2 = pygame.transform.scale(Portal_2, (128, 256))
 
-Vending_machine_image = pygame.image.load(path + "Gannitto world/files/Images/Objects/Vending machine.png")
+Vending_machine_image = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Objects/Vending machine.png"), (304, 560))
 
 Wire_1 = pygame.image.load(path + "Gannitto world/files/Images/Objects/Wire 1.png")
 Wire_1 = pygame.transform.scale(Wire_1, (64, 64))
@@ -319,22 +319,21 @@ Butterfly1_2 = pygame.transform.scale(Butterfly1_2, (32, 32))
 Butterfly1_3 = pygame.image.load(path + "Gannitto world/files/Images/Objects/Butterfly 1 3.png")
 Butterfly1_3 = pygame.transform.scale(Butterfly1_3, (32, 32))
 
-Bacteria_walk_left = [
+Bacteria_walk_left = (
 
-	pygame.image.load(path + "Gannitto world/files/Images/Objects/Bacteria 1.png"),
-	pygame.image.load(path + "Gannitto world/files/Images/Objects/Bacteria 2.png"),
-	pygame.image.load(path + "Gannitto world/files/Images/Objects/Bacteria 3.png"),
-	pygame.image.load(path + "Gannitto world/files/Images/Objects/Bacteria 4.png"),
-	pygame.image.load(path + "Gannitto world/files/Images/Objects/Bacteria 5.png"),
-	pygame.image.load(path + "Gannitto world/files/Images/Objects/Bacteria 6.png")
+	pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Objects/Bacteria 1.png"), (256, 512)),
+	pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Objects/Bacteria 2.png"), (256, 512)),
+	pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Objects/Bacteria 3.png"), (256, 512)),
+	pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Objects/Bacteria 4.png"), (256, 512)),
+	pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Objects/Bacteria 5.png"), (256, 512)),
+	pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Objects/Bacteria 6.png"), (256, 512))
 
-	]
+	)
 
 Screensaver2 = pygame.image.load(path + "Gannitto world/files/Images/Screensavers/Screensaver 2.png")
 Screensaver2 = pygame.transform.scale(Screensaver2, (Height * 2, Height))
 
-Heart = pygame.image.load(path + "Gannitto world/files/Images/Heart.png")
-Heart = pygame.transform.scale(Heart, (32, 32))
+Heart = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Heart.png"), (32, 32))
 
 textures = {
 
@@ -349,29 +348,28 @@ textures = {
 
 	}
 
-Backrooms_portal_images = [
-	pygame.image.load(path + "Gannitto world/files/Images/Objects/Backrooms portal 1.png"),
-	pygame.image.load(path + "Gannitto world/files/Images/Objects/Backrooms portal 2.png"),
-	pygame.image.load(path + "Gannitto world/files/Images/Objects/Backrooms portal 3.png"),
-	pygame.image.load(path + "Gannitto world/files/Images/Objects/Backrooms portal 4.png"),
-	pygame.image.load(path + "Gannitto world/files/Images/Objects/Backrooms portal 5.png"),
-	pygame.image.load(path + "Gannitto world/files/Images/Objects/Backrooms portal 6.png"),
-	pygame.image.load(path + "Gannitto world/files/Images/Objects/Backrooms portal 7.png"),
-	pygame.image.load(path + "Gannitto world/files/Images/Objects/Backrooms portal 8.png"),
-	pygame.image.load(path + "Gannitto world/files/Images/Objects/Backrooms portal 9.png"),
-	pygame.image.load(path + "Gannitto world/files/Images/Objects/Backrooms portal 10.png")
-]
+Backrooms_portal_images = (
+	pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Objects/Backrooms portal 1.png"), (256, 256)),
+	pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Objects/Backrooms portal 2.png"), (256, 256)),
+	pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Objects/Backrooms portal 3.png"), (256, 256)),
+	pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Objects/Backrooms portal 4.png"), (256, 256)),
+	pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Objects/Backrooms portal 5.png"), (256, 256)),
+	pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Objects/Backrooms portal 6.png"), (256, 256)),
+	pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Objects/Backrooms portal 7.png"), (256, 256)),
+	pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Objects/Backrooms portal 8.png"), (256, 256)),
+	pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Objects/Backrooms portal 9.png"), (256, 256)),
+	pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Objects/Backrooms portal 10.png"), (256, 256))
+)
 
-mouse_click_images = [
+mouse_click_images = (
 	 pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Mouse click 1.png"), (128, 128)),
 	 pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Mouse click 2.png"), (128, 128)),
 	 pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Mouse click 3.png"), (128, 128)),
 	 pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Mouse click 4.png"), (128, 128)),
 	 pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Mouse click 5.png"), (128, 128))
-	 ]
+	 )
 
-no_file_texture = pygame.image.load(path + "Gannitto world/files/Images/No-file texture.png")
-no_file_texture = pygame.transform.scale(no_file_texture, (64, 64))
+no_file_texture = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/No-file texture.png"), (64, 64))
 
 Button_click = pygame.mixer.Sound(path + "Gannitto world/files/Sounds/Button Pressed.mp3")
 Stone_breaking1 = pygame.mixer.Sound(path + "Gannitto world/files/Sounds/Stone breaking 1.mp3")
@@ -725,7 +723,6 @@ class PlayerAnimations:
 		# Ключ: направление, Значение: список кадров
 		self.animations = {}
 		
-		# Загружаем все анимации
 		self.load_animations()
 	
 	def load_animations(self):
