@@ -9,7 +9,7 @@ if not os.path.exists(path):
 
 try:
 
-	Settings = Saver.load_objects(path + "Gannitto world/files/Settings.save")
+	Settings = Saver.load_objects(path + "Gannitto world/files/Settings/Settings.save")
 
 except FileNotFoundError:
 
@@ -25,11 +25,8 @@ except FileNotFoundError:
 		
 		}
 	
-	Saver.save_objects(path + "Gannitto world/files/Settings.save", Settings)
+	Saver.save_objects(path + "Gannitto world/files/Settings/Settings.save", Settings)
 
-speed = 1000
-HP = 100
-HP_TICK = 90
 costum = 0
 changed_slot = 0
 animation = [None, 0]
@@ -38,7 +35,6 @@ craft_items_list = [None] * 7
 craft_amounts_list = [None] * 7
 craft_images_list = [None] * 7
 in_cave = None
-god_mode = False
 difficulty = None
 does_lighten = False
 alt_pressed = False
@@ -65,7 +61,6 @@ mouse_x, mouse_y = pygame.mouse.get_pos()
 inventory_open = False
 hold_left = False
 objects = [] # TODO возможность в настройках очистить кеш, переделать кнопку display,           реки, ачивки, берёзовый сок, стена из тёмной древесины, стол из тёмной древесины, музыкальные инструменты, падающие листья, кукуруза в полях, враги вороны, обвал в шахте, летучие мыши, таблички, забор, броня, хвощ(растение), песчаные бури в пустыне
-effects = []
 backrooms_objects = []
 screenshot_num = 1
 bullet_num = 0
@@ -77,14 +72,13 @@ multyplayer_mode = None
 mobs = []
 mechanisms = []
 particles = []
-HP_animation_tick = 0
 slot_animations = [[False, 15] for _ in range(30)]   # Используется для анимации при наведении на слот
 special_slot_animations = {"Craft list slot": [False, 0.6], "Game menu slot": [False, 0.6], "Menu slot": [False, 0.6], "Multyplayer slot": [False, 0.6], "Close slot": [False, 0.6], "Reference slot": [False, 0.6], "Close slot": [False, 0.6], "Split items slot": [False, 0.6]}   # Используется для анимации при наведении на слот, который выполняет какое-либо действие
 build_tuple = "(changed_slot, player, objects, particles, Width, Height)"
 
 try:
 
-	statistics = Saver.load_objects(path + "Gannitto world/files/Statistics.save")
+	statistics = Saver.load_objects(path + "Gannitto world/files/Settings/Statistics.save")
 
 except FileNotFoundError:
 
@@ -94,7 +88,7 @@ except FileNotFoundError:
 	
 try:
 	
-	hot_keys = Saver.load_objects(path + "Gannitto world/files/Hot keys.save")
+	hot_keys = Saver.load_objects(path + "Gannitto world/files/Settings/Hot keys.save")
 	
 except FileNotFoundError:
 	
@@ -113,7 +107,7 @@ except FileNotFoundError:
 	
 		}
 
-	Saver.save_objects(path + "Gannitto world/files/Hot keys.save", hot_keys)
+	Saver.save_objects(path + "Gannitto world/files/Settings/Hot keys.save", hot_keys)
 
 clock = pygame.time.Clock()
 chat = []

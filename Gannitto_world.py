@@ -123,7 +123,7 @@ def save(darken:bool=True, save_world_settings:bool=False):
 	big_rects - Если сохраняются данные мира, то необходимо указать переменную big_rects
 	world_name - Тоже надо указать, если сохраняются данные мира
 	"""
-
+	global player
 	Saver.save_objects(path + "Gannitto world/files/Settings/Statistics.save", statistics)
 	
 	if world_name is not None:
@@ -138,7 +138,7 @@ def save(darken:bool=True, save_world_settings:bool=False):
 
 			Saver.save_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Mobs.save", mobs)
 			Saver.save_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Rects.save", big_rects)
-			Saver.save_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Info.save", [player.x, player.y, Backrooms.InBackrooms, Backrooms.Level, in_cave, speed, HP, start_time, Ron.X, Ron.Y, Ron.Home])
+			Saver.save_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Info.save", [player.x, player.y, Backrooms.InBackrooms, Backrooms.Level, in_cave, player.speed, player.HP, start_time, Ron.X, Ron.Y, Ron.Home])
 			Saver.save_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Objects.save", objects)
 			Saver.save_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Inventory.save", inventory.whole_inventory)
 			Saver.save_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Resourses.save", inventory.resourses)
@@ -157,7 +157,7 @@ def save(darken:bool=True, save_world_settings:bool=False):
 	if darken and Settings["Display"][9]:
 		win_darken(win.copy())
 		
-	if save_world_settings: Saver.save_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Settings.save", [difficulty, god_mode])
+	if save_world_settings: Saver.save_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Settings.save", [difficulty, player.god_mode])
 
 def chat_message(message: str):
 	"""Отправляет сообщение в чат"""
@@ -766,101 +766,99 @@ class PlayerAnimations:
 player_animations = PlayerAnimations()
 
 class Player:
-    def __init__(self, X=0, Y=0):
-        self.x = X
-        self.y = Y
-        self.speed = 5
-        
-        # Анимация
-        self.direction = "Down"  # Текущее направление
-        self.frame_index = 0     # Текущий кадр
-        self.animation_speed = 0.1  # Скорость анимации (секунды между кадрами)
-        self.animation_timer = 0    # Таймер для анимации
-        
-        # Игровые параметры
-        self.HP = 100
-        self.god_mode = False
-        self.is_moving = False
-        
-        # Используем анимации из глобального объекта
-        self.animations = player_animations.animations
-        
-        # Текущий спрайт
-        self.image = self.get_current_frame()
-        self.rect = self.image.get_rect(center=(Width / 2, Height / 2))
-    
-    def get_current_frame(self):
-        """Возвращает текущий кадр анимации"""
-        try:
-            # Получаем список кадров для текущего направления
-            frames = self.animations[self.direction]
-            # Возвращаем текущий кадр (с циклическим перебором)
-            return frames[self.frame_index % len(frames)]
-        except (KeyError, IndexError):
-            # Если что-то пошло не так, возвращаем заглушку
-            surface = pygame.Surface((64, 64))
-            surface.fill((255, 0, 255))  # Магента для отладки
-            return surface
-    
-    def update_animation(self, dt):
-        """Обновляет анимацию на основе времени"""
-        if self.is_moving:
-            # Увеличиваем таймер
-            self.animation_timer += dt
-            
-            # Если прошло достаточно времени - меняем кадр
-            if self.animation_timer >= self.animation_speed:
-                self.animation_timer = 0
-                self.frame_index += 1
-        
-        # Обновляем изображение
-        self.image = self.get_current_frame()
-        self.rect = self.image.get_rect(center=(Width / 2, Height / 2))
-    
-    def move(self, dx, dy):
-        """Двигает игрока и обновляет направление"""
-        self.is_moving = True
-        
-        # Обновляем позицию
-        self.x += dx * self.speed
-        self.y += dy * self.speed
-        
-        # Определяем направление
-        if dx > 0 and dy == 0:
-            self.direction = "Right"
-        elif dx < 0 and dy == 0:
-            self.direction = "Left"
-        elif dy > 0 and dx == 0:
-            self.direction = "Down"
-        elif dy < 0 and dx == 0:
-            self.direction = "Up"
-        elif dx > 0 and dy > 0:
-            self.direction = "Down-right"
-        elif dx < 0 and dy > 0:
-            self.direction = "Down-left"
-        elif dx > 0 and dy < 0:
-            self.direction = "Up-right"
-        elif dx < 0 and dy < 0:
-            self.direction = "Up-left"
-    
-    def stop(self):
-        """Останавливает движение"""
-        self.is_moving = False
-        # Сбрасываем анимацию на первый кадр (стоя)
-        self.frame_index = 0
-        self.animation_timer = 0
-    
-    def render(self, screen, offset_x, offset_y):
-        """Отрисовывает игрока на экране"""
-        # Позиция на экране с учетом камеры
-        screen_x = self.x - offset_x + Width // 2 - self.image.get_width() // 2
-        screen_y = self.y - offset_y + Height // 2 - self.image.get_height() // 2
-        
-        screen.blit(self.image, (screen_x, screen_y))
-        
-        # Если включен режим отладки - рисуем хитбокс
-        if Settings["Display"][3]:
-            pygame.draw.rect(screen, (0, 255, 0), (screen_x, screen_y, self.image.get_width(), self.image.get_height()), 2)
+	def __init__(self, X=0, Y=0):
+		self.x = X
+		self.y = Y
+		self.speed = 10
+		
+		# Анимация
+		self.direction = "Down"  # Текущее направление
+		self.frame_index = 0     # Текущий кадр
+		self.animation_speed = 0.1  # Скорость анимации (секунды между кадрами)
+		self.animation_timer = 0    # Таймер для анимации
+		
+		# Игровые параметры
+		self.HP = 100
+		self.HP_TICK = 90
+		self.HP_animation_tick = 0
+		self.effects = []
+		self.god_mode = False
+		self.is_moving = False
+		
+		# Используем анимации из глобального объекта
+		self.animations = player_animations.animations
+		
+		# Текущий спрайт
+		self.image = self.get_current_frame()
+		self.rect = self.image.get_rect(center=(Width / 2, Height / 2))
+		
+	def get_current_frame(self):
+		"""Возвращает текущий кадр анимации"""
+		try:
+			frames = self.animations[self.direction]
+			return frames[self.frame_index % len(frames)]
+		except (KeyError, IndexError):
+			# Если что-то пошло не так, возвращаем заглушку
+			surface = pygame.Surface((64, 64))
+			surface.fill((255, 0, 255))  # Магента для отладки
+			return surface
+	
+	def update_animation(self, dt):
+		"""Обновляет анимацию на основе времени"""
+		if self.is_moving:
+			self.animation_timer += dt
+			
+			# Если прошло достаточно времени - меняем кадр
+			if self.animation_timer >= self.animation_speed:
+				self.animation_timer = 0
+				self.frame_index += 1
+		
+		# Обновляем изображение
+		self.image = self.get_current_frame()
+		self.rect = self.image.get_rect(center=(Width / 2, Height / 2))
+	
+	def move(self, dx, dy):
+		"""Двигает игрока и обновляет направление"""
+		self.is_moving = True
+		
+		# Обновляем позицию
+		self.x += dx * self.speed
+		self.y += dy * self.speed
+		
+		# Определяем направление
+		if dx > 0 and dy == 0:
+			self.direction = "Right"
+		elif dx < 0 and dy == 0:
+			self.direction = "Left"
+		elif dy > 0 and dx == 0:
+			self.direction = "Down"
+		elif dy < 0 and dx == 0:
+			self.direction = "Up"
+		elif dx > 0 and dy > 0:
+			self.direction = "Down-right"
+		elif dx < 0 and dy > 0:
+			self.direction = "Down-left"
+		elif dx > 0 and dy < 0:
+			self.direction = "Up-right"
+		elif dx < 0 and dy < 0:
+			self.direction = "Up-left"
+	
+	def stop(self):
+		"""Останавливает движение"""
+		self.is_moving = False
+		self.frame_index = 0
+		self.animation_timer = 0
+	
+	def render(self, screen, offset_x, offset_y):
+		"""Отрисовывает игрока на экране"""
+		screen_x = self.x - offset_x + Width // 2 - self.image.get_width() // 2
+		screen_y = self.y - offset_y + Height // 2 - self.image.get_height() // 2
+		
+		screen.blit(self.image, (screen_x, screen_y))
+		
+		# Если включен режим отладки - рисуем хитбокс
+		if Settings["Display"][3]:
+			pygame.draw.rect(screen, (0, 255, 0), (screen_x, screen_y, self.image.get_width(), self.image.get_height()), 2)
 
 
 class SlimeEnemy:
@@ -884,7 +882,7 @@ class SlimeEnemy:
 	
 	def main(self, wall_list: list):
 
-		global HP, HP_animation_tick
+		global player
 
 		a = True
 
@@ -897,9 +895,9 @@ class SlimeEnemy:
 			if self.attak is not None:
 
 				if player.x - 128 < self.attak[0] < player.x + 128 and player.y - 128 < self.attak[1] < player.y + 128 and self.attak[2] == 1:
-					if not god_mode:
-						HP -= 10
-						HP_animation_tick = 1
+					if not player.god_mode:
+						player.HP -= 10
+						player.HP_animation_tick = 1
 						win_fill((200, 0, 0))
 						win_fill((200, 0, 0))
 					self.attak[2] = 2
@@ -1128,7 +1126,7 @@ class SpiderEnemy:
 	
 	def main(self, wall_list: list):
 
-		global HP, HP_animation_tick
+		global player
 
 		a = True
 		b = None
@@ -1208,9 +1206,9 @@ class SpiderEnemy:
 			self.position = "Right"
 
 			if random.randint(1, 50) == 1 and player.x - 256 < self.x < player.x + 256 and player.y - 256 < self.y < player.y + 256:
-				if not god_mode:
-					HP -= 15
-					HP_animation_tick = 1
+				if not player.god_mode:
+					player.HP -= 15
+					player.HP_animation_tick = 1
 				win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Objects/Spider 2 attak.png"), (128, 128)), (self.x - player.x + Width // 2 - 64, player.y - self.y + Height // 2 - 32))
 			else:
 				win.blit(self.right_animation_images[(self.animation_count - self.animation_count % 5) // 5], (self.x - player.x + Width // 2 - 64, y - self.y + Height // 2 - 32))
@@ -1220,9 +1218,9 @@ class SpiderEnemy:
 			self.position = "Left"
 
 			if random.randint(1, 50) == 1 and player.x - 256 < self.x < player.x + 256 and player.y - 256 < self.y < player.y + 256:
-				if not god_mode:
-					HP -= 15
-					HP_animation_tick = 1
+				if not player.god_mode:
+					player.HP -= 15
+					player.HP_animation_tick = 1
 				win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Objects/Spider attak.png"), (128, 128)), (self.x - player.x + Width // 2 - 64, player.y - self.y + Height // 2 - 32))
 			else:
 				win.blit(self.left_animation_images[(self.animation_count - self.animation_count % 5) // 5], (self.x - player.x + Width // 2 - 64, player.y - self.y + Height // 2 - 32))
@@ -3757,7 +3755,7 @@ dt = 0
 
 def start_game():
 	
-	global Hiro_run, win, Hiro_rect, changed_slot, menu_open, multyplayer_menu_open, screenmode, inventory_open, hold_left, backrooms, text_color, bullet_num, craft_items_list, craft_amounts_list, craft_images_list, screenshot_num, mechanisms, mouse_x, mouse_y, item_settings_open, multyplayer_panel, big_rects, objects, mobs, speed, in_cave, chat_tick, craft_list_open, craft_list_page, click, in_motherboard, os, mouse_click_image, HP, HP_TICK, world_name, player_bullets, effects, color, multyplayer_mode, multyplayer, Hiro, game_time, animation, start_time, wall_list, weather, new_particles, HP_animation_tick, inside_files, difficulty, god_mode, alt_pressed, walk, dt, player
+	global Hiro_run, win, Hiro_rect, changed_slot, menu_open, multyplayer_menu_open, screenmode, inventory_open, hold_left, backrooms, text_color, bullet_num, craft_items_list, craft_amounts_list, craft_images_list, screenshot_num, mechanisms, mouse_x, mouse_y, item_settings_open, multyplayer_panel, big_rects, objects, mobs, in_cave, chat_tick, craft_list_open, craft_list_page, click, in_motherboard, os, mouse_click_image, world_name, player_bullets, effects, color, multyplayer_mode, multyplayer, Hiro, game_time, animation, start_time, wall_list, weather, new_particles, inside_files, difficulty, alt_pressed, walk, dt, player
 
 	night_playing = False
 	input_text = ""
@@ -3772,6 +3770,10 @@ def start_game():
 	prev_mobs = []
 	prev_bullets = []
 	prev_rects = []
+	tile_size = 256
+	Width, Height = pygame.display.get_surface().get_size()
+	tiles_x = (Width // tile_size) + 3
+	tiles_y = (Height // tile_size) + 3
 
 	dx = 0
 	dy = 0
@@ -3786,12 +3788,13 @@ def start_game():
 		
 		mobs = Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Mobs.save")
 		big_rects = Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Rects.save")
-		player.x, player.y, Backrooms.InBackrooms, Backrooms.Level, in_cave, speed, HP, start_time, Ron.X, Ron.Y, Ron.Home = Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Info.save")
-		difficulty, god_mode = Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Settings.save")
+		player.x, player.y, Backrooms.InBackrooms, Backrooms.Level, in_cave, player.speed, player.HP, start_time, Ron.X, Ron.Y, Ron.Home = Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Info.save")
+		difficulty, player.god_mode = Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Settings.save")
 		objects = Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Objects.save")
 		inventory.whole_inventory = Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Inventory.save")
 		#inventory.resourses = Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Resourses.save") TODO
 		effects = Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Effects.save")
+		player.speed = 50
 
 	else:
 
@@ -3881,7 +3884,7 @@ def start_game():
 			elif event.type == pygame.KEYDOWN and chat_input:
 				if event.key == pygame.K_RETURN:
 					chat_input = False
-					if input_text[0:2] == "/ " and god_mode:
+					if input_text[0:2] == "/ " and player.god_mode:
 						try:
 							eval(input_text[2:])
 							# команды лучше не использовать, так как из-за eval возникает проблема безопасности
@@ -4116,11 +4119,11 @@ def start_game():
 
 			# 	if a:
 					
-			# 		y -= speed // FPS
+			# 		y -= player.speed // FPS
 					
 			# 		for i in wall_list:
 			# 			if i.x - 300 < player.x < i.x + 300 and i.y - 100 < player.y < i.y + 300:
-			# 				y += speed // FPS
+			# 				y += player.speed // FPS
 							
 			# 		if walk <= 0:
 
@@ -4159,11 +4162,11 @@ def start_game():
 
 			# 	if a:
 					
-			# 		y += speed // FPS
+			# 		y += player.speed // FPS
 					
 			# 		for i in wall_list:
 			# 			if i.x - 300 < player.x < i.x + 300 and i.y - 300 < player.y < i.y + 100:
-			# 				y -= speed // FPS
+			# 				y -= player.speed // FPS
 
 			# 		if walk <= 0:
 			# 			Hiro_run = "Up"
@@ -4201,11 +4204,11 @@ def start_game():
 
 			# 	if a:
 					
-			# 		x -= speed // FPS
+			# 		x -= player.speed // FPS
 					
 			# 		for i in wall_list:
 			# 			if i.x - 100 < player.x < i.x + 256 and i.y - 300 < player.y < i.y + 300:
-			# 				x += speed // FPS
+			# 				x += player.speed // FPS
 
 			# 		if walk <= 0:
 
@@ -4244,11 +4247,11 @@ def start_game():
 
 			# 	if a:
 					
-			# 		x += speed // FPS
+			# 		x += player.speed // FPS
 					
 			# 		for i in wall_list:
 			# 			if i.x - 300 < player.x < i.x + 100 and i.y - 300 < player.y < i.y + 300:
-			# 				x -= speed // FPS
+			# 				x -= player.speed // FPS
 
 			# 		if walk <= 0:
 
@@ -4326,13 +4329,14 @@ def start_game():
 			for big_rect in big_rects:
 				if big_rect.main() is not None:
 					biom_name = big_rect.main()
-			
-			for i in range(-6, 6):
+			start_tile_x = (player.x - Width // 2) // tile_size - 1
+			start_tile_y = (player.y - Height // 2) // tile_size - 1
 
-				for ii in range(-3, 3):
+			for i in range(tiles_x):
+				for ii in range(tiles_y):
 
 					if biom_name is not None:
-						win.blit(textures[biom_name], (Width - player.x % 256 + i * 256, player.y % 256 + ii * 256))
+						win.blit(textures[biom_name], ((start_tile_x + i) * tile_size - player.x + Width // 2, (start_tile_y + ii) * tile_size - player.y + Height // 2))
 
 						if game_time > 600 and not night_playing:
 							music_channel.stop()
@@ -5449,7 +5453,7 @@ def start_game():
 
 			if inventory.whole_inventory[changed_slot].type == "Food":
 				
-				HP += inventory.whole_inventory[changed_slot].special_info
+				player.HP += inventory.whole_inventory[changed_slot].special_info
 				if inventory.whole_inventory[changed_slot].amount > 1:
 					inventory.whole_inventory[changed_slot].amount -= 1
 				else:
@@ -5881,18 +5885,18 @@ def start_game():
 				if 810 <= mouse_x <= 874 and 10 <= mouse_y <= 74 and click[0]:
 					inventory_open = True
 		
-		if HP_animation_tick > 0 and not god_mode:
+		if player.HP_animation_tick > 0 and not player.god_mode:
 			
-			HP_animation_tick += 1
+			player.HP_animation_tick += 1
 			
-			if HP_animation_tick < 6:
-				win_fill((200, 0, 0), HP_animation_tick * 20)
-				win.blit(pygame.transform.scale(win, (Width + HP_animation_tick * 2, Height + HP_animation_tick * 2)), (-HP_animation_tick, -HP_animation_tick))
+			if player.HP_animation_tick < 6:
+				win_fill((200, 0, 0), player.HP_animation_tick * 20)
+				win.blit(pygame.transform.scale(win, (Width + player.HP_animation_tick * 2, Height + player.HP_animation_tick * 2)), (-player.HP_animation_tick, -player.HP_animation_tick))
 			else:
-				win_fill((200, 0, 0), (HP_animation_tick - 10 - HP_animation_tick - 10) * 20)
+				win_fill((200, 0, 0), (player.HP_animation_tick - 10 - player.HP_animation_tick - 10) * 20)
 
-			if HP_animation_tick == 21:
-				HP_animation_tick = 0
+			if player.HP_animation_tick == 21:
+				player.HP_animation_tick = 0
 			
 			
 
@@ -6139,33 +6143,33 @@ def start_game():
 
 		# Отображение полосы здоровья
 
-		if not god_mode:
+		if not player.god_mode:
 			
 			a = Width - 10
 			
-			for i in range(HP // 10):
+			for i in range(player.HP // 10):
 				a -= 40
 				win.blit(Heart, (a, 40))
 
-			if Width - 10 - HP // 10 * 40 < mouse_x < Width - 10 and 40 < mouse_y < 104:
+			if Width - 10 - player.HP // 10 * 40 < mouse_x < Width - 10 and 40 < mouse_y < 104:
 				mouse_object = laungveges("Полоса здоровья", "Health bar", "Денсаулық бар")
 
-		HP_TICK += 1
-		if HP_TICK == 300:
-			HP_TICK = 0
-			if HP < 100:
-				HP += 10
+		player.HP_TICK += 1
+		if player.HP_TICK == 300:
+			player.HP_TICK = 0
+			if player.HP < 100:
+				player.HP += 10
 
-		if HP > 100:
-			HP = 100
+		if player.HP > 100:
+			player.HP = 100
 
-		if HP < 1:
+		if player.HP < 1:
 			for item in inventory.whole_inventory:
 				if item is not None:
 					for _ in range(item.amount):
 						objects.append(Object(item.name, random.randint(player.x - 300, player.x + 300), random.randint(player.y - 300, player.y + 300), item.image_path, special_flags="Item", add_path=False))
 			inventory.whole_inventory = [None] * 40
-			HP = 100
+			player.HP = 100
 			x = 0
 			y = 0
 
@@ -6778,7 +6782,7 @@ if click[0] and pygame.Rect(eval(self.display_mode)[0], eval(self.display_mode)[
 						mechanisms = []
 						player_bullets = []
 						effects = []
-						#player.x, player.y, speed
+						#player.x, player.y, player.speed
 						
 					except:
 						
@@ -7030,15 +7034,15 @@ if click[0] and pygame.Rect(eval(self.display_mode)[0], eval(self.display_mode)[
 		
 def edit_world():
 	
-	global world_name, difficulty, god_mode, alt_pressed
+	global world_name, difficulty, player, alt_pressed
 
 	create_world = False
 
 	try:
-		difficulty, god_mode = Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Settings.save")
+		difficulty, player.god_mode = Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Settings.save")
 	except:
 		difficulty = "norm"
-		god_mode = False
+		player.god_mode = False
 		create_world = True
 
 	input_text = ""
@@ -7081,7 +7085,7 @@ def edit_world():
 	
 	pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(laungveges("Режим Бога", "God mode", "Құдай режимі"))[0] + 60, 470, 71, 71), 5)
 	
-	if god_mode:
+	if player.god_mode:
 		win.blit(bigTextInfo.render(" ✓", True, (139, 155, 180)), (bigTextInfo.size(laungveges("Режим Бога", "God mode", "Көлеңкелер"))[0] + 60, 480))
 	else:
 		win.blit(bigTextInfo.render(" x", True, (139, 155, 180)), (bigTextInfo.size(laungveges("Режим Бога", "Shadows", "Көлеңкелер"))[0] + 60, 480))
@@ -7120,7 +7124,7 @@ def edit_world():
 			
 			if event.type == pygame.KEYDOWN:
 				
-				if event.key == pygame.K_ESCAPE and not create_world: Saver.save_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Settings.save", [difficulty, god_mode]); worlds()
+				if event.key == pygame.K_ESCAPE and not create_world: Saver.save_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Settings.save", [difficulty, player.god_mode]); worlds()
 				
 				if event.key == pygame.K_LALT:
 					if alt_pressed: alt_pressed = False
@@ -7140,7 +7144,7 @@ def edit_world():
 			
 			if pygame.mouse.get_pressed()[0]:
 				
-				if not create_world: Saver.save_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Settings.save", [difficulty, god_mode])
+				if not create_world: Saver.save_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Settings.save", [difficulty, player.god_mode])
 				worlds()
 
 		win.blit(bigTextInfo.render(laungveges("Название мира", "World name", "Әлемдік атау"), True, (139, 155, 180)), (50, 50))
@@ -7185,15 +7189,15 @@ def edit_world():
 		win.blit(bigTextInfo.render(laungveges("Режим Бога", "God mode", "Құдай режимі"), True, (139, 155, 180)), (50, 480))
 		
 		pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(laungveges("Режим Бога", "God mode", "Құдай режимі"))[0] + 60, 470, 71, 71), 5)
-		if god_mode:
+		if player.god_mode:
 			win.blit(bigTextInfo.render(" ✓", True, (139, 155, 180)), (bigTextInfo.size(laungveges("Режим Бога", "God mode", "Көлеңкелер"))[0] + 60, 480))
 			if bigTextInfo.size(laungveges("Режим Бога", "God mode", "Құдай режимі"))[0] + 60 <= mouse_x <= bigTextInfo.size(laungveges("Режим Бога", "God mode", "Құдай режимі"))[0] + 131 and 470 <= mouse_y <= 528 and click[0]:
-				god_mode = False
+				player.god_mode = False
 				time.sleep(0.15)
 		else:
 			win.blit(bigTextInfo.render(" x", True, (139, 155, 180)), (bigTextInfo.size(laungveges("Режим Бога", "Shadows", "Көлеңкелер"))[0] + 60, 480))
 			if bigTextInfo.size(laungveges("Режим Бога", "God mode", "Құдай режимі"))[0] + 60 <= mouse_x <= bigTextInfo.size(laungveges("Режим Бога", "God mode", "Құдай режимі"))[0] + 131 and 470 <= mouse_y <= 528 and click[0]:
-				god_mode = True
+				player.god_mode = True
 				time.sleep(0.15)
 				
 		if create_world:
@@ -7276,7 +7280,7 @@ def edit_world():
 		win_fill(alpha=100 - Settings["Display"][0])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
 		
 		if not create_world:
-			Saver.save_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Settings.save", [difficulty, god_mode])
+			Saver.save_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Settings.save", [difficulty, player.god_mode])
 		
 		pygame.display.update()
 		clock.tick(30)
