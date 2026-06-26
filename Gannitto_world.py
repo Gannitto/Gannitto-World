@@ -1,8 +1,7 @@
-import enum
-import getpass
 import pygame
 from pygame.locals import *
 import pyperclip
+from pathlib import Path
 import time
 import random
 import Saver
@@ -828,9 +827,9 @@ class Player:
 		elif dx < 0 and dy == 0:
 			self.direction = "Left"
 		elif dy > 0 and dx == 0:
-			self.direction = "Down"
-		elif dy < 0 and dx == 0:
 			self.direction = "Up"
+		elif dy < 0 and dx == 0:
+			self.direction = "Down"
 		elif dx > 0 and dy > 0:
 			self.direction = "Down-right"
 		elif dx < 0 and dy > 0:
@@ -3325,7 +3324,7 @@ def settings():
 					pygame.draw.rect(win, key_color, (935 + i * 50, 373, 40, 17), 3)
 					win.blit(littleTextInfo.render("/\\", True, key_color), (940 + i * 50, 380))
 					pygame.draw.rect(win, key_color, (935 + i * 50, 396, 40, 17), 3)
-					win.blit(littleTextInfo.render("\/", True, key_color), (940 + i * 50, 404))
+					win.blit(littleTextInfo.render("\\/", True, key_color), (940 + i * 50, 404))
 				else:
 					pygame.draw.rect(win, key_color, (935 + i * 50, 373, 40, 40), 3)
 					win.blit(littleTextInfo.render(j, True, key_color), (940 + i * 50, 380))
@@ -4300,9 +4299,9 @@ def start_game():
 			dx = -1
 		if keys[pygame.K_d]:
 			dx = 1
-		if keys[pygame.K_w]:
-			dy = -1
 		if keys[pygame.K_s]:
+			dy = -1
+		if keys[pygame.K_w]:
 			dy = 1
 		
 		# Если есть движение - двигаем игрока
@@ -5523,14 +5522,10 @@ def start_game():
 
 		if keys[hot_keys["Screenshot"]] and keys[pygame.K_LALT]:
 			
-			try:
-				pygame.image.save(win, "C://Users/" + getpass.getuser() + "/Pictures/Your Screenshot at " + time.asctime().replace(":", " ") + ".png")
-				chat_message(laungveges("Игра: ваш скриншот находится в ", "Your screenshot is in ", "Ойын: Скриншотыңыз бар ") + "C://Users/" + getpass.getuser() + "/Pictures/Your_screenshot " + time.asctime().replace(":", " ") + ".png")
-			except:
-				pygame.image.save(win, "C:/Users/" + getpass.getuser() + "/OneDrive/Pictures/Your Screenshot at " + time.asctime().replace(":", " ") + ".png")
-				chat_message(laungveges("Игра: ваш скриншот находится в ", "Your screenshot is in ", "Ойын: Скриншотыңыз бар ") + "C://Users/" + getpass.getuser() + "/OneDrive/Pictures/Your_screenshot " + time.asctime().replace(":", " ") + ".png")
+			pygame.image.save(win, Path.home + "/Your Screenshot " + time.asctime().replace(":", " ") + ".png")
+			chat_message(laungveges("Игра: ваш скриншот находится в ", "Your screenshot is in ", "Ойын: Скриншотыңыз бар ") + "C://Users/" + getpass.getuser() + "/Pictures/Your_screenshot " + time.asctime().replace(":", " ") + ".png")
 			
-			for i in range(3):
+			for _ in range(3):
 				win.fill((200, 255, 200))
 				clock.tick(FPS)
 				pygame.display.update()
@@ -7360,7 +7355,7 @@ def worlds():
 					del get_start_items
 					win_darken(win.copy())
 					edit_world()
-				elif event.unicode not in '\/:*&"<>|':
+				elif event.unicode not in '\\/:*&"<>|':
 					input_text += event.unicode
 
 		
