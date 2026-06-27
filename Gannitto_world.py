@@ -11,8 +11,8 @@ import Backrooms
 import socket
 import os
 import Ron
-from itertools import product
 import sys
+from itertools import product
 from Functions import *
 from Build import build
 from Inventory import inventory
@@ -87,6 +87,8 @@ def text(text: str, text_x: int, text_y: int, color: tuple=text_color, size: int
 
 	all_text_surface = pygame.Surface((max_width, Height), pygame.SRCALPHA)
 
+	temp_font = pygame.font.Font(path + "Gannitto world/files/Font.ttf", size)
+
 	for line in [word.split(" ") for word in text.splitlines()]:
 		
 		line_surface = pygame.Surface((max_width, size), pygame.SRCALPHA)
@@ -94,7 +96,7 @@ def text(text: str, text_x: int, text_y: int, color: tuple=text_color, size: int
 
 		for word in line:
 
-			word_surface = pygame.font.Font(path + "Gannitto world/files/Font.ttf", size).render(word, True, color)
+			word_surface = temp_font.render(word, True, color)
 			word_width, word_height = word_surface.get_size()
 			if TextX + word_width >= max_width:
 				surface.blit(line_surface, (X - TextX // 2 if alignment else X, Y))
@@ -160,7 +162,6 @@ def save(darken:bool=True, save_world_settings:bool=False):
 
 def chat_message(message: str):
 	"""Отправляет сообщение в чат"""
-	from Gannitto_world import FPS, chat
 	global chat_tick
 	chat.append(message)
 	chat_tick = len(message) // 1.5 * FPS
@@ -1011,7 +1012,7 @@ class SlimeEnemy:
 				if self.x - 300 < self.attak[0] < self.x + 300 and self.y - 300 < self.attak[1] < self.y + 300 and self.attak[2] == 2:
 					self.attak = None
 
-			elif random.randint(1, 50) == 1 and player.x - 1000 < self.x < player.x + 1000 and playery - 1000 < self.y < player.y + 1000:
+			elif random.randint(1, 50) == 1 and player.x - 1000 < self.x < player.x + 1000 and player.y - 1000 < self.y < player.y + 1000:
 				self.attak = [self.x, self.y, 1]
 
 		except TypeError:
@@ -1206,7 +1207,7 @@ class SpiderEnemy:
 					player.HP_animation_tick = 1
 				win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Objects/Spider 2 attak.png"), (128, 128)), (self.x - player.x + Width // 2 - 64, player.y - self.y + Height // 2 - 32))
 			else:
-				win.blit(self.right_animation_images[(self.animation_count - self.animation_count % 5) // 5], (self.x - player.x + Width // 2 - 64, y - self.y + Height // 2 - 32))
+				win.blit(self.right_animation_images[(self.animation_count - self.animation_count % 5) // 5], (self.x - player.x + Width // 2 - 64, player.y - self.y + Height // 2 - 32))
 
 		else:
 			
@@ -2186,8 +2187,8 @@ class Portal:
 		for object in objects:
 			if object.__class__ == Portal and object.num != self.num - 1:
 				if self.x * 128 <= player.x <= self.x * 128 + 128 and self.y * 256 - 256 <= player.y <= self.y * 256:
-					x = object.x * 128
-					y = object.y * 256 - 257
+					player.x = object.x * 128
+					player.y = object.y * 256 - 257
 		
 		win.blit(self.image, (self.x * 128 + Width // 2 - player.x, player.y - self.y * 256 + Height // 2))
 
@@ -3035,7 +3036,6 @@ def settings():
 
 		while True:
 
-			click = pygame.mouse.get_pressed()
 			mouse_x, mouse_y = pygame.mouse.get_pos()
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
@@ -3851,6 +3851,7 @@ def start_game():
 
 
 	while True:
+		# times.append(time.time())
 
 		mouse_x, mouse_y = pygame.mouse.get_pos()
 		mouse_object = None
@@ -3926,7 +3927,7 @@ def start_game():
 						eval(i[1])
 					except:
 						pass
-
+		# times.append(time.time())
 		for object in objects:
 			if object.object_class == "Wall" and not object.open:
 				wall_list.append(object)
@@ -4085,6 +4086,7 @@ def start_game():
 		if keys[hot_keys["Set Ron home"]] and not chat_input:
 			Ron.Home = [player.x, player.y]
 
+		# times.append(time.time())
 		if not chat_input:
 
 			if keys[pygame.K_1]: changed_slot = 0
@@ -4315,6 +4317,7 @@ def start_game():
 
 		win.fill((0, 0, 0))
 
+		# times.append(time.time())
 		if Width // 2 - 100 <= mouse_x <= Width // 2 + 100 and Height // 2 - 100 <= mouse_y <= Height // 2 + 100 and not any((item_settings_open, Ron.window[0], in_motherboard, craft_list_open)):
 			mouse_object = laungveges("Это вы", "It's you", "Бұл сіз")
 
@@ -4328,55 +4331,51 @@ def start_game():
 			start_tile_x = (player.x - Width // 2) // tile_size - 1
 			start_tile_y = (player.y - Height // 2) // tile_size - 1
 
-			for i in range(tiles_x):
-				for ii in range(tiles_y):
+			if biom_name is not None:
+				for i, ii in product(range(tiles_x), range(tiles_y)):
+					win.blit(textures[biom_name], ((start_tile_x + i) * tile_size - player.x + Width // 2, (start_tile_y + ii) * tile_size - player.y + Height // 2))
+			
+			if game_time > 600 and not night_playing:
+				music_channel.stop()
+				music_channel.play(pygame.mixer.Sound(path + "Gannitto world/files/Soundtracks/Night " + str(random.randint(1, 2)) + ".mp3"))
+				night_playing = True
 
-					if biom_name is not None:
-						win.blit(textures[biom_name], ((start_tile_x + i) * tile_size - player.x + Width // 2, (start_tile_y + ii) * tile_size - player.y + Height // 2))
+			elif not music_channel.get_busy() or (night_playing and game_time < 600):
 
-						if game_time > 600 and not night_playing:
-							music_channel.stop()
-							music_channel.play(pygame.mixer.Sound(path + "Gannitto world/files/Soundtracks/Night " + str(random.randint(1, 2)) + ".mp3"))
-							night_playing = True
+				night_playing = False
+				music_channel.stop()
 
-						elif not music_channel.get_busy() or (night_playing and game_time < 600):
+				match biom_name:
 
-							night_playing = False
-							music_channel.stop()
-
-							match biom_name:
-
-								case "Grass" | "Field":
-									music_channel.queue(pygame.mixer.Sound(path + "Gannitto world/files/Soundtracks/Grass " + str(random.randint(1, 3)) + ".mp3"))
+					case "Grass" | "Field":
+						music_channel.queue(pygame.mixer.Sound(path + "Gannitto world/files/Soundtracks/Grass " + str(random.randint(1, 3)) + ".mp3"))
 								
-								case "Sand":
-									music_channel.queue(pygame.mixer.Sound(path + "Gannitto world/files/Soundtracks/Sand " + str(random.randint(1, 2)) + ".mp3"))
+					case "Sand":
+						music_channel.queue(pygame.mixer.Sound(path + "Gannitto world/files/Soundtracks/Sand " + str(random.randint(1, 2)) + ".mp3"))
 
-								case "Swamp":
-									music_channel.queue(pygame.mixer.Sound(path + "Gannitto world/files/Soundtracks/Swamp " + str(random.randint(1, 2)) + ".mp3"))
+					case "Swamp":
+						music_channel.queue(pygame.mixer.Sound(path + "Gannitto world/files/Soundtracks/Swamp " + str(random.randint(1, 2)) + ".mp3"))
 
-								case "Snow":
-									music_channel.queue(pygame.mixer.Sound(path + "Gannitto world/files/Soundtracks/Snow " + str(random.randint(1, 1)) + ".mp3"))
+					case "Snow":
+						music_channel.queue(pygame.mixer.Sound(path + "Gannitto world/files/Soundtracks/Snow " + str(random.randint(1, 1)) + ".mp3"))
 							
-						elif not chat_input and any((keys[pygame.K_LEFT], keys[pygame.K_RIGHT], keys[pygame.K_UP], keys[pygame.K_DOWN], keys[pygame.K_a], keys[pygame.K_d], keys[pygame.K_w], keys[pygame.K_s], Settings["Game"][1] and any((left_b.get_pressed(), up_b.get_pressed(), down_b.get_pressed(), right_b.get_pressed())))):
+			elif not chat_input and any((keys[pygame.K_LEFT], keys[pygame.K_RIGHT], keys[pygame.K_UP], keys[pygame.K_DOWN], keys[pygame.K_a], keys[pygame.K_d], keys[pygame.K_w], keys[pygame.K_s], Settings["Game"][1] and any((left_b.get_pressed(), up_b.get_pressed(), down_b.get_pressed(), right_b.get_pressed())))):
 
-							if in_cave is not None:
-								pygame.mixer.Sound.play(random.choice([Cave_walking1, Cave_walking2, Cave_walking3]), maxtime=1000)
+				if in_cave is not None:
+					pygame.mixer.Sound.play(random.choice([Cave_walking1, Cave_walking2, Cave_walking3]), maxtime=1000)
 
-							elif biom_name in ["Grass", "Field"] and random.randint(1, 150) == 1:
-								pygame.mixer.Sound.play(random.choice([Grass_walking1, Grass_walking2, Grass_walking3]), maxtime=1000)
+				elif biom_name in ["Grass", "Field"] and random.randint(1, 150) == 1:
+					pygame.mixer.Sound.play(random.choice([Grass_walking1, Grass_walking2, Grass_walking3]), maxtime=1000)
 
-							elif biom_name == "Sand" and random.randint(1, 230) == 1:
-								pygame.mixer.Sound.play(random.choice([Sand_walking1, Sand_walking2, Sand_walking3]), maxtime=1000)
+				elif biom_name == "Sand" and random.randint(1, 230) == 1:
+					pygame.mixer.Sound.play(random.choice([Sand_walking1, Sand_walking2, Sand_walking3]), maxtime=1000)
 
-							elif biom_name == "Snow" and random.randint(1, 120) == 1:
-								pygame.mixer.Sound.play(random.choice([Snow_walking1, Snow_walking2, Snow_walking3]), maxtime=1000)
+				elif biom_name == "Snow" and random.randint(1, 120) == 1:
+					pygame.mixer.Sound.play(random.choice([Snow_walking1, Snow_walking2, Snow_walking3]), maxtime=1000)
 
-							elif biom_name == "Swamp" and random.randint(1, 120) == 1:
-								pygame.mixer.Sound.play(random.choice([Swamp_walking1, Swamp_walking2, Swamp_walking3]), maxtime=1000)
+				elif biom_name == "Swamp" and random.randint(1, 120) == 1:
+					pygame.mixer.Sound.play(random.choice([Swamp_walking1, Swamp_walking2, Swamp_walking3]), maxtime=1000)
 
-					else:
-						win.blit(textInfo.render(laungveges("Пожалуйста, подождите, биом ещё генерируется...", "Please, wait, the biom is still genegating...", "Күте тұрыңыз, биома әлі де жасалуда..."), True, (0, 0, 0)), (Width - player.x % 512 + i * 512, player.y % 256 + ii * 256))
 
 			if biom_name is None:
 
@@ -4385,13 +4384,14 @@ def start_game():
 
 		else:
 
-			for i in range(-6, 6):
-				for ii in range(-3, 3):
-					win.blit(textures["Backrooms " + str(Backrooms.Level)], (Width - player.x % 256 + i * 256, player.y % 256 + ii * 256))
+			for i, ii in product(range(-6, 6), range(-3, 3)):
+				win.blit(textures["Backrooms " + str(Backrooms.Level)], (Width - player.x % 256 + i * 256, player.y % 256 + ii * 256))
 		
+		# times.append(time.time())
 		for mechanism in mechanisms:
 			mechanism.main()
 
+		# times.append(time.time())
 		if not Backrooms.InBackrooms and in_cave is None:
 
 			backrooms_portal.main()
@@ -4497,8 +4497,8 @@ def start_game():
 				AA = 100
 				Backrooms.Level = random.choice(next_levels)
 
-				x = 0
-				y = 0
+				player.x = 0
+				player.y = 0
 
 				Backrooms.get_rooms(0, 0)
 				win.fill((0, 0, 0))
@@ -4514,6 +4514,7 @@ def start_game():
 				win.blit(pygame.transform.scale(win, (Width - AA * 2, Height - AA * 2)), (AA, AA))
 				AA -= 3
 		
+		# times.append(time.time())
 		if not Backrooms.InBackrooms:
 
 			a = None
@@ -4527,8 +4528,8 @@ def start_game():
 
 			if in_cave is not None and -64 <= player.x <= 64 and -64 <= player.y <= 64 and click[0]:
 
-				x = objects[in_cave + 1].x
-				y = objects[in_cave + 1].y - 128
+				player.x = objects[in_cave + 1].x
+				player.y = objects[in_cave + 1].y - 128
 
 				in_cave = None
 
@@ -4538,8 +4539,8 @@ def start_game():
 
 					in_cave = a
 
-					x = 0
-					y = -128
+					player.x = 0
+					player.y = -128
 
 			if in_cave is not None:
 				
@@ -4632,7 +4633,7 @@ def start_game():
 
 									if object.special_flags == -1:
 										del objects[in_cave + 1].objects[i]
-										for i in range(random.randint(1, 3)):
+										for _ in range(random.randint(1, 3)):
 											objects[in_cave + 1].objects.append(Object("Gold ore", random.randint(object.x - 128, object.x + 128), random.randint(object.y - 128, object.y + 128), "Gannitto world/files/Images/Items/Gold ore.png", special_flags="Item"))
 										break
 								mouse_object = object.name
@@ -4709,10 +4710,10 @@ def start_game():
 										for i in objects:
 											if i.object_class == "Cave":
 												i.num -= 1
-										for i in range(random.randint(2, 5)):
+										for _ in range(random.randint(2, 5)):
 											objects.append(Object("Wooden", random.randint(object.x - 128, object.x + 128), random.randint(object.y - 128, object.y + 128), "Gannitto world/files/Images/Items/Wooden.png", special_flags="Item"))
 								
-										for i in range(random.randint(1, 3)):
+										for _ in range(random.randint(1, 3)):
 											objects.append(Object("Stick", random.randint(object.x - 128, object.x + 128), random.randint(object.y - 128, object.y + 128), "Gannitto world/files/Images/Items/Stick.png", special_flags="Item"))
 										break
 							
@@ -4744,10 +4745,10 @@ def start_game():
 										for i in objects:
 											if i.__class__ == Cave:
 												i.num -= 1
-										for i in range(random.randint(2, 5)):
+										for _ in range(random.randint(2, 5)):
 											objects.append(Object("Dark wooden", random.randint(object.x - 128, object.x + 128), random.randint(object.y - 128, object.y + 128), "Gannitto world/files/Images/Items/Dark wooden.png", special_flags="Item"))
 								
-										for i in range(random.randint(1, 3)):
+										for _ in range(random.randint(1, 3)):
 											objects.append(Object("Stick", random.randint(object.x - 128, object.x + 128), random.randint(object.y - 128, object.y + 128), "Gannitto world/files/Images/Items/Stick.png", special_flags="Item"))
 										break
 							
@@ -4779,10 +4780,10 @@ def start_game():
 										for i in objects:
 											if i.object_class == "Cave":
 												i.num -= 1
-										for i in range(random.randint(2, 5)):
+										for _ in range(random.randint(2, 5)):
 											objects.append(Object("Birch wooden", random.randint(object.x - 128, object.x + 128), random.randint(object.y - 128, object.y + 128), "Gannitto world/files/Images/Items/Birch wooden.png", special_flags="Item"))
 								
-										for i in range(random.randint(1, 3)):
+										for _ in range(random.randint(1, 3)):
 											objects.append(Object("Stick", random.randint(object.x - 128, object.x + 128), random.randint(object.y - 128, object.y + 128), "Gannitto world/files/Images/Items/Stick.png", special_flags="Item"))
 										break
 
@@ -4969,10 +4970,10 @@ def start_game():
 								for i in objects:
 									if i.object_class == "Cave":
 										i.num -= 1
-								for i in range(random.randint(2, 5)):
+								for _ in range(random.randint(2, 5)):
 									objects.append(Object("Wooden", random.randint(object.x - 128, object.x + 128), random.randint(object.y - 128, object.y + 128), "Gannitto world/files/Images/Items/Wooden.png", special_flags="Item"))
 							
-								for i in range(random.randint(1, 3)):
+								for _ in range(random.randint(1, 3)):
 									objects.append(Object("Stick", random.randint(object.x - 128, object.x + 128), random.randint(object.y - 128, object.y + 128), "Gannitto world/files/Images/Items/Stick.png", special_flags="Item"))
 								break
 						
@@ -4998,10 +4999,10 @@ def start_game():
 								for i in objects:
 									if i.object_class == "Cave":
 										i.num -= 1
-								for i in range(random.randint(2, 5)):
+								for _ in range(random.randint(2, 5)):
 									objects.append(Object("Dark wooden", random.randint(object.x - 128, object.x + 128), random.randint(object.y - 128, object.y + 128), "Gannitto world/files/Images/Items/Dark wooden.png", special_flags="Item"))
 							
-								for i in range(random.randint(1, 3)):
+								for _ in range(random.randint(1, 3)):
 									objects.append(Object("Stick", random.randint(object.x - 128, object.x + 128), random.randint(object.y - 128, object.y + 128), "Gannitto world/files/Images/Items/Stick.png", special_flags="Item"))
 								break
 						
@@ -5027,10 +5028,10 @@ def start_game():
 								for i in objects:
 									if i.object_class == "Cave":
 										i.num -= 1
-								for i in range(random.randint(2, 5)):
+								for _ in range(random.randint(2, 5)):
 									objects.append(Object("Birch wooden", random.randint(object.x - 128, object.x + 128), random.randint(object.y - 128, object.y + 128), "Gannitto world/files/Images/Items/Birch wooden.png", special_flags="Item"))
 							
-								for i in range(random.randint(1, 3)):
+								for _ in range(random.randint(1, 3)):
 									objects.append(Object("Stick", random.randint(object.x - 128, object.x + 128), random.randint(object.y - 128, object.y + 128), "Gannitto world/files/Images/Items/Stick.png", special_flags="Item"))
 								break
 
@@ -5139,6 +5140,7 @@ def start_game():
 								else:
 									object.y -= 30
 
+		# times.append(time.time())
 		if not Backrooms.InBackrooms and in_cave is None and (not multyplayer or multyplayer_mode == "My game"):
 
 			if (game_time < 600 and random.randint(1, 5000) == 1) or (game_time > 600 and random.randint(1, 800) == 1):
@@ -5152,6 +5154,7 @@ def start_game():
 		for bullet in player_bullets:
 			bullet.main()
 		
+		# times.append(time.time())
 		i = -1
 		mobs_to_remove = []
 
@@ -5192,10 +5195,9 @@ def start_game():
 									else:
 										temp = mob.right_animation_images[(mob.animation_count - mob.animation_count % 5) // 5 - 1].copy()
 
-							for a in range(128):
-								for b in range(128):
-									if temp.get_at((a, b)).a != 0:
-										temp.set_at((a, b), (200, 0, 0, 80))
+							for a, b in product(range(128), range(128)):
+								if temp.get_at((a, b)).a != 0:
+									temp.set_at((a, b), (200, 0, 0, 80))
 
 							particles.append(Particle(mob.x + random.randint(-64, 64), mob.y + random.randint(-64, 64), text("-15", 0, 0, (180, 10, 10), return_surface=True), y_bias=3, end_time=0.5))
 							win.blit(temp, (mob.x - player.x + Width // 2 - 64, player.y - mob.y + Height // 2 - 32))
@@ -5223,7 +5225,7 @@ def start_game():
 
 						if mob.attak is None:
 
-							for i in range(random.randint(1, 3)):
+							for _ in range(random.randint(1, 3)):
 								if mob.rand_mob == 1:
 									objects.append(Object("Blue slime", mob.x + random.randint(-30, 30), mob.y + random.randint(-30, 30), "Gannitto world/files/Images/Items/Blue slime.png", special_flags="Item"))
 								else:
@@ -5246,6 +5248,7 @@ def start_game():
 						objects.append(Object("Thread", mob.x + random.randint(-30, 30), mob.y + random.randint(-30, 30), "Gannitto world/files/Images/Items/Thread.png", special_flags="Item"))
 						del mobs[i]
 
+		# times.append(time.time())
 		# Отрисовка игрока
 		
 		# win.blit(shadow(Hiro, Hiro_run + str(costum), len_shadow=50), Hiro_rect)
@@ -5431,6 +5434,7 @@ def start_game():
 								else:
 									win.fill((62, 39, 49), (Width // 2 + 16, Height / 2 - 24, 8, (8 - animation[1] + 8) * 2))
 
+		# times.append(time.time())
 		# Рон
 
 		Ron.walk(player.x, player.y)
@@ -5522,7 +5526,7 @@ def start_game():
 
 		if keys[hot_keys["Screenshot"]] and keys[pygame.K_LALT]:
 			
-			pygame.image.save(win, Path.home + "/Your Screenshot " + time.asctime().replace(":", " ") + ".png")
+			pygame.image.save(win, str(Path.home()) + "/Your Screenshot " + time.asctime().replace(":", " ") + ".png")
 			chat_message(laungveges("Игра: ваш скриншот находится в ", "Your screenshot is in ", "Ойын: Скриншотыңыз бар ") + "C://Users/" + getpass.getuser() + "/Pictures/Your_screenshot " + time.asctime().replace(":", " ") + ".png")
 			
 			for _ in range(3):
@@ -5557,6 +5561,7 @@ def start_game():
 
 		
 
+		# times.append(time.time())
 		# Отрисовка погоды
 					
 		if random.randint(1, 18000) == 1: weather = random.choice(["Clear", "Rain"])
@@ -5605,10 +5610,10 @@ def start_game():
 			else:
 				win_fill(alpha=150 - (game_time - 1190) * 10)
 
+		# times.append(time.time())
 		# Механика анимации слотов
 		if Settings["Display"][5]:
-			for yy in range(0, 3):
-				for xx in range(0, 10):
+			for yy, xx in product(range(0, 3), range(0, 10)):
 				
 					cell_x = 10 + xx * 80
 					cell_y = 10 + yy * 80
@@ -5630,6 +5635,7 @@ def start_game():
 
 		# Меню на клавише TAB
 
+		# times.append(time.time())
 		if keys[hot_keys["TAB menu"]] and not chat_input:
 
 			pygame.image.save(win, path + "Gannitto world/files/Cache/Win.png")
@@ -6143,7 +6149,7 @@ def start_game():
 			
 			a = Width - 10
 			
-			for i in range(player.HP // 10):
+			for _ in range(player.HP // 10):
 				a -= 40
 				win.blit(Heart, (a, 40))
 
@@ -6175,6 +6181,7 @@ def start_game():
 		b = []
 		c = -1
 
+		# times.append(time.time())
 		for i in effects:
 
 			c += 1
@@ -6956,6 +6963,7 @@ if click[0] and pygame.Rect(eval(self.display_mode)[0], eval(self.display_mode)[
 				except:
 					pass
 
+		# times.append(time.time())
 		if inventory.whole_inventory[inventory.start_cell] is not None and inventory.start_cell > 0 and hold_left:
 			
 			pygame.draw.rect(win, text_color, (mouse_x, mouse_y, max(textInfo.size(laungveges(inventory.whole_inventory[inventory.start_cell].info[0], inventory.whole_inventory[inventory.start_cell].info[1], ""))[0], textInfo.size(laungveges(inventory.whole_inventory[inventory.start_cell].purpose[0], inventory.whole_inventory[inventory.start_cell].purpose[1], ""))[0]) + 40, 130), 3)   # TODO исправить ошибку
@@ -6970,14 +6978,9 @@ if click[0] and pygame.Rect(eval(self.display_mode)[0], eval(self.display_mode)[
 		
 		if keys[hot_keys["Screenshot"]] and not keys[pygame.K_LALT]:
 			
-			try:
-				pygame.image.save(win, "C://Users/" + getpass.getuser() + "/Pictures/Your Screenshot at " + time.asctime().replace(":", " ") + ".png")
-				chat_message(laungveges("Игра: ваш скриншот находится в ", "Your screenshot is in ", "Ойын: Скриншотыңыз бар ") + "C://Users/" + getpass.getuser() + "/Pictures/Your_screenshot " + time.asctime().replace(":", " ") + ".png")
-			except:
-				pygame.image.save(win, "C:/Users/" + getpass.getuser() + "/OneDrive/Pictures/Your Screenshot at " + time.asctime().replace(":", " ") + ".png")
-				chat_message(laungveges("Игра: ваш скриншот находится в ", "Your screenshot is in ", "Ойын: Скриншотыңыз бар ") + "C://Users/" + getpass.getuser() + "/OneDrive/Pictures/Your_screenshot " + time.asctime().replace(":", " ") + ".png")
-			
-			for i in range(3):
+			pygame.image.save(win, str(Path.home()) + "/Your Screenshot " + str(time.asctime().replace(":", " ")) + ".png")
+	
+			for _ in range(3):
 				win.fill((200, 255, 200))
 				clock.tick(FPS)
 				pygame.display.update()
@@ -7014,6 +7017,7 @@ if click[0] and pygame.Rect(eval(self.display_mode)[0], eval(self.display_mode)[
 		
 		wall_list = []
 		
+		# times.append(time.time())
 		win_fill((200, 0, 0), 100 - Settings["Display"][0])
 
 		prev_objects = objects.copy()
@@ -7021,6 +7025,7 @@ if click[0] and pygame.Rect(eval(self.display_mode)[0], eval(self.display_mode)[
 		prev_bullets = player_bullets.copy()
 		prev_rects = big_rects.copy()
 		
+		# times.append(time.time())
 		pygame.display.update()
 		clock.tick(FPS)
 
