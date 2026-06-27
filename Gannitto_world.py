@@ -20,8 +20,6 @@ from Globals import *
 
 pygame.init()
 
-
-
 """
 Тегом ## отмечены строки кода, где ещё нет перевода на все языки
 Чтобы найти что-то на карте кода, просто вбейте в поиск
@@ -59,8 +57,6 @@ pygame.init()
    ####   ####              #########          ########  	   #########   
 
 """
-
-num = 1
 
 def text(text: str, text_x: int, text_y: int, color: tuple=text_color, size: int=20, alignment: bool=False, letter_spasing: int=10, surface: pygame.Surface=win, max_width: int=0, return_surface: bool=False, spase_between_strings: int=10):
 	
@@ -3745,7 +3741,6 @@ hot_keys = Saver.load_objects(path + "Gannitto world/files/Settings/Hot keys.sav
 player = Player()
 dt = 0
 
-
 # Основной цикл игры
 
 def start_game():
@@ -3769,11 +3764,16 @@ def start_game():
 	Width, Height = pygame.display.get_surface().get_size()
 	tiles_x = (Width // tile_size) + 3
 	tiles_y = (Height // tile_size) + 3
-
 	dx = 0
 	dy = 0
 
 	new_particles = []
+
+	if Settings["Game"][1]:
+		up_b = Button(Width - 148, Height - 148, arrow_up, arrow_up, win, sound=False, sleep_time=0)
+		left_b = Button(Width - 222, Height - 74, arrow_left, arrow_left, win, sound=False, sleep_time=0)
+		down_b = Button(Width - 148, Height - 74, arrow_down, arrow_down, win, sound=False, sleep_time=0)
+		right_b = Button(Width - 74, Height - 74, arrow_right, arrow_right, win, sound=False, sleep_time=0)
 
 	# Загрузка данных мира
 
@@ -3851,17 +3851,13 @@ def start_game():
 
 
 	while True:
+		# times = [time.time()]
 		# times.append(time.time())
 
 		mouse_x, mouse_y = pygame.mouse.get_pos()
 		mouse_object = None
 		click = pygame.mouse.get_pressed()
 		Width, Height = pygame.display.get_surface().get_size()
-
-		up_b = Button(Width - 148, Height - 148, arrow_up, arrow_up, win, sound=False, sleep_time=0)
-		left_b = Button(Width - 222, Height - 74, arrow_left, arrow_left, win, sound=False, sleep_time=0)
-		down_b = Button(Width - 148, Height - 74, arrow_down, arrow_down, win, sound=False, sleep_time=0)
-		right_b = Button(Width - 74, Height - 74, arrow_right, arrow_right, win, sound=False, sleep_time=0)
 
 		dt = clock.tick(60) / 1000.0
 		game_time = int(time.time() - start_time)
@@ -4330,11 +4326,11 @@ def start_game():
 					biom_name = big_rect.main()
 			start_tile_x = (player.x - Width // 2) // tile_size - 1
 			start_tile_y = (player.y - Height // 2) // tile_size - 1
-
+			biom_texture = textures[biom_name]
 			if biom_name is not None:
 				for i, ii in product(range(tiles_x), range(tiles_y)):
-					win.blit(textures[biom_name], ((start_tile_x + i) * tile_size - player.x + Width // 2, (start_tile_y + ii) * tile_size - player.y + Height // 2))
-			
+					win.blit(biom_texture, ((start_tile_x + i) * tile_size - player.x + Width // 2, (start_tile_y + ii) * tile_size - player.y + Height // 2))
+
 			if game_time > 600 and not night_playing:
 				music_channel.stop()
 				music_channel.play(pygame.mixer.Sound(path + "Gannitto world/files/Soundtracks/Night " + str(random.randint(1, 2)) + ".mp3"))
@@ -5535,25 +5531,25 @@ def start_game():
 				pygame.display.update()
 			time.sleep(0.1)
 
-		if keys[pygame.K_UP] or keys[pygame.K_w] or up_b.get_pressed():
+		if keys[pygame.K_UP] or keys[pygame.K_w] or (Settings["Game"][1] and up_b.get_pressed()):
 
 			for i in wall_list:
 				if i.x - 256 < player.x < i.x + 256 and i.y - 256 < player.y < i.y + 256:
 					text(laungveges("К сожалению, вы не можете ходить через стены", "Unfortunately you can't walk through walls", "Өкінішке орай, сіз қабырғалардан өте алмайсыз"), Width // 2, Height // 2, (200, 30, 30), alignment=True)
 
-		if keys[pygame.K_DOWN] or keys[pygame.K_s] or down_b.get_pressed():
+		if keys[pygame.K_DOWN] or keys[pygame.K_s] or (Settings["Game"][1] and down_b.get_pressed()):
 
 			for i in wall_list:
 				if i.x - 256 < player.x < i.x + 256 and i.y - 256 < player.y < i.y + 256:
 					text(laungveges("К сожалению, вы не можете ходить через стены", "Unfortunately you can't walk through walls", "Өкінішке орай, сіз қабырғалардан өте алмайсыз"), Width // 2, Height // 2, (200, 30, 30), alignment=True)
 
-		if keys[pygame.K_LEFT] or keys[pygame.K_a] or left_b.get_pressed():
+		if keys[pygame.K_LEFT] or keys[pygame.K_a] or (Settings["Game"][1] and left_b.get_pressed()):
 
 			for i in wall_list:
 				if i.x - 256 < player.x < i.x + 256 and i.y - 256 < player.y < i.y + 256:
 					text(laungveges("К сожалению, вы не можете ходить через стены", "Unfortunately you can't walk through walls", "Өкінішке орай, сіз қабырғалардан өте алмайсыз"), Width // 2, Height // 2, (200, 30, 30), alignment=True)
 		
-		if keys[pygame.K_RIGHT] or keys[pygame.K_d] or right_b.get_pressed():
+		if keys[pygame.K_RIGHT] or keys[pygame.K_d] or (Settings["Game"][1] and right_b.get_pressed()):
 			
 			for i in wall_list:
 				if i.x - 256 < player.x < i.x + 256 and i.y - 256 < player.y < i.y + 256:
@@ -6452,19 +6448,19 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 					
 				else:
 					objects.append(Portal())
-		build_tuple_now = eval(build_tuple)
-		build(build_tuple_now, Object("Table", 0, 0, "Gannitto world/files/Images/Objects/Table.png", [256, 256], special_flags=1), "Table")
-		build(build_tuple_now, Object("Wall table", 0, 0, "Gannitto world/files/Images/Objects/Wall table.png", [256, 256], special_flags=1), "Wall table")
-		build(build_tuple_now, Object("Furnace", 0, 0, "Gannitto world/files/Images/Items/Furnace.png", [256, 256], special_flags=1), "Furnace")
-		build(build_tuple_now, Object("Punch", 0, 0, "Gannitto world/files/Images/Objects/Punch 1.png", [256, 256], special_flags=1), "Punch")
+		build_tuple = (changed_slot, player, objects, particles, Width, Height)
+		build(build_tuple, Object("Table", 0, 0, "Gannitto world/files/Images/Objects/Table.png", [256, 256], special_flags=1), "Table")
+		build(build_tuple, Object("Wall table", 0, 0, "Gannitto world/files/Images/Objects/Wall table.png", [256, 256], special_flags=1), "Wall table")
+		build(build_tuple, Object("Furnace", 0, 0, "Gannitto world/files/Images/Items/Furnace.png", [256, 256], special_flags=1), "Furnace")
+		build(build_tuple, Object("Punch", 0, 0, "Gannitto world/files/Images/Objects/Punch 1.png", [256, 256], special_flags=1), "Punch")
 		
-		build(build_tuple_now, Object("Farmland", 0, 0, "Gannitto world/files/Images/Objects/Farmland.png", [128, 128], special_flags=1), "Stone hoe", get_item_from_inventory=0, command="pygame.mixer.Sound.play(pygame.mixer.Sound('" + path + "Gannitto world/files/Sounds/Dirt.mp3" + "'))")
+		build(build_tuple, Object("Farmland", 0, 0, "Gannitto world/files/Images/Objects/Farmland.png", [128, 128], special_flags=1), "Stone hoe", get_item_from_inventory=0, command="pygame.mixer.Sound.play(pygame.mixer.Sound('" + path + "Gannitto world/files/Sounds/Dirt.mp3" + "'))")
 		
 		if inventory.whole_inventory[changed_slot] is None: a = ""
 		else:
 			a = inventory.whole_inventory[changed_slot].name[:-6] if " seeds" in inventory.whole_inventory[changed_slot].name else inventory.whole_inventory[changed_slot].name
 		
-		try: build(build_tuple_now, Particle(0, 0, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Objects/" + a + " 1.png"), (128, 128)), can_interfere_with_placing=True, end_time=random.randint(1, 3),
+		try: build(build_tuple, Particle(0, 0, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Objects/" + a + " 1.png"), (128, 128)), can_interfere_with_placing=True, end_time=random.randint(1, 3),
 					end_command="particles.append(Particle(particle.x, particle.y, pygame.transform.scale(pygame.image.load(path + 'Gannitto world/files/Images/Objects/' + particle.special_flags[0] + ' 2.png'), (128, 128)), can_interfere_with_placing=True, end_time=random.randint(5, 10), save_particle=True, tick_command=particle.special_flags[1], tick_command_locals={'a': 0, 'b': 0}, tick_command_globals={'display_image': display_image, 'win_fill': win_fill, 'random': random}, tick_command_globals_in_the_end=('inventory', 'changed_slot'), end_command=particle.special_flags[3], end_command_globals={'random': random}, special_flags=particle.special_flags))", end_command_globals={"particles": particles, "Particle": Particle, "random": random, "display_image": display_image, "win_fill": win_fill}, save_particle=True, special_flags=[a, """
 if self.special_flags[2]:
 	a, b = display_image(self.x, self.y, 128, 128)
@@ -7026,6 +7022,9 @@ if click[0] and pygame.Rect(eval(self.display_mode)[0], eval(self.display_mode)[
 		prev_rects = big_rects.copy()
 		
 		# times.append(time.time())
+		# for i, ttt in enumerate(times[1:]): print(i + 1, ". ", ttt - times[i], sep="")
+		# print()
+
 		pygame.display.update()
 		clock.tick(FPS)
 
@@ -7472,12 +7471,11 @@ def worlds():
 					mouse_click_image += 1
 			except TypeError:
 				pass
-
 		
 		if alt_pressed: draw_key("ESC", 44, 108)
 
 		win_fill(alpha=100 - Settings["Display"][0])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
-			
+		
 		pygame.display.update()
 		clock.tick(30)
 
@@ -7501,7 +7499,7 @@ def menu():
 	win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Discord logo.png"), (108, 81)), (Width - 90, Height - 80))
 	win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/More.png"), (64, 64)), (Width - 140, Height - 70))
 	win_lighten(win.copy())
-	
+	version = open(path + "Gannitto world/files/Version.txt").read()
 	more_menu_open = False
 
 	mouse_press = False
@@ -7540,15 +7538,12 @@ def menu():
 				change_a_character_button.y = Height / 2 + 150
 			time.sleep(0.1)
 		
-		win.blit(Screensaver2, (0, 0))
-		if num == 30: num = 1
-		num += 1
 		if not more_menu_open:
 			play_button.main(worlds)
 			settings_button.main(settings)
 			change_a_character_button.main(change_a_character)
 		
-		text("© Gannitto World " + open(path + "Gannitto world/files/Version.txt").read() + " oficial version", 5, Height - 30, (255, 255, 255))
+		text("© Gannitto World " + version + " oficial version", 5, Height - 30, (255, 255, 255))
 
 		win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Discord logo.png"), (108, 81)), (Width - 90, Height - 80))
 		if mouse_x > Width - 70 and mouse_y > Height - 80:
