@@ -16,6 +16,7 @@ from itertools import product
 from Functions import *
 from Build import build
 from Inventory import inventory
+from Translator import translator
 from Globals import *
 
 pygame.init()
@@ -57,6 +58,8 @@ pygame.init()
    ####   ####              #########          ########  	   #########   
 
 """
+
+t = translator.get
 
 def text(text: str, text_x: int, text_y: int, color: tuple=text_color, size: int=20, alignment: bool=False, letter_spasing: int=10, surface: pygame.Surface=win, max_width: int=0, return_surface: bool=False, spase_between_strings: int=10):
 	
@@ -778,7 +781,7 @@ class Player:
 		self.god_mode = False
 		self.is_moving = False
 		
-		# Используем анимации из глобального объекта
+		# Анимации из PlayerAnimations
 		self.animations = player_animations.animations
 		
 		# Текущий спрайт
@@ -2211,15 +2214,15 @@ def settings():
 
 	help_button = Button(10, 117, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Help.png"), (132, 64)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Help 2.png"), (132, 64)), win)
 	display_button = Button(10, 192, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Display.png"), (222, 64)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Display 2.png"), (222, 64)), win)
-	laungveges_button = Button(10, 267, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Laungveges.png"), (336, 64)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Laungveges 2.png"), (336, 64)), win)
+	languages_button = Button(10, 267, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Languages.png"), (272, 64)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Languages 2.png"), (272, 64)), win)
 	user_button = Button(10, 342, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/User.png"), (132, 64)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/User 2.png"), (132, 64)), win)
 	sound_button = Button(10, 417, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Sound.png"), (160, 64)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Sound 2.png"), (160, 64)), win)
-	statistics_button = Button(10, 492, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Statistics.png"), (336, 64)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Statistics 2.png"), (336, 64)), win)
+	statistics_button = Button(10, 492, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Statistics.png"), (300, 64)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Statistics 2.png"), (300, 64)), win)
 	keys_button = Button(10, 567, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Keys.png"), (132, 64)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Keys 2.png"), (132, 64)), win)
 	game_button = Button(10, 642, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Game.png"), (132, 64)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Game 2.png"), (132, 64)), win)
 	
-	english_button = Button(385, 198, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/English.png"), (228, 64)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/English 2.png"), (228, 64)), win)
-	russian_button = Button(385, 267, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Russian.png"), (228, 64)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Russian 2.png"), (228, 64)), win)
+	english_button = Button(385, 198, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/English.png"), (220, 64)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/English 2.png"), (220, 64)), win)
+	russian_button = Button(385, 267, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Russian.png"), (220, 64)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Russian 2.png"), (220, 64)), win)
 	kazach_button = Button(385, 336, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Kazach.png"), (188, 64)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Kazach 2.png"), (188, 64)), win)
 
 	page_back_button = Button(361, Height - 138, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Back.png"), (128, 128)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Back 2.png"), (128, 128)), win)
@@ -2231,25 +2234,25 @@ def settings():
 		
 		global Settings
 
-		if Width - 30 - bigTextInfo.size(laungveges("Сбросить настройки", "Reset settings", "Параметрлерді қалпына келтіру"))[0] < mouse_x < Width - 30 and 30 < mouse_y < 60:
-			win.blit(bigTextInfo.render(laungveges("Сбросить настройки", "Reset settings", "Параметрлерді қалпына келтіру"), True, (58, 68, 102)), (Width - 30 - bigTextInfo.size(laungveges("Сбросить настройки", "Reset settings", ""))[0], 30))
+		if Width - 30 - bigTextInfo.size(t("Reset settings"))[0] < mouse_x < Width - 30 and 30 < mouse_y < 60:
+			win.blit(bigTextInfo.render(t("Reset settings"), True, (58, 68, 102)), (Width - 30 - bigTextInfo.size(t("Reset settings"))[0], 30))
 			if pygame.mouse.get_pressed()[0]:
 					
 				Settings = {
-		
+					
 					"Display": [100, 90, 0, False, True, True, 30, True, True, True, True],
 					"User": ["Gannitto"],
 					"Sound": [1, 1],
 					"Keys": ["a", "s", "w", "d", "e", "c", "TAB", "SPACE"],
 					"Game": [True, False]
-		
+						
 					}
 		else:
-			win.blit(bigTextInfo.render(laungveges("Сбросить настройки", "Reset settings", "Параметрлерді қалпына келтіру"), True, (139, 155, 180)), (Width - 30 - bigTextInfo.size(laungveges("Сбросить настройки", "Reset settings", ""))[0], 30))
+			win.blit(bigTextInfo.render(t("Reset settings"), True, (139, 155, 180)), (Width - 30 - bigTextInfo.size(t("Reset settings"))[0], 30))
 
 	def help():
 
-		global win, screenmode, changed_laungvege, mouse_x, mouse_y, mouse_click_image, does_lighten, page, alt_pressed
+		global win, screenmode, changed_language, mouse_x, mouse_y, mouse_click_image, does_lighten, page, alt_pressed
 				 
 		while True:
 
@@ -2292,7 +2295,7 @@ def settings():
 			win.blit(bigTextInfo.render(str(page), True, (139, 155, 180)), ((Width - 415) // 2 + 391, Height - 96))
 			win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Help 2.png"), (132, 64)), (10, 117))
 			display_button.main(display)
-			laungveges_button.main(Laungveges)
+			languages_button.main(Languages)
 			user_button.main(User)
 			sound_button.main(Sound)
 			statistics_button.main(Statistics)
@@ -2301,8 +2304,8 @@ def settings():
 
 			if page == 1:
 				
-				win.blit(bigTextInfo.render(laungveges("Начало игры", "Start game", "Ойынның басталуы"), True, (139, 155, 180)), (385, 123))
-				win.blit(textInfo.render(laungveges(" • Чтобы ходить вы можете использовать как и стрелки, так и A, S, W, и D.", " • To move, you can use the arrows or A, S, W and D", "•Жылжыту үшін көрсеткілерді де, A, S, W және D түймелерін де пайдалануға болады."), True, (139, 155, 180)), (385, 209)) # между строками 86 пикселей
+				win.blit(bigTextInfo.render(t("Start game"), True, (139, 155, 180)), (385, 123))
+				win.blit(textInfo.render(t(" • To move, you can use the arrows or A, S, W and D"), True, (139, 155, 180)), (385, 209)) # между строками 86 пикселей
 				win.blit(arrow_up, (459, 239))
 				win.blit(arrow_left, (385, 313))
 				win.blit(arrow_down, (459, 313))
@@ -2315,28 +2318,28 @@ def settings():
 				win.blit(bigTextInfo.render("A", True, (139, 155, 180)), (640, 321))
 				win.blit(bigTextInfo.render("S", True, (139, 155, 180)), (716, 321))
 				win.blit(bigTextInfo.render("D", True, (139, 155, 180)), (790, 321))
-				win.blit(textInfo.render(laungveges(" • Так же, вы можете положить предмет на землю, нажав E, а чтобы его потом", "  Also, you can put an item on the ground by pressing E, and to get it, just click", " • Сондай-ақ, E түймесін басу арқылы затты жерге қоюға болады,"), True, (139, 155, 180)), (385, 381)) # между строками 30 пикселей
-				win.blit(textInfo.render(laungveges("подобрать, просто нажмите на него!", "on it!", "ал кейінірек алу үшін жай ғана басыңыз!"), True, (139, 155, 180)), (385, 411))
-				win.blit(textInfo.render(laungveges(" • Если вы хотите узнать свой координаты, или что-нибудь ещё, нажмите F2", " • If you want to know you coordinate, or anything more, press F2", "• Координаттарды немесе басқа кез келген нәрсені білгіңіз келсе, F2 пернесін басыңыз"), True, (139, 155, 180)), (385, 441))
-				win.blit(textInfo.render(laungveges("для открытия меню.", "to open the menu", "мәзірді ашу үшін"), True, (139, 155, 180)), (385, 471))
-				win.blit(textInfo.render(laungveges(" • При нажатии на I откроется весь инвентарь, чтобы его закрыть, нажмите", " • Clicking on I will open the entire inventory, to close it, click again.", "• Мен түймешігін бассаңыз, бүкіл тізімді ашамын, оны жабу үшін қайтадан басыңыз"), True, (139, 155, 180)), (385, 501))
-				win.blit(textInfo.render(laungveges("ещё раз", None, None), True, (139, 155, 180)), (385, 531))
-				win.blit(textInfo.render(laungveges(" • В верхнем правом углу есть пункт, в котором можно узнать информацию", " • In the upper right corner there is an item where you can find out", " • Жоғарғы оң жақ бұрышта ақпаратты табуға болатын элемент бар"), True, (139, 155, 180)), (385, 561))
-				win.blit(textInfo.render(laungveges("об объекте, на который вы навели.", "information about the object you hovered over", "меңзерді апарған нысан туралы."), True, (139, 155, 180)), (385, 591))
+				win.blit(textInfo.render(t("  Also, you can put an item on the ground by pressing E, and to get it, just click"), True, (139, 155, 180)), (385, 381)) # между строками 30 пикселей
+				win.blit(textInfo.render(t("on it!"), True, (139, 155, 180)), (385, 411))
+				win.blit(textInfo.render(languages(" • Если вы хотите узнать свой координаты, или что-нибудь ещё, нажмите F2", " • If you want to know you coordinate, or anything more, press F2", "• Координаттарды немесе басқа кез келген нәрсені білгіңіз келсе, F2 пернесін басыңыз"), True, (139, 155, 180)), (385, 441))
+				win.blit(textInfo.render(languages("для открытия меню.", "to open the menu", "мәзірді ашу үшін"), True, (139, 155, 180)), (385, 471))
+				win.blit(textInfo.render(languages(" • При нажатии на I откроется весь инвентарь, чтобы его закрыть, нажмите", " • Clicking on I will open the entire inventory, to close it, click again.", "• Мен түймешігін бассаңыз, бүкіл тізімді ашамын, оны жабу үшін қайтадан басыңыз"), True, (139, 155, 180)), (385, 501))
+				win.blit(textInfo.render(languages("ещё раз", None, None), True, (139, 155, 180)), (385, 531))
+				win.blit(textInfo.render(languages(" • В верхнем правом углу есть пункт, в котором можно узнать информацию", " • In the upper right corner there is an item where you can find out", " • Жоғарғы оң жақ бұрышта ақпаратты табуға болатын элемент бар"), True, (139, 155, 180)), (385, 561))
+				win.blit(textInfo.render(languages("об объекте, на который вы навели.", "information about the object you hovered over", "меңзерді апарған нысан туралы."), True, (139, 155, 180)), (385, 591))
 				
 			elif page == 2:
 				
-				win.blit(bigTextInfo.render(laungveges("Крафт", "Craft", "Қолөнер"), True, (139, 155, 180)), (385, 123))
-				win.blit(textInfo.render(laungveges("   Наверняка, тебе было интересно, что это за слоты под инвентарём. Это", "    Forsnre, you were interesting about the cells under the inventory. This is", "Әлбетте, сіз бұл слоттардың түгендеу астында не бар екенін сұрадыңыз. Бұл"), True, (139, 155, 180)), (385, 209))
-				win.blit(textInfo.render(laungveges("система крафта", "crafting system", "Қолөнер жүйесі"), True, (139, 155, 180)), (385, 239))
+				win.blit(bigTextInfo.render(languages("Крафт", "Craft", "Қолөнер"), True, (139, 155, 180)), (385, 123))
+				win.blit(textInfo.render(languages("   Наверняка, тебе было интересно, что это за слоты под инвентарём. Это", "    Forsnre, you were interesting about the cells under the inventory. This is", "Әлбетте, сіз бұл слоттардың түгендеу астында не бар екенін сұрадыңыз. Бұл"), True, (139, 155, 180)), (385, 209))
+				win.blit(textInfo.render(languages("система крафта", "crafting system", "Қолөнер жүйесі"), True, (139, 155, 180)), (385, 239))
 				win.blit(Changed_inventory_slot, (385, 269))
 				win.blit(Changed_inventory_slot, (465, 269))
 				win.blit(Inventory_slot, (545, 269))
-				win.blit(textInfo.render(laungveges("   На первый взгляд, всё как-то уныло, но на самом деле, крафтить весело!", "  At first glance, everything is somehow dull, but in fact, crafting is fun!", "Бір қарағанда, бәрі қандай да бір түсініксіз, бірақ шын мәнінде қолөнер қызықты!"), True, (139, 155, 180)), (385, 359))
-				win.blit(textInfo.render(laungveges("Первый слот обозначает объект, который нужен для крафта, например стол.", "The first slot denotes an object that is needed for crafting, such as a table.", "Бірінші ұяшық кесте сияқты өңдеуге қажет нысанды білдіреді"), True, (139, 155, 180)), (385, 389))
-				win.blit(textInfo.render(laungveges("Второй слот - инструмент, который тебе нужен, например молоток. Дальше", "The second slot is the tool you need, like a hammer. Еhen there are 7 slots", "Екінші ұяшық - балға сияқты сізге қажет құрал. Әрі қарай"), True, (139, 155, 180)), (385, 419))
-				win.blit(textInfo.render(laungveges("идут 7 слотов для предметов. Если положить предмет в первый, то", "for items. If you put an item in the first one, then the second one is", "7 элемент ұясы бар. Егер объектіні біріншіге қойсақ, онда"), True, (139, 155, 180)), (385, 449))
-				win.blit(textInfo.render(laungveges("разблокируется второй, потом третий, и так далее.", "unlocked, then the third, and so on.", "екіншісі құлыптан босатылады, содан кейін үшінші және т.б."), True, (139, 155, 180)), (385, 479))
+				win.blit(textInfo.render(languages("   На первый взгляд, всё как-то уныло, но на самом деле, крафтить весело!", "  At first glance, everything is somehow dull, but in fact, crafting is fun!", "Бір қарағанда, бәрі қандай да бір түсініксіз, бірақ шын мәнінде қолөнер қызықты!"), True, (139, 155, 180)), (385, 359))
+				win.blit(textInfo.render(languages("Первый слот обозначает объект, который нужен для крафта, например стол.", "The first slot denotes an object that is needed for crafting, such as a table.", "Бірінші ұяшық кесте сияқты өңдеуге қажет нысанды білдіреді"), True, (139, 155, 180)), (385, 389))
+				win.blit(textInfo.render(languages("Второй слот - инструмент, который тебе нужен, например молоток. Дальше", "The second slot is the tool you need, like a hammer. Еhen there are 7 slots", "Екінші ұяшық - балға сияқты сізге қажет құрал. Әрі қарай"), True, (139, 155, 180)), (385, 419))
+				win.blit(textInfo.render(languages("идут 7 слотов для предметов. Если положить предмет в первый, то", "for items. If you put an item in the first one, then the second one is", "7 элемент ұясы бар. Егер объектіні біріншіге қойсақ, онда"), True, (139, 155, 180)), (385, 449))
+				win.blit(textInfo.render(languages("разблокируется второй, потом третий, и так далее.", "unlocked, then the third, and so on.", "екіншісі құлыптан босатылады, содан кейін үшінші және т.б."), True, (139, 155, 180)), (385, 479))
 				win.blit(Changed_inventory_slot, (385, 509))
 				win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Items/Furnace.png"), (64, 64)), (385, 509))
 				win.blit(Changed_inventory_slot, (465, 509))
@@ -2345,9 +2348,9 @@ def settings():
 				win.blit(Inventory_slot, (625, 509))
 				win.blit(Changed_inventory_slot, (1185, 509))
 				win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Items/Brick.png"), (64, 64)), (1185, 509))
-				win.blit(textInfo.render(laungveges("   Если положить определённую комбинацию предметов, то можно будет", "   If you put a certain combination of items, then you can", "Егер сіз элементтердің белгілі бір комбинациясын қойсаңыз, онда сіз жасай аласыз"), True, (139, 155, 180)), (385, 599))
-				win.blit(textInfo.render(laungveges("получить что-либо. Например, если поставить печь и положить глину в ячейки", "get something. For example, if you put a furnace and put clay in the cells of", "бірдеңе алу. Мысалы, пешті қойып, ұяшықтарға балшық салсаңыз"), True, (139, 155, 180)), (385, 629))
-				win.blit(textInfo.render(laungveges("крафта, то можно будет получить кирпич, а чтобы его получить, нажми.", "crafting, you can get a brick, and to get it, click.", "қолөнер, сіз кірпіш алуға болады, және оны алу үшін басыңыз."), True, (139, 155, 180)), (385, 659))
+				win.blit(textInfo.render(languages("   Если положить определённую комбинацию предметов, то можно будет", "   If you put a certain combination of items, then you can", "Егер сіз элементтердің белгілі бір комбинациясын қойсаңыз, онда сіз жасай аласыз"), True, (139, 155, 180)), (385, 599))
+				win.blit(textInfo.render(languages("получить что-либо. Например, если поставить печь и положить глину в ячейки", "get something. For example, if you put a furnace and put clay in the cells of", "бірдеңе алу. Мысалы, пешті қойып, ұяшықтарға балшық салсаңыз"), True, (139, 155, 180)), (385, 629))
+				win.blit(textInfo.render(languages("крафта, то можно будет получить кирпич, а чтобы его получить, нажми.", "crafting, you can get a brick, and to get it, click.", "қолөнер, сіз кірпіш алуға болады, және оны алу үшін басыңыз."), True, (139, 155, 180)), (385, 659))
 			
 			if Settings["Display"][7]:
 
@@ -2459,7 +2462,7 @@ def settings():
 			win.blit(bigTextInfo.render(str(page), True, (139, 155, 180)), ((Width - 415) // 2 + 391, Height - 96))
 			help_button.main(help)
 			win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Display 2.png"), (222, 64)), (10, 192))
-			laungveges_button.main(Laungveges)
+			languages_button.main(Languages)
 			user_button.main(User)
 			sound_button.main(Sound)
 			statistics_button.main(Statistics)
@@ -2469,68 +2472,68 @@ def settings():
 
 			if page == 1:
 
-				if bigTextInfo.size(laungveges("Яркость", "Brightness", "Жарықтық"))[0] + 337 <= mouse_x <= bigTextInfo.size(laungveges("Яркость", "Brightness", "Жарықтық"))[0] + 467 + 120 and 113 <= mouse_y <= 184 and click[0]:
+				if bigTextInfo.size(t("Brightness"))[0] + 337 <= mouse_x <= bigTextInfo.size(t("Brightness"))[0] + 467 + 120 and 113 <= mouse_y <= 184 and click[0]:
 					Brightness = True
-				if bigTextInfo.size(laungveges("Прозрачность инвентаря", "Inventory transparency", "Инвентаризацияның ашықтығы"))[0] + 337 <= mouse_x <= bigTextInfo.size(laungveges("Прозрачность инвентаря", "Inventory transparency", "Инвентаризацияның ашықтығы"))[0] + 467 + 120 and 199 <= mouse_y <= 270 and click[0]:
+				if bigTextInfo.size(t("Inventory transparency"))[0] + 337 <= mouse_x <= bigTextInfo.size(t("Inventory transparency"))[0] + 467 + 120 and 199 <= mouse_y <= 270 and click[0]:
 					Inventory_alpha = True
-				if bigTextInfo.size(laungveges("Отдаление", "Distance", "Алшақтау"))[0] + 337 <= mouse_x <= bigTextInfo.size(laungveges("Отдаление", "Distance", "Алшақтау"))[0] + 467 + 120 and 285 <= mouse_y <= 356 and click[0]:
+				if bigTextInfo.size(t("Distance"))[0] + 337 <= mouse_x <= bigTextInfo.size(t("Distance"))[0] + 467 + 120 and 285 <= mouse_y <= 356 and click[0]:
 					Distance = True
 
-				win.blit(bigTextInfo.render(laungveges("Яркость", "Brightness", "Жарықтық"), True, (139, 155, 180)), (385, 123))
-				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(laungveges("Яркость", "Brightness", "Жарықтық"))[0] + 395, 113, 120, 71), 5)
-				win.blit(bigTextInfo.render("%", True, (139, 155, 180)), (bigTextInfo.size(laungveges("Яркость", "Brightness", "Жарықтық"))[0] + 525, 123))
+				win.blit(bigTextInfo.render(t("Brightness"), True, (139, 155, 180)), (385, 123))
+				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(t("Brightness"))[0] + 395, 113, 120, 71), 5)
+				win.blit(bigTextInfo.render("%", True, (139, 155, 180)), (bigTextInfo.size(t("Brightness"))[0] + 525, 123))
 
 				if Brightness:
-					win.blit(bigTextInfo.render(input_text, True, (139, 155, 180)), (bigTextInfo.size(laungveges("Яркость", "Brightness", "Жарықтық"))[0] + 405, 123))
+					win.blit(bigTextInfo.render(input_text, True, (139, 155, 180)), (bigTextInfo.size(t("Brightness"))[0] + 405, 123))
 				else:
-					win.blit(bigTextInfo.render(str(Settings["Display"][0]), True, (139, 155, 180)), (bigTextInfo.size(laungveges("Яркость", "Brightness", "Жарықтық"))[0] + 405, 123))
+					win.blit(bigTextInfo.render(str(Settings["Display"][0]), True, (139, 155, 180)), (bigTextInfo.size(t("Brightness"))[0] + 405, 123))
 				
 
 
-				win.blit(bigTextInfo.render(laungveges("Прозрачность инвентаря", "Inventory transparency", "Инвентаризацияның ашықтығы"), True, (139, 155, 180)), (385, 209))
-				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(laungveges("Прозрачность инвентаря", "Inventory transparency", "Инвентаризацияның ашықтығы"))[0] + 395, 199, 120, 71), 5)
-				win.blit(bigTextInfo.render("%", True, (139, 155, 180)), (bigTextInfo.size(laungveges("Прозрачность инвентаря", "Inventory transparency", "Инвентаризацияның ашықтығы"))[0] + 525, 209))
+				win.blit(bigTextInfo.render(t("Inventory transparency"), True, (139, 155, 180)), (385, 209))
+				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(t("Inventory transparency"))[0] + 395, 199, 120, 71), 5)
+				win.blit(bigTextInfo.render("%", True, (139, 155, 180)), (bigTextInfo.size(t("Inventory transparency"))[0] + 525, 209))
 				if Inventory_alpha:
-					win.blit(bigTextInfo.render(input_text, True, (139, 155, 180)), (bigTextInfo.size(laungveges("Прозрачность инвентаря", "Inventory transparency", "Инвентаризацияның ашықтығы"))[0] + 405, 209))
+					win.blit(bigTextInfo.render(input_text, True, (139, 155, 180)), (bigTextInfo.size(t("Inventory transparency"))[0] + 405, 209))
 				else:
-					win.blit(bigTextInfo.render(str(Settings["Display"][1]), True, (139, 155, 180)), (bigTextInfo.size(laungveges("Прозрачность инвентаря", "Inventory transparency", "Инвентаризацияның ашықтығы"))[0] + 405, 209))
+					win.blit(bigTextInfo.render(str(Settings["Display"][1]), True, (139, 155, 180)), (bigTextInfo.size(t("Inventory transparency"))[0] + 405, 209))
 
 
 
-				win.blit(bigTextInfo.render(laungveges("Отдаление", "Distance", "Алшақтау"), True, (139, 155, 180)), (385, 295))
-				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(laungveges("Отдаление", "Distance", "Алшақтау"))[0] + 395, 285, 120, 71), 5)
+				win.blit(bigTextInfo.render(t("Distance"), True, (139, 155, 180)), (385, 295))
+				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(t("Distance"))[0] + 395, 285, 120, 71), 5)
 				if Distance:
-					win.blit(bigTextInfo.render(input_text, True, (139, 155, 180)), (bigTextInfo.size(laungveges("Отдаление", "Distance", "Алшақтау"))[0] + 405, 295))
+					win.blit(bigTextInfo.render(input_text, True, (139, 155, 180)), (bigTextInfo.size(t("Distance"))[0] + 405, 295))
 				else:
-					win.blit(bigTextInfo.render(str(Settings["Display"][2]), True, (139, 155, 180)), (bigTextInfo.size(laungveges("Отдаление", "Distance", "Алшақтау"))[0] + 405, 295))
+					win.blit(bigTextInfo.render(str(Settings["Display"][2]), True, (139, 155, 180)), (bigTextInfo.size(t("Distance"))[0] + 405, 295))
 
 
 
-				win.blit(bigTextInfo.render(laungveges("Отображать хитбоксы", "Display hitboxes", "Хитбокстарды көрсету"), True, (139, 155, 180)), (385, 381))
-				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(laungveges("Отображать хитбоксы", "Display hitboxes", "Хитбокстарды көрсету"))[0] + 395, 371, 71, 71), 5)
+				win.blit(bigTextInfo.render(t("Display hitboxes"), True, (139, 155, 180)), (385, 381))
+				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(t("Display hitboxes"))[0] + 395, 371, 71, 71), 5)
 				if Settings["Display"][3]:
-					win.blit(bigTextInfo.render(" ✓", True, (139, 155, 180)), (bigTextInfo.size(laungveges("Отображать хитбоксы", "Display hitboxes", "Хитбокстарды көрсету"))[0] + 405, 381))
-					if bigTextInfo.size(laungveges("Отображать хитбоксы", "Display hitboxes", "Хитбокстарды көрсету"))[0] + 395 <= mouse_x <= bigTextInfo.size(laungveges("Отображать хитбоксы", "Display hitboxes", "Хитбокстарды көрсету"))[0] + 466 and 371 <= mouse_y <= 442 and click[0]:
+					win.blit(bigTextInfo.render(" ✓", True, (139, 155, 180)), (bigTextInfo.size(t("Display hitboxes"))[0] + 405, 381))
+					if bigTextInfo.size(t("Display hitboxes"))[0] + 395 <= mouse_x <= bigTextInfo.size(t("Display hitboxes"))[0] + 466 and 371 <= mouse_y <= 442 and click[0]:
 						Settings["Display"][3] = False
 						time.sleep(0.15)
 				else:
-					win.blit(bigTextInfo.render(" x", True, (139, 155, 180)), (bigTextInfo.size(laungveges("Отображать хитбоксы", "Display hitboxes", "Хитбокстарды көрсету"))[0] + 405, 381))
-					if bigTextInfo.size(laungveges("Отображать хитбоксы", "Display hitboxes", "Хитбокстарды көрсету"))[0] + 395 <= mouse_x <= bigTextInfo.size(laungveges("Отображать хитбоксы", "Display hitboxes", "Хитбокстарды көрсету"))[0] + 466 and 371 <= mouse_y <= 442 and click[0]:
+					win.blit(bigTextInfo.render(" x", True, (139, 155, 180)), (bigTextInfo.size(t("Display hitboxes"))[0] + 405, 381))
+					if bigTextInfo.size(t("Display hitboxes"))[0] + 395 <= mouse_x <= bigTextInfo.size(t("Display hitboxes"))[0] + 466 and 371 <= mouse_y <= 442 and click[0]:
 						Settings["Display"][3] = True
 						time.sleep(0.15)
 
 
 
-				win.blit(bigTextInfo.render(laungveges("Тени", "Shadows", "Көлеңкелер"), True, (139, 155, 180)), (385, 467))
-				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(laungveges("Тени", "Shadows", "Көлеңкелер"))[0] + 395, 457, 71, 71), 5)
+				win.blit(bigTextInfo.render(t("Shadows"), True, (139, 155, 180)), (385, 467))
+				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(t("Shadows"))[0] + 395, 457, 71, 71), 5)
 				if Settings["Display"][4]:
-					win.blit(bigTextInfo.render(" ✓", True, (139, 155, 180)), (bigTextInfo.size(laungveges("Тени", "Shadows", "Көлеңкелер"))[0] + 405, 467))
-					if bigTextInfo.size(laungveges("Тени", "Shadows", "Көлеңкелер"))[0] + 395 <= mouse_x <= bigTextInfo.size(laungveges("Тени", "Shadows", "Көлеңкелер"))[0] + 466 and 457 <= mouse_y <= 528 and click[0]:
+					win.blit(bigTextInfo.render(" ✓", True, (139, 155, 180)), (bigTextInfo.size(t("Shadows"))[0] + 405, 467))
+					if bigTextInfo.size(t("Shadows"))[0] + 395 <= mouse_x <= bigTextInfo.size(t("Shadows"))[0] + 466 and 457 <= mouse_y <= 528 and click[0]:
 						Settings["Display"][4] = False
 						time.sleep(0.15)
 				else:
-					win.blit(bigTextInfo.render(" x", True, (139, 155, 180)), (bigTextInfo.size(laungveges("Тени", "Shadows", "Көлеңкелер"))[0] + 405, 467))
-					if bigTextInfo.size(laungveges("Тени", "Shadows", "Көлеңкелер"))[0] + 395 <= mouse_x <= bigTextInfo.size(laungveges("Тени", "Shadows", "Көлеңкелер"))[0] + 466 and 457 <= mouse_y <= 528 and click[0]:
+					win.blit(bigTextInfo.render(" x", True, (139, 155, 180)), (bigTextInfo.size(t("Shadows"))[0] + 405, 467))
+					if bigTextInfo.size(t("Shadows"))[0] + 395 <= mouse_x <= bigTextInfo.size(t("Shadows"))[0] + 466 and 457 <= mouse_y <= 528 and click[0]:
 						Settings["Display"][4] = True
 						time.sleep(0.15)
 
@@ -2539,16 +2542,16 @@ def settings():
 				if bigTextInfo.size("FPS")[0] + 337 <= mouse_x <= bigTextInfo.size("FPS")[0] + 467 + 120 and 199 <= mouse_y <= 270 and click[0]:
 					fps = True
 
-				win.blit(bigTextInfo.render(laungveges("Анимация слотов инвентаря", "Inventory slots animation", "Түгендеу ұясының анимациясы"), True, (139, 155, 180)), (385, 123))
-				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(laungveges("Анимация слотов инвентаря", "Inventory slots animation", "Түгендеу ұясының анимациясы"))[0] + 395, 113, 71, 71), 5)
+				win.blit(bigTextInfo.render(t("Inventory slots animation"), True, (139, 155, 180)), (385, 123))
+				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(t("Inventory slots animation"))[0] + 395, 113, 71, 71), 5)
 				if Settings["Display"][5]:
-					win.blit(bigTextInfo.render(" ✓", True, (139, 155, 180)), (bigTextInfo.size(laungveges("Анимация слотов инвентаря", "Inventory slots animation", "Түгендеу ұясының анимациясы"))[0] + 405, 123))
-					if bigTextInfo.size(laungveges("Анимация слотов инвентаря", "Inventory slots animation", "Түгендеу ұясының анимациясы"))[0] + 395 <= mouse_x <= bigTextInfo.size(laungveges("Анимация слотов инвентаря", "Inventory slots animation", "Түгендеу ұясының анимациясы"))[0] + 466 and 113 <= mouse_y <= 184 and click[0]:
+					win.blit(bigTextInfo.render(" ✓", True, (139, 155, 180)), (bigTextInfo.size(t("Inventory slots animation"))[0] + 405, 123))
+					if bigTextInfo.size(t("Inventory slots animation"))[0] + 395 <= mouse_x <= bigTextInfo.size(t("Inventory slots animation"))[0] + 466 and 113 <= mouse_y <= 184 and click[0]:
 						Settings["Display"][5] = False
 						time.sleep(0.15)
 				else:
-					win.blit(bigTextInfo.render(" x", True, (139, 155, 180)), (bigTextInfo.size(laungveges("Анимация слотов инвентаря", "Inventory slots animation", "Түгендеу ұясының анимациясы"))[0] + 405, 123))
-					if bigTextInfo.size(laungveges("Анимация слотов инвентаря", "Inventory slots animation", "Түгендеу ұясының анимациясы"))[0] + 395 <= mouse_x <= bigTextInfo.size(laungveges("Анимация слотов инвентаря", "Inventory slots animation", "Түгендеу ұясының анимациясы"))[0] + 466 and 113 <= mouse_y <= 184 and click[0]:
+					win.blit(bigTextInfo.render(" x", True, (139, 155, 180)), (bigTextInfo.size(t("Inventory slots animation"))[0] + 405, 123))
+					if bigTextInfo.size(t("Inventory slots animation"))[0] + 395 <= mouse_x <= bigTextInfo.size(t("Inventory slots animation"))[0] + 466 and 113 <= mouse_y <= 184 and click[0]:
 						Settings["Display"][5] = True
 						time.sleep(0.15)
 
@@ -2563,64 +2566,64 @@ def settings():
 
 
 
-				win.blit(bigTextInfo.render(laungveges("Отображение щелчка мыши", "Mouse click display", "Тінтуірді басу дисплейі"), True, (139, 155, 180)), (385, 295))
-				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(laungveges("Отображение щелчка мыши", "Mouse click display", "Тінтуірді басу дисплейі"))[0] + 395, 285, 71, 71), 5)
+				win.blit(bigTextInfo.render(t("Mouse click display"), True, (139, 155, 180)), (385, 295))
+				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(t("Mouse click display"))[0] + 395, 285, 71, 71), 5)
 
 				if Settings["Display"][7]:
-					win.blit(bigTextInfo.render(" ✓", True, (139, 155, 180)), (bigTextInfo.size(laungveges("Отображение щелчка мыши", "Mouse click display", "Тінтуірді басу дисплейі"))[0] + 405, 295))
-					if bigTextInfo.size(laungveges("Отображение щелчка мыши", "Mouse click display", "Тінтуірді басу дисплейі"))[0] + 395 <= mouse_x <= bigTextInfo.size(laungveges("Отображение щелчка мыши", "Mouse click display", "Тінтуірді басу дисплейі"))[0] + 466 and 285 <= mouse_y <= 356 and click[0]:
+					win.blit(bigTextInfo.render(" ✓", True, (139, 155, 180)), (bigTextInfo.size(t("Mouse click display"))[0] + 405, 295))
+					if bigTextInfo.size(t("Mouse click display"))[0] + 395 <= mouse_x <= bigTextInfo.size(t("Mouse click display"))[0] + 466 and 285 <= mouse_y <= 356 and click[0]:
 						Settings["Display"][7] = False
 						time.sleep(0.15)
 				else:
-					win.blit(bigTextInfo.render(" x", True, (139, 155, 180)), (bigTextInfo.size(laungveges("Отображение щелчка мыши", "Mouse click display", "Тінтуірді басу дисплейі"))[0] + 405, 295))
-					if bigTextInfo.size(laungveges("Отображение щелчка мыши", "Mouse click display", "Тінтуірді басу дисплейі"))[0] + 395 <= mouse_x <= bigTextInfo.size(laungveges("Отображение щелчка мыши", "Mouse click display", "Тінтуірді басу дисплейі"))[0] + 466 and 285 <= mouse_y <= 356 and click[0]:
+					win.blit(bigTextInfo.render(" x", True, (139, 155, 180)), (bigTextInfo.size(t("Mouse click display"))[0] + 405, 295))
+					if bigTextInfo.size(t("Mouse click display"))[0] + 395 <= mouse_x <= bigTextInfo.size(t("Mouse click display"))[0] + 466 and 285 <= mouse_y <= 356 and click[0]:
 						Settings["Display"][7] = True
 						time.sleep(0.15)
 
 
 
-				win.blit(bigTextInfo.render(laungveges("Описание объекта при наведении", "Description of the object on hover", "Меңзердегі нысанның сипаттамасы"), True, (139, 155, 180)), (385, 381))
-				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(laungveges("Описание объекта при наведении", "Description of the object on hover", "Меңзердегі нысанның сипаттамасы"))[0] + 395, 371, 71, 71), 5)
+				win.blit(bigTextInfo.render(t("Description of the object on hover"), True, (139, 155, 180)), (385, 381))
+				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(t("Description of the object on hover"))[0] + 395, 371, 71, 71), 5)
 
 				if Settings["Display"][8]:
-					win.blit(bigTextInfo.render(" ✓", True, (139, 155, 180)), (bigTextInfo.size(laungveges("Описание объекта при наведении", "Description of the object on hover", "Меңзердегі нысанның сипаттамасы"))[0] + 405, 381))
-					if bigTextInfo.size(laungveges("Описание объекта при наведении", "Description of the object on hover", "Меңзердегі нысанның сипаттамасы"))[0] + 395 <= mouse_x <= bigTextInfo.size(laungveges("Описание объекта при наведении", "Description of the object on hover", "Меңзердегі нысанның сипаттамасы"))[0] + 466 and 371 <= mouse_y <= 442 and click[0]:
+					win.blit(bigTextInfo.render(" ✓", True, (139, 155, 180)), (bigTextInfo.size(t("Description of the object on hover"))[0] + 405, 381))
+					if bigTextInfo.size(t("Description of the object on hover"))[0] + 395 <= mouse_x <= bigTextInfo.size(t("Description of the object on hover"))[0] + 466 and 371 <= mouse_y <= 442 and click[0]:
 						Settings["Display"][8] = False
 						time.sleep(0.15)
 				else:
-					win.blit(bigTextInfo.render(" x", True, (139, 155, 180)), (bigTextInfo.size(laungveges("Описание объекта при наведении", "Description of the object on hover", "Меңзердегі нысанның сипаттамасы"))[0] + 405, 381))
-					if bigTextInfo.size(laungveges("Описание объекта при наведении", "Description of the object on hover", "Меңзердегі нысанның сипаттамасы"))[0] + 395 <= mouse_x <= bigTextInfo.size(laungveges("Описание объекта при наведении", "Description of the object on hover", "Меңзердегі нысанның сипаттамасы"))[0] + 466 and 371 <= mouse_y <= 442 and click[0]:
+					win.blit(bigTextInfo.render(" x", True, (139, 155, 180)), (bigTextInfo.size(t("Description of the object on hover"))[0] + 405, 381))
+					if bigTextInfo.size(t("Description of the object on hover"))[0] + 395 <= mouse_x <= bigTextInfo.size(t("Description of the object on hover"))[0] + 466 and 371 <= mouse_y <= 442 and click[0]:
 						Settings["Display"][8] = True
 						time.sleep(0.15)
 
 
 
-				win.blit(bigTextInfo.render(laungveges("Затемнять экран при выключении", "Dim screen when turned off", "Өшірілген кезде экран күңгірттенеді"), True, (139, 155, 180)), (385, 467))
-				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(laungveges("Затемнять экран при выключении", "Dim screen when turned off", "Өшірілген кезде экран күңгірттенеді"))[0] + 395, 457, 71, 71), 5)
+				win.blit(bigTextInfo.render(t("Dim screen when turned off"), True, (139, 155, 180)), (385, 467))
+				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(t("Dim screen when turned off"))[0] + 395, 457, 71, 71), 5)
 
 				if Settings["Display"][9]:
-					win.blit(bigTextInfo.render(" ✓", True, (139, 155, 180)), (bigTextInfo.size(laungveges("Затемнять экран при выключении", "Dim screen when turned off", "Өшірілген кезде экран күңгірттенеді"))[0] + 405, 467))
-					if bigTextInfo.size(laungveges("Затемнять экран при выключении", "Dim screen when turned off", "Өшірілген кезде экран күңгірттенеді"))[0] + 395 <= mouse_x <= bigTextInfo.size(laungveges("Затемнять экран при выключении", "Dim screen when turned off", "Өшірілген кезде экран күңгірттенеді"))[0] + 466 and 457 <= mouse_y <= 528 and click[0]:
+					win.blit(bigTextInfo.render(" ✓", True, (139, 155, 180)), (bigTextInfo.size(t("Dim screen when turned off"))[0] + 405, 467))
+					if bigTextInfo.size(t("Dim screen when turned off"))[0] + 395 <= mouse_x <= bigTextInfo.size(t("Dim screen when turned off"))[0] + 466 and 457 <= mouse_y <= 528 and click[0]:
 						Settings["Display"][9] = False
 						time.sleep(0.15)
 				else:
-					win.blit(bigTextInfo.render(" x", True, (139, 155, 180)), (bigTextInfo.size(laungveges("Затемнять экран при выключении", "Dim screen when turned off", "Өшірілген кезде экран күңгірттенеді"))[0] + 405, 467))
-					if bigTextInfo.size(laungveges("Затемнять экран при выключении", "Dim screen when turned off", "Өшірілген кезде экран күңгірттенеді"))[0] + 395 <= mouse_x <= bigTextInfo.size(laungveges("Затемнять экран при выключении", "Dim screen when turned off", "Өшірілген кезде экран күңгірттенеді"))[0] + 466 and 457 <= mouse_y <= 528 and click[0]:
+					win.blit(bigTextInfo.render(" x", True, (139, 155, 180)), (bigTextInfo.size(t("Dim screen when turned off"))[0] + 405, 467))
+					if bigTextInfo.size(t("Dim screen when turned off"))[0] + 395 <= mouse_x <= bigTextInfo.size(t("Dim screen when turned off"))[0] + 466 and 457 <= mouse_y <= 528 and click[0]:
 						Settings["Display"][9] = True
 						time.sleep(0.15)
 			
 			if page == 3:
 				
-				win.blit(bigTextInfo.render(laungveges("Отображать заставку", "Show intro", "Кіріспе көрсету"), True, (139, 155, 180)), (385, 123))
-				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(laungveges("Отображать заставку", "Show intro", "Кіріспе көрсету"))[0] + 395, 113, 71, 71), 5)
+				win.blit(bigTextInfo.render(t("Show intro"), True, (139, 155, 180)), (385, 123))
+				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(t("Show intro"))[0] + 395, 113, 71, 71), 5)
 				if Settings["Display"][10]:
-					win.blit(bigTextInfo.render(" ✓", True, (139, 155, 180)), (bigTextInfo.size(laungveges("Отображать заставку", "Show intro", "Кіріспе көрсету"))[0] + 405, 123))
-					if bigTextInfo.size(laungveges("Отображать заставку", "Show intro", "Кіріспе көрсету"))[0] + 395 <= mouse_x <= bigTextInfo.size(laungveges("Отображать заставку", "Show intro", "Кіріспе көрсету"))[0] + 466 and 113 <= mouse_y <= 184 and click[0]:
+					win.blit(bigTextInfo.render(" ✓", True, (139, 155, 180)), (bigTextInfo.size(t("Show intro"))[0] + 405, 123))
+					if bigTextInfo.size(t("Show intro"))[0] + 395 <= mouse_x <= bigTextInfo.size(t("Show intro"))[0] + 466 and 113 <= mouse_y <= 184 and click[0]:
 						Settings["Display"][10] = False
 						time.sleep(0.15)
 				else:
-					win.blit(bigTextInfo.render(" x", True, (139, 155, 180)), (bigTextInfo.size(laungveges("Отображать заставку", "Show intro", "Кіріспе көрсету"))[0] + 405, 123))
-					if bigTextInfo.size(laungveges("Отображать заставку", "Show intro", "Кіріспе көрсету"))[0] + 395 <= mouse_x <= bigTextInfo.size(laungveges("Отображать заставку", "Show intro", "Кіріспе көрсету"))[0] + 466 and 113 <= mouse_y <= 184 and click[0]:
+					win.blit(bigTextInfo.render(" x", True, (139, 155, 180)), (bigTextInfo.size(t("Show intro"))[0] + 405, 123))
+					if bigTextInfo.size(t("Show intro"))[0] + 395 <= mouse_x <= bigTextInfo.size(t("Show intro"))[0] + 466 and 113 <= mouse_y <= 184 and click[0]:
 						Settings["Display"][10] = True
 						time.sleep(0.15)
 
@@ -2653,9 +2656,9 @@ def settings():
 			pygame.display.update()
 			clock.tick(FPS)
 
-	def Laungveges():
+	def Languages():
 
-		global win, screenmode, changed_laungvege, mouse_click_image, does_lighten, page, alt_pressed
+		global win, screenmode, changed_language, mouse_click_image, does_lighten, page, alt_pressed
 		
 		while True:
 			
@@ -2693,23 +2696,23 @@ def settings():
 			if (page_back_button.get_pressed() or keys[pygame.K_LEFT]) and page > 1: page -= 1; time.sleep(0.1)
 			page_next_button.main()
 			if (page_next_button.get_pressed() or keys[pygame.K_RIGHT]) and page < 3: page += 1; time.sleep(0.1)
-			win.blit(bigTextInfo.render(laungveges("Ты можешь выбрать один из этих", "You can choose one of these", "Сіз осы тілдердің бірін таңдай аласыз"), True, (139, 155, 180)), (385, 123))
-			win.blit(bigTextInfo.render(laungveges("языков:", "laungveges:", None), True, (139, 155, 180)), (385, 153))
+			win.blit(bigTextInfo.render(t("You can choose one of these"), True, (139, 155, 180)), (385, 123))
+			win.blit(bigTextInfo.render(t("languages:"), True, (139, 155, 180)), (385, 153))
 
 			english_button.main()
 			if english_button.get_pressed():
-				changed_laungvege = "English"
+				changed_language = "English"
 			russian_button.main()
 			if russian_button.get_pressed():
-				changed_laungvege = "Russian"
+				changed_language = "Russian"
 			kazach_button.main()
 			if kazach_button.get_pressed():
-				changed_laungvege = "Kazach"
+				changed_language = "Kazach"
 
 			win.blit(bigTextInfo.render(str(page), True, (139, 155, 180)), ((Width - 415) // 2 + 391, Height - 96))
 			help_button.main(help)
 			display_button.main(display)
-			win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Laungveges 2.png"), (336, 64)), (10, 267))
+			win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Languages 2.png"), (278, 64)), (10, 267))
 			user_button.main(User)
 			sound_button.main(Sound)
 			statistics_button.main(Statistics)
@@ -2717,9 +2720,9 @@ def settings():
 			game_button.main(Game)
 			
 			if keys[pygame.K_1]:
-				changed_laungvege = "Russian"
+				changed_language = "Russian"
 			if keys[pygame.K_2]:
-				changed_laungvege = "English"
+				changed_language = "English"
 				
 			if Settings["Display"][7]:
 
@@ -2795,9 +2798,9 @@ def settings():
 					screenmode = "FULLSCREEN"
 				time.sleep(0.1)
 
-			if bigTextInfo.size(laungveges("Ник", "Nickname", "Ник"))[0] + 337 <= mouse_x <= bigTextInfo.size(laungveges("Ник", "Nickname", "Ник"))[0] + 467 + 120 and 113 <= mouse_y <= 184 and click[0]:
+			if bigTextInfo.size(t("Nickname"))[0] + 337 <= mouse_x <= bigTextInfo.size(t("Nickname"))[0] + 467 + 120 and 113 <= mouse_y <= 184 and click[0]:
 				Nick = True
-			if bigTextInfo.size(laungveges("скоро появится", "comming soon", None))[0] + 337 <= mouse_x <= bigTextInfo.size(laungveges("скоро появится", "comming soon", None))[0] + 467 + 120 and 199 <= mouse_y <= 270 and click[0]:
+			if bigTextInfo.size(t("Comming soon"))[0] + 337 <= mouse_x <= bigTextInfo.size(t("Comming soon"))[0] + 467 + 120 and 199 <= mouse_y <= 270 and click[0]:
 				Inventory_alpha = True
 			
 			win.fill((192, 203, 220))
@@ -2818,7 +2821,7 @@ def settings():
 			win.blit(bigTextInfo.render(str(page), True, (139, 155, 180)), ((Width - 415) // 2 + 391, Height - 96))
 			help_button.main(help)
 			display_button.main(display)
-			laungveges_button.main(Laungveges)
+			languages_button.main(Languages)
 			win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/User 2.png"), (132, 64)), (10, 342))
 			sound_button.main(Sound)
 			statistics_button.main(Statistics)
@@ -2826,19 +2829,19 @@ def settings():
 			game_button.main(Game)
 
 			if page == 1:
-				win.blit(bigTextInfo.render(laungveges("Ник", "Nickname", "Ник"), True, (139, 155, 180)), (385, 123))
-				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(laungveges("Ник", "Nickname", "Ник"))[0] + 395, 113, 200, 71), 5)
+				win.blit(bigTextInfo.render(t("Nickname"), True, (139, 155, 180)), (385, 123))
+				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(t("Nickname"))[0] + 395, 113, 200, 71), 5)
 				if Nick:
-					win.blit(bigTextInfo.render(input_text, True, (139, 155, 180)), (bigTextInfo.size(laungveges("Ник", "Nickname", "Ник"))[0] + 405, 123))
+					win.blit(bigTextInfo.render(input_text, True, (139, 155, 180)), (bigTextInfo.size(t("Nickname"))[0] + 405, 123))
 				else:
-					win.blit(bigTextInfo.render(Settings["User"][0], True, (139, 155, 180)), (bigTextInfo.size(laungveges("Ник", "Nickname", "Ник"))[0] + 405, 123))
+					win.blit(bigTextInfo.render(Settings["User"][0], True, (139, 155, 180)), (bigTextInfo.size(t("Nickname"))[0] + 405, 123))
 				
-				win.blit(bigTextInfo.render(laungveges("скоро появится", "comming soon", "Ник"), True, (139, 155, 180)), (385, 209))
-				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(laungveges("скоро появится", "comming soon", "Ник"))[0] + 395, 199, 120, 71), 5)
+				win.blit(bigTextInfo.render(t("Comming soon"), True, (139, 155, 180)), (385, 209))
+				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(t("Comming soon"))[0] + 395, 199, 120, 71), 5)
 				if Inventory_alpha:
-					win.blit(bigTextInfo.render(input_text, True, (139, 155, 180)), (bigTextInfo.size(laungveges("скоро появится", "comming soon", None))[0] + 405, 209))
+					win.blit(bigTextInfo.render(input_text, True, (139, 155, 180)), (bigTextInfo.size(t("Comming soon"))[0] + 405, 209))
 				else:
-					win.blit(bigTextInfo.render(str(Settings["Display"][1]), True, (139, 155, 180)), (bigTextInfo.size(laungveges("скоро появится", "comming soon", None))[0] + 405, 209))
+					win.blit(bigTextInfo.render(str(Settings["Display"][1]), True, (139, 155, 180)), (bigTextInfo.size(t("Comming soon"))[0] + 405, 209))
 					Inventory_slot.set_alpha(Settings["Display"][1])
 					Changed_inventory_slot.set_alpha(Settings["Display"][1])
 					Object_inventory_slot.set_alpha(Settings["Display"][1])
@@ -2947,9 +2950,9 @@ def settings():
 					screenmode = "FULLSCREEN"
 				time.sleep(0.1)
 
-			if bigTextInfo.size(laungveges("Громкость музыки", "Music volume", "Музыканың дыбыс деңгейі"))[0] + 337 <= mouse_x <= bigTextInfo.size(laungveges("Громкость музыки", "Music volume", "Музыканың дыбыс деңгейі"))[0] + 467 + 120 and 113 <= mouse_y <= 184 and click[0]:
+			if bigTextInfo.size(t("Music volume"))[0] + 337 <= mouse_x <= bigTextInfo.size(t("Music volume"))[0] + 467 + 120 and 113 <= mouse_y <= 184 and click[0]:
 				Music_volume = True
-			if bigTextInfo.size(laungveges("Громкость звуков", "Volume of sounds", "Дыбыс деңгейі"))[0] + 337 <= mouse_x <= bigTextInfo.size(laungveges("Громкость звуков", "Volume of sounds", "Дыбыс деңгейі"))[0] + 467 + 120 and 199 <= mouse_y <= 270 and click[0]:
+			if bigTextInfo.size(t("Sound volume"))[0] + 337 <= mouse_x <= bigTextInfo.size(t("Sound volume"))[0] + 467 + 120 and 199 <= mouse_y <= 270 and click[0]:
 				Volume_of_sounds = True
 			
 			win.fill((192, 203, 220))
@@ -2971,7 +2974,7 @@ def settings():
 			win.blit(bigTextInfo.render(str(page), True, (139, 155, 180)), ((Width - 415) // 2 + 391, Height - 96))
 			help_button.main(help)
 			display_button.main(display)
-			laungveges_button.main(Laungveges)
+			languages_button.main(Languages)
 			user_button.main(User)
 			win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Sound 2.png"), (160, 64)), (10, 417))
 			statistics_button.main(Statistics)
@@ -2979,21 +2982,21 @@ def settings():
 			game_button.main(Game)
 
 			if page == 1:
-				win.blit(bigTextInfo.render(laungveges("Громкость музыки", "Music volume", "Музыканың дыбыс деңгейі"), True, (139, 155, 180)), (385, 123))
-				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(laungveges("Громкость музыки", "Music volume", "Музыканың дыбыс деңгейі"))[0] + 395, 113, 120, 71), 5)
-				win.blit(bigTextInfo.render("%", True, (139, 155, 180)), (bigTextInfo.size(laungveges("Громкость музыки", "Music volume", "Музыканың дыбыс деңгейі"))[0] + 525, 123))
+				win.blit(bigTextInfo.render(t("Music volume"), True, (139, 155, 180)), (385, 123))
+				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(t("Music volume"))[0] + 395, 113, 120, 71), 5)
+				win.blit(bigTextInfo.render("%", True, (139, 155, 180)), (bigTextInfo.size(t("Music volume"))[0] + 525, 123))
 				if Music_volume:
-					win.blit(bigTextInfo.render(input_text, True, (139, 155, 180)), (bigTextInfo.size(laungveges("Громкость музыки", "Music volume", "Музыканың дыбыс деңгейі"))[0] + 405, 123))
+					win.blit(bigTextInfo.render(input_text, True, (139, 155, 180)), (bigTextInfo.size(t("Music volume"))[0] + 405, 123))
 				else:
-					win.blit(bigTextInfo.render(str(int(Settings["Sound"][0] * 100)), True, (139, 155, 180)), (bigTextInfo.size(laungveges("Громкость музыки", "Music volume", "Музыканың дыбыс деңгейі"))[0] + 405, 123))
+					win.blit(bigTextInfo.render(str(int(Settings["Sound"][0] * 100)), True, (139, 155, 180)), (bigTextInfo.size(t("Music volume"))[0] + 405, 123))
 				
-				win.blit(bigTextInfo.render(laungveges("Громкость звуков", "Volume of sounds", "Музыканың дыбыс деңгейі"), True, (139, 155, 180)), (385, 209))
-				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(laungveges("Громкость звуков", "Volume of sounds", "Музыканың дыбыс деңгейі"))[0] + 395, 199, 120, 71), 5)
-				win.blit(bigTextInfo.render("%", True, (139, 155, 180)), (bigTextInfo.size(laungveges("Громкость звуков", "Volume of sounds", "Музыканың дыбыс деңгейі"))[0] + 525, 209))
+				win.blit(bigTextInfo.render(t("Sound volume"), True, (139, 155, 180)), (385, 209))
+				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(t("Sound volume"))[0] + 395, 199, 120, 71), 5)
+				win.blit(bigTextInfo.render("%", True, (139, 155, 180)), (bigTextInfo.size(t("Sound volume"))[0] + 525, 209))
 				if Volume_of_sounds:
-					win.blit(bigTextInfo.render(input_text, True, (139, 155, 180)), (bigTextInfo.size(laungveges("Громкость звуков", "Volume of sounds", "Музыканың дыбыс деңгейі"))[0] + 405, 209))
+					win.blit(bigTextInfo.render(input_text, True, (139, 155, 180)), (bigTextInfo.size(t("Sound volume"))[0] + 405, 209))
 				else:
-					win.blit(bigTextInfo.render(str(int(Settings["Sound"][1] * 100)), True, (139, 155, 180)), (bigTextInfo.size(laungveges("Громкость звуков", "Volume of sounds", "Музыканың дыбыс деңгейі"))[0] + 405, 209))
+					win.blit(bigTextInfo.render(str(int(Settings["Sound"][1] * 100)), True, (139, 155, 180)), (bigTextInfo.size(t("Sound volume"))[0] + 405, 209))
 				
 					
 			if Settings["Display"][7]:
@@ -3071,7 +3074,7 @@ def settings():
 			win.blit(bigTextInfo.render(str(page), True, (139, 155, 180)), ((Width - 415) // 2 + 391, Height - 96))
 			help_button.main(help)
 			display_button.main(display)
-			laungveges_button.main(Laungveges)
+			languages_button.main(Languages)
 			user_button.main(User)
 			sound_button.main(Sound)
 			win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Statistics 2.png"), (336, 64)), (10, 492))
@@ -3080,17 +3083,17 @@ def settings():
 
 			if page == 1:
 				
-				win.blit(bigTextInfo.render(laungveges("Заходов в игру:", "Visits to the game:", "Ойынға кіру:"), True, (139, 155, 180)), (385, 123))
-				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(laungveges("Заходов в игру:", "Visits to the game:", "Ойынға кіру:"))[0] + 395, 113, bigTextInfo.size(str(statistics[0]))[0] * 1.9 + 30, 71), 5)
-				win.blit(bigTextInfo.render(str(statistics[0]), True, (139, 155, 180)), (bigTextInfo.size(laungveges("Заходов в игру:", "Visits to the game:", "Ойынға кіру:"))[0] + 405, 123))
+				win.blit(bigTextInfo.render(t("Visits to the game:"), True, (139, 155, 180)), (385, 123))
+				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(t("Visits to the game:"))[0] + 395, 113, bigTextInfo.size(str(statistics[0]))[0] * 1.9 + 30, 71), 5)
+				win.blit(bigTextInfo.render(str(statistics[0]), True, (139, 155, 180)), (bigTextInfo.size(t("Visits to the game:"))[0] + 405, 123))
 				
-				win.blit(bigTextInfo.render(laungveges("Наигранно часов:", "Hours played:", "Сағат ойнады:"), True, (139, 155, 180)), (385, 209))
-				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(laungveges("Наигранно часов:", "Hours played:", "Сағат ойнады:"))[0] + 395, 199, bigTextInfo.size(str(statistics[1])[:-14])[0] + 30, 71), 5)
-				win.blit(bigTextInfo.render(str(statistics[1])[:-14], True, (139, 155, 180)), (bigTextInfo.size(laungveges("Наигранно часов:", "Hours played:", "Сағат ойнады:"))[0] + 405, 209))
+				win.blit(bigTextInfo.render(t("Hours played:"), True, (139, 155, 180)), (385, 209))
+				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(t("Hours played:"))[0] + 395, 199, bigTextInfo.size(str(statistics[1])[:-14])[0] + 30, 71), 5)
+				win.blit(bigTextInfo.render(str(statistics[1])[:-14], True, (139, 155, 180)), (bigTextInfo.size(t("Hours played:"))[0] + 405, 209))
 
-				win.blit(bigTextInfo.render(laungveges("Срублено деревьев:", "Trees felled:", "Кесілген ағаштар:"), True, (139, 155, 180)), (385, 295))
-				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(laungveges("Срублено деревьев:", "Trees felled:", "Кесілген ағаштар:"))[0] + 395, 285, bigTextInfo.size(str(statistics[2]))[0] + 30, 71), 5)
-				win.blit(bigTextInfo.render(str(statistics[2]), True, (139, 155, 180)), (bigTextInfo.size(laungveges("Срублено деревьев:", "Trees felled:", "Кесілген ағаштар:"))[0] + 405, 295))
+				win.blit(bigTextInfo.render(t("Trees felled:"), True, (139, 155, 180)), (385, 295))
+				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(t("Trees felled:"))[0] + 395, 285, bigTextInfo.size(str(statistics[2]))[0] + 30, 71), 5)
+				win.blit(bigTextInfo.render(str(statistics[2]), True, (139, 155, 180)), (bigTextInfo.size(t("Trees felled:"))[0] + 405, 295))
 				
 			if Settings["Display"][7]:
 
@@ -3129,7 +3132,7 @@ def settings():
 		changed_key = ""
 		looked_key = None
 		
-		chek_keys = lambda key: key.lower() in [v.lower() for v in hot_keys.values()] # Эта lambda-функция выясняет, является ли данная клавиша одной из горячих клавиш игры
+		chek_keys = lambda key: key in [v for v in hot_keys.values()] # Эта lambda-функция выясняет, является ли данная клавиша одной из горячих клавиш игры
 		chek_blocked_keys = lambda key: key in ["ESC", "PRT SC", "OFF", "W", "A", "S", "D", "WIN", "<", "<>", ">"]
 
 		while True:
@@ -3178,7 +3181,7 @@ def settings():
 			show_reset_settings()
 			help_button.main(help)
 			display_button.main(display)
-			laungveges_button.main(Laungveges)
+			languages_button.main(Languages)
 			user_button.main(User)
 			sound_button.main(Sound)
 			statistics_button.main(Statistics)
@@ -3325,12 +3328,12 @@ def settings():
 					pygame.draw.rect(win, key_color, (935 + i * 50, 373, 40, 40), 3)
 					win.blit(littleTextInfo.render(j, True, key_color), (940 + i * 50, 380))
 
-			win.blit(textInfo.render(laungveges("Тёмно-синим цветом выделены горячие клавиши", "Hotkeys are highlighted in dark blue", "Жылдам пернелер қою көк түспен бөлектелген"), True, (139, 155, 180)), (385, 440))
-			win.blit(textInfo.render(laungveges("Белым цветом выделены заблокированные клавиши", "Locked keys are highlighted in white", "Құлыпталған пернелер ақ түспен бөлектелген"), True, (255, 255, 255)), (385, 470))
-			win.blit(textInfo.render(laungveges("Чтобы заменить горячую главишу нажми на неё", "To change the hot key, click on it", "Жылдам пернені өзгерту үшін оны басыңыз"), True, (139, 155, 180)), (385, 500))
+			win.blit(textInfo.render(t("Hotkeys are highlighted in dark blue"), True, (139, 155, 180)), (385, 440))
+			win.blit(textInfo.render(t("Locked keys are highlighted in white"), True, (255, 255, 255)), (385, 470))
+			win.blit(textInfo.render(t("To change the hot key, click on it"), True, (139, 155, 180)), (385, 500))
 
-			if Width - 30 - textInfo.size(laungveges("Сбросить настройки клавиш", "Reset key settings", "Негізгі параметрлерді қалпына келтіріңіз"))[0] < mouse_x < Width - 30 and 420 < mouse_y < 450:
-				win.blit(textInfo.render(laungveges("Сбросить настройки клавиш", "Reset key settings", "Негізгі параметрлерді қалпына келтіріңіз"), True, (58, 68, 102)), (Width - 30 - textInfo.size(laungveges("Сбросить настройки клавиш", "Reset key settings", "Негізгі параметрлерді қалпына келтіріңіз"))[0], 420))
+			if Width - 30 - textInfo.size(t("Reset key settings"))[0] < mouse_x < Width - 30 and 420 < mouse_y < 450:
+				win.blit(textInfo.render(t("Reset key settings"), True, (58, 68, 102)), (Width - 30 - textInfo.size(t("Reset key settings"))[0], 420))
 				if click[0]:
 					hot_keys = {
 	
@@ -3347,7 +3350,7 @@ def settings():
 	
 						}
 			else:
-				win.blit(textInfo.render(laungveges("Сбросить настройки клавиш", "Reset key settings", "Негізгі параметрлерді қалпына келтіріңіз"), True, (139, 155, 180)), (Width - 30 - textInfo.size(laungveges("Сбросить настройки клавиш", "Reset key settings", "Негізгі параметрлерді қалпына келтіріңіз"))[0], 420))
+				win.blit(textInfo.render(t("Reset key settings"), True, (139, 155, 180)), (Width - 30 - textInfo.size(t("Reset key settings"))[0], 420))
 
 			pygame.draw.rect(win, (139, 155, 180), (385, 530, Width - 500, 150))
 			pygame.draw.rect(win, (58, 68, 102), (385, 530, Width - 500, 150), 5)
@@ -3355,7 +3358,7 @@ def settings():
 			
 			a = ""
 			for key, val in hot_keys.items():
-				if val.lower() == changed_key.lower():
+				if val == changed_key:
 					a = key
 			if looked_key is None:
 				win.blit(textInfo.render(a, True, (58, 68, 102)), (400, 575))
@@ -3469,7 +3472,7 @@ def settings():
 			win.blit(bigTextInfo.render(str(page), True, (139, 155, 180)), ((Width - 415) // 2 + 391, Height - 96))
 			help_button.main(help)
 			display_button.main(display)
-			laungveges_button.main(Laungveges)
+			languages_button.main(Languages)
 			user_button.main(User)
 			sound_button.main(Sound)
 			statistics_button.main(Statistics)
@@ -3478,29 +3481,29 @@ def settings():
 
 			if page == 1:
 				
-				win.blit(bigTextInfo.render(laungveges("Автоматически брать предметы", "Automatically pick up items", "Элементтерді автоматты түрде алу"), True, (139, 155, 180)), (385, 123))
-				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(laungveges("Автоматически брать предметы", "Automatically pick up items", "Элементтерді автоматты түрде алу"))[0] + 395, 113, 71, 71), 5)
+				win.blit(bigTextInfo.render(languages("Автоматически брать предметы", "Automatically pick up items", "Элементтерді автоматты түрде алу"), True, (139, 155, 180)), (385, 123))
+				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(languages("Автоматически брать предметы", "Automatically pick up items", "Элементтерді автоматты түрде алу"))[0] + 395, 113, 71, 71), 5)
 				if Settings["Game"][0]:
-					win.blit(bigTextInfo.render(" ✓", True, (139, 155, 180)), (bigTextInfo.size(laungveges("Автоматически брать предметы", "Automatically pick up items", "Элементтерді автоматты түрде алу"))[0] + 405, 123))
-					if bigTextInfo.size(laungveges("Автоматически брать предметы", "Automatically pick up items", "Элементтерді автоматты түрде алу"))[0] + 395 <= mouse_x <= bigTextInfo.size(laungveges("Автоматически брать предметы", "", "Элементтерді автоматты түрде алу"))[0] + 466 and 113 <= mouse_y <= 184 and click[0]:
+					win.blit(bigTextInfo.render(" ✓", True, (139, 155, 180)), (bigTextInfo.size(languages("Автоматически брать предметы", "Automatically pick up items", "Элементтерді автоматты түрде алу"))[0] + 405, 123))
+					if bigTextInfo.size(languages("Автоматически брать предметы", "Automatically pick up items", "Элементтерді автоматты түрде алу"))[0] + 395 <= mouse_x <= bigTextInfo.size(languages("Автоматически брать предметы", "", "Элементтерді автоматты түрде алу"))[0] + 466 and 113 <= mouse_y <= 184 and click[0]:
 						Settings["Game"][0] = False
 						time.sleep(0.15)
 				else:
-					win.blit(bigTextInfo.render(" x", True, (139, 155, 180)), (bigTextInfo.size(laungveges("Автоматически брать предметы", "Automatically pick up items", "Элементтерді автоматты түрде алу"))[0] + 405, 123))
-					if bigTextInfo.size(laungveges("Автоматически брать предметы", "Automatically pick up items", "Элементтерді автоматты түрде алу"))[0] + 395 <= mouse_x <= bigTextInfo.size(laungveges("Автоматически брать предметы", "Automatically pick up items", "Элементтерді автоматты түрде алу"))[0] + 466 and 113 <= mouse_y <= 184 and click[0]:
+					win.blit(bigTextInfo.render(" x", True, (139, 155, 180)), (bigTextInfo.size(languages("Автоматически брать предметы", "Automatically pick up items", "Элементтерді автоматты түрде алу"))[0] + 405, 123))
+					if bigTextInfo.size(languages("Автоматически брать предметы", "Automatically pick up items", "Элементтерді автоматты түрде алу"))[0] + 395 <= mouse_x <= bigTextInfo.size(languages("Автоматически брать предметы", "Automatically pick up items", "Элементтерді автоматты түрде алу"))[0] + 466 and 113 <= mouse_y <= 184 and click[0]:
 						Settings["Game"][0] = True
 						time.sleep(0.15)
 						
-				win.blit(bigTextInfo.render(laungveges("Телефонное управление", "Telephone control", "Телефон арқылы басқару"), True, (139, 155, 180)), (385, 209))
-				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(laungveges("Телефонное управление", "Telephone control", "Телефон арқылы басқару"))[0] + 395, 199, 71, 71), 5)
+				win.blit(bigTextInfo.render(languages("Телефонное управление", "Telephone control", "Телефон арқылы басқару"), True, (139, 155, 180)), (385, 209))
+				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(languages("Телефонное управление", "Telephone control", "Телефон арқылы басқару"))[0] + 395, 199, 71, 71), 5)
 				if Settings["Game"][1]:
-					win.blit(bigTextInfo.render(" ✓", True, (139, 155, 180)), (bigTextInfo.size(laungveges("Телефонное управление", "Telephone control", "Телефон арқылы басқару"))[0] + 405, 209))
-					if bigTextInfo.size(laungveges("Телефонное управление", "Telephone control", "Телефон арқылы басқару"))[0] + 395 <= mouse_x <= bigTextInfo.size(laungveges("Телефонное управление", "Telephone control", "Телефон арқылы басқару"))[0] + 466 and 199 <= mouse_y <= 270 and click[0]:
+					win.blit(bigTextInfo.render(" ✓", True, (139, 155, 180)), (bigTextInfo.size(languages("Телефонное управление", "Telephone control", "Телефон арқылы басқару"))[0] + 405, 209))
+					if bigTextInfo.size(languages("Телефонное управление", "Telephone control", "Телефон арқылы басқару"))[0] + 395 <= mouse_x <= bigTextInfo.size(languages("Телефонное управление", "Telephone control", "Телефон арқылы басқару"))[0] + 466 and 199 <= mouse_y <= 270 and click[0]:
 						Settings["Game"][1] = False
 						time.sleep(0.15)
 				else:
-					win.blit(bigTextInfo.render(" x", True, (139, 155, 180)), (bigTextInfo.size(laungveges("Телефонное управление", "Telephone control", "Телефон арқылы басқару"))[0] + 405, 209))
-					if bigTextInfo.size(laungveges("Телефонное управление", "Telephone control", "Телефон арқылы басқару"))[0] + 395 <= mouse_x <= bigTextInfo.size(laungveges("Телефонное управление", "Telephone control", "Телефон арқылы басқару"))[0] + 466 and 199 <= mouse_y <= 270 and click[0]:
+					win.blit(bigTextInfo.render(" x", True, (139, 155, 180)), (bigTextInfo.size(languages("Телефонное управление", "Telephone control", "Телефон арқылы басқару"))[0] + 405, 209))
+					if bigTextInfo.size(languages("Телефонное управление", "Telephone control", "Телефон арқылы басқару"))[0] + 395 <= mouse_x <= bigTextInfo.size(languages("Телефонное управление", "Telephone control", "Телефон арқылы басқару"))[0] + 466 and 199 <= mouse_y <= 270 and click[0]:
 						Settings["Game"][1] = True
 						time.sleep(0.15)
 				
@@ -3543,7 +3546,7 @@ def change_a_character():
 	does_lighten = False
 
 	back_button = Button(-20, -20, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Back.png"), (128, 128)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Back 2.png"), (128, 128)), win)
-	character_button = Button(10, 120, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Character.png"), (278, 64)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Character 2.png"), (278, 64)), win)
+	character_button = Button(10, 120, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Character.png"), (272, 64)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Character 2.png"), (272, 64)), win)
 	pets_button = Button(10, 192, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Pets.png"), (132, 64)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Pets 2.png"), (132, 64)), win)
 	page_back_button = Button(361, Height - 138, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Back.png"), (128, 128)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Back 2.png"), (128, 128)), win)
 	page_next_button = Button(Width - 138, Height - 138, pygame.transform.flip(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Back.png"), (128, 128)), True, False), pygame.transform.flip(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Back 2.png"), (128, 128)), True, False), win)
@@ -3611,10 +3614,10 @@ def change_a_character():
 			pygame.draw.rect(win, (139, 155, 180), ((Width - 415) // 2 + 230, 476, 256, Height - 604), 8)
 			pygame.draw.rect(win, (139, 155, 180), (Width - 266, 476, 256, Height - 604), 8)
 
-			win.blit(textInfo.render(laungveges("Имя", "Name", "Аты") + ":", True, (139, 155, 180)), (335, 120))
+			win.blit(textInfo.render(t("Name") + ":", True, (139, 155, 180)), (335, 120))
 			win.blit(bigTextInfo.render(changed_character.name, True, (139, 155, 180)), (335, 140))
 			pygame.draw.line(win, (139, 155, 180), (325 + len(changed_character.name) * 30, 100), (325 + len(changed_character.name) * 30, 198), 8)
-			win.blit(textInfo.render(laungveges("Описание", "Info", "Сипаттама") + ":", True, (139, 155, 180)), (Width - len(changed_character.info) * 30 - 28, 120))
+			win.blit(textInfo.render(t("Info") + ":", True, (139, 155, 180)), (Width - len(changed_character.info) * 30 - 28, 120))
 			win.blit(bigTextInfo.render(changed_character.info, True, (139, 155, 180)), (Width - len(changed_character.info) * 30 - 28, 140))
 			back_button.main()
 			
@@ -3882,9 +3885,9 @@ def start_game():
 							# команды лучше не использовать, так как из-за eval возникает проблема безопасности
 							pass
 						except Exception as e:
-							chat_message(laungveges("<<< Команда " + Settings["User"][0] + f" получила ошибку {e}" + ". >>>", "<<< " + Settings["User"][0] + f"'s command got an {e}" + "error. >>>", "")) ##
+							chat_message(languages("<<< Команда " + Settings["User"][0] + f" получила ошибку {e}" + ". >>>", "<<< " + Settings["User"][0] + f"'s command got an {e}" + "error. >>>", "")) ##
 						else:
-							chat_message(laungveges("<<< Команда " + Settings["User"][0] + " была успешно исполнена. >>>", "<<< " + Settings["User"][0] + "'s command was successfully executed. >>>", "")) ##
+							chat_message(languages("<<< Команда " + Settings["User"][0] + " была успешно исполнена. >>>", "<<< " + Settings["User"][0] + "'s command was successfully executed. >>>", "")) ##
 					else:
 						chat_message(Settings["User"][0] + ": " + input_text)
 
@@ -4315,7 +4318,7 @@ def start_game():
 
 		# times.append(time.time())
 		if Width // 2 - 100 <= mouse_x <= Width // 2 + 100 and Height // 2 - 100 <= mouse_y <= Height // 2 + 100 and not any((item_settings_open, Ron.window[0], in_motherboard, craft_list_open)):
-			mouse_object = laungveges("Это вы", "It's you", "Бұл сіз")
+			mouse_object = t("It's you")
 
 		if not Backrooms.InBackrooms:
 
@@ -4565,7 +4568,7 @@ def start_game():
 
 							if object.special_flags == "Item":
 
-								mouse_object = laungveges("Нажми, чтобы подобрать " + object.name, "Click to pick the " + object.name, object.name + " алу үшін басыңыз")
+								mouse_object = t("Click to pick the ") + object.name
 								if click[0]:
 									inventory.increate(object.name)
 									pygame.mixer.Sound.play(Pick_an_item)
@@ -4660,7 +4663,7 @@ def start_game():
 						if object.x - player.x + Width // 2 - object.image.get_width() // 2 <= mouse_x <= object.x - player.x + Width // 2 + object.image.get_width() // 2 and player.y - object.y + Height // 2 - object.image.get_height() // 2 <= mouse_y <= player.y - object.y + Height // 2 + object.image.get_height() // 2:
 
 							if object.special_flags == "Item":
-								mouse_object = laungveges("Нажми, чтобы подобрать " + object.name, "Click to pick the " + object.name, object.name + " алу үшін басыңыз")
+								mouse_object = t("Click to pick the ") + object.name
 								
 								if click[0]:
 									
@@ -4672,7 +4675,7 @@ def start_game():
 										if ii.__class__ == Cave and object.num <= ii.num:
 											ii.num -= 1
 									try: objects.remove(objects[i])
-									except: chat_message(chat_message(laungveges("<<< Ошибка удаления объекта: объект не найден >>>", "<<< Error deleting: object not found >>>", "")))
+									except: chat_message(chat_message(t("<<< Error deleting: object not found >>>")))
 						
 							else:
 
@@ -5477,7 +5480,7 @@ def start_game():
 							time.sleep(0.15)
 							break
 					else:
-						text(laungveges("У вас нет пуль для стрельбы", "You don't have bullets to shoot", "Атқан оқтарың жоқ"), Width // 2, Height // 2, (200, 30, 30), alignment=True)
+						text(t("You don't have bullets to shoot"), Width // 2, Height // 2, (200, 30, 30), alignment=True)
 
 				case "Bow":
 
@@ -5495,7 +5498,7 @@ def start_game():
 							time.sleep(0.15)
 							break
 					else:
-						text(laungveges("У вас нет стрел для стрельбы", "You don't have arrows to shoot", "Сізде атуға арналған жебелер жоқ"), Width // 2, Height // 2, (200, 30, 30), alignment=True)
+						text(t("You don't have arrows to shoot"), Width // 2, Height // 2, (200, 30, 30), alignment=True)
 
 				case "Beer":
 
@@ -5523,7 +5526,7 @@ def start_game():
 		if keys[hot_keys["Screenshot"]] and keys[pygame.K_LALT]:
 			
 			pygame.image.save(win, str(Path.home()) + "/Your Screenshot " + time.asctime().replace(":", " ") + ".png")
-			chat_message(laungveges("Игра: ваш скриншот находится в ", "Your screenshot is in ", "Ойын: Скриншотыңыз бар ") + "C://Users/" + getpass.getuser() + "/Pictures/Your_screenshot " + time.asctime().replace(":", " ") + ".png")
+			chat_message(t("Game: Your screenshot is in ") + str(Path.home()) + "/Your Screenshot " + time.asctime().replace(":", " ") + ".png")
 			
 			for _ in range(3):
 				win.fill((200, 255, 200))
@@ -5535,25 +5538,25 @@ def start_game():
 
 			for i in wall_list:
 				if i.x - 256 < player.x < i.x + 256 and i.y - 256 < player.y < i.y + 256:
-					text(laungveges("К сожалению, вы не можете ходить через стены", "Unfortunately you can't walk through walls", "Өкінішке орай, сіз қабырғалардан өте алмайсыз"), Width // 2, Height // 2, (200, 30, 30), alignment=True)
+					text(t("Unfortunately you can't walk through walls"), Width // 2, Height // 2, (200, 30, 30), alignment=True)
 
 		if keys[pygame.K_DOWN] or keys[pygame.K_s] or (Settings["Game"][1] and down_b.get_pressed()):
 
 			for i in wall_list:
 				if i.x - 256 < player.x < i.x + 256 and i.y - 256 < player.y < i.y + 256:
-					text(laungveges("К сожалению, вы не можете ходить через стены", "Unfortunately you can't walk through walls", "Өкінішке орай, сіз қабырғалардан өте алмайсыз"), Width // 2, Height // 2, (200, 30, 30), alignment=True)
+					text(t("Unfortunately you can't walk through walls"), Width // 2, Height // 2, (200, 30, 30), alignment=True)
 
 		if keys[pygame.K_LEFT] or keys[pygame.K_a] or (Settings["Game"][1] and left_b.get_pressed()):
 
 			for i in wall_list:
 				if i.x - 256 < player.x < i.x + 256 and i.y - 256 < player.y < i.y + 256:
-					text(laungveges("К сожалению, вы не можете ходить через стены", "Unfortunately you can't walk through walls", "Өкінішке орай, сіз қабырғалардан өте алмайсыз"), Width // 2, Height // 2, (200, 30, 30), alignment=True)
+					text(t("Unfortunately you can't walk through walls"), Width // 2, Height // 2, (200, 30, 30), alignment=True)
 		
 		if keys[pygame.K_RIGHT] or keys[pygame.K_d] or (Settings["Game"][1] and right_b.get_pressed()):
 			
 			for i in wall_list:
 				if i.x - 256 < player.x < i.x + 256 and i.y - 256 < player.y < i.y + 256:
-					text(laungveges("К сожалению, вы не можете ходить через стены", "Unfortunately you can't walk through walls", "Өкінішке орай, сіз қабырғалардан өте алмайсыз"), Width // 2, Height // 2, (200, 30, 30), alignment=True)
+					text(t("Unfortunately you can't walk through walls"), Width // 2, Height // 2, (200, 30, 30), alignment=True)
 
 		
 
@@ -5707,7 +5710,7 @@ def start_game():
 				else:
 					win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Craft list slot.png"), (64, 64)), (Width // 2 + radius - 32, Height // 2 - 32))
 
-				text(laungveges("Список крафтов", "Craft list", "Қолөнер тізімі"), Width // 2 + radius, Height // 2 + 40, alignment=True)
+				text(t("Craft list"), Width // 2 + radius, Height // 2 + 40, alignment=True)
 				
 
 
@@ -5737,7 +5740,7 @@ def start_game():
 				else:
 					win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Game menu slot.png"), (64, 64)), (Width // 2 + cos((2 * pi) / 6) * radius - 32, Height // 2 + sin((2 * pi) / 6) * radius - 32))
 
-				text(laungveges("Меню игры", "Game menu", "Ойын мәзірі"), Width // 2 + cos((2 * pi) / 6) * radius, Height // 2 + sin((2 * pi) / 6) * radius + 40, alignment=True)
+				text(t("Game menu"), Width // 2 + cos((2 * pi) / 6) * radius, Height // 2 + sin((2 * pi) / 6) * radius + 40, alignment=True)
 				
 
 				
@@ -5768,7 +5771,7 @@ def start_game():
 				else:
 					win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Menu slot.png"), (64, 64)), (Width // 2 + cos((2 * pi * 2) / 6) * radius - 32, Height // 2 + sin((2 * pi * 2) / 6) * radius - 32))
 
-				text(laungveges("Меню доп. информации", "Extra info menu", "Қосымша ақпарат мәзірі"), Width // 2 + cos((2 * pi * 2) / 6) * radius, Height // 2 + sin((2 * pi * 2) / 6) * radius + 40, alignment=True)
+				text(t("Extra info menu"), Width // 2 + cos((2 * pi * 2) / 6) * radius, Height // 2 + sin((2 * pi * 2) / 6) * radius + 40, alignment=True)
 				
 
 
@@ -5799,7 +5802,7 @@ def start_game():
 				else:
 					win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Multyplayer slot.png"), (64, 64)), (Width // 2 + cos((2 * pi * 3) / 6) * radius - 32, Height // 2 + sin((2 * pi * 3) / 6) * radius - 32))
 
-				text(laungveges("Меню мультиплеера", "Multiplayer menu", "Көп ойыншы мәзірі"), Width // 2 + cos((2 * pi * 3) / 6) * radius, Height // 2 + sin((2 * pi * 3) / 6) * radius + 40, alignment=True)
+				text(t("Multiplayer menu"), Width // 2 + cos((2 * pi * 3) / 6) * radius, Height // 2 + sin((2 * pi * 3) / 6) * radius + 40, alignment=True)
 				
 
 				
@@ -5829,7 +5832,7 @@ def start_game():
 				else:
 					win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Close slot.png"), (64, 64)), (Width // 2 + cos((2 * pi * 4) / 6) * radius - 32, Height // 2 + sin((2 * pi * 4) / 6) * radius - 32))
 
-				text(laungveges("Закрыть", "Close", "Жабық"), Width // 2 + cos((2 * pi * 4) / 6) * radius, Height // 2 + sin((2 * pi * 4) / 6) * radius + 40, alignment=True)
+				text(t("Close"), Width // 2 + cos((2 * pi * 4) / 6) * radius, Height // 2 + sin((2 * pi * 4) / 6) * radius + 40, alignment=True)
 
 
 
@@ -5859,7 +5862,7 @@ def start_game():
 				else:
 					win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Reference slot.png"), (64, 64)), (Width // 2 + cos((2 * pi * 5) / 6) * radius - 32, Height // 2 + sin((2 * pi * 5) / 6) * radius - 32))
 
-				text(laungveges("Справка", "Reference", "Анықтама"), Width // 2 + cos((2 * pi * 5) / 6) * radius, Height // 2 + sin((2 * pi * 5) / 6) * radius + 40, alignment=True)
+				text(t("Reference"), Width // 2 + cos((2 * pi * 5) / 6) * radius, Height // 2 + sin((2 * pi * 5) / 6) * radius + 40, alignment=True)
 
 				if keys[pygame.K_ESCAPE]:
 					b = True
@@ -5903,7 +5906,7 @@ def start_game():
 		if inventory_open:
 
 			if 10 < mouse_x < 794 and 10 < mouse_y < 314:
-				mouse_object = laungveges("Инвентарь (I)", "Inventory (I)", "Түгендеу (I)")
+				mouse_object = t("Inventory (I)")
 
 			a = 10
 			b = 10
@@ -5971,7 +5974,7 @@ def start_game():
 					if Settings["Display"][5]: win.blit(pygame.transform.scale(Split_items2, (64 - special_slot_animations["Split items slot"][2], 64 - special_slot_animations["Split items slot"][2])), (810, 10))
 					else: win.blit(pygame.transform.scale(Split_items2, (64, 64)), (810, 10))
 				except: win.blit(pygame.transform.scale(Split_items2, (64, 64)), (810, 10))
-				mouse_object = laungveges("Разделить предметы", "Split items", "Бөлек элементтер")
+				mouse_object = t("Split items")
 			
 			else:
 				win.blit(pygame.transform.scale(Split_items1, (64, 64)), (810, 10))
@@ -6106,7 +6109,7 @@ def start_game():
 				if special_slot_animations["Craft list slot"][0] and Settings["Display"][5]:
 					try:win.blit(pygame.transform.scale(Changed_craft_list_inventory_slot, (64 - special_slot_animations["Craft list slot"][2], 64 - special_slot_animations["Craft list slot"][2])), (810, 90))
 					except: win.blit(pygame.transform.scale(Changed_craft_list_inventory_slot, (64, 64)), (810, 90))
-					mouse_object = laungveges("Список крафтов", "Craft list", "Қолөнер тізімі")
+					mouse_object = t("Craft list")
 			
 				else:
 					win.blit(pygame.transform.scale(Craft_list_inventory_slot, (64, 64)), (810, 90))
@@ -6124,7 +6127,7 @@ def start_game():
 		else:
 			
 			if 10 < mouse_x < 794 and 10 < mouse_y < 74:
-				mouse_object = laungveges("Инвентарь (I)", "Inventory (I)", "Түгендеу (I)")
+				mouse_object = t("Inventory (I)")
 
 			a = -70
 
@@ -6150,7 +6153,7 @@ def start_game():
 				win.blit(Heart, (a, 40))
 
 			if Width - 10 - player.HP // 10 * 40 < mouse_x < Width - 10 and 40 < mouse_y < 104:
-				mouse_object = laungveges("Полоса здоровья", "Health bar", "Денсаулық бар")
+				mouse_object = t("Health bar")
 
 		player.HP_TICK += 1
 		if player.HP_TICK == 300:
@@ -6217,9 +6220,9 @@ def start_game():
 				pygame.draw.rect(win, (0, 150, 0), (100, 100, Width - 200, Height - 200), 10)
 				win.blit(pygame.transform.scale2x(inventory.whole_inventory[changed_slot].image), (Width // 2 - 64, 130))
 				pygame.draw.line(win, (0, 150, 0), (150, 308), (Width - 150, 308), 10)
-				win.blit(textInfo.render(laungveges("Только провод", "Only wire", "Тек сым"), True, (0, 150, 0)), (130, 348))
-				win.blit(textInfo.render(laungveges("Любые механизмы", "All mechanisms", "Кез келген механизмдер"), True, (0, 150, 0)), (Width // 2 - textInfo.size(laungveges("Любые механизмы", "All mechanisms", "Кез келген механизмдер"))[0] // 2, 348))
-				win.blit(textInfo.render(laungveges("Любые механизмы, кроме провода", "All mechanisms, but wire", "Сымнан басқа кез келген механизмдер"), True, (0, 150, 0)), (Width - 150 - textInfo.size(laungveges("Любые механизмы, кроме провода", "All mechanisms, but wire", "Сымнан басқа кез келген механизмдер"))[0], 378))
+				win.blit(textInfo.render(t("Only wire"), True, (0, 150, 0)), (130, 348))
+				win.blit(textInfo.render(t("All mechanisms"), True, (0, 150, 0)), (Width // 2 - textInfo.size(t("All mechanisms"))[0] // 2, 348))
+				win.blit(textInfo.render(t("All mechanisms except wire"), True, (0, 150, 0)), (Width - 150 - textInfo.size(t("All mechanisms except wire"))[0], 378))
 
 				if inventory.whole_inventory[changed_slot].settings == ["Only wire"]:
 					pygame.draw.rect(win, (0, 150, 0), (120, 278, 60, 60), 30)
@@ -6265,23 +6268,23 @@ def start_game():
 			pygame.draw.rect(win, text_color, (100, 100, Width - 200, Height - 200))
 			pygame.draw.rect(win, (0, 150, 0), (100, 100, Width - 200, Height - 200), 10)
 
-			win.blit(bigTextInfo.render(laungveges("Установить точку дома", "Set a home point", "Негізгі нүктені орнатыңыз"), True, (0, 150, 0)), (200, 150))
+			win.blit(bigTextInfo.render(t("Set a home point"), True, (0, 150, 0)), (200, 150))
 			
-			if 200 <= mouse_x <= 200 + bigTextInfo.size(laungveges("Установить точку дома", "Set a home point", "Негізгі нүктені орнатыңыз"))[0] and 150 <= mouse_y <= 180:
+			if 200 <= mouse_x <= 200 + bigTextInfo.size(t("Set a home point"))[0] and 150 <= mouse_y <= 180:
 				
-				win.blit(bigTextInfo.render(laungveges("Установить точку дома", "Set a home point", "Негізгі нүктені орнатыңыз"), True, (0, 100, 0)), (200, 150))
+				win.blit(bigTextInfo.render(t("Set a home point"), True, (0, 100, 0)), (200, 150))
 				
 				if click[0]:
 					Ron.Home = [player.x, player.y]
 
 			if Ron.Home is not None:
-				win.blit(bigTextInfo.render(laungveges("Текущая точка дома: ", "Current home point: ", "Ағымдағы негізгі нүкте: ") + str(Ron.Home[0] // 50) + "; " + str(Ron.Home[1] // 50), True, (0, 150, 0)), (200, 200))
+				win.blit(bigTextInfo.render(t("Current home point: ") + str(Ron.Home[0] // 50) + "; " + str(Ron.Home[1] // 50), True, (0, 150, 0)), (200, 200))
 
-			win.blit(bigTextInfo.render(laungveges("Позвать ссобой", "Call", "Қоңырау шалу"), True, (0, 150, 0)), (200, 250))
+			win.blit(bigTextInfo.render(t("Call"), True, (0, 150, 0)), (200, 250))
 			
-			if 200 <= mouse_x <= 200 + bigTextInfo.size(laungveges("Позвать ссобой", "Call", "Қоңырау шалу"))[0] and 250 <= mouse_y <= 280:
+			if 200 <= mouse_x <= 200 + bigTextInfo.size(t("Call"))[0] and 250 <= mouse_y <= 280:
 				
-				win.blit(bigTextInfo.render(laungveges("Позвать ссобой", "Call", "Қоңырау шалу"), True, (0, 100, 0)), (200, 250))
+				win.blit(bigTextInfo.render(t("Call"), True, (0, 100, 0)), (200, 250))
 				if click[0]:
 					Ron.Home = None
 					
@@ -6568,8 +6571,8 @@ if click[0] and pygame.Rect(eval(self.display_mode)[0], eval(self.display_mode)[
 
 		if multyplayer_menu_open:
 			
-			enable_multiplayer = Button(Width // 2, Height // 2 - 30, bigTextInfo.render(laungveges("Включить мультиплеер", "Enable multiplayer", "Көп ойыншыны қосыңыз"), True, (139, 155, 180)), bigTextInfo.render(laungveges("Включить мультиплеер", "Enable multiplayer", "Көп ойыншыны қосыңыз"), True, (58, 68, 102)), win, True, info=laungveges("Ваш IP-адрес - ", "Your IP-address - ", "Сіздің IP мекенжайыңыз S") + socket.gethostbyname(socket.gethostname()))
-			enter_another_game = Button(Width // 2, Height // 2 + 30, bigTextInfo.render(laungveges("Присоединиться к другой игре", "Enter another game", "Басқа ойынға қосылыңыз"), True, (139, 155, 180)), bigTextInfo.render(laungveges("Присоединиться к другой игре", "Enter another game", "Басқа ойынға қосылыңыз"), True, (58, 68, 102)), win, True)
+			enable_multiplayer = Button(Width // 2, Height // 2 - 30, bigTextInfo.render(t("Enable multiplayer"), True, (139, 155, 180)), bigTextInfo.render(t("Enable multiplayer"), True, (58, 68, 102)), win, True, info=t("Your IP-address - ") + socket.gethostbyname(socket.gethostname()))
+			enter_another_game = Button(Width // 2, Height // 2 + 30, bigTextInfo.render(t("Enter another game"), True, (139, 155, 180)), bigTextInfo.render(t("Enter another game"), True, (58, 68, 102)), win, True)
 			
 			pygame.image.save(win, path + "Gannitto world/files/Cache/Win.png")
 			tick = 0
@@ -6785,7 +6788,7 @@ if click[0] and pygame.Rect(eval(self.display_mode)[0], eval(self.display_mode)[
 						
 					except:
 						
-						a = Button(Width // 2, Height // 2 + 20, bigTextInfo.render(laungveges("Дальше", "Next", "Келесі"), True, (139, 155, 180)), bigTextInfo.render(laungveges("Дальше", "Next", "Келесі"), True, (58, 68, 102)), win, True)
+						a = Button(Width // 2, Height // 2 + 20, bigTextInfo.render(i("Next"), True, (139, 155, 180)), bigTextInfo.render(t("Next"), True, (58, 68, 102)), win, True)
 
 						while True:
 						
@@ -6799,7 +6802,7 @@ if click[0] and pygame.Rect(eval(self.display_mode)[0], eval(self.display_mode)[
 							pygame.draw.rect(win, (58, 68, 102), (0, 0, Width, Height), 10)
 							pygame.draw.rect(win, (139, 155, 180), (10, 10, Width - 20, Height - 20), 10)
 							
-							win.blit(textInfo.render(laungveges("Произошла ошибка подключения к серверу. Проверьте правильность написания IP-адреса", "An error occurred connecting to the server. Check the spelling of the IP address", "Серверге қосылу кезінде қате орын алды. IP мекенжайының емлесін тексеріңіз"), True, (139, 155, 180)), ((Width - textInfo.size(laungveges("Произошла ошибка подключения к серверу. Проверьте правильность написания IP-адреса", "An error occurred connecting to the server. Check the spelling of the IP address", "Серверге қосылу кезінде қате орын алды. IP мекенжайының емлесін тексеріңіз"))[0]) // 2, Height // 2 - 20))
+							win.blit(textInfo.render(t("Connection error"), True, (139, 155, 180)), ((Width - textInfo.size(t("Connection error"))[0]) // 2, Height // 2 - 20))
 
 							a.main()
 							if a.get_pressed():
@@ -6914,7 +6917,7 @@ if click[0] and pygame.Rect(eval(self.display_mode)[0], eval(self.display_mode)[
 					sock.send(message.encode())
 				except:
 					sock.close()
-					chat_message(laungveges("Произошла ошибка подключения к серверу.", "Server connection error", "Серверге қосылу қатесі"))
+					chat_message(t("Connection error"))
 					multyplayer = False
 
 				# Получение нового состояния игры
@@ -6962,9 +6965,9 @@ if click[0] and pygame.Rect(eval(self.display_mode)[0], eval(self.display_mode)[
 		# times.append(time.time())
 		if inventory.whole_inventory[inventory.start_cell] is not None and inventory.start_cell > 0 and hold_left:
 			
-			pygame.draw.rect(win, text_color, (mouse_x, mouse_y, max(textInfo.size(laungveges(inventory.whole_inventory[inventory.start_cell].info[0], inventory.whole_inventory[inventory.start_cell].info[1], ""))[0], textInfo.size(laungveges(inventory.whole_inventory[inventory.start_cell].purpose[0], inventory.whole_inventory[inventory.start_cell].purpose[1], ""))[0]) + 40, 130), 3)   # TODO исправить ошибку
-			win.blit(textInfo.render(laungveges(inventory.whole_inventory[inventory.start_cell].info[0], inventory.whole_inventory[inventory.start_cell].info[1], ""), True, text_color), (mouse_x + 20, mouse_y + 20))
-			win.blit(textInfo.render(laungveges(inventory.whole_inventory[inventory.start_cell].purpose[0], inventory.whole_inventory[inventory.start_cell].purpose[1], ""), True, text_color), (mouse_x + 20, mouse_y + 50))
+			pygame.draw.rect(win, text_color, (mouse_x, mouse_y, max(textInfo.size(languages(inventory.whole_inventory[inventory.start_cell].info[0], inventory.whole_inventory[inventory.start_cell].info[1], ""))[0], textInfo.size(languages(inventory.whole_inventory[inventory.start_cell].purpose[0], inventory.whole_inventory[inventory.start_cell].purpose[1], ""))[0]) + 40, 130), 3)   # TODO исправить ошибку
+			win.blit(textInfo.render(languages(inventory.whole_inventory[inventory.start_cell].info[0], inventory.whole_inventory[inventory.start_cell].info[1], ""), True, text_color), (mouse_x + 20, mouse_y + 20))
+			win.blit(textInfo.render(languages(inventory.whole_inventory[inventory.start_cell].purpose[0], inventory.whole_inventory[inventory.start_cell].purpose[1], ""), True, text_color), (mouse_x + 20, mouse_y + 50))
 			
 			if inventory.whole_inventory[inventory.start_cell].type == "Food":
 				win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Heart.png"), (64, 64)), (mouse_x + 20, mouse_y + 65))
@@ -6990,7 +6993,7 @@ if click[0] and pygame.Rect(eval(self.display_mode)[0], eval(self.display_mode)[
 			pygame.draw.rect(win, (58, 68, 102), (0, 0, Width, Height), 10)
 			pygame.draw.rect(win, (139, 155, 180), (10, 10, Width - 20, Height - 20), 10)
 
-			win.blit(textInfo.render(laungveges("Геймплей продолжится, когда вы закроете создатель плагинов.", "The gameplay will continue, when you close the plugin creator", "Плагин жасаушыны жапқанда ойын ойнау жалғасады."), True, (139, 155, 180)), ((Width - textInfo.size(laungveges("Геймплей продолжится, когда вы закроете создатель плагинов.", "The gameplay will continue, when you close the plugin creator", "Плагин жасаушыны жапқанда ойын ойнау жалғасады."))[0]) // 2, Height // 2 - 32))
+			win.blit(textInfo.render(t("The gameplay will continue, when you close the plugin creator"), True, (139, 155, 180)), ((Width - textInfo.size(t("The gameplay will continue, when you close the plugin creator"))[0]) // 2, Height // 2 - 32))
 			pygame.display.update()
 			os.system("python " + path + "/\"Gannitto world\"/files/Plugin_creater.py")
 
@@ -7056,11 +7059,11 @@ def edit_world():
 	win.fill((192, 203, 220))
 
 	win.blit(bigTextInfo.render("x", True, (139, 155, 180)), (Width - 50, 15))
-	win.blit(bigTextInfo.render(laungveges("Название мира", "World name", "Әлемдік атау"), True, (139, 155, 180)), (50, 50))
-	pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(laungveges("Название мира", "World name", "Әлемдік атау"))[0] + 100, 50, 800, 71), 5)
-	win.blit(bigTextInfo.render(world_name, True, (139, 155, 180)), (bigTextInfo.size(laungveges("Название мира", "World name", "Әлемдік атау"))[0] + 120, 60))
+	win.blit(bigTextInfo.render(t("World name"), True, (139, 155, 180)), (50, 50))
+	pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(t("World name"))[0] + 100, 50, 800, 71), 5)
+	win.blit(bigTextInfo.render(world_name, True, (139, 155, 180)), (bigTextInfo.size(t("World name"))[0] + 120, 60))
 		
-	win.blit(bigTextInfo.render(laungveges("Сложность игры:", "Game difficulty:", "Ойынның қиындығы:"), True, (139, 155, 180)), (50, 150))
+	win.blit(bigTextInfo.render(t("Game difficulty:"), True, (139, 155, 180)), (50, 150))
 
 	easy_but.main()
 	norm_but.main()
@@ -7081,21 +7084,21 @@ def edit_world():
 		case "skull":
 			win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Skull 2.png"), (132, 64)), (50, 410))
 
-	win.blit(bigTextInfo.render(laungveges("Режим Бога", "God mode", "Құдай режимі"), True, (139, 155, 180)), (50, 480))
+	win.blit(bigTextInfo.render(t("God mode"), True, (139, 155, 180)), (50, 480))
 	
-	pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(laungveges("Режим Бога", "God mode", "Құдай режимі"))[0] + 60, 470, 71, 71), 5)
+	pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(t("God mode"))[0] + 60, 470, 71, 71), 5)
 	
 	if player.god_mode:
-		win.blit(bigTextInfo.render(" ✓", True, (139, 155, 180)), (bigTextInfo.size(laungveges("Режим Бога", "God mode", "Көлеңкелер"))[0] + 60, 480))
+		win.blit(bigTextInfo.render(" ✓", True, (139, 155, 180)), (bigTextInfo.size(t("God mode"))[0] + 60, 480))
 	else:
-		win.blit(bigTextInfo.render(" x", True, (139, 155, 180)), (bigTextInfo.size(laungveges("Режим Бога", "Shadows", "Көлеңкелер"))[0] + 60, 480))
+		win.blit(bigTextInfo.render(" x", True, (139, 155, 180)), (bigTextInfo.size(t("God mode"))[0] + 60, 480))
 		
 	if create_world:
 		
-		win.blit(bigTextInfo.render(laungveges("Создать мир", "Create world", "Әлем жасаңыз"), True, (139, 155, 180)), (Width - bigTextInfo.size(laungveges("Создать мир", "Create world", "Әлем жасаңыз"))[0] - 50, 150))
+		win.blit(bigTextInfo.render(t("Create world"), True, (139, 155, 180)), (Width - bigTextInfo.size(t("Create world"))[0] - 50, 150))
 	else:
-		win.blit(bigTextInfo.render(laungveges("Удалить мир", "Delete world", "Әлемді жою"), True, (139, 155, 180)), (50, 540))
-		win.blit(bigTextInfo.render(laungveges("Копировать мир", "Copy the world", "Әлемді көшіріңіз"), True, (139, 155, 180)), (50, 600))
+		win.blit(bigTextInfo.render(t("Delete world"), True, (139, 155, 180)), (50, 540))
+		win.blit(bigTextInfo.render(t("Copy world"), True, (139, 155, 180)), (50, 600))
 	
 	win_lighten(win.copy())
 
@@ -7131,7 +7134,7 @@ def edit_world():
 					else: alt_pressed = True
 					time.sleep(0.1)
 		
-		if bigTextInfo.size(laungveges("Название мира", "World name", "Әлемдік атау"))[0] + 100 <= mouse_x <= bigTextInfo.size(laungveges("Название мира", "World name", "Әлемдік атау"))[0] + 900 and 50 <= mouse_y <= 121 and click[0]:
+		if bigTextInfo.size(t("World name"))[0] + 100 <= mouse_x <= bigTextInfo.size(t("World name"))[0] + 900 and 50 <= mouse_y <= 121 and click[0]:
 			world_name_input = True
 		
 		win.fill((192, 203, 220))
@@ -7147,14 +7150,14 @@ def edit_world():
 				if not create_world: Saver.save_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Settings.save", [difficulty, player.god_mode])
 				worlds()
 
-		win.blit(bigTextInfo.render(laungveges("Название мира", "World name", "Әлемдік атау"), True, (139, 155, 180)), (50, 50))
-		pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(laungveges("Название мира", "World name", "Әлемдік атау"))[0] + 100, 50, 800, 71), 5)
+		win.blit(bigTextInfo.render(t("World name"), True, (139, 155, 180)), (50, 50))
+		pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(t("World name"))[0] + 100, 50, 800, 71), 5)
 		if world_name_input:
-			win.blit(bigTextInfo.render(input_text, True, (139, 155, 180)), (bigTextInfo.size(laungveges("Название мира", "World name", "Әлемдік атау"))[0] + 120, 60))
+			win.blit(bigTextInfo.render(input_text, True, (139, 155, 180)), (bigTextInfo.size(t("World name"))[0] + 120, 60))
 		else:
-			win.blit(bigTextInfo.render(world_name, True, (139, 155, 180)), (bigTextInfo.size(laungveges("Название мира", "World name", "Әлемдік атау"))[0] + 120, 60))
+			win.blit(bigTextInfo.render(world_name, True, (139, 155, 180)), (bigTextInfo.size(t("World name"))[0] + 120, 60))
 			
-		win.blit(bigTextInfo.render(laungveges("Сложность игры:", "Game difficulty:", "Ойынның қиындығы:"), True, (139, 155, 180)), (50, 150))
+		win.blit(bigTextInfo.render(t("Game difficulty"), True, (139, 155, 180)), (50, 150))
 
 		easy_but.main()
 		if easy_but.get_pressed():
@@ -7186,45 +7189,45 @@ def edit_world():
 			case "skull":
 				win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Skull 2.png"), (132, 64)), (50, 410))
 
-		win.blit(bigTextInfo.render(laungveges("Режим Бога", "God mode", "Құдай режимі"), True, (139, 155, 180)), (50, 480))
+		win.blit(bigTextInfo.render(t("God mode"), True, (139, 155, 180)), (50, 480))
 		
-		pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(laungveges("Режим Бога", "God mode", "Құдай режимі"))[0] + 60, 470, 71, 71), 5)
+		pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(t("God mode"))[0] + 60, 470, 71, 71), 5)
 		if player.god_mode:
-			win.blit(bigTextInfo.render(" ✓", True, (139, 155, 180)), (bigTextInfo.size(laungveges("Режим Бога", "God mode", "Көлеңкелер"))[0] + 60, 480))
-			if bigTextInfo.size(laungveges("Режим Бога", "God mode", "Құдай режимі"))[0] + 60 <= mouse_x <= bigTextInfo.size(laungveges("Режим Бога", "God mode", "Құдай режимі"))[0] + 131 and 470 <= mouse_y <= 528 and click[0]:
+			win.blit(bigTextInfo.render(" ✓", True, (139, 155, 180)), (bigTextInfo.size(t("God mode"))[0] + 60, 480))
+			if bigTextInfo.size(t("God mode"))[0] + 60 <= mouse_x <= bigTextInfo.size(t("God mode"))[0] + 131 and 470 <= mouse_y <= 528 and click[0]:
 				player.god_mode = False
 				time.sleep(0.15)
 		else:
-			win.blit(bigTextInfo.render(" x", True, (139, 155, 180)), (bigTextInfo.size(laungveges("Режим Бога", "Shadows", "Көлеңкелер"))[0] + 60, 480))
-			if bigTextInfo.size(laungveges("Режим Бога", "God mode", "Құдай режимі"))[0] + 60 <= mouse_x <= bigTextInfo.size(laungveges("Режим Бога", "God mode", "Құдай режимі"))[0] + 131 and 470 <= mouse_y <= 528 and click[0]:
+			win.blit(bigTextInfo.render(" x", True, (139, 155, 180)), (bigTextInfo.size(t("God mode"))[0] + 60, 480))
+			if bigTextInfo.size(t("God mode"))[0] + 60 <= mouse_x <= bigTextInfo.size(t("God mode"))[0] + 131 and 470 <= mouse_y <= 528 and click[0]:
 				player.god_mode = True
 				time.sleep(0.15)
 				
 		if create_world:
 			
-			win.blit(bigTextInfo.render(laungveges("Создать мир", "Create world", "Әлем жасаңыз"), True, (139, 155, 180)), (Width - bigTextInfo.size(laungveges("Создать мир", "Create world", "Әлем жасаңыз"))[0] - 50, 150))
+			win.blit(bigTextInfo.render(t("Create world"), True, (139, 155, 180)), (Width - bigTextInfo.size(t("Create world"))[0] - 50, 150))
 			
-			if Width - bigTextInfo.size(laungveges("Создать мир", "Create world", "Әлем жасаңыз"))[0] - 50 < mouse_x < Width - 50 and 150 < mouse_y < 180:
+			if Width - bigTextInfo.size(t("Create world"))[0] - 50 < mouse_x < Width - 50 and 150 < mouse_y < 180:
 				
-				win.blit(bigTextInfo.render(laungveges("Создать мир", "Create world", "Әлем жасаңыз"), True, (58, 68, 102)), (Width - bigTextInfo.size(laungveges("Создать мир", "Create world", "Әлем жасаңыз"))[0] - 50, 150))
+				win.blit(bigTextInfo.render(t("Create world"), True, (58, 68, 102)), (Width - bigTextInfo.size(t("Create world"))[0] - 50, 150))
 				if click[0]:
 					win_darken(win.copy())
 					start_game()
 		else:
 			
-			win.blit(bigTextInfo.render(laungveges("Удалить мир", "Delete world", "Әлемді жою"), True, (139, 155, 180)), (50, 540))
+			win.blit(bigTextInfo.render(t("Delete world"), True, (139, 155, 180)), (50, 540))
 
-			if 50 < mouse_x < 50 + bigTextInfo.size(laungveges("Удалить мир", "Delete world", "Әлемді жою"))[0] and 540 < mouse_y < 570:
+			if 50 < mouse_x < 50 + bigTextInfo.size(t("Delete world"))[0] and 540 < mouse_y < 570:
 		   
-				win.blit(bigTextInfo.render(laungveges("Удалить мир", "Delete world", "Әлемді жою"), True, (58, 68, 102)), (50, 540))
+				win.blit(bigTextInfo.render(t("Delete world"), True, (58, 68, 102)), (50, 540))
 			
 				if click[0]:
 				
 					win_fill()
 					a = win.copy()
 				
-					yes_button = Button(Width // 2 - 150, Height // 2, bigTextInfo.render(laungveges("Да", "Yes", "Иә"), True, (139, 155, 180)), bigTextInfo.render(laungveges("Да", "Yes", "Иә"), True, (58, 68, 102)), win, True)
-					no_button = Button(Width // 2 + 150, Height // 2, bigTextInfo.render(laungveges("Нет", "No", "Жоқ"), True, (139, 155, 180)), bigTextInfo.render(laungveges("Нет", "No", "Жоқ"), True, (58, 68, 102)), win, True)
+					yes_button = Button(Width // 2 - 150, Height // 2, bigTextInfo.render(t("Yes"), True, (139, 155, 180)), bigTextInfo.render(t("Yes"), True, (58, 68, 102)), win, True)
+					no_button = Button(Width // 2 + 150, Height // 2, bigTextInfo.render(t("No"), True, (139, 155, 180)), bigTextInfo.render(t("No"), True, (58, 68, 102)), win, True)
 
 					while True:
 					
@@ -7241,7 +7244,7 @@ def edit_world():
 						pygame.draw.rect(win, (192, 203, 220), (Width // 2 - 300, Height // 2 - 150, 600, 300))
 						pygame.draw.rect(win, (139, 155, 180), (Width // 2 - 300, Height // 2 - 150, 600, 300), 5)
 					
-						win.blit(textInfo.render(laungveges("Вы уверены, что хотите удалить этот мир?", "Are you sure want to delete this world?", "Бұл әлемді шынымен жойғыңыз келе ме?"), True, (139, 155, 180)), ((Width - textInfo.size(laungveges("Вы уверены, что хотите удалить этот мир?", "Are you sure want to delete this world?", "Бұл әлемді шынымен жойғыңыз келе ме?"))[0]) // 2, Height // 2 - 100))
+						win.blit(textInfo.render(t("Are you sure want to delete this world?"), True, (139, 155, 180)), ((Width - textInfo.size(t("Are you sure want to delete this world?"))[0]) // 2, Height // 2 - 100))
 
 						yes_button.main()
 						if yes_button.get_pressed():   # Удалить выбранный мир
@@ -7260,13 +7263,13 @@ def edit_world():
 						pygame.display.update()
 						clock.tick(30)
 					
-			win.blit(bigTextInfo.render(laungveges("Копировать мир", "Copy the world", "Әлемді көшіріңіз"), True, (139, 155, 180)), (50, 600))
+			win.blit(bigTextInfo.render(t("Copy world"), True, (139, 155, 180)), (50, 600))
 
-			if 50 < mouse_x < 50 + bigTextInfo.size(laungveges("Копировать мир", "Copy the world", "Әлемді көшіріңіз"))[0] and 600 < mouse_y < 630:
-				win.blit(bigTextInfo.render(laungveges("Копировать мир", "Copy the world", "Әлемді көшіріңіз"), True, (58, 68, 102)), (50, 600))
+			if 50 < mouse_x < 50 + bigTextInfo.size(t("Copy world"))[0] and 600 < mouse_y < 630:
+				win.blit(bigTextInfo.render(t("Copy world"), True, (58, 68, 102)), (50, 600))
 				if click[0]:
 					import shutil
-					shutil.copytree(path + "Gannitto world/files/Worlds/" + world_name, path + "Gannitto world/files/Worlds/" + world_name + laungveges(" - копия", " - copy", " - Көшіру"))
+					shutil.copytree(path + "Gannitto world/files/Worlds/" + world_name, path + "Gannitto world/files/Worlds/" + world_name + t(" - copy"))
 					del shutil
 					win_darken(win.copy())
 					if create_world:
@@ -7295,7 +7298,7 @@ def worlds():
 
 	page_back_button = Button(10, Height - 138, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Back.png"), (128, 128)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Back 2.png"), (128, 128)), win)
 	page_next_button = Button(Width - 148, Height - 148, pygame.transform.flip(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Back.png"), (128, 128)), True, False), pygame.transform.flip(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Back 2.png"), (128, 128)), True, False), win)
-	create_new_world_button = Button(Width // 2, 50, textInfo.render(laungveges("Создать новый мир", "Create new world", "Жаңа әлем жасаңыз"), True, (139, 155, 180)), textInfo.render(laungveges("Создать новый мир", "Create new world", "Жаңа әлем жасаңыз"), True, (58, 68, 102)), win, True)
+	create_new_world_button = Button(Width // 2, 50, textInfo.render(t("Create world"), True, (139, 155, 180)), textInfo.render(t("Create world"), True, (58, 68, 102)), win, True)
 	back_button = Button(-20, -20, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Back.png"), (128, 128)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Back 2.png"), (128, 128)), win)
 	page = 1
 	input_text = None
@@ -7456,7 +7459,7 @@ def worlds():
 								start_game()
 
 		else:
-			text(f"""{laungveges("Введите имя мира:", "Enter world name:", "Әлемдік атауды енгізіңіз:")}
+			text(f"""{t("Enter world name:")}
 {input_text}""", Width // 2, Height // 2 - 15, blue_color, alignment=True)
 			
 		if Settings["Display"][7]:
@@ -7487,8 +7490,8 @@ def menu():
 	
 	global win, screenmode, mobs, num, mouse_click_image
 
-	play_button = Button(Width / 2, Height / 2 - 150, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Play.png"), (256, 128)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Play 2.png"), (256, 128)), win, True, info="Подсказка: вы можете нажать enter, чтобы сразу начать игру.")
-	settings_button = Button(Width / 2, Height / 2, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Settings.png"), (480, 128)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Settings 2.png"), (480, 128)), win, True)
+	play_button = Button(Width / 2, Height / 2 - 150, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Play.png"), (264, 128)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Play 2.png"), (264, 128)), win, True, info="Подсказка: вы можете нажать enter, чтобы сразу начать игру.")
+	settings_button = Button(Width / 2, Height / 2, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Settings.png"), (488, 128)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Settings 2.png"), (488, 128)), win, True)
 	change_a_character_button = Button(Width / 2, Height / 2 + 150, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Change a character.png"), (960, 128)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Change a character 2.png"), (960, 128)), win, True)
 
 	win.blit(Screensaver2, (0, 0))
@@ -7585,7 +7588,7 @@ def menu():
 			text("danilaserezhin@gmail.com", Width - 250, Height // 2 + 200, blue_color, 16, True)
 			
 			win.blit(pygame.image.load(path + "Gannitto world/files/Images/Rickrolling QR-code.png"), (Width // 2 - 100, Height // 2 - 200))
-			text(laungveges("Другую информацию вы можете получить с этого QR-кода", "You can get other information from this QR code", "Басқа ақпаратты осы QR кодтан ала аласыз"), Width // 2, Height // 2 + 10, blue_color, alignment=True)
+			text(t("You can get other information from this QR code"), Width // 2, Height // 2 + 10, blue_color, alignment=True)
 
 		if pygame.mouse.get_pressed()[0] == 1:
 			mouse_click_image = 1

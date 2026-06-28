@@ -5,10 +5,12 @@ import pygame
 from itertools import product
 from Globals import Width, Height, path
 
-def laungveges(Russian: str, English: str, Kazach: str) -> str:
-	"""Переводит текст на выбранный язык"""
-	from Globals import changed_laungvege
-	return eval(changed_laungvege)
+def languages(Russian: str, English: str, Kazach: str) -> str:
+	"""Переводит текст на выбранный язык. Эта функция устарела и нужно постепенно от неё отказываться."""
+	from Globals import changed_language
+	if changed_language == "Russian": return Russian
+	if changed_language == "English": return English
+	if changed_language == "Kazach": return Kazach
 
 def shadow(
 		surface: pygame.Surface,
