@@ -22,7 +22,6 @@ from Globals import *
 pygame.init()
 
 """
-Тегом ## отмечены строки кода, где ещё нет перевода на все языки
 Чтобы найти что-то на карте кода, просто вбейте в поиск
 
 Карта кода:
@@ -142,7 +141,7 @@ def save(darken:bool=True, save_world_settings:bool=False):
 			Saver.save_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Objects.save", objects)
 			Saver.save_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Inventory.save", inventory.whole_inventory)
 			Saver.save_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Resourses.save", inventory.resourses)
-			Saver.save_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Effects.save", effects)
+			Saver.save_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Effects.save", player.effects)
 
 			new_particles = particles.copy()
 			particle_count = 1
@@ -412,7 +411,7 @@ class Object:
 			  object_x: int,
 			  object_y: int,
 			  image_path: str,
-			  scale_x: list = [64, 64],
+			  scale_x: list = (64, 64),
 			  image = None,
 			  special_flags: str = None,
 			  add_path=True,
@@ -458,13 +457,13 @@ class Object:
 		self.add_path = add_path
 		self.scale_x = scale_x
 	
-	def main(self):
+	def main(self, X, Y):
 
-		if player.x - Width // 2 - self.w // 2 <= self.x <= player.x + Width // 2 + self.w // 2 and player.y - Height // 2 <= self.y + Height // 2:
-			win.blit(self.image, (self.x - player.x + Width // 2 - self.w // 2, player.y - self.y + Height // 2 - self.h // 2))
+		if X - Width // 2 - self.w // 2 <= self.x <= X + Width // 2 + self.w // 2 and Y - Height // 2 <= Y + Height // 2:
+			win.blit(self.image, (self.x - X + Width // 2 - self.w // 2, Y - self.y + Height // 2 - self.h // 2))
 
 		if Settings["Display"][3]:
-			pygame.draw.rect(win, (0, 0, 0), (self.x - player.x + Width // 2 - self.w // 2, player.y - self.y + Height // 2 - self.h // 2, self.w, self.h), 3)
+			pygame.draw.rect(win, (0, 0, 0), (self.x - X + Width // 2 - self.w // 2, Y - self.y + Height // 2 - self.h // 2, self.w, self.h), 3)
 
 	def get_left_pressed(self):
 
@@ -494,10 +493,9 @@ class Object:
 		# Восстанавливаем состояние и загружаем изображение
 		self.__dict__.update(state)
 		if self.add_path:
-			self.image = pygame.transform.scale(pygame.image.load(path + self.image_path), (self.scale_x[0], self.scale_x[1]))
+			self.image = TextureCache.get(path + self.image_path, self.scale_x)
 		else:
-			self.image = pygame.transform.scale(pygame.image.load(self.image_path), (self.scale_x[0], self.scale_x[1]))
-			
+			self.image = TextureCache.get(self.image_path, self.scale_x)
 
 class Particle:
 
@@ -509,7 +507,7 @@ class Particle:
 				 x_bias_condition: str="True", y_bias_condition: str="True",
 				 else_x_bias: str="0", else_y_bias: str="0",
 				 rotate: int=None,
-				 display_mode: str="self.x - player.x + Width // 2 - self.image.get_width() // 2, player.y - self.y + Height // 2 - self.image.get_height() // 2",
+				 display_mode=lambda X, Y, w, h: (X - player.x + Width // 2 - w // 2, player.y - Y + Height // 2 - h // 2),
 				 tick_command: str="",
 				 tick_command_locals: dict={},
 				 tick_command_globals: dict={},
@@ -632,6 +630,8 @@ class Particle:
 		self.end_command_globals_in_the_end = end_command_globals_in_the_end
 
 		self.start_time = time.time()
+
+		self.w, self.h = self.image.get_size()
 	
 	def __getstate__(self):
 		
@@ -704,10 +704,10 @@ class Particle:
 			eval(self.end_command)
 			particles.remove(self)
 
-		win.blit(self.image, (eval(self.display_mode)))
+		win.blit(self.image, (self.display_mode(self.x, self.y, self.w, self.h)))
 
 		if Settings["Display"][3]:
-			pygame.draw.rect(win, (0, 0, 0), (eval(self.display_mode), self.image.get_width(), self.image.get_height()), 3)
+			pygame.draw.rect(win, (0, 0, 0), (self.display_mode(self.x, self.y, self.w, self.h), self.w, self.h), 3)
 	
 	# def get_pressed(self, button=0, del_self=False) -> bool:
 	# 	if click[button] and pygame.Rect(eval(self.display_mode)[0], eval(self.display_mode)[1], self.w, self.h).collidepoint(mouse_x, mouse_y):
@@ -840,6 +840,18 @@ class Player:
 		if Settings["Display"][3]:
 			pygame.draw.rect(screen, (0, 255, 0), (Width / 2 - 128, Height / 2 - 128, self.image.get_width(), self.image.get_height()), 2)
 
+class TextureCache:
+	_textures = {}
+	
+	@classmethod
+	def get(cls, path, scale=None):
+		key = (path, scale)
+		if key not in cls._textures:
+			image = pygame.image.load(path)
+			if scale:
+				image = pygame.transform.scale(image, scale)
+			cls._textures[key] = image
+		return cls._textures[key]
 
 
 class SlimeEnemy:
@@ -2134,10 +2146,10 @@ class Cave:
 			self.objects.append(Object("Stone", random.randint(self.own_width // 2 * -1, self.own_width // 2), random.randint(self.own_height // 2 * -1, self.own_height // 2), "Gannitto world/files/Images/Items/Stone.png", special_flags="Item"))
 			
 		for _ in range(self.own_width // 300 + random.randint(-10, 10)):
-			self.objects.append(Object("Iron ore", random.randint(self.own_width // 2 * -1, self.own_width // 2), random.randint(self.own_height // 2 * -1, self.own_height // 2), "Gannitto world/files/Images/Objects/Iron ore.png", [256, 256], special_flags=100))
+			self.objects.append(Object("Iron ore", random.randint(self.own_width // 2 * -1, self.own_width // 2), random.randint(self.own_height // 2 * -1, self.own_height // 2), "Gannitto world/files/Images/Objects/Iron ore.png", (256, 256), special_flags=100))
 
 		for _ in range(self.own_width // 300 + random.randint(-10, 10)):
-			self.objects.append(Object("Gold ore", random.randint(self.own_width // 2 * -1, self.own_width // 2), random.randint(self.own_height // 2 * -1, self.own_height // 2), "Gannitto world/files/Images/Objects/Gold ore.png", [256, 256], special_flags=100))
+			self.objects.append(Object("Gold ore", random.randint(self.own_width // 2 * -1, self.own_width // 2), random.randint(self.own_height // 2 * -1, self.own_height // 2), "Gannitto world/files/Images/Objects/Gold ore.png", (256, 256), special_flags=100))
 
 	def main(self):
 
@@ -3749,7 +3761,7 @@ dt = 0
 
 def start_game():
 	
-	global win, Hiro_rect, changed_slot, menu_open, multyplayer_menu_open, screenmode, inventory_open, hold_left, backrooms, text_color, bullet_num, craft_items_list, craft_amounts_list, craft_images_list, screenshot_num, mechanisms, mouse_x, mouse_y, item_settings_open, multyplayer_panel, big_rects, objects, mobs, in_cave, chat_tick, craft_list_open, craft_list_page, click, in_motherboard, os, mouse_click_image, world_name, player_bullets, effects, color, multyplayer_mode, multyplayer, Hiro, game_time, animation, start_time, wall_list, weather, new_particles, inside_files, difficulty, alt_pressed, walk, dt, player
+	global win, Hiro_rect, changed_slot, menu_open, multyplayer_menu_open, screenmode, inventory_open, hold_left, backrooms, text_color, bullet_num, craft_items_list, craft_amounts_list, craft_images_list, screenshot_num, mechanisms, mouse_x, mouse_y, item_settings_open, multyplayer_panel, big_rects, objects, mobs, in_cave, chat_tick, craft_list_open, craft_list_page, click, in_motherboard, os, mouse_click_image, world_name, player_bullets, color, multyplayer_mode, multyplayer, Hiro, game_time, animation, start_time, wall_list, weather, new_particles, inside_files, difficulty, alt_pressed, walk, dt, player
 
 	night_playing = False
 	input_text = ""
@@ -3794,7 +3806,7 @@ def start_game():
 		objects = Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Objects.save")
 		inventory.whole_inventory = Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Inventory.save")
 		#inventory.resourses = Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Resourses.save") TODO
-		effects = Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Effects.save")
+		player.effects = Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Effects.save")
 		player.speed = 50
 
 	else:
@@ -3836,9 +3848,9 @@ def start_game():
 				case "Object":
 
 					try:
-						a = Object(i[1], i[3], i[4], i[2], [pygame.image.load(i[2]).get_width(), pygame.image.load(i[2]).get_height()], special_flags=i[5], add_path=False)
+						a = Object(i[1], i[3], i[4], i[2], (pygame.image.load(i[2]).get_width(), pygame.image.load(i[2]).get_height()), special_flags=i[5], add_path=False)
 					except FileNotFoundError:
-						a = Object(i[1], i[3], i[4], "Gannitto world/files/Images/No-file texture.png", [64, 64], special_flags=i[5])
+						a = Object(i[1], i[3], i[4], "Gannitto world/files/Images/No-file texture.png", special_flags=i[5])
 					b = True
 					for object in objects:
 						if a == object:
@@ -3893,9 +3905,9 @@ def start_game():
 							# команды лучше не использовать, так как из-за eval возникает проблема безопасности
 							pass
 						except Exception as e:
-							chat_message(languages("<<< Команда " + Settings["User"][0] + f" получила ошибку {e}" + ". >>>", "<<< " + Settings["User"][0] + f"'s command got an {e}" + "error. >>>", "")) ##
+							chat_message(languages("<<< Команда " + Settings["User"][0] + f" получила ошибку {e}" + ". >>>", "<<< " + Settings["User"][0] + f"'s command got an {e}" + "error. >>>", ""))
 						else:
-							chat_message(languages("<<< Команда " + Settings["User"][0] + " была успешно исполнена. >>>", "<<< " + Settings["User"][0] + "'s command was successfully executed. >>>", "")) ##
+							chat_message(languages("<<< Команда " + Settings["User"][0] + " была успешно исполнена. >>>", "<<< " + Settings["User"][0] + "'s command was successfully executed. >>>", ""))
 					else:
 						chat_message(Settings["User"][0] + ": " + input_text)
 
@@ -3915,51 +3927,80 @@ def start_game():
 				if changed_slot > 9: changed_slot = 0
 				if changed_slot < 0: changed_slot = 9
 
-			if event.type == pygame.KEYUP and not chat_input:
+			if event.type == pygame.KEYUP:
+				if chat_input:
+					if event.key == pygame.K_ESCAPE:
+						input_text = ""
+						chat_input = False
+				else:
 
-				if event.key == pygame.K_LALT:
-					alt_pressed = not alt_pressed
-				if event.key == hot_keys["Use item"]:
-					use_item_pressed = True
-				if event.key == hot_keys["Multyplayer menu"]:
-					multyplayer_menu_open = True
-				if event.key == hot_keys["Set Ron home"]:
-					Ron.Home = [player.x, player.y]
-				if event.key == hot_keys["Menu"]:
-					menu_open = not menu_open
-				if event.key == pygame.K_c:
-					chat_input = True
+					if event.key == pygame.K_LALT:
+						alt_pressed = not alt_pressed
+					if event.key == hot_keys["Use item"]:
+						use_item_pressed = True
+					if event.key == hot_keys["Multyplayer menu"]:
+						multyplayer_menu_open = True
+					if event.key == hot_keys["Set Ron home"]:
+						Ron.Home = [player.x, player.y]
+					if event.key == hot_keys["Menu"]:
+						menu_open = not menu_open
+					if event.key == pygame.K_c:
+						chat_input = True
 
-				if event.key == pygame.K_1: changed_slot = 0
-				if event.key == pygame.K_2: changed_slot = 1
-				if event.key == pygame.K_3: changed_slot = 2
-				if event.key == pygame.K_4: changed_slot = 3
-				if event.key == pygame.K_5: changed_slot = 4
-				if event.key == pygame.K_6: changed_slot = 5
-				if event.key == pygame.K_7: changed_slot = 6
-				if event.key == pygame.K_8: changed_slot = 7
-				if event.key == pygame.K_9: changed_slot = 8
-				if event.key == pygame.K_0: changed_slot = 9
+					if event.key == pygame.K_ESCAPE:
+	
+						if item_settings_open:
+							item_settings_open = False
+						elif Ron.window[0]:
+							Ron.window[0] = False
+						elif in_motherboard is not None:
+							in_motherboard = None
+						elif craft_list_open:
+							craft_list_open = False
+						elif inventory_open:
+							inventory_open = False
+						else:
+							music_channel.stop()
+							pygame.mixer.Sound.stop(Backrooms_lamps)
+							statistics[1] += (time.time() - start_time) / 3600
+							save()
+							objects = []
+							mobs = []
+							player.effects = []
+							inventory.whole_inventory = [None] * 40
+							menu()
 
-				if event.key == hot_keys["Help"]:
-					music_channel.stop()
-					pygame.mixer.Sound.stop(Backrooms_lamps)
-					statistics[1] += (time.time() - start_time) / 3600
-					save(False)
-					settings()
 
-				if event.key == hot_keys["Inventory"]:
-					inventory_open = not inventory_open
-					if not inventory_open:
-						i = -1
-						if craft_items_list != [None] * 7:
-							i += 1
-							for item in craft_items_list:
-								if item is not None:
-									inventory.increate(item, craft_amounts_list[i])
-						craft_items_list = [None] * 7
-						craft_amounts_list = [None] * 7
-						craft_images_list = [None] * 7
+					if event.key == pygame.K_1: changed_slot = 0
+					if event.key == pygame.K_2: changed_slot = 1
+					if event.key == pygame.K_3: changed_slot = 2
+					if event.key == pygame.K_4: changed_slot = 3
+					if event.key == pygame.K_5: changed_slot = 4
+					if event.key == pygame.K_6: changed_slot = 5
+					if event.key == pygame.K_7: changed_slot = 6
+					if event.key == pygame.K_8: changed_slot = 7
+					if event.key == pygame.K_9: changed_slot = 8
+					if event.key == pygame.K_0: changed_slot = 9
+
+					if event.key == hot_keys["Help"]:
+						music_channel.stop()
+						pygame.mixer.Sound.stop(Backrooms_lamps)
+						statistics[1] += (time.time() - start_time) / 3600
+						save(False)
+						settings()
+
+					if event.key == hot_keys["Inventory"]:
+						inventory_open = not inventory_open
+						if not inventory_open:
+							i = -1
+							if craft_items_list != [None] * 7:
+								i += 1
+								for item in craft_items_list:
+									if item is not None:
+										inventory.increate(item, craft_amounts_list[i])
+							craft_items_list = [None] * 7
+							craft_amounts_list = [None] * 7
+							craft_images_list = [None] * 7
 		
 		if inventory_open:
 			if click[0] and not hold_left:
@@ -4062,35 +4103,6 @@ def start_game():
 
 			time.sleep(0.15)
 		
-		if keys[pygame.K_ESCAPE]:
-
-			if item_settings_open:
-				item_settings_open = False
-				time.sleep(0.25)
-			elif Ron.window[0]:
-				Ron.window[0] = False
-			elif in_motherboard is not None:
-				in_motherboard = None
-				time.sleep(0.25)
-			elif craft_list_open:
-				craft_list_open = False
-				time.sleep(0.25)
-			elif inventory_open:
-				inventory_open = False
-				time.sleep(0.25)
-			else:
-				...
-				# функция временно отключена, т.к. не получается сохранить игру
-				# music_channel.stop()
-				# pygame.mixer.Sound.stop(Backrooms_lamps)
-				# statistics[1] += (time.time() - start_time) / 3600
-				# save()
-				# objects = []
-				# mobs = []
-				# effects = []
-				# inventory.whole_inventory = [None] * 40
-				# menu()
-
 		if not chat_input:
 
 			# Старая механика ходьбы
@@ -4288,11 +4300,11 @@ def start_game():
 			pass
 		# if walk > 0:
 			# walk -= 1
-		
-		if keys[pygame.K_a]: dx = -1 + (keys[pygame.K_w] or keys[pygame.K_s]) * 0.3
-		if keys[pygame.K_d]: dx = 1 - (keys[pygame.K_w] or keys[pygame.K_s]) * 0.3
-		if keys[pygame.K_s]: dy = -1 + (keys[pygame.K_a] or keys[pygame.K_d]) * 0.3
-		if keys[pygame.K_w]: dy = 1 - (keys[pygame.K_a] or keys[pygame.K_d]) * 0.3
+		if not chat_input:	
+			if keys[pygame.K_a]: dx = -1 + (keys[pygame.K_w] or keys[pygame.K_s]) * 0.3
+			if keys[pygame.K_d]: dx = 1 - (keys[pygame.K_w] or keys[pygame.K_s]) * 0.3
+			if keys[pygame.K_s]: dy = -1 + (keys[pygame.K_a] or keys[pygame.K_d]) * 0.3
+			if keys[pygame.K_w]: dy = 1 - (keys[pygame.K_a] or keys[pygame.K_d]) * 0.3
 
 		# Если есть движение - двигаем игрока
 		if dx != 0 or dy != 0:
@@ -4349,19 +4361,19 @@ def start_game():
 			elif not chat_input and any((keys[pygame.K_LEFT], keys[pygame.K_RIGHT], keys[pygame.K_UP], keys[pygame.K_DOWN], keys[pygame.K_a], keys[pygame.K_d], keys[pygame.K_w], keys[pygame.K_s], Settings["Game"][1] and any((left_b.get_pressed(), up_b.get_pressed(), down_b.get_pressed(), right_b.get_pressed())))):
 
 				if in_cave is not None:
-					pygame.mixer.Sound.play(random.choice([Cave_walking1, Cave_walking2, Cave_walking3]), maxtime=1000)
+					pygame.mixer.Sound.play(random.choice((Cave_walking1, Cave_walking2, Cave_walking3)), maxtime=1000)
 
 				elif biom_name in ("Grass", "Field") and random.randint(1, 150) == 1:
-					pygame.mixer.Sound.play(random.choice([Grass_walking1, Grass_walking2, Grass_walking3]), maxtime=1000)
+					pygame.mixer.Sound.play(random.choice((Grass_walking1, Grass_walking2, Grass_walking3)), maxtime=1000)
 
 				elif biom_name == "Sand" and random.randint(1, 230) == 1:
-					pygame.mixer.Sound.play(random.choice([Sand_walking1, Sand_walking2, Sand_walking3]), maxtime=1000)
+					pygame.mixer.Sound.play(random.choice((Sand_walking1, Sand_walking2, Sand_walking3)), maxtime=1000)
 
 				elif biom_name == "Snow" and random.randint(1, 120) == 1:
-					pygame.mixer.Sound.play(random.choice([Snow_walking1, Snow_walking2, Snow_walking3]), maxtime=1000)
+					pygame.mixer.Sound.play(random.choice((Snow_walking1, Snow_walking2, Snow_walking3)), maxtime=1000)
 
 				elif biom_name == "Swamp" and random.randint(1, 120) == 1:
-					pygame.mixer.Sound.play(random.choice([Swamp_walking1, Swamp_walking2, Swamp_walking3]), maxtime=1000)
+					pygame.mixer.Sound.play(random.choice((Swamp_walking1, Swamp_walking2, Swamp_walking3)), maxtime=1000)
 
 
 			if biom_name is None:
@@ -4506,7 +4518,7 @@ def start_game():
 			for object in objects:
 
 				if object.__class__ == Cave:
-					object.main()
+					object.main(player.x, player.y)
 					if object.get_in() is not None:
 						a = object.get_in()
 
@@ -4545,7 +4557,7 @@ def start_game():
 				for object in objects[in_cave + 1].objects:
 
 					i += 1
-					object.main()
+					object.main(player.x, player.y)
 
 					if object.__class__ == Object:
 
@@ -4584,7 +4596,7 @@ def start_game():
 									object.image = pygame.transform.scale(object.image, (256, 256))
 
 									if random.randint(1, 15) == 1:
-										pygame.mixer.Sound.play(random.choice([Stone_breaking1, Stone_breaking2]))
+										pygame.mixer.Sound.play(random.choice((Stone_breaking1, Stone_breaking2)))
 
 									if object.special_flags == -1:
 										del objects[in_cave + 1].objects[i]
@@ -4613,7 +4625,7 @@ def start_game():
 									object.image = pygame.transform.scale(object.image, (256, 256))
 
 									if random.randint(1, 15) == 1:
-										pygame.mixer.Sound.play(random.choice([Stone_breaking1, Stone_breaking2]))
+										pygame.mixer.Sound.play(random.choice((Stone_breaking1, Stone_breaking2)))
 
 									if object.special_flags == -1:
 										del objects[in_cave + 1].objects[i]
@@ -4639,7 +4651,7 @@ def start_game():
 				for i, object in enumerate(objects):
 
 					if object.object_class == "Object":
-						object.main()
+						object.main(player.x, player.y)
 
 						if object.special_flags == "Item" and Settings["Game"][0] and player.x - 150 < object.x < player.x + 150 and player.y - 150 < object.y < player.y + 150:
 							particles.append(Particle(object.x, object.y, object.image, "round(self.calculated_variable[0])", "round(self.calculated_variable[1])", variable_to_calculate="((self.special_flags[0] // 2) / 10 / 10 * self.ticks, (self.special_flags[1] // 2) / 10 / 10 * self.ticks, (-self.special_flags[0] // 2) / 10 / 10 * (self.ticks - 10), (-self.special_flags[1] // 2) / 10 / 10 * (self.ticks - 10))", track_ticks=True, end_x=player.x, end_y=player.y, end_zone=30, end_command="(inventory.increate('" + object.name + "'),pygame.mixer.Sound.play(Pick_an_item))", special_flags=(player.x - object.x, player.y - object.y, (0 - 17) // (0 - 10))))
@@ -5481,7 +5493,7 @@ def start_game():
 
 				case "Beer":
 
-					effects.append(["Drunk", 180])
+					player.effects.append(["Drunk", 180])
 					if inventory.whole_inventory[changed_slot].amount > 1:
 						inventory.whole_inventory[changed_slot].amount -= 1
 					else:
@@ -5539,7 +5551,7 @@ def start_game():
 
 		# Отрисовка погоды
 					
-		if random.randint(1, 18000) == 1: weather = random.choice(["Clear", "Rain"])
+		if random.randint(1, 18000) == 1: weather = random.choice(("Clear", "Rain"))
 
 		match weather:
 			
@@ -5547,7 +5559,7 @@ def start_game():
 
 				offset = random.randint(-10, 10)
 				for _ in range(15):
-					particles.append(Particle(random.randint(1, Width), -50, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Objects/Drop.png"), (64, 64)),  x_bias=random.randint(-5, 5) + offset, y_bias=random.randint(30, 40), display_mode="self.x, self.y", end_y=Height, end_zone=30))
+					particles.append(Particle(random.randint(1, Width), -50, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Objects/Drop.png"), (64, 64)),  x_bias=random.randint(-5, 5) + offset, y_bias=random.randint(30, 40), display_mode=lambda X, Y, w, h: (X, Y), end_y=Height, end_zone=30))
 
 		# Отображение частиц
 
@@ -6154,7 +6166,7 @@ def start_game():
 		b = []
 		c = -1
 
-		for i in effects:
+		for i in player.effects:
 
 			c += 1
 			a += 60
@@ -6181,7 +6193,7 @@ def start_game():
 		a = -1
 		for i in b:
 			a += 1
-			del effects[i - a]
+			del player.effects[i - a]
 		
 		if item_settings_open:
 
@@ -6425,12 +6437,12 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 				else:
 					objects.append(Portal())
 		build_tuple = (changed_slot, player, objects, particles, Width, Height)
-		build(build_tuple, Object("Table", 0, 0, "Gannitto world/files/Images/Objects/Table.png", [256, 256], special_flags=1), "Table")
-		build(build_tuple, Object("Wall table", 0, 0, "Gannitto world/files/Images/Objects/Wall table.png", [256, 256], special_flags=1), "Wall table")
-		build(build_tuple, Object("Furnace", 0, 0, "Gannitto world/files/Images/Items/Furnace.png", [256, 256], special_flags=1), "Furnace")
-		build(build_tuple, Object("Punch", 0, 0, "Gannitto world/files/Images/Objects/Punch 1.png", [256, 256], special_flags=1), "Punch")
+		build(build_tuple, Object("Table", 0, 0, "Gannitto world/files/Images/Objects/Table.png", (256, 256), special_flags=1), "Table")
+		build(build_tuple, Object("Wall table", 0, 0, "Gannitto world/files/Images/Objects/Wall table.png", (256, 256), special_flags=1), "Wall table")
+		build(build_tuple, Object("Furnace", 0, 0, "Gannitto world/files/Images/Items/Furnace.png", (256, 256), special_flags=1), "Furnace")
+		build(build_tuple, Object("Punch", 0, 0, "Gannitto world/files/Images/Objects/Punch 1.png", (256, 256), special_flags=1), "Punch")
 		
-		build(build_tuple, Object("Farmland", 0, 0, "Gannitto world/files/Images/Objects/Farmland.png", [128, 128], special_flags=1), "Stone hoe", get_item_from_inventory=0, command="pygame.mixer.Sound.play(pygame.mixer.Sound('" + path + "Gannitto world/files/Sounds/Dirt.mp3" + "'))")
+		build(build_tuple, Object("Farmland", 0, 0, "Gannitto world/files/Images/Objects/Farmland.png", (128, 128), special_flags=1), "Stone hoe", get_item_from_inventory=0, command="pygame.mixer.Sound.play(pygame.mixer.Sound('" + path + "Gannitto world/files/Sounds/Dirt.mp3" + "'))")
 		
 		if inventory.whole_inventory[changed_slot] is None: a = ""
 		else:
@@ -6449,7 +6461,7 @@ if self.special_flags[2]:
 		pygame.mixer.Sound.play(pygame.mixer.Sound(path + "Gannitto world/files/Sounds/Watering plants " + str(random.randint(1, 2)) + ".mp3"))""", True, """
 if particle.special_flags[2]: particles.append(Particle(particle.x, particle.y, pygame.transform.scale(pygame.image.load(path + 'Gannitto world/files/Images/Objects/' + particle.special_flags[0] + ' 4.png'), (128, 128)), can_interfere_with_placing=True, save_particle=True, del_self_condition="click[0] and pygame.Rect(particle.x - player.x + Width // 2 - particle.image.get_width() // 2, player.y - particle.y + Height // 2 - particle.image.get_height() // 2, particle.w, particle.h).collidepoint(mouse_x, mouse_y)", end_command='pygame.mixer.Sound.play(pygame.mixer.Sound(path + "Gannitto world/files/Sounds/Breaking.mp3"))'))
 else: particles.append(Particle(particle.x, particle.y, pygame.transform.scale(pygame.image.load(path + 'Gannitto world/files/Images/Objects/' + particle.special_flags[0] + ' 3.png'), (128, 128)), can_interfere_with_placing=True, save_particle=True, tick_command='''
-if click[0] and pygame.Rect(eval(self.display_mode)[0], eval(self.display_mode)[1], self.w, self.h).collidepoint(mouse_x, mouse_y):
+if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0], self.display_mode(self.x, self.y, self.w, self.h)[1], self.w, self.h).collidepoint(mouse_x, mouse_y):
 	for _ in range(random.randint(1, 3)):
 		objects.append(Object(self.special_flags[0], self.x + random.randint(-30, 30), self.y + random.randint(-30, 30), "Gannitto world/files/Images/Items/" + self.special_flags[0] + ".png", special_flags="Item"))
 	if self.special_flags[0] == "Wheat":
@@ -6522,7 +6534,11 @@ if click[0] and pygame.Rect(eval(self.display_mode)[0], eval(self.display_mode)[
 			else:
 				win.blit(textInfo.render(mouse_object, True, text_color), (990 - textInfo.size(mouse_object)[0], 10))
 		
-		text(input_text, 10, Height - 30)
+		if chat_input:
+			win_fill()
+			win_fill(rect=(10, Height - 50, Width - 20, 40))
+
+		text(input_text, 20, Height - 40)
 		
 		if chat_tick == 0 and len(chat) != 0:
 			main_chat.append(chat[0])
@@ -6681,7 +6697,7 @@ if click[0] and pygame.Rect(eval(self.display_mode)[0], eval(self.display_mode)[
 						objects = []
 						mechanisms = []
 						player_bullets = []
-						effects = []
+						player.effects = []
 						#player.x, player.y, player.speed
 						
 					except:
@@ -6910,6 +6926,7 @@ def edit_world():
 	global world_name, difficulty, player, alt_pressed
 
 	create_world = False
+	release = False
 
 	try:
 		difficulty, player.god_mode = Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Settings.save")
@@ -6977,12 +6994,18 @@ def edit_world():
 		mouse_x, mouse_y = pygame.mouse.get_pos()
 		click = pygame.mouse.get_pressed()
 		keys = pygame.key.get_pressed()
+		release = False
 
 		for event in pygame.event.get():
 
 			if event.type == pygame.QUIT:
+				win_darken(win.copy())
 				sys.exit()
 				
+			elif event.type == pygame.MOUSEBUTTONUP:
+				if event.button == 1:
+					release = True
+
 			elif event.type == pygame.KEYDOWN and world_name_input:
 				if event.key == pygame.K_RETURN or len(input_text) == 50:
 					if world_name_input:
@@ -7062,14 +7085,12 @@ def edit_world():
 		pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(t("God mode"))[0] + 60, 470, 71, 71), 5)
 		if player.god_mode:
 			win.blit(bigTextInfo.render(" ✓", True, (139, 155, 180)), (bigTextInfo.size(t("God mode"))[0] + 60, 480))
-			if bigTextInfo.size(t("God mode"))[0] + 60 <= mouse_x <= bigTextInfo.size(t("God mode"))[0] + 131 and 470 <= mouse_y <= 528 and click[0]:
+			if bigTextInfo.size(t("God mode"))[0] + 60 <= mouse_x <= bigTextInfo.size(t("God mode"))[0] + 131 and 470 <= mouse_y <= 528 and release:
 				player.god_mode = False
-				time.sleep(0.15)
 		else:
 			win.blit(bigTextInfo.render(" x", True, (139, 155, 180)), (bigTextInfo.size(t("God mode"))[0] + 60, 480))
-			if bigTextInfo.size(t("God mode"))[0] + 60 <= mouse_x <= bigTextInfo.size(t("God mode"))[0] + 131 and 470 <= mouse_y <= 528 and click[0]:
+			if bigTextInfo.size(t("God mode"))[0] + 60 <= mouse_x <= bigTextInfo.size(t("God mode"))[0] + 131 and 470 <= mouse_y <= 528 and release:
 				player.god_mode = True
-				time.sleep(0.15)
 				
 		if create_world:
 			
@@ -7101,6 +7122,7 @@ def edit_world():
 					
 						for event in pygame.event.get():
 							if event.type == pygame.QUIT:
+								win_darken(win.copy())
 								sys.exit()
 							
 						mouse_x, mouse_y = pygame.mouse.get_pos()
@@ -7216,6 +7238,7 @@ def worlds():
 		for event in pygame.event.get():
 
 			if event.type == pygame.QUIT:
+				win_darken(win.copy())
 				sys.exit()
 				
 			elif event.type == pygame.KEYDOWN and input_text is not None:

@@ -6,7 +6,7 @@ class BigRect:
 
 		self.x = rect_x
 		self.y = rect_y
-		self.biom = random.choice(["Grass", "Sand", "Field", "Snow", "Swamp"])
+		self.biom = random.choice(("Grass", "Sand", "Field", "Snow", "Swamp"))
 		
 	def generate(self, objects):
 
@@ -19,7 +19,7 @@ class BigRect:
 			Bush = pygame.image.load(path + "Gannitto world/files/Images/Objects/Bush.png")
 		except:
 			path = os.path.abspath(__file__)[:-32]
-		self.biom = random.choice(["Grass", "Sand", "Field", "Snow", "Swamp"])
+		self.biom = random.choice(("Grass", "Sand", "Field", "Snow", "Swamp"))
 		clock = pygame.time.Clock()
 		a = True
 		b = False
@@ -49,7 +49,7 @@ class BigRect:
 					objects.append(Object(
 						"Bush",
 						random.randint(self.x - 50000, self.x + 50000), random.randint(self.y - 50000, self.y + 50000),
-						"Gannitto world/files/Images/Objects/Bush.png", [128, 128], Bush))
+						"Gannitto world/files/Images/Objects/Bush.png", (128, 128), Bush))
 				pygame.display.update()
 				clock.tick(60)
 			
@@ -65,12 +65,12 @@ class BigRect:
 					objects.append(Object(
 						"Pond",
 						x, y,
-						"Gannitto world/files/Images/Objects/Pond.png", [512, 512], Pond, special_flags=[100, random.randint(10, 30)]))
+						"Gannitto world/files/Images/Objects/Pond.png", (512, 512), Pond, special_flags=[100, random.randint(10, 30)]))
 					for _ in range(random.randint(2, 5)):
 						objects.append(Object(
 							"Reed",
 							x + random.randint(-100, 612), y + random.randint(-100, 612),
-							"Gannitto world/files/Images/Objects/Reed.png", [256, 256], Reed))
+							"Gannitto world/files/Images/Objects/Reed.png", (256, 256), Reed))
 				pygame.display.update()
 				clock.tick(60)
 
@@ -225,7 +225,7 @@ class BigRect:
 					objects.append(Object(
 						"Tree",
 						random.randint(self.x - 50000, self.x + 50000), random.randint(self.y - 50000, self.y + 50000), 
-						"Gannitto world/files/Images/Objects/Tree.png", [256, 256], Tree, special_flags=100))
+						"Gannitto world/files/Images/Objects/Tree.png", (256, 256), Tree, special_flags=100))
 				pygame.display.update()
 				clock.tick(60)
 
@@ -239,7 +239,7 @@ class BigRect:
 					objects.append(Object(
 						"Birch",
 						random.randint(self.x - 50000, self.x + 50000), random.randint(self.y - 50000, self.y + 50000), 
-						"Gannitto world/files/Images/Objects/Birch.png", [256, 256], Birch, special_flags=100))
+						"Gannitto world/files/Images/Objects/Birch.png", (256, 256), Birch, special_flags=100))
 				pygame.display.update()
 				clock.tick(60)
 
@@ -263,7 +263,7 @@ class BigRect:
 					objects.append(Object(
 						"Cactus",
 						random.randint(self.x - 50000, self.x + 50000), random.randint(self.y - 50000, self.y + 50000),
-						"Gannitto world/files/Images/Objects/Cactus.png", [256, 256], Cactus))
+						"Gannitto world/files/Images/Objects/Cactus.png", (256, 256), Cactus))
 				pygame.display.update()
 				clock.tick(60)
 
@@ -277,7 +277,7 @@ class BigRect:
 					objects.append(Object(
 						"Pile of sand",
 						random.randint(self.x - 50000, self.x + 50000), random.randint(self.y - 50000, self.y + 50000),
-						"Gannitto world/files/Images/Objects/Pile of sand.png", [256, 256] ,Pile_of_sand))
+						"Gannitto world/files/Images/Objects/Pile of sand.png", (256, 256) ,Pile_of_sand))
 				pygame.display.update()
 				clock.tick(60)
 
@@ -294,7 +294,7 @@ class BigRect:
 					objects.append(Object(
 						"Dark tree",
 						random.randint(self.x - 50000, self.x + 50000), random.randint(self.y - 50000, self.y + 50000),
-						"Gannitto world/files/Images/Objects/Dark tree.png", [256, 256], Dark_tree, special_flags=100))
+						"Gannitto world/files/Images/Objects/Dark tree.png", (256, 256), Dark_tree, special_flags=100))
 				pygame.display.update()
 				clock.tick(60)
 
@@ -353,7 +353,7 @@ class BigRect:
 					objects.append(Object(
 						"Spruce",
 						random.randint(self.x - 50000, self.x + 50000), random.randint(self.y - 50000, self.y + 50000),
-						"Gannitto world/files/Images/Objects/Spruce.png", [512, 512], Spruce))
+						"Gannitto world/files/Images/Objects/Spruce.png", (512, 512), Spruce))
 				pygame.display.update()
 				clock.tick(60)
 
@@ -367,7 +367,7 @@ class BigRect:
 					objects.append(Object(
 						"Dark tree",
 						random.randint(self.x - 50000, self.x + 50000), random.randint(self.y - 50000, self.y + 50000),
-						"Gannitto world/files/Images/Objects/Dark bush.png", [128, 128], Dark_bush))
+						"Gannitto world/files/Images/Objects/Dark bush.png", (128, 128), Dark_bush))
 		
 		return objects
 
