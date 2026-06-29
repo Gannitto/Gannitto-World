@@ -57,8 +57,8 @@ class Recipe:
 
 		"""Проверяет, может ли быть какой-то результат от данных ингридеентов"""
 		
-		from Globals import craft_items_list, craft_amounts_list, objects
-		from Gannitto_world import player
+		from Globals import craft_items_list, craft_amounts_list
+		from Gannitto_world import player, world
 		if craft_items_list == self.ingredients and craft_amounts_list == self.ingredients_amounts:
 			a = True
 			b = None
@@ -67,7 +67,7 @@ class Recipe:
 
 			if self.need_object != None:
 				a = False
-				for object in objects:
+				for object in world.objects:
 					if player.x - 1000 <= object.x <= player.x + 1000 and player.y - 1000 <= object.y <= player.y + 1000 and object.name == self.need_object:
 						a = True
 						b = object.name

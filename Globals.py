@@ -52,7 +52,6 @@ green_color = (87, 245, 66)
 text_color = (0, 180, 0)
 blue_color = (139, 155, 180)
 menu_open = False
-wall_list = []
 multyplayer_menu_open = False
 textInfo = pygame.font.Font(path + "Gannitto world/files/Font.ttf", 18)
 bigTextInfo = pygame.font.Font(path + "Gannitto world/files/Font.ttf", 36)
