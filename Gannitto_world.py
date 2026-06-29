@@ -219,11 +219,6 @@ Hiro_up_run_6 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/
 Hiro_up_left = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Up-left/1.png"), (256, 256))
 
 Hiro_up_right_run_1 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Up-right/1.png"), (256, 256))
-Hiro_up_right_run_2 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Up-right/2.png"), (256, 256))
-Hiro_up_right_run_3 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Up-right/3.png"), (256, 256))
-Hiro_up_right_run_4 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Up-right/4.png"), (256, 256))
-Hiro_up_right_run_5 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Up-right/5.png"), (256, 256))
-Hiro_up_right_run_6 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Up-right/6.png"), (256, 256))
 
 Hiro = Hiro_down_run_1
 Hiro_rect = Hiro.get_rect(center=(Width / 2, Height / 2))
@@ -750,16 +745,19 @@ class PlayerAnimations:
 player_animations = PlayerAnimations()
 
 class Player:
+
 	def __init__(self, X=0, Y=0):
+
 		self.x = X
 		self.y = Y
 		self.speed = 10
 		
 		# Анимация
-		self.direction = "Down"  # Текущее направление
-		self.frame_index = 0     # Текущий кадр
+		self.direction = "Down"
+		self.frame_index = 0
 		self.animation_speed = 0.015  # Скорость анимации (секунды между кадрами)
-		self.animation_timer = 0    # Таймер для анимации
+		self.animation_timer = 0
+		self.animations = player_animations.animations
 		
 		# Игровые параметры
 		self.HP = 100
@@ -768,9 +766,6 @@ class Player:
 		self.effects = []
 		self.god_mode = False
 		self.is_moving = False
-		
-		# Анимации из PlayerAnimations
-		self.animations = player_animations.animations
 		
 		# Текущий спрайт
 		self.image = self.get_current_frame()
@@ -800,16 +795,32 @@ class Player:
 		# Обновляем изображение
 		self.image = self.get_current_frame()
 		self.rect = self.image.get_rect(center=(Width / 2, Height / 2))
+
+	def collides_with_walls(self, walls):
+		"""Проверяет, пересекается ли игрок с какой-либо стеной."""
+		player_rect = pygame.Rect(self.x - 25, self.y + 112, 50, 224)
+
+		for wall in walls:
+			# Предполагаем, что стена хранит свои координаты и размеры
+			wall_rect = pygame.Rect(wall.x - 128, wall.y + 128, 256, 256) # Размер стены
+			if player_rect.colliderect(wall_rect):
+				return True
+		return False
 	
 	def move(self, dx, dy):
 		"""Двигает игрока и обновляет направление"""
 		self.is_moving = True
 		
-		# Обновляем позицию
+		# Обновление позиции
 		self.x += dx * self.speed
+		if self.collides_with_walls(world.walls):
+			self.x -= dx * self.speed
+
 		self.y += dy * self.speed
+		if self.collides_with_walls(world.walls):
+			self.y -= dy * self.speed
 		
-		# Определяем направление
+		# Определение направления
 		if dx > 0 and dy == 0:
 			self.direction = "Right"
 		elif dx < 0 and dy == 0:
@@ -838,7 +849,6 @@ class Player:
 		
 		screen.blit(self.image, (Width / 2 - 128, Height / 2 - 128))
 		
-		# Если включен режим отладки - рисуем хитбокс
 		if Settings["Display"][3]:
 			pygame.draw.rect(screen, (0, 255, 0), (Width / 2 - 128, Height / 2 - 128, self.image.get_width(), self.image.get_height()), 2)
 
@@ -1718,11 +1728,6 @@ class Wall:
 		self.is_door = is_door
 		self.open = False
 
-		for object in world.objects:
-			if object.__class__ == Wall:
-				if ((object.x == self.x and object.y in (self.y + 256, self.y - 256)) or (object.x in (self.x - 256, self.x + 256) and object.y == self.y)) and object.num != self.num:
-					self.neigbords.append(object)
-
 		if is_door:
 
 			self.images = [
@@ -1752,23 +1757,16 @@ class Wall:
 			]
 
 		self.image = self.images[0]
+		self.update_neigboors()
 
-	def main(self):
+	def update_neigboors(self):
 
 		self.neigbords = []
-		for object in world.walls:
-			if ((object.x == self.x and object.y in (self.y + 256, self.y - 256)) or (object.x in (self.x - 256, self.x + 256) and object.y == self.y)) and object.num != self.num:
-				self.neigbords.append(object)
-		
+		for wall in world.walls:
+			if ((wall.x == self.x and wall.y in (self.y + 256, self.y - 256)) or (wall.x in (self.x - 256, self.x + 256) and wall.y == self.y)) and (self.x, self.y) != (wall.x, wall.y):
+				self.neigbords.append(wall)
+
 		if self.is_door:
-
-			if click[0] and self.x + Width // 2 - player.x <= mouse_x <= self.x + Width // 2 - player.x + 256 and player.y - self.y + Height // 2 - 128 <= mouse_y <= player.y - self.y + Height // 2 + 128:
-
-				if self.open:
-					self.open = False
-				else:
-					self.open = True
-				time.sleep(0.4)
 
 			if len(self.neigbords) == 0:
 				if self.open:
@@ -1840,6 +1838,12 @@ class Wall:
 			elif len(self.neigbords) == 4:
 				self.image = self.images[10]
 		
+	def main(self):
+
+		if self.is_door and click[0] and self.x + Width // 2 - player.x <= mouse_x <= self.x + Width // 2 - player.x + 256 and player.y - self.y + Height // 2 - 128 <= mouse_y <= player.y - self.y + Height // 2 + 128:
+			self.open = not self.open
+			time.sleep(0.4)
+
 		win.blit(self.image, (self.x + Width // 2 - 128 - player.x, player.y - self.y + Height // 2 - 128))
 		
 	def __getstate__(self):
@@ -6537,6 +6541,7 @@ if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0]
 					
 					else:
 						world.walls.append(Wall(inventory.whole_inventory[changed_slot].name, (player.x + mouse_x - Width // 2) // 256 * 256 + 128, (player.y - mouse_y + Height // 2) // 256 * 256 + 128))
+					for wall in world.walls: wall.update_neigboors()
 					inventory.whole_inventory[changed_slot].amount -= 1
 					if inventory.whole_inventory[changed_slot].amount == 0:
 						inventory.whole_inventory[changed_slot] = None
@@ -6560,6 +6565,7 @@ if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0]
 					
 					else:
 						world.walls.append(Wall(inventory.whole_inventory[changed_slot].name, (player.x + mouse_x - Width // 2) // 256 * 256 + 128, (player.y - mouse_y + Height // 2) // 256 * 256 + 128, True))
+						for wall in world.walls: wall.update_neigboors()
 						inventory.whole_inventory[changed_slot].amount -= 1
 						if inventory.whole_inventory[changed_slot].amount == 0:
 							inventory.whole_inventory[changed_slot] = None
