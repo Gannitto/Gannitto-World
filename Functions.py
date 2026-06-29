@@ -112,7 +112,6 @@ def win_darken(screen: pygame.Surface):
 
 		win.blit(screen, (0, 0))
 		win_fill(alpha=dark)
-
 		pygame.display.update()
 		clock.tick(30)
 	
@@ -207,3 +206,20 @@ def show_error_window(error_message: str):
 		if running == False:
 			pygame.quit()
 			sys.exit()
+
+def animate_click():
+
+	if Settings["Display"][7]:
+
+		if pygame.mouse.get_pressed()[0] == 1:
+			mouse_click_image = 1
+		try:
+			win.blit(mouse_click_images[mouse_click_image - 1], (mouse_x - 64, mouse_y - 64))
+			if mouse_click_image == 5:
+				mouse_click_image = None
+			else:
+				mouse_click_image += 1
+		except TypeError:
+			pass
+
+
