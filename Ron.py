@@ -47,15 +47,15 @@ def walk(x: int, y: int):
 
 		if not (-256 < X - x < 256):
 			if X < x:
-				X += 30
+				X += 50
 			elif x < X:
-				X -= 30
+				X -= 50
 		
 		if not (-256 < Y - y < 256):
 			if Y < y:
-				Y += 30
+				Y += 50
 			elif y < Y:
-				Y -= 30
+				Y -= 50
 
 	else:
 

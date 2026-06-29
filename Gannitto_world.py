@@ -225,7 +225,6 @@ Hiro_up_right_run_5 = pygame.transform.scale(pygame.image.load(path + "Gannitto 
 Hiro_up_right_run_6 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Up-right/6.png"), (256, 256))
 
 Hiro = Hiro_down_run_1
-Hiro_run = "Down"
 Hiro_rect = Hiro.get_rect(center=(Width / 2, Height / 2))
 
 arrow_down = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/DOWN.png"), (64, 64))
@@ -725,7 +724,7 @@ class PlayerAnimations:
 		self.load_animations()
 	
 	def load_animations(self):
-		directions = ["Down", "Up", "Left", "Right"]
+		directions = ["Down", "Up", "Left", "Right", "Down-left", "Down-right", "Up-left", "Up-right"]
 		
 		for direction in directions:
 
@@ -745,19 +744,6 @@ class PlayerAnimations:
 					frames.append(surface)
 			
 			self.animations[direction] = frames
-		
-		# Загружаем диагональные направления (если есть)
-		diagonal_directions = ["Down-left", "Down-right", "Up-left", "Up-right"]
-		for direction in diagonal_directions:
-			try:
-				path_to_image = f"{path}Gannitto world/files/Images/Players/Hiro/Normal/{direction}/1.png"
-				image = pygame.transform.scale(pygame.image.load(path_to_image), (256, 256))
-				# Для диагоналей обычно только 1 кадр, но можно и больше
-				self.animations[direction] = [image]
-			except pygame.error:
-				# Если нет диагональной анимации, используем обычную
-				base_direction = direction.split("-")[0]  # "Down" из "Down-left"
-				self.animations[direction] = self.animations[base_direction]
 
 player_animations = PlayerAnimations()
 
@@ -831,13 +817,13 @@ class Player:
 		elif dy < 0 and dx == 0:
 			self.direction = "Down"
 		elif dx > 0 and dy > 0:
-			self.direction = "Down-right"
-		elif dx < 0 and dy > 0:
-			self.direction = "Down-left"
-		elif dx > 0 and dy < 0:
 			self.direction = "Up-right"
-		elif dx < 0 and dy < 0:
+		elif dx < 0 and dy > 0:
 			self.direction = "Up-left"
+		elif dx > 0 and dy < 0:
+			self.direction = "Down-right"
+		elif dx < 0 and dy < 0:
+			self.direction = "Down-left"
 	
 	def stop(self):
 		"""Останавливает движение"""
@@ -2305,9 +2291,9 @@ def settings():
 				menu()
 				
 			page_back_button.main()
-			if (page_back_button.get_pressed() or keys[pygame.K_LEFT]) and page > 1: page -= 1; time.sleep(0.1)
+			if (page_back_button.get_pressed() or keys[pygame.K_LEFT]) and page > 1: page -= 1
 			page_next_button.main()
-			if (page_next_button.get_pressed() or keys[pygame.K_RIGHT]) and page < 3: page += 1; time.sleep(0.1)
+			if (page_next_button.get_pressed() or keys[pygame.K_RIGHT]) and page < 3: page += 1
 			win.blit(bigTextInfo.render(str(page), True, (139, 155, 180)), ((Width - 415) // 2 + 391, Height - 96))
 			win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Help 2.png"), (132, 64)), (10, 117))
 			display_button.main(display)
@@ -2472,9 +2458,9 @@ def settings():
 				menu()
 			   
 			page_back_button.main()
-			if (page_back_button.get_pressed() or keys[pygame.K_LEFT]) and page > 1: page -= 1; time.sleep(0.1)
+			if (page_back_button.get_pressed() or keys[pygame.K_LEFT]) and page > 1: page -= 1
 			page_next_button.main()
-			if (page_next_button.get_pressed() or keys[pygame.K_RIGHT]) and page < 3: page += 1; time.sleep(0.1)
+			if (page_next_button.get_pressed() or keys[pygame.K_RIGHT]) and page < 3: page += 1
 			
 			win.blit(bigTextInfo.render(str(page), True, (139, 155, 180)), ((Width - 415) // 2 + 391, Height - 96))
 			help_button.main(help)
@@ -2709,9 +2695,9 @@ def settings():
 			show_reset_settings()
 			
 			page_back_button.main()
-			if (page_back_button.get_pressed() or keys[pygame.K_LEFT]) and page > 1: page -= 1; time.sleep(0.1)
+			if (page_back_button.get_pressed() or keys[pygame.K_LEFT]) and page > 1: page -= 1
 			page_next_button.main()
-			if (page_next_button.get_pressed() or keys[pygame.K_RIGHT]) and page < 3: page += 1; time.sleep(0.1)
+			if (page_next_button.get_pressed() or keys[pygame.K_RIGHT]) and page < 3: page += 1
 			win.blit(bigTextInfo.render(t("You can choose one of these"), True, (139, 155, 180)), (385, 123))
 			win.blit(bigTextInfo.render(t("languages:"), True, (139, 155, 180)), (385, 153))
 
@@ -2830,9 +2816,9 @@ def settings():
 			show_reset_settings()
 				
 			page_back_button.main()
-			if (page_back_button.get_pressed() or keys[pygame.K_LEFT]) and page > 1: page -= 1; time.sleep(0.1)
+			if (page_back_button.get_pressed() or keys[pygame.K_LEFT]) and page > 1: page -= 1
 			page_next_button.main()
-			if (page_next_button.get_pressed() or keys[pygame.K_RIGHT]) and page < 3: page += 1; time.sleep(0.1)
+			if (page_next_button.get_pressed() or keys[pygame.K_RIGHT]) and page < 3: page += 1
 			
 			win.blit(bigTextInfo.render(str(page), True, (139, 155, 180)), ((Width - 415) // 2 + 391, Height - 96))
 			help_button.main(help)
@@ -2983,9 +2969,9 @@ def settings():
 				menu()
 				
 			page_back_button.main()
-			if (page_back_button.get_pressed() or keys[pygame.K_LEFT]) and page > 1: page -= 1; time.sleep(0.1)
+			if (page_back_button.get_pressed() or keys[pygame.K_LEFT]) and page > 1: page -= 1
 			page_next_button.main()
-			if (page_next_button.get_pressed() or keys[pygame.K_RIGHT]) and page < 3: page += 1; time.sleep(0.1)
+			if (page_next_button.get_pressed() or keys[pygame.K_RIGHT]) and page < 3: page += 1
 			
 			win.blit(bigTextInfo.render(str(page), True, (139, 155, 180)), ((Width - 415) // 2 + 391, Height - 96))
 			help_button.main(help)
@@ -3083,9 +3069,9 @@ def settings():
 			show_reset_settings()
 				
 			page_back_button.main()
-			if (page_back_button.get_pressed() or keys[pygame.K_LEFT]) and page > 1: page -= 1; time.sleep(0.1)
+			if (page_back_button.get_pressed() or keys[pygame.K_LEFT]) and page > 1: page -= 1
 			page_next_button.main()
-			if (page_next_button.get_pressed() or keys[pygame.K_RIGHT]) and page < 3: page += 1; time.sleep(0.1)
+			if (page_next_button.get_pressed() or keys[pygame.K_RIGHT]) and page < 3: page += 1
 			
 			win.blit(bigTextInfo.render(str(page), True, (139, 155, 180)), ((Width - 415) // 2 + 391, Height - 96))
 			help_button.main(help)
@@ -3480,9 +3466,9 @@ def settings():
 			show_reset_settings()
 				
 			page_back_button.main()
-			if (page_back_button.get_pressed() or keys[pygame.K_LEFT]) and page > 1: page -= 1; time.sleep(0.1)
+			if (page_back_button.get_pressed() or keys[pygame.K_LEFT]) and page > 1: page -= 1
 			page_next_button.main()
-			if (page_next_button.get_pressed() or keys[pygame.K_RIGHT]) and page < 3: page += 1; time.sleep(0.1)
+			if (page_next_button.get_pressed() or keys[pygame.K_RIGHT]) and page < 3: page += 1
 			
 			win.blit(bigTextInfo.render(str(page), True, (139, 155, 180)), ((Width - 415) // 2 + 391, Height - 96))
 			help_button.main(help)
@@ -3643,10 +3629,10 @@ def change_a_character():
 			pets_button.main(pets)
 			
 			page_back_button.main()
-			if (page_back_button.get_pressed() or keys[pygame.K_LEFT]) and page > 1: page -= 1; time.sleep(0.1)
+			if (page_back_button.get_pressed() or keys[pygame.K_LEFT]) and page > 1: page -= 1
 			page_next_button.main()
 			
-			if (page_next_button.get_pressed() or keys[pygame.K_RIGHT]) and page < 3: page += 1; time.sleep(0.1)
+			if (page_next_button.get_pressed() or keys[pygame.K_RIGHT]) and page < 3: page += 1
 			win.blit(bigTextInfo.render(str(page), True, (139, 155, 180)), ((Width - 415) // 2 + 340, Height - 96))
 
 			if keys[pygame.K_1]:
@@ -3763,7 +3749,7 @@ dt = 0
 
 def start_game():
 	
-	global Hiro_run, win, Hiro_rect, changed_slot, menu_open, multyplayer_menu_open, screenmode, inventory_open, hold_left, backrooms, text_color, bullet_num, craft_items_list, craft_amounts_list, craft_images_list, screenshot_num, mechanisms, mouse_x, mouse_y, item_settings_open, multyplayer_panel, big_rects, objects, mobs, in_cave, chat_tick, craft_list_open, craft_list_page, click, in_motherboard, os, mouse_click_image, world_name, player_bullets, effects, color, multyplayer_mode, multyplayer, Hiro, game_time, animation, start_time, wall_list, weather, new_particles, inside_files, difficulty, alt_pressed, walk, dt, player
+	global win, Hiro_rect, changed_slot, menu_open, multyplayer_menu_open, screenmode, inventory_open, hold_left, backrooms, text_color, bullet_num, craft_items_list, craft_amounts_list, craft_images_list, screenshot_num, mechanisms, mouse_x, mouse_y, item_settings_open, multyplayer_panel, big_rects, objects, mobs, in_cave, chat_tick, craft_list_open, craft_list_page, click, in_motherboard, os, mouse_click_image, world_name, player_bullets, effects, color, multyplayer_mode, multyplayer, Hiro, game_time, animation, start_time, wall_list, weather, new_particles, inside_files, difficulty, alt_pressed, walk, dt, player
 
 	night_playing = False
 	input_text = ""
@@ -4020,7 +4006,7 @@ def start_game():
 				backrooms_objects.append(Object(inventory.whole_inventory[changed_slot].name, player.x, player.y, "Gannitto world/files/Images/Items/" + inventory.whole_inventory[changed_slot].name + ".png", special_flags="Item"))
 			else:
 				
-				match Hiro_run:
+				match player.direction:
 					
 					case "Down":
 						x_bias_ = "0"
@@ -4052,7 +4038,7 @@ def start_game():
 				backrooms_objects.append(Object(inventory.whole_inventory[changed_slot].name, player.x, player.y, "Gannitto world/files/Images/Items/" + inventory.whole_inventory[changed_slot].name + ".png", special_flags="Item"))
 			else:
 			
-				match Hiro_run:
+				match player.direction:
 				
 					case "Down":
 						x_bias_ = "0"
@@ -4131,7 +4117,7 @@ def start_game():
 							
 			# 		if walk <= 0:
 
-			# 			Hiro_run = "Down"
+			# 			player.direction = "Down"
 			# 			if costum == 7: 
 			# 				costum = 0
 			# 			costum += 1
@@ -4173,7 +4159,7 @@ def start_game():
 			# 				y -= player.speed // FPS
 
 			# 		if walk <= 0:
-			# 			Hiro_run = "Up"
+			# 			player.direction = "Up"
 			# 			if costum == 7:
 			# 				costum = 0
 			# 			costum += 1
@@ -4216,7 +4202,7 @@ def start_game():
 
 			# 		if walk <= 0:
 
-			# 			Hiro_run = "Left"
+			# 			player.direction = "Left"
 			# 			if costum == 7:
 			# 				costum = 0
 			# 			costum += 1
@@ -4259,7 +4245,7 @@ def start_game():
 
 			# 		if walk <= 0:
 
-			# 			Hiro_run = "Right"
+			# 			player.direction = "Right"
 			# 			if costum == 7:
 			# 				costum = 0
 			# 			costum += 1
@@ -4283,30 +4269,30 @@ def start_game():
 
 			# 	costum = 0
 
-			# 	if Hiro_run == "Down-left":
+			# 	if player.direction == "Down-left":
 			# 		Hiro = Hiro_down_left
-			# 	elif Hiro_run == "Down-right":
+			# 	elif player.direction == "Down-right":
 			# 		Hiro = Hiro_down_right
-			# 	elif Hiro_run == "Down":
+			# 	elif player.direction == "Down":
 			# 		Hiro = Hiro_down_run_1
-			# 	elif Hiro_run == "Up-left":
+			# 	elif player.direction == "Up-left":
 			# 		Hiro = Hiro_up_left
-			# 	elif Hiro_run == "Up-right":
+			# 	elif player.direction == "Up-right":
 			# 		Hiro = Hiro_up_right_run_1
-			# 	elif Hiro_run == "Up":
+			# 	elif player.direction == "Up":
 			# 		Hiro = Hiro_up_run_1
-			# 	elif Hiro_run == "Left":
+			# 	elif player.direction == "Left":
 			# 		Hiro = Hiro_left_run_1
-			# 	elif Hiro_run == "Right":
+			# 	elif player.direction == "Right":
 			# 		Hiro = Hiro_right_run_1
 			pass
 		# if walk > 0:
 			# walk -= 1
 		
-		if keys[pygame.K_a]: dx = -1
-		if keys[pygame.K_d]: dx = 1
-		if keys[pygame.K_s]: dy = -1
-		if keys[pygame.K_w]: dy = 1
+		if keys[pygame.K_a]: dx = -1 + (keys[pygame.K_w] or keys[pygame.K_s]) * 0.3
+		if keys[pygame.K_d]: dx = 1 - (keys[pygame.K_w] or keys[pygame.K_s]) * 0.3
+		if keys[pygame.K_s]: dy = -1 + (keys[pygame.K_a] or keys[pygame.K_d]) * 0.3
+		if keys[pygame.K_w]: dy = 1 - (keys[pygame.K_a] or keys[pygame.K_d]) * 0.3
 
 		# Если есть движение - двигаем игрока
 		if dx != 0 or dy != 0:
@@ -5246,7 +5232,7 @@ def start_game():
 
 		# Отрисовка игрока
 		
-		# win.blit(shadow(Hiro, Hiro_run + str(costum), len_shadow=50), Hiro_rect)
+		# win.blit(shadow(Hiro, player.direction + str(costum), len_shadow=50), Hiro_rect)
 		player.render(win)
 
 
@@ -5267,7 +5253,7 @@ def start_game():
 		else:
 			a = True
 
-		match Hiro_run:
+		match player.direction:
 
 			case "Down":
 
@@ -6755,7 +6741,7 @@ if click[0] and pygame.Rect(eval(self.display_mode)[0], eval(self.display_mode)[
 				for i in big_rects:
 					new_rects += str(i.x) + "!" + str(i.y) + "!" + i.biom + "#"
 
-				message = str(Ron.X) + ", " + str(Ron.Y) + ", " + str(Ron.Home) + ", " + str(start_time) + ", " + new_rects + ", " + new_objects + "|" + str(player.x) + ", " + str(player.y) + ", " + Hiro_run + ", " + str(costum) + "|"
+				message = str(Ron.X) + ", " + str(Ron.Y) + ", " + str(Ron.Home) + ", " + str(start_time) + ", " + new_rects + ", " + new_objects + "|" + str(player.x) + ", " + str(player.y) + ", " + player.direction + ", " + str(costum) + "|"
 				
 				for player in Multyplayer.players:
 
@@ -6801,7 +6787,7 @@ if click[0] and pygame.Rect(eval(self.display_mode)[0], eval(self.display_mode)[
 					
 			else:
 
-				message = str(player.x) + ", " + str(player.y) + ", " + Hiro_run + ", " + str(costum)
+				message = str(player.x) + ", " + str(player.y) + ", " + player.direction + ", " + str(costum)
 
 				try:
 					sock.send(message.encode())

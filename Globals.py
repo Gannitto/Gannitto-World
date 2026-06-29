@@ -93,16 +93,16 @@ except FileNotFoundError:
 	
 	hot_keys = {
 	
-		"Multyplayer menu": "m",
-		"TAB menu": "TAB",
-		"Help": "F1",
-		"Menu": "F2",
-		"Screenshot": "F3",
-		"Change screen": "F11",
-		"Throw away the item": "e",
-		"Use item": "SPACE",
-		"Inventory": "i",
-		"Set Ron home": "HOME"
+		"Multyplayer menu": pygame.K_m,
+		"TAB menu": pygame.K_TAB,
+		"Help": pygame.K_F1,
+		"Menu": pygame.K_F2,
+		"Screenshot": pygame.K_F3,
+		"Change screen": pygame.K_F11,
+		"Throw away the item": pygame.K_e,
+		"Use item": pygame.K_SPACE,
+		"Inventory": pygame.K_i,
+		"Set Ron home": pygame.K_HOME
 	
 		}
 
