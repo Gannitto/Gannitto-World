@@ -183,7 +183,7 @@ class BigRect:
 					objects.append(Object(
 						"Dandelion",
 						random.randint(self.x - 50000, self.x + 50000), random.randint(self.y - 50000, self.y + 50000),
-						"Gannitto world/files/Images/Objects/Dandelion 1.png", image=Dandelion, special_flags="Item"))
+						"Gannitto world/files/Images/Objects/Dandelion 1.png", image=Dandelion, add_path=False, special_flags="Item"))
 				pygame.display.update()
 				clock.tick(60)
 
