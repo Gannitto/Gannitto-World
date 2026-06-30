@@ -412,7 +412,9 @@ class Object:
 			  image = None,
 			  special_flags: str = None,
 			  add_path=True,
-			  start_time=None):
+			  start_time=None,
+			  is_solid=False,
+			  rect=()):
 
 		"""
 		Класс основного объекта игры. Такого, как например дерево.
@@ -441,9 +443,9 @@ class Object:
 
 		if image is None:
 			if add_path:
-				self.image = pygame.transform.scale(pygame.image.load(path + image_path), (scale_x[0], scale_x[1]))
+				self.image = TextureCache.get(path + image_path, scale_x)
 			else:
-				self.image = pygame.transform.scale(pygame.image.load(image_path), (scale_x[0], scale_x[1]))
+				self.image = TextureCache.get(image_path, scale_x)
 		else:
 			self.image = pygame.transform.scale(image, (scale_x[0], scale_x[1]))
 		self.image_path = image_path
@@ -453,6 +455,11 @@ class Object:
 		self.num = len(world.objects)
 		self.add_path = add_path
 		self.scale_x = scale_x
+		self.is_solid = is_solid
+		if rect == ():
+			self.rect = pygame.Rect(self.x - self.w / 2, self.y + self.h / 2, self.w, self.h)
+		else:
+			self.rect = rect
 	
 	def main(self, X, Y):
 
@@ -460,7 +467,7 @@ class Object:
 			win.blit(self.image, (self.x - X + Width // 2 - self.w // 2, Y - self.y + Height // 2 - self.h // 2))
 
 		if Settings["Display"][3]:
-			pygame.draw.rect(win, (0, 0, 0), (self.x - X + Width // 2 - self.w // 2, Y - self.y + Height // 2 - self.h // 2, self.w, self.h), 3)
+			pygame.draw.rect(win, (0, 0, 0), (self.rect[0] - X + Width // 2, Y - self.rect[1] + Height // 2, self.rect[2], self.rect[3]), 3)
 
 	def get_left_pressed(self):
 
@@ -704,7 +711,7 @@ class Particle:
 		win.blit(self.image, (self.display_mode(self.x, self.y, self.w, self.h)))
 
 		if Settings["Display"][3]:
-			pygame.draw.rect(win, (0, 0, 0), (self.display_mode(self.x, self.y, self.w, self.h), self.w, self.h), 3)
+			pygame.draw.rect(win, (0, 0, 0), (self.display_mode(self.x, self.y, self.w, self.h)[0], self.display_mode(self.x, self.y, self.w, self.h)[1], self.w, self.h), 3)
 	
 	# def get_pressed(self, button=0, del_self=False) -> bool:
 	# 	if click[button] and pygame.Rect(eval(self.display_mode)[0], eval(self.display_mode)[1], self.w, self.h).collidepoint(mouse_x, mouse_y):
@@ -765,11 +772,12 @@ class Player:
 		self.HP_animation_tick = 0
 		self.effects = []
 		self.god_mode = False
+		self.pass_through_walls = False # TODO
 		self.is_moving = False
+		self.rect = pygame.Rect(self.x - 30, self.y + 112, 60, 224)
 		
 		# Текущий спрайт
 		self.image = self.get_current_frame()
-		self.rect = self.image.get_rect(center=(Width / 2, Height / 2))
 		
 	def get_current_frame(self):
 		"""Возвращает текущий кадр анимации"""
@@ -794,16 +802,19 @@ class Player:
 		
 		# Обновляем изображение
 		self.image = self.get_current_frame()
-		self.rect = self.image.get_rect(center=(Width / 2, Height / 2))
 
-	def collides_with_walls(self, walls):
+	def collides_with_walls(self, walls, objects):
 		"""Проверяет, пересекается ли игрок с какой-либо стеной."""
-		player_rect = pygame.Rect(self.x - 25, self.y + 112, 50, 224)
+		if pygame.key.get_pressed()[pygame.K_o]: return False
+		self.rect = pygame.Rect(self.x - 25, self.y + 112, 50, 224)
 
 		for wall in walls:
 			# Предполагаем, что стена хранит свои координаты и размеры
-			wall_rect = pygame.Rect(wall.x - 128, wall.y + 128, 256, 256) # Размер стены
-			if player_rect.colliderect(wall_rect):
+			wall_rect = pygame.Rect(wall.x - 128, wall.y + 128, 256, 256)
+			if self.rect.colliderect(wall_rect):
+				return True
+		for object in objects:
+			if object.object_class == "Object" and object.is_solid and self.rect.colliderect(object.rect):
 				return True
 		return False
 	
@@ -813,11 +824,11 @@ class Player:
 		
 		# Обновление позиции
 		self.x += dx * self.speed
-		if self.collides_with_walls(world.walls):
+		if self.collides_with_walls(world.walls, world.objects):
 			self.x -= dx * self.speed
 
 		self.y += dy * self.speed
-		if self.collides_with_walls(world.walls):
+		if self.collides_with_walls(world.walls, world.objects):
 			self.y -= dy * self.speed
 		
 		# Определение направления
@@ -850,7 +861,9 @@ class Player:
 		screen.blit(self.image, (Width / 2 - 128, Height / 2 - 128))
 		
 		if Settings["Display"][3]:
+			self.rect = pygame.Rect(self.x - 25, self.y + 112, 50, 224)
 			pygame.draw.rect(screen, (0, 255, 0), (Width / 2 - 128, Height / 2 - 128, self.image.get_width(), self.image.get_height()), 2)
+			pygame.draw.rect(win, (0, 0, 0), (self.rect[0] - self.x + Width // 2, self.y - self.rect[1] + Height // 2, self.rect[2], self.rect[3]), 3)
 
 class TextureCache:
 	_textures = {}
@@ -1716,8 +1729,6 @@ class Wall:
 
 	def __init__(self, wall_type: str, X, Y, is_door: bool=False):
 
-		self.object_class = "Wall"
-
 		self.x = X
 		self.y = Y
 
@@ -2450,11 +2461,13 @@ def settings():
 		Distance = False
 		fps = False
 		input_text = ""
+		release = False
 
 		while True:
 
 			click = pygame.mouse.get_pressed()
 			mouse_x, mouse_y = pygame.mouse.get_pos()
+			release = False
 
 			for event in pygame.event.get():
 
@@ -2462,6 +2475,9 @@ def settings():
 					save()
 					sys.exit()
 
+				elif event.type == pygame.MOUSEBUTTONUP:
+					if event.button == 1:
+						release = True
 				elif event.type == pygame.KEYDOWN and (Brightness or Inventory_alpha or Distance or fps):
 
 					if event.key == pygame.K_RETURN or len(input_text) == 3:
@@ -2533,11 +2549,11 @@ def settings():
 
 			if page == 1:
 
-				if bigTextInfo.size(t("Brightness"))[0] + 337 <= mouse_x <= bigTextInfo.size(t("Brightness"))[0] + 467 + 120 and 113 <= mouse_y <= 184 and click[0]:
+				if bigTextInfo.size(t("Brightness"))[0] + 337 <= mouse_x <= bigTextInfo.size(t("Brightness"))[0] + 467 + 120 and 113 <= mouse_y <= 184 and release:
 					Brightness = True
-				if bigTextInfo.size(t("Inventory transparency"))[0] + 337 <= mouse_x <= bigTextInfo.size(t("Inventory transparency"))[0] + 467 + 120 and 199 <= mouse_y <= 270 and click[0]:
+				if bigTextInfo.size(t("Inventory transparency"))[0] + 337 <= mouse_x <= bigTextInfo.size(t("Inventory transparency"))[0] + 467 + 120 and 199 <= mouse_y <= 270 and release:
 					Inventory_alpha = True
-				if bigTextInfo.size(t("Distance"))[0] + 337 <= mouse_x <= bigTextInfo.size(t("Distance"))[0] + 467 + 120 and 285 <= mouse_y <= 356 and click[0]:
+				if bigTextInfo.size(t("Distance"))[0] + 337 <= mouse_x <= bigTextInfo.size(t("Distance"))[0] + 467 + 120 and 285 <= mouse_y <= 356 and release:
 					Distance = True
 
 				win.blit(bigTextInfo.render(t("Brightness"), True, (139, 155, 180)), (385, 123))
@@ -2574,14 +2590,12 @@ def settings():
 				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(t("Display hitboxes"))[0] + 395, 371, 71, 71), 5)
 				if Settings["Display"][3]:
 					win.blit(bigTextInfo.render(" ✓", True, (139, 155, 180)), (bigTextInfo.size(t("Display hitboxes"))[0] + 405, 381))
-					if bigTextInfo.size(t("Display hitboxes"))[0] + 395 <= mouse_x <= bigTextInfo.size(t("Display hitboxes"))[0] + 466 and 371 <= mouse_y <= 442 and click[0]:
+					if bigTextInfo.size(t("Display hitboxes"))[0] + 395 <= mouse_x <= bigTextInfo.size(t("Display hitboxes"))[0] + 466 and 371 <= mouse_y <= 442 and release:
 						Settings["Display"][3] = False
-						time.sleep(0.15)
 				else:
 					win.blit(bigTextInfo.render(" x", True, (139, 155, 180)), (bigTextInfo.size(t("Display hitboxes"))[0] + 405, 381))
-					if bigTextInfo.size(t("Display hitboxes"))[0] + 395 <= mouse_x <= bigTextInfo.size(t("Display hitboxes"))[0] + 466 and 371 <= mouse_y <= 442 and click[0]:
+					if bigTextInfo.size(t("Display hitboxes"))[0] + 395 <= mouse_x <= bigTextInfo.size(t("Display hitboxes"))[0] + 466 and 371 <= mouse_y <= 442 and release:
 						Settings["Display"][3] = True
-						time.sleep(0.15)
 
 
 
@@ -2589,32 +2603,28 @@ def settings():
 				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(t("Shadows"))[0] + 395, 457, 71, 71), 5)
 				if Settings["Display"][4]:
 					win.blit(bigTextInfo.render(" ✓", True, (139, 155, 180)), (bigTextInfo.size(t("Shadows"))[0] + 405, 467))
-					if bigTextInfo.size(t("Shadows"))[0] + 395 <= mouse_x <= bigTextInfo.size(t("Shadows"))[0] + 466 and 457 <= mouse_y <= 528 and click[0]:
+					if bigTextInfo.size(t("Shadows"))[0] + 395 <= mouse_x <= bigTextInfo.size(t("Shadows"))[0] + 466 and 457 <= mouse_y <= 528 and release:
 						Settings["Display"][4] = False
-						time.sleep(0.15)
 				else:
 					win.blit(bigTextInfo.render(" x", True, (139, 155, 180)), (bigTextInfo.size(t("Shadows"))[0] + 405, 467))
-					if bigTextInfo.size(t("Shadows"))[0] + 395 <= mouse_x <= bigTextInfo.size(t("Shadows"))[0] + 466 and 457 <= mouse_y <= 528 and click[0]:
+					if bigTextInfo.size(t("Shadows"))[0] + 395 <= mouse_x <= bigTextInfo.size(t("Shadows"))[0] + 466 and 457 <= mouse_y <= 528 and release:
 						Settings["Display"][4] = True
-						time.sleep(0.15)
 
 			if page == 2:
 				
-				if bigTextInfo.size("FPS")[0] + 337 <= mouse_x <= bigTextInfo.size("FPS")[0] + 467 + 120 and 199 <= mouse_y <= 270 and click[0]:
+				if bigTextInfo.size("FPS")[0] + 337 <= mouse_x <= bigTextInfo.size("FPS")[0] + 467 + 120 and 199 <= mouse_y <= 270 and release:
 					fps = True
 
 				win.blit(bigTextInfo.render(t("Inventory slots animation"), True, (139, 155, 180)), (385, 123))
 				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(t("Inventory slots animation"))[0] + 395, 113, 71, 71), 5)
 				if Settings["Display"][5]:
 					win.blit(bigTextInfo.render(" ✓", True, (139, 155, 180)), (bigTextInfo.size(t("Inventory slots animation"))[0] + 405, 123))
-					if bigTextInfo.size(t("Inventory slots animation"))[0] + 395 <= mouse_x <= bigTextInfo.size(t("Inventory slots animation"))[0] + 466 and 113 <= mouse_y <= 184 and click[0]:
+					if bigTextInfo.size(t("Inventory slots animation"))[0] + 395 <= mouse_x <= bigTextInfo.size(t("Inventory slots animation"))[0] + 466 and 113 <= mouse_y <= 184 and release:
 						Settings["Display"][5] = False
-						time.sleep(0.15)
 				else:
 					win.blit(bigTextInfo.render(" x", True, (139, 155, 180)), (bigTextInfo.size(t("Inventory slots animation"))[0] + 405, 123))
-					if bigTextInfo.size(t("Inventory slots animation"))[0] + 395 <= mouse_x <= bigTextInfo.size(t("Inventory slots animation"))[0] + 466 and 113 <= mouse_y <= 184 and click[0]:
+					if bigTextInfo.size(t("Inventory slots animation"))[0] + 395 <= mouse_x <= bigTextInfo.size(t("Inventory slots animation"))[0] + 466 and 113 <= mouse_y <= 184 and release:
 						Settings["Display"][5] = True
-						time.sleep(0.15)
 
 				win.blit(bigTextInfo.render("FPS", True, (139, 155, 180)), (385, 209))
 				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size("FPS")[0] + 395, 199, 120, 71), 5)
@@ -2632,14 +2642,12 @@ def settings():
 
 				if Settings["Display"][7]:
 					win.blit(bigTextInfo.render(" ✓", True, (139, 155, 180)), (bigTextInfo.size(t("Mouse click display"))[0] + 405, 295))
-					if bigTextInfo.size(t("Mouse click display"))[0] + 395 <= mouse_x <= bigTextInfo.size(t("Mouse click display"))[0] + 466 and 285 <= mouse_y <= 356 and click[0]:
+					if bigTextInfo.size(t("Mouse click display"))[0] + 395 <= mouse_x <= bigTextInfo.size(t("Mouse click display"))[0] + 466 and 285 <= mouse_y <= 356 and release:
 						Settings["Display"][7] = False
-						time.sleep(0.15)
 				else:
 					win.blit(bigTextInfo.render(" x", True, (139, 155, 180)), (bigTextInfo.size(t("Mouse click display"))[0] + 405, 295))
-					if bigTextInfo.size(t("Mouse click display"))[0] + 395 <= mouse_x <= bigTextInfo.size(t("Mouse click display"))[0] + 466 and 285 <= mouse_y <= 356 and click[0]:
+					if bigTextInfo.size(t("Mouse click display"))[0] + 395 <= mouse_x <= bigTextInfo.size(t("Mouse click display"))[0] + 466 and 285 <= mouse_y <= 356 and release:
 						Settings["Display"][7] = True
-						time.sleep(0.15)
 
 
 
@@ -2648,14 +2656,12 @@ def settings():
 
 				if Settings["Display"][8]:
 					win.blit(bigTextInfo.render(" ✓", True, (139, 155, 180)), (bigTextInfo.size(t("Description of the object on hover"))[0] + 405, 381))
-					if bigTextInfo.size(t("Description of the object on hover"))[0] + 395 <= mouse_x <= bigTextInfo.size(t("Description of the object on hover"))[0] + 466 and 371 <= mouse_y <= 442 and click[0]:
+					if bigTextInfo.size(t("Description of the object on hover"))[0] + 395 <= mouse_x <= bigTextInfo.size(t("Description of the object on hover"))[0] + 466 and 371 <= mouse_y <= 442 and release:
 						Settings["Display"][8] = False
-						time.sleep(0.15)
 				else:
 					win.blit(bigTextInfo.render(" x", True, (139, 155, 180)), (bigTextInfo.size(t("Description of the object on hover"))[0] + 405, 381))
-					if bigTextInfo.size(t("Description of the object on hover"))[0] + 395 <= mouse_x <= bigTextInfo.size(t("Description of the object on hover"))[0] + 466 and 371 <= mouse_y <= 442 and click[0]:
+					if bigTextInfo.size(t("Description of the object on hover"))[0] + 395 <= mouse_x <= bigTextInfo.size(t("Description of the object on hover"))[0] + 466 and 371 <= mouse_y <= 442 and release:
 						Settings["Display"][8] = True
-						time.sleep(0.15)
 
 
 
@@ -2664,14 +2670,12 @@ def settings():
 
 				if Settings["Display"][9]:
 					win.blit(bigTextInfo.render(" ✓", True, (139, 155, 180)), (bigTextInfo.size(t("Dim screen when turned off"))[0] + 405, 467))
-					if bigTextInfo.size(t("Dim screen when turned off"))[0] + 395 <= mouse_x <= bigTextInfo.size(t("Dim screen when turned off"))[0] + 466 and 457 <= mouse_y <= 528 and click[0]:
+					if bigTextInfo.size(t("Dim screen when turned off"))[0] + 395 <= mouse_x <= bigTextInfo.size(t("Dim screen when turned off"))[0] + 466 and 457 <= mouse_y <= 528 and release:
 						Settings["Display"][9] = False
-						time.sleep(0.15)
 				else:
 					win.blit(bigTextInfo.render(" x", True, (139, 155, 180)), (bigTextInfo.size(t("Dim screen when turned off"))[0] + 405, 467))
-					if bigTextInfo.size(t("Dim screen when turned off"))[0] + 395 <= mouse_x <= bigTextInfo.size(t("Dim screen when turned off"))[0] + 466 and 457 <= mouse_y <= 528 and click[0]:
+					if bigTextInfo.size(t("Dim screen when turned off"))[0] + 395 <= mouse_x <= bigTextInfo.size(t("Dim screen when turned off"))[0] + 466 and 457 <= mouse_y <= 528 and release:
 						Settings["Display"][9] = True
-						time.sleep(0.15)
 			
 			if page == 3:
 				
@@ -2679,14 +2683,12 @@ def settings():
 				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(t("Show intro"))[0] + 395, 113, 71, 71), 5)
 				if Settings["Display"][10]:
 					win.blit(bigTextInfo.render(" ✓", True, (139, 155, 180)), (bigTextInfo.size(t("Show intro"))[0] + 405, 123))
-					if bigTextInfo.size(t("Show intro"))[0] + 395 <= mouse_x <= bigTextInfo.size(t("Show intro"))[0] + 466 and 113 <= mouse_y <= 184 and click[0]:
+					if bigTextInfo.size(t("Show intro"))[0] + 395 <= mouse_x <= bigTextInfo.size(t("Show intro"))[0] + 466 and 113 <= mouse_y <= 184 and release:
 						Settings["Display"][10] = False
-						time.sleep(0.15)
 				else:
 					win.blit(bigTextInfo.render(" x", True, (139, 155, 180)), (bigTextInfo.size(t("Show intro"))[0] + 405, 123))
-					if bigTextInfo.size(t("Show intro"))[0] + 395 <= mouse_x <= bigTextInfo.size(t("Show intro"))[0] + 466 and 113 <= mouse_y <= 184 and click[0]:
+					if bigTextInfo.size(t("Show intro"))[0] + 395 <= mouse_x <= bigTextInfo.size(t("Show intro"))[0] + 466 and 113 <= mouse_y <= 184 and release:
 						Settings["Display"][10] = True
-						time.sleep(0.15)
 
 			if Settings["Display"][7]:
 
@@ -3473,16 +3475,21 @@ def settings():
 		Music_volume = False
 		Volume_of_sounds = False
 		input_text = ""
+		release = False
 
 		while True:
 
 			click = pygame.mouse.get_pressed()
 			mouse_x, mouse_y = pygame.mouse.get_pos()
+			release = False
 
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
 					save()
 					sys.exit()
+				elif event.type == pygame.MOUSEBUTTONUP:
+					if event.button == 1:
+						release = True
 
 				elif event.type == pygame.KEYDOWN and (Music_volume or Volume_of_sounds):
 					if event.key == pygame.K_RETURN or len(input_text) == 3:
@@ -3544,27 +3551,23 @@ def settings():
 				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(languages("Автоматически брать предметы", "Automatically pick up items", "Элементтерді автоматты түрде алу"))[0] + 395, 113, 71, 71), 5)
 				if Settings["Game"][0]:
 					win.blit(bigTextInfo.render(" ✓", True, (139, 155, 180)), (bigTextInfo.size(languages("Автоматически брать предметы", "Automatically pick up items", "Элементтерді автоматты түрде алу"))[0] + 405, 123))
-					if bigTextInfo.size(languages("Автоматически брать предметы", "Automatically pick up items", "Элементтерді автоматты түрде алу"))[0] + 395 <= mouse_x <= bigTextInfo.size(languages("Автоматически брать предметы", "", "Элементтерді автоматты түрде алу"))[0] + 466 and 113 <= mouse_y <= 184 and click[0]:
+					if bigTextInfo.size(languages("Автоматически брать предметы", "Automatically pick up items", "Элементтерді автоматты түрде алу"))[0] + 395 <= mouse_x <= bigTextInfo.size(languages("Автоматически брать предметы", "", "Элементтерді автоматты түрде алу"))[0] + 466 and 113 <= mouse_y <= 184 and release:
 						Settings["Game"][0] = False
-						time.sleep(0.15)
 				else:
 					win.blit(bigTextInfo.render(" x", True, (139, 155, 180)), (bigTextInfo.size(languages("Автоматически брать предметы", "Automatically pick up items", "Элементтерді автоматты түрде алу"))[0] + 405, 123))
-					if bigTextInfo.size(languages("Автоматически брать предметы", "Automatically pick up items", "Элементтерді автоматты түрде алу"))[0] + 395 <= mouse_x <= bigTextInfo.size(languages("Автоматически брать предметы", "Automatically pick up items", "Элементтерді автоматты түрде алу"))[0] + 466 and 113 <= mouse_y <= 184 and click[0]:
+					if bigTextInfo.size(languages("Автоматически брать предметы", "Automatically pick up items", "Элементтерді автоматты түрде алу"))[0] + 395 <= mouse_x <= bigTextInfo.size(languages("Автоматически брать предметы", "Automatically pick up items", "Элементтерді автоматты түрде алу"))[0] + 466 and 113 <= mouse_y <= 184 and release:
 						Settings["Game"][0] = True
-						time.sleep(0.15)
 						
 				win.blit(bigTextInfo.render(languages("Телефонное управление", "Telephone control", "Телефон арқылы басқару"), True, (139, 155, 180)), (385, 209))
 				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(languages("Телефонное управление", "Telephone control", "Телефон арқылы басқару"))[0] + 395, 199, 71, 71), 5)
 				if Settings["Game"][1]:
 					win.blit(bigTextInfo.render(" ✓", True, (139, 155, 180)), (bigTextInfo.size(languages("Телефонное управление", "Telephone control", "Телефон арқылы басқару"))[0] + 405, 209))
-					if bigTextInfo.size(languages("Телефонное управление", "Telephone control", "Телефон арқылы басқару"))[0] + 395 <= mouse_x <= bigTextInfo.size(languages("Телефонное управление", "Telephone control", "Телефон арқылы басқару"))[0] + 466 and 199 <= mouse_y <= 270 and click[0]:
+					if bigTextInfo.size(languages("Телефонное управление", "Telephone control", "Телефон арқылы басқару"))[0] + 395 <= mouse_x <= bigTextInfo.size(languages("Телефонное управление", "Telephone control", "Телефон арқылы басқару"))[0] + 466 and 199 <= mouse_y <= 270 and release:
 						Settings["Game"][1] = False
-						time.sleep(0.15)
 				else:
 					win.blit(bigTextInfo.render(" x", True, (139, 155, 180)), (bigTextInfo.size(languages("Телефонное управление", "Telephone control", "Телефон арқылы басқару"))[0] + 405, 209))
-					if bigTextInfo.size(languages("Телефонное управление", "Telephone control", "Телефон арқылы басқару"))[0] + 395 <= mouse_x <= bigTextInfo.size(languages("Телефонное управление", "Telephone control", "Телефон арқылы басқару"))[0] + 466 and 199 <= mouse_y <= 270 and click[0]:
+					if bigTextInfo.size(languages("Телефонное управление", "Telephone control", "Телефон арқылы басқару"))[0] + 395 <= mouse_x <= bigTextInfo.size(languages("Телефонное управление", "Telephone control", "Телефон арқылы басқару"))[0] + 466 and 199 <= mouse_y <= 270 and release:
 						Settings["Game"][1] = True
-						time.sleep(0.15)
 				
 				
 				
@@ -4010,6 +4013,7 @@ def start_game():
 							statistics[1] += (time.time() - start_time) / 3600
 							save()
 							world.objects = []
+							world.walls = []
 							mobs = []
 							player.effects = []
 							inventory.whole_inventory = [None] * 40
@@ -6748,6 +6752,7 @@ if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0]
 						mobs = []
 						big_rects = []
 						world.objects = []
+						world.walls = []
 						mechanisms = []
 						player_bullets = []
 						player.effects = []
