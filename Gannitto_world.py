@@ -2147,10 +2147,10 @@ class Motherboard:
 class World:
 
 	def __init__(self):
-		self.chunk_manager = ChunkManager(chunk_size=512, view_distance=3)
+		self.chunk_manager = ChunkManager(view_distance=3)
 		self.visible_objects = []
 		
-		# Список игровых объектов оставлен для совместимости. От такого надо постепенно отказываться
+		# Список всех игровых объектов оставлен для совместимости. От такого надо постепенно отказываться
 		self.objects = []
 		self.walls = []
 		self.items = []

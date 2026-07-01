@@ -15,14 +15,12 @@ class Biome:
 	height_range: Tuple[float, float]  # диапазон высот
 	biome_value_range: Tuple[float, float]	# диапазон для biome_value
 	color: Tuple[int, int, int]
-	platform_density: float  # плотность платформ
 	mob_spawn_chance: float
 	objects: Dict[str, float]  # шансы спавна разных объектов
 	
-	def contains_point(self, height: float, biome_value: float) -> bool:
+	def contains_point(self, biome_value: float) -> bool:
 		"""Проверяет, принадлежит ли точка этому биому"""
-		return (self.height_range[0] <= height <= self.height_range[1] and
-				self.biome_value_range[0] <= biome_value <= self.biome_value_range[1])
+		return (self.biome_value_range[0] <= biome_value <= self.biome_value_range[1])
 
 class BiomeManager:
 
@@ -40,7 +38,6 @@ class BiomeManager:
 				height_range=(0.0, 0.4),
 				biome_value_range=(0.4, 0.8),
 				color=(50, 150, 50),
-				platform_density=0.1,
 				mob_spawn_chance=0.05,
 				objects={"tree": 0.7, "bush": 0.3}
 			),
@@ -49,7 +46,6 @@ class BiomeManager:
 				height_range=(-0.1, 0.2),
 				biome_value_range=(-0.8, -0.4),
 				color=(200, 180, 100),
-				platform_density=0.15,
 				mob_spawn_chance=0.01,
 				objects={"cactus": 0.2, "sand": 0.8}
 			),
@@ -58,7 +54,6 @@ class BiomeManager:
 				height_range=(0.0, 0.4),
 				biome_value_range=(0.4, 0.8),
 				color=(50, 150, 50),
-				platform_density=0.1,
 				mob_spawn_chance=0.05,
 				objects={}
 			),
@@ -67,7 +62,6 @@ class BiomeManager:
 				height_range=(0.6, 1.0),
 				biome_value_range=(0.6, 1.0),
 				color=(220, 230, 240),
-				platform_density=0.08,
 				mob_spawn_chance=0.005,
 				objects={"Spruce": 0.9}
 			),
@@ -76,7 +70,6 @@ class BiomeManager:
 				height_range=(0.6, 1.0),
 				biome_value_range=(0.6, 1.0),
 				color=(220, 230, 240),
-				platform_density=0.08,
 				mob_spawn_chance=0.005,
 				objects={}
 			)
@@ -85,7 +78,7 @@ class BiomeManager:
 	def get_biome_at(self, height: float, biome_value: float) -> Biome:
 		"""Находит биом в точке"""
 		for biome in self.biomes:
-			if biome.contains_point(height, biome_value):
+			if biome.contains_point(biome_value):
 				return biome
 		
 		# Если ничего не подошло, то возвращаем лес как дефолтный
