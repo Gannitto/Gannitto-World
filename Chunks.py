@@ -2,6 +2,7 @@ import random
 from Biomes import BiomeManager, BiomeType
 from WorldGenerator import WorldGenerator
 chunk_size = 2048
+
 class Chunk:
 	def __init__(self, chunk_x, chunk_y):
 		self.chunk_x = chunk_x
@@ -16,10 +17,10 @@ class Chunk:
 		
 	def get_world_bounds(self):
 		return {
-			'x1': self.chunk_x * chunk_size,
-			'y1': self.chunk_y * chunk_size,
-			'x2': (self.chunk_x + 1) * chunk_size,
-			'y2': (self.chunk_y + 1) * chunk_size
+			"x1": self.chunk_x * chunk_size,
+			"y1": self.chunk_y * chunk_size,
+			"x2": (self.chunk_x + 1) * chunk_size,
+			"y2": (self.chunk_y + 1) * chunk_size
 		}
 
 class ChunkManager:
@@ -39,8 +40,8 @@ class ChunkManager:
 		step = 16  # пикселей на точку выборки
 		
 		# Проходим по всем точкам в чанке
-		for x in range(int(bounds['x1']), int(bounds['x2']), step):
-			for y in range(int(bounds['y1']), int(bounds['y2']), step):
+		for x in range(int(bounds["x1"]), int(bounds["x2"]), step):
+			for y in range(int(bounds["y1"]), int(bounds["y2"]), step):
 				# Получаем значения шума
 				height = self.generator.get_height(x, y)
 				biome_value = self.generator.get_biome_value(x, y)
@@ -86,7 +87,7 @@ def _generate_objects_in_area(self, chunk, x, y, step, biome, height):
 			chunk.platforms.append(platform)
 	
 	# Деревья/объекты
-	if 'tree' in biome.objects and detail > 0.7:
+	if "tree" in biome.objects and detail > 0.7:
 		# Генерируем дерево
 		tree_x = x + step/2
 		tree_y = y + step/2 + self.generator.get_height(x, y) * 30

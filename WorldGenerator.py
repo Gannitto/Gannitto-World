@@ -1,4 +1,4 @@
-#import noise
+import vnoise
 import random
 from dataclasses import dataclass
 from typing import Tuple, Dict
@@ -17,7 +17,7 @@ class WorldGenerator:
 		
 	def get_height(self, x: float, y: float) -> float:
 		"""Основная карта высот (для рельефа)"""
-		return noise.pnoise2(
+		return vnoise.pnoise2(
 			x * self.config.world_scale,
 			y * self.config.world_scale,
 			octaves=6,
@@ -30,7 +30,7 @@ class WorldGenerator:
 	
 	def get_biome_value(self, x: float, y: float) -> float:
 		"""Определяет тип биома"""
-		return noise.pnoise2(
+		return vnoise.pnoise2(
 			x * self.config.biome_scale,
 			y * self.config.biome_scale,
 			octaves=4,
@@ -43,7 +43,7 @@ class WorldGenerator:
 	
 	def get_detail_value(self, x: float, y: float) -> float:
 		"""Мелкие детали для объектов внутри биома"""
-		return noise.pnoise2(
+		return vnoise.pnoise2(
 			x * self.config.detail_scale,
 			y * self.config.detail_scale,
 			octaves=3,
