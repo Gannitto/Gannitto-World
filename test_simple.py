@@ -28,7 +28,7 @@ def quick_test():
 	
 	# Проверяем распределение биомов в нескольких точках
 	print("\nРаспределение биомов в разных точках:")
-	test_points = [(i, i*2) for i in range(-10000, 10000, 100)]
+	test_points = [(i, i*2) for i in range(-10000, 10000, 50)]
 	v = []
 	for x, y in test_points:
 		height = generator.get_height(x, y)
@@ -37,18 +37,21 @@ def quick_test():
 		# print(f"  ({x}, {y}): {biome.biome_type.value} (height={height:.2f}) (biome value={biome_value:.2f})")
 		# print(biome_value)
 		v.append(biome_value)
-	from collections import Counter
+	# from collections import Counter
 
 	# Найти самое часто встречающееся число
-	while 0.0 in v: v.remove(0.0)
-	while 0.03385313857086458 in v: v.remove(0.03385313857086458)
-	while -0.03385313857086458 in v: v.remove(-0.03385313857086458)
-	while 0.06770627714172917 in v: v.remove(0.06770627714172917)
-	while -0.06770627714172917 in v: v.remove(-0.06770627714172917)
-	counts = Counter(v)
-	most_common = counts.most_common(1) 
-	print(most_common[0][0])
-	# for i in v: print(i)
+	# while 0.0 in v: v.remove(0.0)
+	# while 0.03385313857086458 in v: v.remove(0.03385313857086458)
+	# while -0.03385313857086458 in v: v.remove(-0.03385313857086458)
+	# while 0.06770627714172917 in v: v.remove(0.06770627714172917)
+	# while -0.06770627714172917 in v: v.remove(-0.06770627714172917)
+	# counts = Counter(v)
+	# most_common = counts.most_common(1) 
+	# print(most_common[0][0])
+	for i in v: print(int(i * 100))
 
 if __name__ == "__main__":
-	quick_test()
+	# quick_test()
+	from NoiseGenerator import get_biome_name
+	for i in range(0, 1000):
+		print(get_biome_name(i, i))

@@ -1,7 +1,8 @@
 import random
 from dataclasses import dataclass
 from typing import Tuple, Dict
-import vnoise  # Перешли на vnoise
+import vnoise
+import math
 
 @dataclass
 class WorldConfig:
@@ -50,7 +51,8 @@ class NoiseGenerator:
 		else:
 			result = 1.0 - 0.5 * ((1.0 - normalized) / 0.5) ** power
 		
-		return raw#max(0.0, min(1.0, result))
+		result = max(0.0, min(1.0, result))
+		return normalized
 
 	def get_detail_value(self, x: float, y: float) -> float:
 		"""Мелкие детали для объектов внутри биома"""
@@ -61,5 +63,61 @@ class NoiseGenerator:
 			persistence=0.4,
 			lacunarity=3.0
 		)
+
+class ValueNoiseBiome:
+	def __init__(self, seed, grid_size=3):
+		self.seed = seed
+		self.grid_size = grid_size
+		self.grid = {}	# Кэш для значений в узлах сетки
+	
+	def _get_grid_value(self, gx, gy):
+		"""Получает случайное равномерное значение для узла сетки"""
+		key = (gx, gy)
+		if key not in self.grid:
+			# Детерминированное случайное значение для узла
+			local_seed = self.seed + gx * 1000003 + gy * 1000033
+			random.seed(local_seed)
+			self.grid[key] = random.random()  # Равномерное [0, 1)
+		return self.grid[key]
+	
+	def _smoothstep(self, t):
+		"""Плавная интерполяция"""
+		return t * t * (3 - 2 * t)
+	
+	def get_biome_value(self, x, y):
+		# Масштабируем координаты
+		sx = x / self.grid_size * 0.05
+		sy = y / self.grid_size * 0.05
+		
+		# Находим узлы сетки
+		gx0 = math.floor(sx)
+		gx1 = gx0 + 1
+		gy0 = math.floor(sy)
+		gy1 = gy0 + 1
+		
+		# Интерполяционные коэффициенты
+		fx = self._smoothstep(sx - gx0)
+		fy = self._smoothstep(sy - gy0)
+		
+		# Получаем значения в узлах (равномерно распределённые)
+		v00 = self._get_grid_value(gx0, gy0)
+		v01 = self._get_grid_value(gx0, gy1)
+		v10 = self._get_grid_value(gx1, gy0)
+		v11 = self._get_grid_value(gx1, gy1)
+		
+		# Билинейная интерполяция
+		v0 = v00 + (v10 - v00) * fx
+		v1 = v01 + (v11 - v01) * fx
+		
+		return v0 + (v1 - v0) * fy
+
+biomes = ["Desert", "Field", "Forest", "Swamp", "Taiga"]
+biome_noise = ValueNoiseBiome(random.randint(0, 99999))
+def get_biome_name(x, y):
+	value = biome_noise.get_biome_value(x, y)
+	index = int(value * len(biomes))
+	if index >= len(biomes):
+		index = len(biomes) - 1
+	return biomes[index]
 
 generator = NoiseGenerator()
