@@ -2147,10 +2147,10 @@ class Motherboard:
 class World:
 
 	def __init__(self):
-		self.chunk_manager = ChunkManager(view_distance=3)
+		self.chunk_manager = ChunkManager()
 		self.visible_objects = []
 		
-		# Список всех игровых объектов оставлен для совместимости. От такого надо постепенно отказываться
+		# Списки всех игровых объектов оставлены для совместимости. От такого надо постепенно отказываться
 		self.objects = []
 		self.walls = []
 		self.items = []
@@ -2163,11 +2163,9 @@ class World:
 		self.visible_objects.clear()
 		for chunk_key in self.chunk_manager.loaded_chunks:
 			chunk = self.chunk_manager.chunks[chunk_key]
-			self.visible_objects.extend(chunk.platforms)
 			self.visible_objects.extend(chunk.objects)
-			self.visible_objects.extend(chunk.mobs)
 		
-		# Отрисовка только видимых объектов
+		# Отрисовка видимых объектов
 		self.render()
 	
 	def render(self):
@@ -2175,6 +2173,38 @@ class World:
 		for obj in self.visible_objects:
 			if self.is_on_screen(obj):
 				obj.main()
+
+	def render_loaded_chunks(self):
+		"""Отрисовка загруженных чанков с их биомами"""
+		# Проходим только по загруженным чанкам
+		for chunk_key in self.chunk_manager.loaded_chunks:
+			chunk = self.chunk_manager.chunks.get(chunk_key)
+			if chunk and chunk.is_generated:
+				bounds = chunk.get_world_bounds()
+				
+				# Проверяем, виден ли чанк на экране
+				if (bounds["x2"] > player.x - Width // 2 and 
+					bounds["x1"] < player.x + Width // 2 and
+					bounds["y2"] > player.y - Height // 2 and 
+					bounds["y1"] < player.y + Height):
+					
+					biome_texture = textures.get(chunk.biome)
+					if biome_texture:
+						# Вычисляем смещение чанка относительно игрока
+						offset_x = bounds["x1"] - player.x + Width // 2
+						offset_y = player.y - bounds["y1"] + Height // 2
+						
+						# Отрисовываем тайлы чанка
+						tiles_per_chunk = 2048 // 256
+						for tile_x, tile_y in product(range(tiles_per_chunk), range(tiles_per_chunk)):
+							# Проверяем, виден ли тайл на экране
+							tile_screen_x = offset_x + tile_x * 256
+							tile_screen_y = offset_y - tile_y * 256
+							if (tile_screen_x > -256 and 
+								tile_screen_x < Width and
+								tile_screen_y > -256 and 
+								tile_screen_y < Height):
+								win.blit(biome_texture, (tile_screen_x, tile_screen_y))
 
 world = World()
 
@@ -4367,18 +4397,19 @@ def start_game():
 
 		if not Backrooms.InBackrooms:
 
-			biom_name = None
+			biome_name = None
 
 			for big_rect in big_rects:
 				if big_rect.main() is not None:
-					biom_name = big_rect.main()
+					biome_name = big_rect.main()
 			start_tile_x = (player.x - Width // 2) // tile_size
 			start_tile_y = (player.y - Height // 2) // tile_size
-			biom_texture = textures[biom_name]
-			if biom_name is not None:
-				for i, ii in product(range(tiles_x), range(tiles_y)):
-					win.blit(biom_texture, ((start_tile_x + i) * tile_size - player.x + Width // 2, player.y - (start_tile_y + ii) * tile_size + Height // 2))
-
+			if biome_name is not None:
+				# biome_texture = textures[biome_name]
+				# for i, ii in product(range(tiles_x), range(tiles_y)):
+				# 	win.blit(biome_texture, ((start_tile_x + i) * tile_size - player.x + Width // 2, player.y - (start_tile_y + ii) * tile_size + Height // 2))
+				...
+			world.render_loaded_chunks()
 			if game_time > 600 and not night_playing:
 				music_channel.stop()
 				music_channel.play(pygame.mixer.Sound(path + "Gannitto world/files/Soundtracks/Night " + str(random.randint(1, 2)) + ".mp3"))
@@ -4389,39 +4420,39 @@ def start_game():
 				night_playing = False
 				music_channel.stop()
 
-				match biom_name:
+				match biome_name:
 
 					case "Forest" | "Field":
 						music_channel.queue(pygame.mixer.Sound(path + "Gannitto world/files/Soundtracks/Forest " + str(random.randint(1, 3)) + ".mp3"))
-								
+						
 					case "Desert":
 						music_channel.queue(pygame.mixer.Sound(path + "Gannitto world/files/Soundtracks/Desert " + str(random.randint(1, 2)) + ".mp3"))
-
+						
 					case "Swamp":
 						music_channel.queue(pygame.mixer.Sound(path + "Gannitto world/files/Soundtracks/Swamp " + str(random.randint(1, 2)) + ".mp3"))
-
+						
 					case "Taiga":
 						music_channel.queue(pygame.mixer.Sound(path + "Gannitto world/files/Soundtracks/Taiga " + str(random.randint(1, 1)) + ".mp3"))
-							
+						
 			elif not chat_input and any((keys[pygame.K_LEFT], keys[pygame.K_RIGHT], keys[pygame.K_UP], keys[pygame.K_DOWN], keys[pygame.K_a], keys[pygame.K_d], keys[pygame.K_w], keys[pygame.K_s], Settings["Game"][1] and any((left_b.get_pressed(), up_b.get_pressed(), down_b.get_pressed(), right_b.get_pressed())))):
 
 				if in_cave is not None:
 					pygame.mixer.Sound.play(random.choice((Cave_walking1, Cave_walking2, Cave_walking3)), maxtime=1000)
 
-				elif biom_name in ("Forest", "Field") and random.randint(1, 150) == 1:
+				elif biome_name in ("Forest", "Field") and random.randint(1, 150) == 1:
 					pygame.mixer.Sound.play(random.choice((Grass_walking1, Grass_walking2, Grass_walking3)), maxtime=1000)
 
-				elif biom_name == "Desert" and random.randint(1, 230) == 1:
+				elif biome_name == "Desert" and random.randint(1, 230) == 1:
 					pygame.mixer.Sound.play(random.choice((Sand_walking1, Sand_walking2, Sand_walking3)), maxtime=1000)
 
-				elif biom_name == "Taiga" and random.randint(1, 120) == 1:
+				elif biome_name == "Taiga" and random.randint(1, 120) == 1:
 					pygame.mixer.Sound.play(random.choice((Snow_walking1, Snow_walking2, Snow_walking3)), maxtime=1000)
 
-				elif biom_name == "Swamp" and random.randint(1, 120) == 1:
+				elif biome_name == "Swamp" and random.randint(1, 120) == 1:
 					pygame.mixer.Sound.play(random.choice((Swamp_walking1, Swamp_walking2, Swamp_walking3)), maxtime=1000)
 
 
-			if biom_name is None:
+			if biome_name is None:
 
 				big_rects.append(Big_rect.BigRect(player.x - player.x % 100000, player.y - player.y % 100000))
 				world.objects = big_rects[len(big_rects) - 1].generate(world.objects)
@@ -4966,6 +4997,8 @@ def start_game():
 							particles.append(Particle(item.x, item.y, item.image, "round(self.calculated_variable[0])", "round(self.calculated_variable[1])", variable_to_calculate="((self.special_flags[0] // 2) / 10 * self.ticks, (self.special_flags[1] // 2) / 10 * self.ticks, (-self.special_flags[0] // 2) / 10 * (self.ticks - 10), (-self.special_flags[1] // 2) / 10 * (self.ticks - 10))", track_ticks=True, end_x=player.x, end_y=player.y, end_zone=30, end_command="(inventory.increate('" + item.name + "'),pygame.mixer.Sound.play(Pick_an_item))", special_flags=(player.x - item.x, player.y - item.y, (0 - 17) // (0 - 10))))
 									
 							world.items.remove(item)
+				# Обновление мира
+				world.update()
 
 
 		elif len(Backrooms.objects) != 1:

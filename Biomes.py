@@ -74,13 +74,4 @@ class BiomeManager:
 				objects={}
 			)
 		]
-	
-	def get_biome_at(self, height: float, biome_value: float) -> Biome:
-		"""Находит биом в точке"""
-		for biome in self.biomes:
-			if biome.contains_point(biome_value):
-				return biome
-		
-		# Если ничего не подошло, то возвращаем лес как дефолтный
-		return self.biomes[0]
 

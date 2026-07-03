@@ -1,7 +1,9 @@
 import pygame
 import sys
-from NoiseGenerator import get_biome_name
+from Chunks import Chunk, ChunkManager
 import numpy
+
+chunk_manager = ChunkManager()
 
 pygame.init()
 biomes = {
@@ -19,11 +21,17 @@ arr[:] = ""
 
 for x in range(width):
 	for y in range(height):
-		arr[y, x] = get_biome_name(x, y)
+		chunk = Chunk(x, y)
+		chunk_manager.generate_chunk(chunk)
+		arr[y, x] = chunk.biome
+
 world = pygame.Surface((width * 4, height * 4))
 for x in range(width):
 	for y in range(height):
 		world.blit(biomes[arr[y, x]], (x * 4, y * 4))
+
+# pygame.image.save(world, "world.png")
+
 while True:
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
