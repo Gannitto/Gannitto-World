@@ -1,6 +1,7 @@
 from NoiseGenerator import NoiseGenerator
 from itertools import product
 import random
+from Saver import save_chunk, load_chunk, chunk_exists
 
 chunk_size = 2048
 tile_size = 256
@@ -83,6 +84,7 @@ class Chunk:
 		self.objects = []
 		self.is_loaded = False
 		self.is_generated = False
+		self.modified = True # TODO изменён ли чанк игроком
 		
 	def get_world_bounds(self):
 		return {
@@ -99,6 +101,7 @@ class ChunkManager:
 		self.loaded_chunks = set()
 		self.view_distance = 3
 		self.generator = NoiseGenerator()
+		self.save_directory = ""
 		
 	def generate_chunk(self, chunk: Chunk):
 
@@ -132,20 +135,6 @@ class ChunkManager:
 					Y = chunk.y * chunk_size + rng.randint(0, chunk_size - 1)
 					objects.append(Object(object_x=X, object_y=Y, **object[1]))
 
-		# for _ in range(rng.randint(5, 10)):
-			
-		# 	local_x = chunk.x * chunk_size + rng.randint(0, chunk_size - 1)
-		# 	local_y = chunk.y * chunk_size + rng.randint(0, chunk_size - 1)	
-		# 	objects.append(Object("Orange tulip", local_x, local_y, "Gannitto world/files/Images/Items/Orange tulip.png"))
-			
-		# for _ in range(rng.randint(5, 10)):
-			
-		# 	local_x = chunk.x * chunk_size + rng.randint(0, chunk_size - 1)
-		# 	local_y = chunk.y * chunk_size + rng.randint(0, chunk_size - 1)
-		# 	objects.append(Object("Cactus", local_x, local_y, "Gannitto world/files/Images/Objects/Cactus.png", (256, 256), is_solid=True, rect=(local_x - 80, local_y + 116, 160, 232)))
-
-
-		
 		chunk.objects = objects
 		chunk.is_generated = True
 	
@@ -153,6 +142,36 @@ class ChunkManager:
 		chunk_pos = (int(X // chunk_size), int(Y // chunk_size))
 		if chunk_pos in self.chunks: return self.chunks[chunk_pos]
 		return None
+
+	def _load_chunk_from_disk(self, chunk_x, chunk_y):
+		"""Загружает чанк с диска, если он существует"""
+		if chunk_exists(chunk_x, chunk_y, self.save_directory):
+			chunk = load_chunk(chunk_x, chunk_y, self.save_directory)
+			if chunk:
+				return chunk
+		return None
+
+	def _unload_chunk(self, chunk_key):
+		"""Выгружает чанк из памяти, сохраняя если нужно"""
+		chunk = self.chunks.get(chunk_key)
+		if chunk and chunk.is_loaded:
+			# Сохраняем чанк, если он был изменен
+			if chunk.modified:
+				save_chunk(chunk, self.save_directory)
+			
+			# Очищаем данные для экономии памяти
+			chunk.blocks.clear()
+			chunk.objects.clear()
+			chunk.mobs.clear()
+			chunk.items.clear()
+			chunk.particles.clear()
+			chunk.caves.clear()
+			
+			chunk.is_loaded = False
+			chunk.is_generated = True
+			
+			if chunk_key in self.chunks:
+				del self.chunks[chunk_key]
 
 	def update_visible_chunks(self, player_x, player_y):
 
@@ -173,8 +192,11 @@ class ChunkManager:
 				
 				# Если чанк еще не существует, то создаётся
 				if chunk_key not in self.chunks:
-					new_chunk = Chunk(chunk_x, chunk_y)
+					new_chunk = self._load_chunk_from_disk(chunk_x, chunk_y)
+					if new_chunk is None:
+						new_chunk = Chunk(chunk_x, chunk_y)
 					self.chunks[chunk_key] = new_chunk
+					new_chunk.is_loaded = True
 				
 				# Если чанк существует, но не сгенерирован, то он генерируется
 				chunk = self.chunks[chunk_key]
@@ -189,13 +211,30 @@ class ChunkManager:
 		for chunk_key, chunk in self.chunks.items():
 			if chunk_key not in new_visible_chunks and chunk.is_loaded:
 				chunks_to_unload.append(chunk_key)
-				chunk.is_loaded = False
-				# Здесь можно добавить очистку данных чанка для экономии памяти
-				# chunk.blocks.clear()
-				# chunk.objects.clear()
-				# chunk.mobs.clear()
-				# chunk.particles.clear()
 		
-		# Удаляем выгруженные чанки из словаря (опционально)
-		# for chunk_key in chunks_to_unload:
-		#	  del self.chunks[chunk_key]
+		# Выгружаем чанки
+		for chunk_key in chunks_to_unload:
+			self._unload_chunk(chunk_key)
+		
+		self.loaded_chunks = new_visible_chunks.copy()
+
+	def save_all_loaded_chunks(self):
+		"""Сохраняет все загруженные в данный момент чанки"""
+		for chunk_key, chunk in self.chunks.items():
+			if chunk.is_loaded and chunk.modified:
+				save_chunk(chunk, self.save_directory)
+	
+	def force_save_chunk(self, chunk_x, chunk_y):
+		"""Принудительно сохраняет конкретный чанк"""
+		chunk_key = (chunk_x, chunk_y)
+		if chunk_key in self.chunks:
+			chunk = self.chunks[chunk_key]
+			if chunk.is_loaded:
+				save_chunk(chunk, self.save_directory)
+				return True
+		return False
+
+	def delete_chunk_save(self, chunk_x, chunk_y):
+		"""Удаляет сохраненный файл чанка (для перегенерации)"""
+		from Saver import delete_chunk
+		return delete_chunk(chunk_x, chunk_y, self.save_directory)

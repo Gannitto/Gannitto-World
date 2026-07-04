@@ -122,6 +122,7 @@ def save(darken:bool=True, save_world_settings:bool=False):
 	save_world_settings - Сохранять ли настройки мира
 	world_name - Тоже надо указать, если сохраняются данные мира
 	"""
+
 	global player
 	Saver.save_objects(path + "Gannitto world/files/Settings/Statistics.save", statistics)
 	
@@ -152,6 +153,7 @@ def save(darken:bool=True, save_world_settings:bool=False):
 					particle_count += 1
 				else: new_particles.remove(particle)
 			Saver.save_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Particles.save", new_particles)
+			world.chunk_manager.save_all_loaded_chunks()
 				
 	if darken and Settings["Display"][9]:
 		win_darken(win.copy())
@@ -1461,7 +1463,6 @@ class Button:
 			#	elif 27 < self.info_y < 30:
 			#		self.info_y -= self.info_speed // 3
 			#		self.info_forward = False
-			#	print(self.info_y)
 			
 			#if self.alignment:
 			#	self.surface.blit(bigTextInfo.render(self.info, True, (139, 105, 180)), (self.x - bigTextInfo.size(self.info)[0] // 2, self.y - self.h / 2 - self.info_y))
@@ -3833,7 +3834,9 @@ def start_game():
 	# Загрузка данных мира
 
 	from Inventory import Resourse
-	
+
+	world.chunk_manager.save_directory = path + "Gannitto world/files/Worlds/" + world_name + "/Chunks/"
+
 	if os.path.exists(path + "Gannitto world/files/Worlds/" + world_name):
 		
 		mobs = Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Mobs.save")
@@ -4002,7 +4005,7 @@ def start_game():
 							statistics[1] += (time.time() - start_time) / 3600
 							save()
 							world.objects = []
-							world.chunk_manager.chunks = []
+							world.chunk_manager.chunks = {}
 							world.walls = []
 							mobs = []
 							player.effects = []
@@ -4498,7 +4501,7 @@ def start_game():
 
 									for _ in range(random.randint(2, 5)):
 										rand_x, rand_y = object.x + random.randint(-128, 128), object.y + random.randint(-128, 128)
-										world.chunk_manager.get_chunk_at(rand_x, rand_y).append(Object("Wooden", rand_x, rand_y, "Gannitto world/files/Images/Items/Wooden.png"))
+										world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Wooden", rand_x, rand_y, "Gannitto world/files/Images/Items/Wooden.png"))
 							
 									for _ in range(random.randint(1, 3)):
 										rand_x, rand_y = object.x + random.randint(-128, 128), object.y + random.randint(-128, 128)
