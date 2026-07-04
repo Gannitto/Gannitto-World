@@ -68,5 +68,6 @@
 	"Are you sure want to delete this world?": "Are you sure want to delete this world?",
 	" - copy": " - copy",
 	"Enter world name:": "Enter world name:",
-	"You can get other information from this QR code": "You can get other information from this QR code"
+	"You can get other information from this QR code": "You can get other information from this QR code",
+	"<<< Error increasing: item not found >>>": "<<< Error increasing: item not found >>>"
 }

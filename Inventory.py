@@ -833,9 +833,8 @@ class Inventory:
 			self.resourses[name].amount += amount
 			self.update_whole()
 		except KeyError:
-			from Functions import laungveges
-			from Gannitto_world import chat_message
-			chat_message(laungveges("<<< Ошибка выдачи предмета: предмет не найден >>>", "<<< Error increasing: item not found >>>", "")) ##
+			from Gannitto_world import t, chat_message
+			chat_message(t("<<< Error increasing: item not found >>>"))
 	
 	def update_whole(self):
 		

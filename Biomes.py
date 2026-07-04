@@ -2,25 +2,15 @@ from enum import Enum
 from typing import Dict, List, Tuple
 from dataclasses import dataclass
 
-class BiomeType(Enum):
-	FOREST = "Forest"
-	DESERT = "Desert"
-	FIELD = "Field"
-	TAIGA = "Taiga"
-	SWAMP = "Swamp"
 @dataclass
 class Biome:
 
-	biome_type: BiomeType
+	biome_type: str
 	height_range: Tuple[float, float]  # диапазон высот
 	biome_value_range: Tuple[float, float]	# диапазон для biome_value
 	color: Tuple[int, int, int]
 	mob_spawn_chance: float
 	objects: Dict[str, float]  # шансы спавна разных объектов
-	
-	def contains_point(self, biome_value: float) -> bool:
-		"""Проверяет, принадлежит ли точка этому биому"""
-		return (self.biome_value_range[0] <= biome_value <= self.biome_value_range[1])
 
 class BiomeManager:
 
@@ -34,15 +24,7 @@ class BiomeManager:
 
 		self.biomes = [
 			Biome(
-				biome_type=BiomeType.FOREST,
-				height_range=(0.0, 0.4),
-				biome_value_range=(0.4, 0.8),
-				color=(50, 150, 50),
-				mob_spawn_chance=0.05,
-				objects={"tree": 0.7, "bush": 0.3}
-			),
-			Biome(
-				biome_type=BiomeType.DESERT,
+				biome_type="Desert",
 				height_range=(-0.1, 0.2),
 				biome_value_range=(-0.8, -0.4),
 				color=(200, 180, 100),
@@ -50,7 +32,7 @@ class BiomeManager:
 				objects={"cactus": 0.2, "sand": 0.8}
 			),
 			Biome(
-				biome_type=BiomeType.FIELD,
+				biome_type="Field",
 				height_range=(0.0, 0.4),
 				biome_value_range=(0.4, 0.8),
 				color=(50, 150, 50),
@@ -58,20 +40,28 @@ class BiomeManager:
 				objects={}
 			),
 			Biome(
-				biome_type=BiomeType.TAIGA,
-				height_range=(0.6, 1.0),
-				biome_value_range=(0.6, 1.0),
-				color=(220, 230, 240),
-				mob_spawn_chance=0.005,
-				objects={"Spruce": 0.9}
+				biome_type="Forest",
+				height_range=(0.0, 0.4),
+				biome_value_range=(0.4, 0.8),
+				color=(50, 150, 50),
+				mob_spawn_chance=0.05,
+				objects={"tree": 0.7, "bush": 0.3}
 			),
 			Biome(
-				biome_type=BiomeType.SWAMP,
+				biome_type="Swamp",
 				height_range=(0.6, 1.0),
 				biome_value_range=(0.6, 1.0),
 				color=(220, 230, 240),
 				mob_spawn_chance=0.005,
 				objects={}
+			),
+			Biome(
+				biome_type="Taiga",
+				height_range=(0.6, 1.0),
+				biome_value_range=(0.6, 1.0),
+				color=(220, 230, 240),
+				mob_spawn_chance=0.005,
+				objects={"Spruce": 0.9}
 			)
 		]
 

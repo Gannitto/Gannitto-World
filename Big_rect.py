@@ -214,34 +214,6 @@ class BigRect:
 				pygame.display.update()
 				clock.tick(60)
 
-
-
-				win.fill((192, 203, 220), (0, Height // 2 + 18, Width, Height))
-				win.blit(textInfo.render("World generation - 88%", True, (139, 155, 180)), ((Width - textInfo.size("World generation - 88%")[0]) // 2, Height // 2 + 20))
-				win.blit(textInfo.render("Adding trees...", True, (139, 155, 180)), ((Width - textInfo.size("Adding trees...")[0]) // 2, Height // 2 + 50))
-				Tree = pygame.image.load(path + "Gannitto world/files/Images/Objects/Tree.png")
-				for _ in range(random.randint(5000, 25000)):
-					objects.append(Object(
-						"Tree",
-						random.randint(self.x - 50000, self.x + 50000), random.randint(self.y - 50000, self.y + 50000), 
-						"Gannitto world/files/Images/Objects/Tree.png", (256, 256), Tree, special_flags=100, is_solid=True))
-				pygame.display.update()
-				clock.tick(60)
-
-				
-
-				win.fill((192, 203, 220), (0, Height // 2 + 18, Width, Height))
-				win.blit(textInfo.render("World generation - 88%", True, (139, 155, 180)), ((Width - textInfo.size("World generation - 88%")[0]) // 2, Height // 2 + 20))
-				win.blit(textInfo.render("Adding birches...", True, (139, 155, 180)), ((Width - textInfo.size("Adding birches...")[0]) // 2, Height // 2 + 50))
-				Birch = pygame.image.load(path + "Gannitto world/files/Images/Objects/Birch.png")
-				for _ in range(random.randint(5000, 25000)):
-					objects.append(Object(
-						"Birch",
-						random.randint(self.x - 50000, self.x + 50000), random.randint(self.y - 50000, self.y + 50000), 
-						"Gannitto world/files/Images/Objects/Birch.png", (256, 256), Birch, special_flags=100, is_solid=True))
-				pygame.display.update()
-				clock.tick(60)
-
 				
 
 				from Gannitto_world import Cave
@@ -251,52 +223,8 @@ class BigRect:
 
 
 
-
-			case "Desert":
-
-				
-				win.blit(textInfo.render("World generation - 0%", True, (139, 155, 180)), ((Width - textInfo.size("World generation - 0%")[0]) // 2, Height // 2 + 20))
-				win.blit(textInfo.render("Adding cactuses...", True, (139, 155, 180)), ((Width - textInfo.size("Adding cactuses...")[0]) // 2, Height // 2 + 50))
-				Cactus = pygame.image.load(path + "Gannitto world/files/Images/Objects/Cactus.png")
-				for _ in range(random.randint(5000, 10000)):
-					rand_x, rand_y = random.randint(self.x - 50000, self.x + 50000), random.randint(self.x - 50000, self.x + 50000)
-					objects.append(Object(
-						"Cactus",
-						rand_x, rand_y,
-						"Gannitto world/files/Images/Objects/Cactus.png", (256, 256), Cactus, is_solid=True, rect=(rand_x - 80, rand_y + 116, 160, 232)))
-				pygame.display.update()
-				clock.tick(60)
-
-
-
-				win.fill((192, 203, 220), (0, Height // 2 + 18, Width, Height))
-				win.blit(textInfo.render("World generation - 50%", True, (139, 155, 180)), ((Width - textInfo.size("World generation - 50%")[0]) // 2, Height // 2 + 20))
-				win.blit(textInfo.render("Adding piles of sand...", True, (139, 155, 180)), ((Width - textInfo.size("Adding piles of sand...")[0]) // 2, Height // 2 + 50))
-				Pile_of_sand = pygame.image.load(path + "Gannitto world/files/Images/Objects/Pile of sand.png")
-				for _ in range(random.randint(500, 1000)):
-					objects.append(Object(
-						"Pile of sand",
-						random.randint(self.x - 50000, self.x + 50000), random.randint(self.y - 50000, self.y + 50000),
-						"Gannitto world/files/Images/Objects/Pile of sand.png", (256, 256) ,Pile_of_sand))
-				pygame.display.update()
-				clock.tick(60)
-
-
-
-
 			case "Swamp":
 				
-
-				win.blit(textInfo.render("World generation - 0%", True, (139, 155, 180)), ((Width - textInfo.size("World generation - 0%")[0]) // 2, Height // 2 + 20))
-				win.blit(textInfo.render("Adding dark trees...", True, (139, 155, 180)), ((Width - textInfo.size("Adding dark trees...")[0]) // 2, Height // 2 + 50))
-				Dark_tree = pygame.image.load(path + "Gannitto world/files/Images/Objects/Dark tree.png")
-				for _ in range(random.randint(3000, 8000)):
-					objects.append(Object(
-						"Dark tree",
-						random.randint(self.x - 50000, self.x + 50000), random.randint(self.y - 50000, self.y + 50000),
-						"Gannitto world/files/Images/Objects/Dark tree.png", (256, 256), Dark_tree, special_flags=100, is_solid=True))
-				pygame.display.update()
-				clock.tick(60)
 
 
 				
@@ -337,37 +265,6 @@ class BigRect:
 						"Cotton grass",
 						random.randint(self.x - 50000, self.x + 50000), random.randint(self.y - 50000, self.y + 50000),
 						"Gannitto world/files/Images/Items/Cotton grass.png", image=Cotton_grass, special_flags="Item"))
-				
-				
-
-
-
-			case "Taiga":
-
-
-				win.fill((192, 203, 220), (0, Height // 2 + 18, Width, Height))
-				win.blit(textInfo.render("World generation - 0%", True, (139, 155, 180)), ((Width - textInfo.size("World generation - 0%")[0]) // 2, Height // 2 + 20))
-				win.blit(textInfo.render("Adding spruces...", True, (139, 155, 180)), ((Width - textInfo.size("Adding spreces...")[0]) // 2, Height // 2 + 50))
-				Spruce = pygame.image.load(path + "Gannitto world/files/Images/Objects/Spruce.png")
-				for _ in range(random.randint(3000, 8000)):
-					objects.append(Object(
-						"Spruce",
-						random.randint(self.x - 50000, self.x + 50000), random.randint(self.y - 50000, self.y + 50000),
-						"Gannitto world/files/Images/Objects/Spruce.png", (512, 512), Spruce, is_solid=True))
-				pygame.display.update()
-				clock.tick(60)
-
-
-
-				win.fill((192, 203, 220), (0, Height // 2 + 18, Width, Height))
-				win.blit(textInfo.render("World generation - 50%", True, (139, 155, 180)), ((Width - textInfo.size("World generation - 50%")[0]) // 2, Height // 2 + 20))
-				win.blit(textInfo.render("Adding dark bushes...", True, (139, 155, 180)), ((Width - textInfo.size("Adding dark bushes...")[0]) // 2, Height // 2 + 50))
-				Dark_bush = pygame.image.load(path + "Gannitto world/files/Images/Objects/Dark bush.png")
-				for _ in range(random.randint(3000, 8000)):
-					objects.append(Object(
-						"Dark tree",
-						random.randint(self.x - 50000, self.x + 50000), random.randint(self.y - 50000, self.y + 50000),
-						"Gannitto world/files/Images/Objects/Dark bush.png", (128, 128), Dark_bush, is_solid=True))
 		
 		return objects, items
 
