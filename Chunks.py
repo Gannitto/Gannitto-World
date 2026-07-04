@@ -78,6 +78,7 @@ class Chunk:
 		self.objects = []
 		self.items = []
 		self.particles = []
+		self.caves = []
 		self.biome = None
 		self.objects = []
 		self.is_loaded = False
@@ -144,7 +145,7 @@ class ChunkManager:
 
 
 		
-		chunk.items = objects
+		chunk.objects = objects
 		chunk.is_generated = True
 	
 	def get_chunk_at(self, X, Y):
