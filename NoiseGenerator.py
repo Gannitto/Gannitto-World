@@ -6,16 +6,15 @@ import math
 
 @dataclass
 class WorldConfig:
-	seed: int = 42
 	world_scale: float = 0.005	# Масштаб для шума
 	biome_size: float = 3    	# Для биомов
 	detail_scale: float = 0.02	# Для деталей
 	
 class NoiseGenerator:
 
-	def __init__(self, seed=None):
-		self.seed = seed or random.randint(0, 2**31 - 1)
-		self.config = WorldConfig(seed=self.seed)
+	def __init__(self):
+		self.seed = random.randint(0, 2**31 - 1)
+		self.config = WorldConfig()
 		
 		# Отдельные генераторы с разным сидом вместо параметра base
 		self.height_noise = vnoise.Noise(seed=self.seed)

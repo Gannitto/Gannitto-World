@@ -18,6 +18,7 @@ win = pygame.display.set_mode((1000, 1000))
 width, height = 240, 240
 arr = numpy.empty((width, height), dtype="U10")
 arr[:] = ""
+chunk_manager.generator.seed = 1488
 
 for x in range(width):
 	for y in range(height):

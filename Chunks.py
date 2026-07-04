@@ -1,4 +1,4 @@
-from NoiseGenerator import generator
+from NoiseGenerator import NoiseGenerator
 from itertools import product
 import random
 
@@ -98,21 +98,22 @@ class ChunkManager:
 		self.chunks = {}
 		self.loaded_chunks = set()
 		self.view_distance = 3
+		self.generator = NoiseGenerator()
 		
 	def generate_chunk(self, chunk: Chunk):
 
-		"""Генерация чанка с использованием шума Перлина"""
+		"""Генерация чанка"""
 		from Gannitto_world import Object
 		bounds = chunk.get_world_bounds()
 	
-		value = generator.get_biome_at(chunk.x, chunk.y)
+		value = self.generator.get_biome_at(chunk.x, chunk.y)
 		index = int(value * len(biomes))
 		if index >= len(biomes):
 			index = len(biomes) - 1
 		biome = biomes[index]
 		# Добавление игровых объектов через шум Перлина (будет в будущем)
 		# for x, y in product(range(int(bounds["x1"]), int(bounds["x2"]), tile_size), range(int(bounds["y1"]), int(bounds["y2"]), tile_size)):
-			# height = generator.get_height(x, y)
+			# height = self.generator.get_height(x, y)
 			# Для теста взята текстура цветка
 			# if height > 0.5:
 			#	chunk.objects.append(Object("Orange tulip", x, y, "Gannitto world/files/Images/Items/Orange tulip.png"))
@@ -161,27 +162,25 @@ class ChunkManager:
 		center_chunk_y = int(player_y // chunk_size)
 		new_visible_chunks = set()
 		
-		# Перебираем все чанки в радиусе видимости
-		for dx in range(-self.view_distance, self.view_distance + 1):
-			for dy in range(-self.view_distance, self.view_distance + 1):
-				chunk_x = center_chunk_x + dx
-				chunk_y = center_chunk_y + dy
+		for dx, dy in product(range(-self.view_distance, self.view_distance + 1), range(-self.view_distance, self.view_distance + 1)):
+			chunk_x = center_chunk_x + dx
+			chunk_y = center_chunk_y + dy
+			
+			# Находится ли чанк в радиусе прорисовки
+			if dx * dx + dy * dy <= self.view_distance * self.view_distance:
+				chunk_key = (chunk_x, chunk_y)
+				new_visible_chunks.add(chunk_key)
 				
-				# Находится ли чанк в радиусе прорисовки
-				if dx * dx + dy * dy <= self.view_distance * self.view_distance:
-					chunk_key = (chunk_x, chunk_y)
-					new_visible_chunks.add(chunk_key)
-					
-					# Если чанк еще не существует, то создаётся
-					if chunk_key not in self.chunks:
-						new_chunk = Chunk(chunk_x, chunk_y)
-						self.chunks[chunk_key] = new_chunk
-					
-					# Если чанк существует, но не сгенерирован, то он генерируется
-					chunk = self.chunks[chunk_key]
-					if not chunk.is_generated:
-						self.generate_chunk(chunk)
-						chunk.is_loaded = True
+				# Если чанк еще не существует, то создаётся
+				if chunk_key not in self.chunks:
+					new_chunk = Chunk(chunk_x, chunk_y)
+					self.chunks[chunk_key] = new_chunk
+				
+				# Если чанк существует, но не сгенерирован, то он генерируется
+				chunk = self.chunks[chunk_key]
+				if not chunk.is_generated:
+					self.generate_chunk(chunk)
+					chunk.is_loaded = True
 		
 		self.loaded_chunks = new_visible_chunks.copy()
 		

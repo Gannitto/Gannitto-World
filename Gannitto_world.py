@@ -136,10 +136,8 @@ def save(darken:bool=True, save_world_settings:bool=False):
 		else:
 
 			Saver.save_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Mobs.save", mobs)
-			Saver.save_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Rects.save", big_rects)
-			Saver.save_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Info.save", [player.x, player.y, Backrooms.InBackrooms, Backrooms.Level, in_cave, player.speed, player.HP, start_time, Ron.X, Ron.Y, Ron.Home])
+			Saver.save_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Info.save", [player.x, player.y, Backrooms.InBackrooms, Backrooms.Level, in_cave, player.speed, player.HP, start_time, Ron.X, Ron.Y, Ron.Home, world.chunk_manager.generator.seed])
 			Saver.save_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Objects.save", world.objects)
-			Saver.save_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Items.save", world.items)
 			Saver.save_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Walls.save", world.walls)
 			Saver.save_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Inventory.save", inventory.whole_inventory)
 			Saver.save_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Resourses.save", inventory.resourses)
@@ -182,8 +180,6 @@ statistics[0] += 1
 
 pygame.display.set_icon(pygame.image.load(path + "Gannitto world/files/Images/Icon.png"))
 pygame.display.set_caption("Gannitto world")
-
-walk = 0
 
 Hiro_down_run_1 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Down/1.png"), (256, 256))
 Hiro_down_run_2 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Players/Hiro/Normal/Down/2.png"), (256, 256))
@@ -489,14 +485,12 @@ class Object:
 	
 	def __getstate__(self):
 		
-		# Возвращаем словарь состояния, исключая объект Surface
 		state = self.__dict__.copy()
 		del state["image"]
 		return state
 
 	def __setstate__(self, state):
 		
-		# Восстанавливаем состояние и загружаем изображение
 		self.__dict__.update(state)
 		if self.add_path:
 			self.image = TextureCache.get(path + self.image_path, self.scale_x)
@@ -641,14 +635,12 @@ class Particle:
 	
 	def __getstate__(self):
 		
-		# Возвращаем словарь состояния, исключая объект Surface
 		state = self.__dict__.copy()
 		del state["image"]
 		return state
 
 	def __setstate__(self, state):
 		
-		# Восстанавливаем состояние и загружаем изображение
 		self.__dict__.update(state)
 		self.image = pygame.transform.scale(pygame.image.load(self.image_path), (self.w, self.h))
 	
@@ -737,17 +729,8 @@ class PlayerAnimations:
 			frames = []
 			
 			for frame_num in range(1, 7):
-				try:
-					path_to_image = f"{path}Gannitto world/files/Images/Players/Hiro/Normal/{direction}/{frame_num}.png"
-					image = pygame.transform.scale(pygame.image.load(path_to_image), (256, 256))
-					frames.append(image)
-				except pygame.error:
-					# Если файл не найден, используем заглушку
-					print(f"Warning: Could not load {direction}/{frame_num}.png")
-					# Создаем заглушку (красный квадрат для отладки)
-					surface = pygame.Surface((64, 64))
-					surface.fill((255, 0, 0))
-					frames.append(surface)
+				path_to_image = f"{path}Gannitto world/files/Images/Players/Hiro/Normal/{direction}/{frame_num}.png"
+				frames.append(pygame.transform.scale(pygame.image.load(path_to_image), (256, 256)))
 			
 			self.animations[direction] = frames
 
@@ -783,35 +766,27 @@ class Player:
 		
 	def get_current_frame(self):
 		"""Возвращает текущий кадр анимации"""
-		try:
-			frames = self.animations[self.direction]
-			return frames[self.frame_index % len(frames)]
-		except (KeyError, IndexError):
-			# Если что-то пошло не так, возвращаем заглушку
-			surface = pygame.Surface((64, 64))
-			surface.fill((255, 0, 255))  # Магента для отладки
-			return surface
+		frames = self.animations[self.direction]
+		return frames[self.frame_index % len(frames)]
 	
 	def update_animation(self, dt):
 		"""Обновляет анимацию на основе времени"""
 		if self.is_moving:
 			self.animation_timer += dt
 			
-			# Если прошло достаточно времени - меняем кадр
+			# Если прошло достаточно времени, кадр меняется
 			if self.animation_timer >= self.animation_speed:
 				self.animation_timer = 0
 				self.frame_index += 1
 		
-		# Обновляем изображение
 		self.image = self.get_current_frame()
 
-	def collides_with_walls(self, walls, objects):
+	def collides_with_walls(self):
 		"""Проверяет, пересекается ли игрок с какой-либо стеной."""
 		# if pygame.key.get_pressed()[pygame.K_o]: return False временная функция чтобы для теста ходить сквозь стены
 		self.rect = pygame.Rect(self.x - 35, self.y + 112, 70, 224)
 
 		for wall in world.walls:
-			# Предполагаем, что стена хранит свои координаты и размеры
 			wall_rect = pygame.Rect(wall.x - 128, wall.y + 128, 256, 256)
 			if self.rect.colliderect(wall_rect):
 				return True
@@ -826,11 +801,11 @@ class Player:
 		
 		# Обновление позиции
 		self.x += dx * self.speed
-		if self.collides_with_walls(world.walls, world.objects):
+		if self.collides_with_walls():
 			self.x -= dx * self.speed
 
 		self.y += dy * self.speed
-		if self.collides_with_walls(world.walls, world.objects):
+		if self.collides_with_walls():
 			self.y -= dy * self.speed
 		
 		# Определение направления
@@ -1114,14 +1089,12 @@ class SlimeEnemy:
 			
 	def __getstate__(self):
 		
-		# Возвращаем словарь состояния, исключая объект Surface
 		state = self.__dict__.copy()
 		del state["animation_images"]
 		return state
 
 	def __setstate__(self, state):
 		
-		# Восстанавливаем состояние и загружаем изображение
 		self.__dict__.update(state)
 		if self.rand_mob == 1: self.animation_images = [Slime1, Slime1_2, Slime1_3, Slime1_4]
 		else: self.animation_images = [Slime2, Slime2_2, Slime2_3, Slime2_4]
@@ -1250,7 +1223,6 @@ class SpiderEnemy:
 			
 	def __getstate__(self):
 		
-		# Возвращаем словарь состояния, исключая объект Surface
 		state = self.__dict__.copy()
 		del state["left_animation_images"]
 		del state["right_animation_images"]
@@ -1258,7 +1230,6 @@ class SpiderEnemy:
 
 	def __setstate__(self, state):
 		
-		# Восстанавливаем состояние и загружаем изображение
 		self.__dict__.update(state)
 		self.left_animation_images = [pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Objects/Spider.png"), (128, 128))] * 4
 		self.right_animation_images = [pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Objects/Spider 2.png"), (128, 128))] * 4
@@ -1861,7 +1832,6 @@ class Wall:
 		
 	def __getstate__(self):
 		
-		# Возвращаем словарь состояния, исключая объект Surface
 		state = self.__dict__.copy()
 		del state["image"]
 		del state["images"]
@@ -1870,7 +1840,6 @@ class Wall:
 
 	def __setstate__(self, state):
 		
-		# Восстанавливаем состояние и загружаем изображение
 		self.__dict__.update(state)
 		if self.is_door:
 
@@ -2138,7 +2107,6 @@ class Motherboard:
 	def get_pressed(self):
 		global in_motherboard, mouse_x, mouse_y, click
 		mouse_x, mouse_y = pygame.mouse.get_pos()
-		#click = pygame.mouse.get_pos()
 		if self.in_motherboard is None:
 			if self.x * 64 + Width // 2 - player.x <= mouse_x <= self.x * 64 + Width // 2 - player.x + 64 and player.y - self.y * 64 + Height // 2 - 16 <= mouse_y <= player.y - self.y * 64 + Height // 2 - 16 + 64 and in_motherboard is None and click[0]:
 				in_motherboard = self
@@ -2149,6 +2117,8 @@ class World:
 
 	def __init__(self):
 		self.chunk_manager = ChunkManager()
+		self.seed = 0
+
 		self.visible_objects = []
 		self.visible_items = []
 		self.visible_caves = []
@@ -2156,13 +2126,12 @@ class World:
 		# Списки всех игровых объектов оставлены для совместимости. От такого надо постепенно отказываться
 		self.objects = []
 		self.walls = []
-		self.items = []
 		
 	def update(self):
-		# Обновляем чанки на основе позиции игрока
+
 		self.chunk_manager.update_visible_chunks(player.x, player.y)
 		
-		# Собираем все объекты из загруженных чанков
+		# Сборка объектов из загруженных чанков
 		self.visible_objects.clear()
 		self.visible_items.clear()
 		for chunk_key in self.chunk_manager.loaded_chunks:
@@ -2170,13 +2139,6 @@ class World:
 			self.visible_objects.extend(chunk.objects)
 			self.visible_items.extend(chunk.items)
 		
-		# Отрисовка видимых объектов
-		# self.render()
-	
-	def render(self):
-		for obj in self.visible_objects:
-			if self.is_on_screen(obj):
-				obj.main()
 
 	def render_loaded_chunks(self):
 
@@ -2233,7 +2195,7 @@ class Cave:
 	def generate(self):
 
 		for _ in range(self.own_width // 100 + random.randint(-10, 10)):
-			self.objects.append(Object("Stone", random.randint(self.own_width // 2 * -1, self.own_width // 2), random.randint(self.own_height // 2 * -1, self.own_height // 2), "Gannitto world/files/Images/Items/Stone.png", special_flags="Item"))
+			self.objects.append(Object("Stone", random.randint(self.own_width // 2 * -1, self.own_width // 2), random.randint(self.own_height // 2 * -1, self.own_height // 2), "Gannitto world/files/Images/Items/Stone.png"))
 			
 		for _ in range(self.own_width // 300 + random.randint(-10, 10)):
 			self.objects.append(Object("Iron ore", random.randint(self.own_width // 2 * -1, self.own_width // 2), random.randint(self.own_height // 2 * -1, self.own_height // 2), "Gannitto world/files/Images/Objects/Iron ore.png", (256, 256), special_flags=100))
@@ -2257,14 +2219,12 @@ class Cave:
 		
 	def __getstate__(self):
 		
-		# Возвращаем словарь состояния, исключая объект Surface
 		state = self.__dict__.copy()
 		del state["image"]
 		return state
 
 	def __setstate__(self, state):
 		
-		# Восстанавливаем состояние и загружаем изображение
 		self.__dict__.update(state)
 		self.image = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Objects/Cave.png"), (128, 128))
 
@@ -2807,7 +2767,7 @@ def settings():
 			win.blit(bigTextInfo.render(str(page), True, (139, 155, 180)), ((Width - 415) // 2 + 391, Height - 96))
 			help_button.main(help)
 			display_button.main(display)
-			win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Languages 2.png"), (278, 64)), (10, 267))
+			win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Languages 2.png"), (272, 64)), (10, 267))
 			user_button.main(User)
 			sound_button.main(Sound)
 			statistics_button.main(Statistics)
@@ -3172,7 +3132,7 @@ def settings():
 			languages_button.main(Languages)
 			user_button.main(User)
 			sound_button.main(Sound)
-			win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Statistics 2.png"), (336, 64)), (10, 492))
+			win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Statistics 2.png"), (300, 64)), (10, 492))
 			keys_button.main(Keys)
 			game_button.main(Game)
 
@@ -3843,7 +3803,7 @@ dt = 0
 
 def start_game():
 	
-	global win, Hiro_rect, changed_slot, menu_open, multyplayer_menu_open, screenmode, inventory_open, hold_left, backrooms, text_color, bullet_num, craft_items_list, craft_amounts_list, craft_images_list, screenshot_num, mechanisms, mouse_x, mouse_y, item_settings_open, multyplayer_panel, big_rects, mobs, in_cave, chat_tick, craft_list_open, craft_list_page, click, in_motherboard, os, mouse_click_image, world_name, player_bullets, color, multyplayer_mode, multyplayer, Hiro, game_time, animation, start_time, weather, new_particles, inside_files, difficulty, alt_pressed, walk, dt, player, world
+	global win, Hiro_rect, changed_slot, menu_open, multyplayer_menu_open, screenmode, inventory_open, hold_left, backrooms, text_color, bullet_num, craft_items_list, craft_amounts_list, craft_images_list, screenshot_num, mechanisms, mouse_x, mouse_y, item_settings_open, multyplayer_panel, mobs, in_cave, chat_tick, craft_list_open, craft_list_page, click, in_motherboard, os, mouse_click_image, world_name, player_bullets, color, multyplayer_mode, multyplayer, Hiro, game_time, animation, start_time, weather, new_particles, inside_files, difficulty, alt_pressed, dt, player, world
 
 	night_playing = False
 	input_text = ""
@@ -3877,14 +3837,11 @@ def start_game():
 	if os.path.exists(path + "Gannitto world/files/Worlds/" + world_name):
 		
 		mobs = Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Mobs.save")
-		big_rects = Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Rects.save")
-		player.x, player.y, Backrooms.InBackrooms, Backrooms.Level, in_cave, player.speed, player.HP, start_time, Ron.X, Ron.Y, Ron.Home = Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Info.save")
+		player.x, player.y, Backrooms.InBackrooms, Backrooms.Level, in_cave, player.speed, player.HP, start_time, Ron.X, Ron.Y, Ron.Home, world.chunk_manager.generator.seed = Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Info.save")
 		difficulty, player.god_mode = Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Settings.save")
 		world.objects = Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Objects.save")
-		world.items = Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Items.save")
 		world.walls = Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Walls.save")
 		inventory.whole_inventory = Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Inventory.save")
-		#inventory.resourses = Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Resourses.save") TODO
 		player.effects = Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Effects.save")
 		player.speed = 50
 
@@ -3893,8 +3850,6 @@ def start_game():
 		os.mkdir(path + "Gannitto world/files/Worlds/" + world_name)
 		os.mkdir(path + "Gannitto world/files/Worlds/" + world_name + "/Images")
 
-		big_rects = [Big_rect.BigRect(0, 0)]
-		world.objects, world.items = big_rects[0].generate(world.objects, world.items)
 		save(False, True)
 
 	inside_files = []
@@ -4047,7 +4002,7 @@ def start_game():
 							statistics[1] += (time.time() - start_time) / 3600
 							save()
 							world.objects = []
-							world.items = []
+							world.chunk_manager.chunks = []
 							world.walls = []
 							mobs = []
 							player.effects = []
@@ -4184,202 +4139,6 @@ def start_game():
 		
 		if not chat_input:
 
-			# Старая механика ходьбы
-
-			# if keys[pygame.K_DOWN] or keys[pygame.K_s] or (down_b.get_pressed() and Settings["Game"][1]):
-
-			# 	a = True
-			# 	if Backrooms.InBackrooms:
-			# 		for i in range(Width // 2 - 80, Width // 2 + 80):
-			# 			if win.get_at((i, Height // 2 + 127)) == wall_color:
-			# 				a = False
-			# 				break
-
-			# 	if in_cave is not None and player.y <= world.objects[in_cave + 1].own_height // 2 * -1 + 150:
-			# 		a = False
-
-			# 	if a:
-					
-			# 		y -= player.speed // FPS
-					
-			# 		for i in world.walls:
-			# 			if i.x - 300 < player.x < i.x + 300 and i.y - 100 < player.y < i.y + 300:
-			# 				y += player.speed // FPS
-							
-			# 		if walk <= 0:
-
-			# 			player.direction = "Down"
-			# 			if costum == 7: 
-			# 				costum = 0
-			# 			costum += 1
-
-			# 			if costum == 1:
-			# 				Hiro = Hiro_down_run_1
-			# 			elif costum == 2:
-			# 				Hiro = Hiro_down_run_2
-			# 			elif costum == 3:
-			# 				Hiro = Hiro_down_run_3
-			# 			elif costum == 4:
-			# 				Hiro = Hiro_down_run_4
-			# 			elif costum == 5:
-			# 				Hiro = Hiro_down_run_5
-			# 			elif costum == 6:
-			# 				Hiro = Hiro_down_run_6
-					
-			# 			walk = FPS * 0.1
-
-			# elif keys[pygame.K_UP] or keys[pygame.K_w] or (up_b.get_pressed() and Settings["Game"][1]):
-
-			# 	a = True
-
-			# 	if Backrooms.InBackrooms:
-			# 		for i in range(Width // 2 - 80, Width // 2 + 80):
-			# 			if win.get_at((i, Height // 2 - 127)) == wall_color:
-			# 				a = False
-			# 				break
-
-			# 	if in_cave is not None and player.y >= world.objects[in_cave + 1].own_height // 2 - 100:
-			# 		a = False
-
-			# 	if a:
-					
-			# 		y += player.speed // FPS
-					
-			# 		for i in world.walls:
-			# 			if i.x - 300 < player.x < i.x + 300 and i.y - 300 < player.y < i.y + 100:
-			# 				y -= player.speed // FPS
-
-			# 		if walk <= 0:
-			# 			player.direction = "Up"
-			# 			if costum == 7:
-			# 				costum = 0
-			# 			costum += 1
-
-			# 			if costum == 1:
-			# 				Hiro = Hiro_up_run_1
-			# 			elif costum == 2:
-			# 				Hiro = Hiro_up_run_2
-			# 			elif costum == 3:
-			# 				Hiro = Hiro_up_run_3
-			# 			elif costum == 4:
-			# 				Hiro = Hiro_up_run_4
-			# 			elif costum == 5:
-			# 				Hiro = Hiro_up_run_5
-			# 			elif costum == 6:
-			# 				Hiro = Hiro_up_run_6
-					
-			# 			walk = FPS * 0.1
-
-			# elif keys[pygame.K_LEFT] or keys[pygame.K_a] or (left_b.get_pressed() and Settings["Game"][1]):
-
-			# 	a = True
-
-			# 	if Backrooms.InBackrooms:
-			# 		for i in range(Height // 2 - 100, Height // 2 + 100):
-			# 			if win.get_at((Width // 2 - 100, i)) in (Color(180, 160, 50), Color(50, 50, 50)):
-			# 				a = False
-			# 				break
-
-			# 	if in_cave is not None and player.x <= world.objects[in_cave + 1].own_width // 2 * -1 + 150:
-			# 		a = False
-
-			# 	if a:
-					
-			# 		x -= player.speed // FPS
-					
-			# 		for i in world.walls:
-			# 			if i.x - 100 < player.x < i.x + 256 and i.y - 300 < player.y < i.y + 300:
-			# 				x += player.speed // FPS
-
-			# 		if walk <= 0:
-
-			# 			player.direction = "Left"
-			# 			if costum == 7:
-			# 				costum = 0
-			# 			costum += 1
-
-			# 			if costum == 1:
-			# 				Hiro = Hiro_left_run_1
-			# 			elif costum == 2:
-			# 				Hiro = Hiro_left_run_2
-			# 			elif costum == 3:
-			# 				Hiro = Hiro_left_run_3
-			# 			elif costum == 4:
-			# 				Hiro = Hiro_left_run_4
-			# 			elif costum == 5:
-			# 				Hiro = Hiro_left_run_5
-			# 			elif costum == 6:
-			# 				Hiro = Hiro_left_run_6
-					
-			# 			walk = FPS * 0.1
-
-			# elif (keys[pygame.K_RIGHT] or keys[pygame.K_d]) or (right_b.get_pressed() and Settings["Game"][1]):
-
-			# 	a = True
-
-			# 	if Backrooms.InBackrooms:
-			# 		for i in range(Height // 2 - 100, Height // 2 + 100):
-			# 			if win.get_at((Width // 2 + 107, i)) == wall_color:
-			# 				a = False
-			# 				break
-
-			# 	if in_cave is not None and player.x >= world.objects[in_cave + 1].own_width // 2 - 150:
-			# 		a = False
-
-			# 	if a:
-					
-			# 		x += player.speed // FPS
-					
-			# 		for i in world.walls:
-			# 			if i.x - 300 < player.x < i.x + 100 and i.y - 300 < player.y < i.y + 300:
-			# 				x -= player.speed // FPS
-
-			# 		if walk <= 0:
-
-			# 			player.direction = "Right"
-			# 			if costum == 7:
-			# 				costum = 0
-			# 			costum += 1
-
-			# 			if costum == 1:
-			# 				Hiro = Hiro_right_run_1
-			# 			elif costum == 2:
-			# 				Hiro = Hiro_right_run_2
-			# 			elif costum == 3:
-			# 				Hiro = Hiro_right_run_3
-			# 			elif costum == 4:
-			# 				Hiro = Hiro_right_run_4
-			# 			elif costum == 5:
-			# 				Hiro = Hiro_right_run_5
-			# 			elif costum == 6:
-			# 				Hiro = Hiro_right_run_6
-					
-			# 			walk = FPS * 0.1
-
-			# else:
-
-			# 	costum = 0
-
-			# 	if player.direction == "Down-left":
-			# 		Hiro = Hiro_down_left
-			# 	elif player.direction == "Down-right":
-			# 		Hiro = Hiro_down_right
-			# 	elif player.direction == "Down":
-			# 		Hiro = Hiro_down_run_1
-			# 	elif player.direction == "Up-left":
-			# 		Hiro = Hiro_up_left
-			# 	elif player.direction == "Up-right":
-			# 		Hiro = Hiro_up_right_run_1
-			# 	elif player.direction == "Up":
-			# 		Hiro = Hiro_up_run_1
-			# 	elif player.direction == "Left":
-			# 		Hiro = Hiro_left_run_1
-			# 	elif player.direction == "Right":
-			# 		Hiro = Hiro_right_run_1
-			pass
-		# if walk > 0:
-			# walk -= 1
-		if not chat_input:	
 			if keys[pygame.K_a]: dx = -1 + (keys[pygame.K_w] or keys[pygame.K_s]) * 0.3
 			if keys[pygame.K_d]: dx = 1 - (keys[pygame.K_w] or keys[pygame.K_s]) * 0.3
 			if keys[pygame.K_s]: dy = -1 + (keys[pygame.K_a] or keys[pygame.K_d]) * 0.3
@@ -4629,80 +4388,69 @@ def start_game():
 
 						if object.x - player.x + Width // 2 - object.w // 2 <= mouse_x <= object.x - player.x + Width // 2 + object.w // 2 and player.y - object.y + Height // 2 - object.h // 2 <= mouse_y <= player.y - object.y + Height // 2 + object.h // 2:
 
-							if object.special_flags == "Item":
+							if object.name == "Iron ore" and click[0] and inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name in ("Stone pickaxe"):
 
-								mouse_object = t("Click to pick the ") + object.name
-								if click[0]:
-									inventory.increate(object.name)
-									pygame.mixer.Sound.play(Pick_an_item)
+								object.special_flags -= 1
+								object.image = pygame.transform.scale(object.image, (32, 32))
+
+								for _ in range(random.randint(20, 25)):
+
+									a = random.randint(0, 31)
+									b = random.randint(0, 31)
+
+									if object.image.get_at((a, b)).a != 0:
+										c = random.randint(10, 20)
+										c = pygame.Surface((a, a))
+										c.fill(object.image.get_at((a, b)))
+										object.image.set_at((a, b), (0, 0, 0, 99))
+										if random.randint(1, 5) == 1:
+											particles.append(Particle(object.x + (a - 16) * 8, object.y + (b - 16) * 8, c, "5", "-16", 10, end_time=0.5))
+
+								object.image.set_alpha(object.image.get_alpha() - 1)
+								object.image = pygame.transform.scale(object.image, (256, 256))
+
+								if random.randint(1, 15) == 1:
+									pygame.mixer.Sound.play(random.choice((Stone_breaking1, Stone_breaking2)))
+
+								if object.special_flags == -1:
 									del world.objects[in_cave + 1].objects[i]
+									for i in range(random.randint(1, 3)):
+										world.objects[in_cave + 1].objects.append(Object("Iron ore", random.randint(object.x - 128, object.x + 128), random.randint(object.y - 128, object.y + 128), "Gannitto world/files/Images/Items/Iron ore.png", special_flags="Item"))
 									break
 
-							else:
+							if object.name == "Gold ore" and click[0] and inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name in ("Stone pickaxe"):
 
-								if object.name == "Iron ore" and click[0] and inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name in ("Stone pickaxe"):
+								object.special_flags -= 1
+								object.image = pygame.transform.scale(object.image, (32, 32))
 
-									object.special_flags -= 1
-									object.image = pygame.transform.scale(object.image, (32, 32))
+								for _ in range(random.randint(20, 25)):
 
-									for _ in range(random.randint(20, 25)):
+									a = random.randint(0, 31)
+									b = random.randint(0, 31)
+									if object.image.get_at((a, b)).a != 0:
+										c = random.randint(10, 20)
+										c = pygame.Surface((a, a))
+										c.fill(object.image.get_at((a, b)))
+										object.image.set_at((a, b), (0, 0, 0, 99))
+										if random.randint(1, 5) == 1:
+											particles.append(Particle(object.x + (a - 16) * 8, object.y + (b - 16) * 8, c, "5", "-16", 10, end_time=0.5))
 
-										a = random.randint(0, 31)
-										b = random.randint(0, 31)
+								object.image.set_alpha(object.image.get_alpha() - 1)
+								object.image = pygame.transform.scale(object.image, (256, 256))
 
-										if object.image.get_at((a, b)).a != 0:
-											c = random.randint(10, 20)
-											c = pygame.Surface((a, a))
-											c.fill(object.image.get_at((a, b)))
-											object.image.set_at((a, b), (0, 0, 0, 99))
-											if random.randint(1, 5) == 1:
-												particles.append(Particle(object.x + (a - 16) * 8, object.y + (b - 16) * 8, c, "5", "-16", 10, end_time=0.5))
+								if random.randint(1, 15) == 1:
+									pygame.mixer.Sound.play(random.choice((Stone_breaking1, Stone_breaking2)))
 
-									object.image.set_alpha(object.image.get_alpha() - 1)
-									object.image = pygame.transform.scale(object.image, (256, 256))
-
-									if random.randint(1, 15) == 1:
-										pygame.mixer.Sound.play(random.choice((Stone_breaking1, Stone_breaking2)))
-
-									if object.special_flags == -1:
-										del world.objects[in_cave + 1].objects[i]
-										for i in range(random.randint(1, 3)):
-											world.objects[in_cave + 1].objects.append(Object("Iron ore", random.randint(object.x - 128, object.x + 128), random.randint(object.y - 128, object.y + 128), "Gannitto world/files/Images/Items/Iron ore.png", special_flags="Item"))
-										break
-
-								if object.name == "Gold ore" and click[0] and inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name in ("Stone pickaxe"):
-
-									object.special_flags -= 1
-									object.image = pygame.transform.scale(object.image, (32, 32))
-
-									for _ in range(random.randint(20, 25)):
-
-										a = random.randint(0, 31)
-										b = random.randint(0, 31)
-										if object.image.get_at((a, b)).a != 0:
-											c = random.randint(10, 20)
-											c = pygame.Surface((a, a))
-											c.fill(object.image.get_at((a, b)))
-											object.image.set_at((a, b), (0, 0, 0, 99))
-											if random.randint(1, 5) == 1:
-												particles.append(Particle(object.x + (a - 16) * 8, object.y + (b - 16) * 8, c, "5", "-16", 10, end_time=0.5))
-
-									object.image.set_alpha(object.image.get_alpha() - 1)
-									object.image = pygame.transform.scale(object.image, (256, 256))
-
-									if random.randint(1, 15) == 1:
-										pygame.mixer.Sound.play(random.choice((Stone_breaking1, Stone_breaking2)))
-
-									if object.special_flags == -1:
-										del world.objects[in_cave + 1].objects[i]
-										for _ in range(random.randint(1, 3)):
-											world.objects[in_cave + 1].objects.append(Object("Gold ore", random.randint(object.x - 128, object.x + 128), random.randint(object.y - 128, object.y + 128), "Gannitto world/files/Images/Items/Gold ore.png", special_flags="Item"))
-										break
-								mouse_object = object.name
+								if object.special_flags == -1:
+									del world.objects[in_cave + 1].objects[i]
+									for _ in range(random.randint(1, 3)):
+										world.objects[in_cave + 1].objects.append(Object("Gold ore", random.randint(object.x - 128, object.x + 128), random.randint(object.y - 128, object.y + 128), "Gannitto world/files/Images/Items/Gold ore.png", special_flags="Item"))
+									break
+							mouse_object = object.name
 
 						if object.name == "Pot":
 							if object.get_right_pressed() and inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].type == "Flower":
-								world.items.append(Object(inventory.whole_inventory[changed_slot].name, object.x, object.y + 36, 64, 64, inventory.whole_inventory[changed_slot].image, "Item"))
+								world.chunk_manager.get_chunk_at(object.x, object.y).items.append(Object(inventory.whole_inventory[changed_slot].name, object.x, object.y + 36, 64, 64, inventory.whole_inventory[changed_slot].image))
 								inventory.whole_inventory[changed_slot].amount -= 1
 								inventory.resourses[inventory.whole_inventory[changed_slot].name].amount -= 1
 								if inventory.whole_inventory[changed_slot].amount == 0:
@@ -4749,10 +4497,12 @@ def start_game():
 									statistics[2] += 1
 
 									for _ in range(random.randint(2, 5)):
-										world.items.append(Object("Wooden", random.randint(object.x - 128, object.x + 128), random.randint(object.y - 128, object.y + 128), "Gannitto world/files/Images/Items/Wooden.png", special_flags="Item"))
+										rand_x, rand_y = object.x + random.randint(-128, 128), object.y + random.randint(-128, 128)
+										world.chunk_manager.get_chunk_at(rand_x, rand_y).append(Object("Wooden", rand_x, rand_y, "Gannitto world/files/Images/Items/Wooden.png"))
 							
 									for _ in range(random.randint(1, 3)):
-										world.items.append(Object("Stick", random.randint(object.x - 128, object.x + 128), random.randint(object.y - 128, object.y + 128), "Gannitto world/files/Images/Items/Stick.png", special_flags="Item"))
+										rand_x, rand_y = object.x + random.randint(-128, 128), object.y + random.randint(-128, 128)
+										world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Stick", rand_x, rand_y, "Gannitto world/files/Images/Items/Stick.png"))
 									break
 						
 							if object.name == "Dark tree" and click[0]:
@@ -4780,10 +4530,12 @@ def start_game():
 									statistics[2] += 1
 
 									for _ in range(random.randint(2, 5)):
-										world.items.append(Object("Dark wooden", random.randint(object.x - 128, object.x + 128), random.randint(object.y - 128, object.y + 128), "Gannitto world/files/Images/Items/Dark wooden.png", special_flags="Item"))
+										rand_x, rand_y = object.x + random.randint(-128, 128), object.y + random.randint(-128, 128)
+										world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Dark wooden", rand_x, rand_y, "Gannitto world/files/Images/Items/Dark wooden.png"))
 							
 									for _ in range(random.randint(1, 3)):
-										world.items.append(Object("Stick", random.randint(object.x - 128, object.x + 128), random.randint(object.y - 128, object.y + 128), "Gannitto world/files/Images/Items/Stick.png", special_flags="Item"))
+										rand_x, rand_y = object.x + random.randint(-128, 128), object.y + random.randint(-128, 128)
+										world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Stick", rand_x, rand_y, "Gannitto world/files/Images/Items/Stick.png"))
 									break
 						
 							if object.name == "Birch" and click[0]:
@@ -4811,10 +4563,12 @@ def start_game():
 									statistics[2] += 1
 
 									for _ in range(random.randint(2, 5)):
-										world.items.append(Object("Birch wooden", random.randint(object.x - 128, object.x + 128), random.randint(object.y - 128, object.y + 128), "Gannitto world/files/Images/Items/Birch wooden.png", special_flags="Item"))
+										rand_x, rand_y = object.x + random.randint(-128, 128), object.y + random.randint(-128, 128)
+										world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Birch wooden", rand_x, rand_y, "Gannitto world/files/Images/Items/Birch wooden.png"))
 							
 									for _ in range(random.randint(1, 3)):
-										world.items.append(Object("Stick", random.randint(object.x - 128, object.x + 128), random.randint(object.y - 128, object.y + 128), "Gannitto world/files/Images/Items/Stick.png", special_flags="Item"))
+										rand_x, rand_y = object.x + random.randint(-128, 128), object.y + random.randint(-128, 128)
+										world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Stick", rand_x, rand_y, "Gannitto world/files/Images/Items/Stick.png"))
 									break
 
 							if object.name == "Pond":
@@ -4834,7 +4588,7 @@ def start_game():
 				
 								if object.special_flags[1] != 0 and inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Stone shovel" and object.get_left_pressed() and random.randint(1, 30) == 1:
 									rand_x, rand_y = object.x +random.randint(-128, 128), object.y + random.randint(-128, 128)
-									world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Clay", rand_x, rand_y, "Gannitto world/files/Images/Items/Clay.png", special_flags="Item"))
+									world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Clay", rand_x, rand_y, "Gannitto world/files/Images/Items/Clay.png"))
 									object.special_flags[1] -= 1
 
 							mouse_object = object.name
@@ -4842,7 +4596,7 @@ def start_game():
 						if object.name == "Pot":
 
 							if object.get_right_pressed() and inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].type == "Flower":
-								world.chunk_manager.get_chunk_at(object.x, object.y + 36).items.append(Object(inventory.whole_inventory[changed_slot].name, object.x, object.y + 36, 64, 64, inventory.whole_inventory[changed_slot].image, "Item"))
+								world.chunk_manager.get_chunk_at(object.x, object.y + 36).items.append(Object(inventory.whole_inventory[changed_slot].name, object.x, object.y + 36, 64, 64, inventory.whole_inventory[changed_slot].image))
 								inventory.whole_inventory[changed_slot].amount -= 1
 								inventory.resourses[inventory.whole_inventory[changed_slot].name].amount -= 1
 								if inventory.whole_inventory[changed_slot].amount == 0:
@@ -4873,19 +4627,19 @@ def start_game():
 											if i.name in ("Dark tree", "Birch"):
 												for i in range(random.randint(2, 5)):
 													rand_x, rand_y = random.randint(i.x - 128, i.x + 128), random.randint(i.y - 128, i.y + 128)
-													world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object(i.name + " wooden", rand_x, rand_y, "Gannitto world/files/Images/Items/" + i.name + " wooden.png", special_flags="Item"))
+													world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object(i.name + " wooden", rand_x, rand_y, "Gannitto world/files/Images/Items/" + i.name + " wooden.png"))
 								
 												for i in range(random.randint(1, 3)):
 													rand_x, rand_y = random.randint(i.x - 128, i.x + 128), random.randint(i.y - 128, i.y + 128)
-													world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Stick", rand_x, rand_y, "Gannitto world/files/Images/Items/Stick.png", special_flags="Item"))
+													world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Stick", rand_x, rand_y, "Gannitto world/files/Images/Items/Stick.png"))
 											else:
 												for i in range(random.randint(2, 5)):
 													rand_x, rand_y = random.randint(i.x - 128, i.x + 128), random.randint(i.y - 128, i.y + 128)
-													world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Wooden", rand_x, rand_y, "Gannitto world/files/Images/Items/Wooden.png", special_flags="Item"))
+													world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Wooden", rand_x, rand_y, "Gannitto world/files/Images/Items/Wooden.png"))
 								
 												for i in range(random.randint(1, 3)):
 													rand_x, rand_y = random.randint(i.x - 128, i.x + 128), random.randint(i.y - 128, i.y + 128)
-													world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Stick", rand_x, rand_y, "Gannitto world/files/Images/Items/Stick.png", special_flags="Item"))
+													world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Stick", rand_x, rand_y, "Gannitto world/files/Images/Items/Stick.png"))
 
 								for mob in mobs:
 									if mob.attak is None:
@@ -4902,7 +4656,7 @@ def start_game():
 									radius -= 0.1
 									particles.append(Particle(object.x, object.y, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Objects/Explosion.png"), (100, 100)), x_bias=radius * cos(angle), y_bias=radius * sin(angle), increased_transparency=30, end_time=0.3))
 
-								world.objects.remove(object)
+								world.chunk_manager.get_chunk_at(object.x, object.y).objects.remove(object)
 
 							if not object.x - 60 < object.special_flags[0] < object.x + 60:
 								if object.x < object.special_flags[0]:
@@ -4934,7 +4688,7 @@ def start_game():
 								object.image_path = path + "Gannitto world/files/Images/Objects/Dandelion " + str(int(object.image_path[-5]) + 1) + ".png"
 								object.image = pygame.transform.scale(pygame.image.load(object.image_path), (64, 64))
 							except:
-								world.objects.remove(object)
+								world.chunk_manager.get_chunk_at(object.x, object.y).objects.remove(object)
 
 							if object.image_path[-5] == "5":
 
@@ -4954,7 +4708,7 @@ def start_game():
 										object.image = pygame.image.load(path + "Gannitto world/files/Images/Objects/Punch " + str(object.special_flags - 5) + ".png")
 								else:
 									object.special_flags = 1
-									world.chunk_manager.get_chunk_at(object.x, object.y).items.append(Object("Punch", object.x, object.y, "Gannitto world/files/Images/Items/Powder.png", special_flags="Item"))
+									world.chunk_manager.get_chunk_at(object.x, object.y).items.append(Object("Punch", object.x, object.y, "Gannitto world/files/Images/Items/Powder.png"))
 
 					else:
 
@@ -4989,79 +4743,71 @@ def start_game():
 
 				if click[0] and object.x - player.x + Width // 2 - object.w // 2 <= mouse_x <= object.x - player.x + Width // 2 + object.w // 2 and player.y - object.y + Height // 2 - object.h // 2 <= mouse_y <= player.y - object.y + Height // 2 + object.h // 2:
 
-					if object.special_flags == "Item":
+					mouse_object = object.name
 
-						inventory.increate(object.name)
-						del backrooms_objects[i]
-						break
-					
-					else:
+					if object.name == "Pot":
 
-						mouse_object = object.name
+						if object.get_right_pressed() and inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].type == "Flower":
+							world.chunk_manager.get_chunk_at(object.x, object.y).items.append(Object(inventory.whole_inventory[changed_slot].name, object.x, object.y + 36, 64, 64, inventory.whole_inventory[changed_slot].image))
+							inventory.whole_inventory[changed_slot].amount -= 1
+							inventory.resourses[inventory.whole_inventory[changed_slot].name].amount -= 1
+							if inventory.whole_inventory[changed_slot].amount == 0:
+								inventory.whole_inventory[changed_slot] = None
 
-						if object.name == "Pot":
+					if object.name == "Grenade":
 
-							if object.get_right_pressed() and inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].type == "Flower":
-								world.items.append(Object(inventory.whole_inventory[changed_slot].name, object.x, object.y + 36, 64, 64, inventory.whole_inventory[changed_slot].image, "Item"))
-								inventory.whole_inventory[changed_slot].amount -= 1
-								inventory.resourses[inventory.whole_inventory[changed_slot].name].amount -= 1
-								if inventory.whole_inventory[changed_slot].amount == 0:
-									inventory.whole_inventory[changed_slot] = None
+						if object.x - 60 < object.special_flags[0] < object.x + 60 and object.y - 60 < object.special_flags[1] < object.y + 60:
+							
+							for i in world.visible_objects:
 
-						if object.name == "Grenade":
+								if object.x - 300 < i.x < object.x + 300 and object.y - 300 < i.y < object.y + 300 and i.name in ("Tree", "Dark tree", "Birch"):
 
-							if object.x - 60 < object.special_flags[0] < object.x + 60 and object.y - 60 < object.special_flags[1] < object.y + 60:
-								
-								for i in world.visible_objects:
+									i.special_flags -= 30
+									i.image = pygame.transform.scale(i.image, (32, 32))
 
-									if object.x - 300 < i.x < object.x + 300 and object.y - 300 < i.y < object.y + 300 and i.name in ("Tree", "Dark tree", "Birch"):
+									for _ in range(random.randint(20, 25)):
+										a = random.randint(0, 31)
+										b = random.randint(0, 31)
+										if i.image.get_at((a, b)).a != 0:
+											i.image.set_at((a, b), (0, 0, 0, 99))
+									i.image.set_alpha(i.image.get_alpha() - 1)
+									i.image = pygame.transform.scale(i.image, (256, 256))
+									if i.special_flags == -1:
+										world.chunk_manager.get_chunk_at(object.x, object.y).objects.remove(object)
 
-										i.special_flags -= 30
-										i.image = pygame.transform.scale(i.image, (32, 32))
-
-										for _ in range(random.randint(20, 25)):
-											a = random.randint(0, 31)
-											b = random.randint(0, 31)
-											if i.image.get_at((a, b)).a != 0:
-												i.image.set_at((a, b), (0, 0, 0, 99))
-										i.image.set_alpha(i.image.get_alpha() - 1)
-										i.image = pygame.transform.scale(i.image, (256, 256))
-										if i.special_flags == -1:
-											world.chunk_manager.get_chunk_at(object.x, object.y).objects.remove(object)
-
-								for mob in mobs:
-									if mob.attak is None:
-										if object.x - 300 < mob.x < object.x + 300 and object.y - 300 < mob.y < object.y + 300:
-											mob.HP = 0
-									elif object.x - 300 < mob.attak[0] < object.x + 300 and object.y - 300 < mob.attak[1] < object.y + 300:
+							for mob in mobs:
+								if mob.attak is None:
+									if object.x - 300 < mob.x < object.x + 300 and object.y - 300 < mob.y < object.y + 300:
 										mob.HP = 0
+								elif object.x - 300 < mob.attak[0] < object.x + 300 and object.y - 300 < mob.attak[1] < object.y + 300:
+									mob.HP = 0
 
-								pygame.draw.circle(win, (200, 0, 0, 0.3), (object.x - player.x + Width // 2 - 32, player.y - object.y + Height // 2 - 32), 150)
-								world.chunk_manager.get_chunk_at(object.x, object.y).objects.remove(object)
+							pygame.draw.circle(win, (200, 0, 0, 0.3), (object.x - player.x + Width // 2 - 32, player.y - object.y + Height // 2 - 32), 150)
+							world.chunk_manager.get_chunk_at(object.x, object.y).objects.remove(object)
 
-								break
+							break
 
-							if not object.x - 60 < object.special_flags[0] < object.x + 60:
-								if object.x < object.special_flags[0]:
-									object.x += 30
-									i = object.image.get_rect()
-									j = pygame.transform.rotate(object.image, -10)
-									ii = i.copy()
-									ii.center = j.get_rect().center
-									object.image = j.subsurface(ii).copy()
-								else:
-									object.x -= 30
-									i = object.image.get_rect()
-									j = pygame.transform.rotate(object.image, 10)
-									ii = i.copy()
-									ii.center = j.get_rect().center
-									object.image = j.subsurface(ii).copy()
+						if not object.x - 60 < object.special_flags[0] < object.x + 60:
+							if object.x < object.special_flags[0]:
+								object.x += 30
+								i = object.image.get_rect()
+								j = pygame.transform.rotate(object.image, -10)
+								ii = i.copy()
+								ii.center = j.get_rect().center
+								object.image = j.subsurface(ii).copy()
+							else:
+								object.x -= 30
+								i = object.image.get_rect()
+								j = pygame.transform.rotate(object.image, 10)
+								ii = i.copy()
+								ii.center = j.get_rect().center
+								object.image = j.subsurface(ii).copy()
 
-							if not object.y - 60 < object.special_flags[1] < object.y + 60:
-								if object.y < object.special_flags[1]:
-									object.y += 30
-								else:
-									object.y -= 30
+						if not object.y - 60 < object.special_flags[1] < object.y + 60:
+							if object.y < object.special_flags[1]:
+								object.y += 30
+							else:
+								object.y -= 30
 
 		if not Backrooms.InBackrooms and in_cave is None and (not multyplayer or multyplayer_mode == "My game"):
 
@@ -5152,10 +4898,10 @@ def start_game():
 							for _ in range(random.randint(1, 3)):
 								if mob.rand_mob == 1:
 									rand_x, rand_y = mob.x + random.randint(-30, 30), mob.y + random.randint(-30, 30)
-									world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Blue slime", rand_x, rand_y, "Gannitto world/files/Images/Items/Blue slime.png", special_flags="Item"))
+									world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Blue slime", rand_x, rand_y, "Gannitto world/files/Images/Items/Blue slime.png"))
 								else:
 									rand_x, rand_y = mob.x + random.randint(-30, 30), mob.y + random.randint(-30, 30)
-									world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Pink slime", rand_x, rand_y, "Gannitto world/files/Images/Items/Pink slime.png", special_flags="Item"))
+									world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Pink slime", rand_x, rand_y, "Gannitto world/files/Images/Items/Pink slime.png"))
 								del mobs[i]
 								break
 
@@ -5164,16 +4910,16 @@ def start_game():
 							for _ in range(random.randint(1, 3)):
 								if mob.rand_mob == 1:
 									rand_x, rand_y = mob.attak[0] + random.randint(-30, 30), mob.attak[1] + random.randint(-30, 30)
-									world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Blue slime", rand_x, rand_y, "Gannitto world/files/Images/Items/Blue slime.png", special_flags="Item"))
+									world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Blue slime", rand_x, rand_y, "Gannitto world/files/Images/Items/Blue slime.png"))
 								else:
 									rand_x, rand_y = mob.attak[0] + random.randint(-30, 30), mob.attak[1] + random.randint(-30, 30)
-									world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Pink slime", rand_x, rand_y, "Gannitto world/files/Images/Items/Pink slime.png", special_flags="Item"))
+									world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Pink slime", rand_x, rand_y, "Gannitto world/files/Images/Items/Pink slime.png"))
 								del mobs[i]
 								break
 
 					elif mob.mob_class == "SpiderEnemy":
 						rand_x, rand_y = mob.x + random.randint(-30, 30), mob.y + random.randint(-30, 30)
-						world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Thread", mob.x + random.randint(-30, 30), mob.y + random.randint(-30, 30), "Gannitto world/files/Images/Items/Thread.png", special_flags="Item"))
+						world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Thread", mob.x + random.randint(-30, 30), mob.y + random.randint(-30, 30), "Gannitto world/files/Images/Items/Thread.png"))
 						del mobs[i]
 
 		# Отрисовка игрока
@@ -6089,7 +5835,7 @@ def start_game():
 				if item is not None:
 					for _ in range(item.amount):
 						rand_x, rand_y = player.x + random.randint(-300, 300), player.y + random.randint(-300, 300)
-						world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object(item.name, rand_x, rand_y, item.image_path, special_flags="Item", add_path=False))
+						world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object(item.name, rand_x, rand_y, item.image_path, add_path=False))
 			inventory.whole_inventory = [None] * 40
 			player.HP = 100
 			x = 0
@@ -6360,7 +6106,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 			if click[0]:
 
 				a = 0
-				for object in objects:
+				for object in world.objects:
 					if pygame.Rect((player.x + mouse_x - Width // 2) // 256 * 256 + 128, (player.y - mouse_y + Height // 2) // 256 * 256 + 128, 256, 256).colliderect(pygame.Rect(object.x, object.y, object.w, object.h)):
 						break
 				else: 
@@ -6399,10 +6145,12 @@ if particle.special_flags[2]: particles.append(Particle(particle.x, particle.y, 
 else: particles.append(Particle(particle.x, particle.y, pygame.transform.scale(pygame.image.load(path + 'Gannitto world/files/Images/Objects/' + particle.special_flags[0] + ' 3.png'), (128, 128)), can_interfere_with_placing=True, save_particle=True, tick_command='''
 if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0], self.display_mode(self.x, self.y, self.w, self.h)[1], self.w, self.h).collidepoint(mouse_x, mouse_y):
 	for _ in range(random.randint(1, 3)):
-		world.items.append(Object(self.special_flags[0], self.x + random.randint(-30, 30), self.y + random.randint(-30, 30), "Gannitto world/files/Images/Items/" + self.special_flags[0] + ".png", special_flags="Item"))
+		rand_x, rand_y = self.x + random.randint(-30, 30), self.y + random.randint(-30, 30)
+		world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object(self.special_flags[0], rand_x, rand_y, "Gannitto world/files/Images/Items/" + self.special_flags[0] + ".png"))
 	if self.special_flags[0] == "Wheat":
 		for _ in range(random.randint(0, 2)):
-			world.items.append(Object("Wheat seeds", self.x + random.randint(-30, 30), self.y + random.randint(-30, 30), "Gannitto world/files/Images/Items/Wheat seeds.png", special_flags="Item"))
+			rand_x, rand_y = self.x + random.randint(-30, 30), self.y + random.randint(-30, 30)
+			world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Wheat seeds", rand_x, rand_y, "Gannitto world/files/Images/Items/Wheat seeds.png"))
 	''', tick_command_globals={"random": random}, tick_command_globals_in_the_end=("Object", "world", "click", "x", "y", "Width", "Height", "mouse_x", "mouse_y"), del_self_condition="click[0] and pygame.Rect(particle.x - player.x + Width // 2 - particle.image.get_width() // 2, player.y - particle.y + Height // 2 - particle.image.get_height() // 2, particle.w, particle.h).collidepoint(mouse_x, mouse_y)", special_flags=particle.special_flags))
 """]),
 			 "Carrot,Onion,Tomato", "Seed", particle_to_build=True, needed_object="Farmland", remove_part=" seeds")
@@ -6423,7 +6171,7 @@ if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0]
 						break
 				else:
 					# TODO сделать подбирание предметов при пересечении
-					for object in world.objects:
+					for object in world.visible_objects:
 						if pygame.Rect((player.x + mouse_x - Width // 2) // 256 * 256 + 128, (player.y - mouse_y + Height // 2) // 256 * 256 + 128, 256, 256).colliderect(pygame.Rect(object.x, object.y, object.w, object.h)):
 							break
 					
@@ -6442,7 +6190,7 @@ if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0]
 				for wall in world.walls:
 					if (wall.x, wall.y) == ((player.x + mouse_x - Width // 2) // 256 * 256 + 128, (player.y - mouse_y + Height // 2) // 256 * 256 + 128):
 						break
-					for object in world.objects:
+					for object in world.visible_objects:
 						if pygame.Rect((player.x + mouse_x - Width // 2) // 256 * 256 + 128, (player.y - mouse_y + Height // 2) // 256 * 256 + 128, 256, 256).colliderect(pygame.Rect(object.x, object.y, object.w, object.h)):
 							break
 					
@@ -6629,9 +6377,7 @@ if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0]
 						sock.connect((input_text, 10000))
 						world_name = "ᴥᴥᴥ░▒▓█╬█▓▒░ᴥᴥᴥ_Multiplayer_ᴥᴥᴥ░▒▓█╬█▓▒░ᴥᴥᴥ"
 						mobs = []
-						big_rects = []
 						world.objects = []
-						world.items = []
 						world.walls = []
 						mechanisms = []
 						player_bullets = []
@@ -6689,11 +6435,6 @@ if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0]
 				for mob in mobs:
 					if mob.mob_class == "SlimeEnemy":
 						new_mobs += "SlimeEnemy" + "!" + str(mob.x) + "!" + str(mob.y) + "!" + str(mob.rand_mob) + "!" + str(mob.HP) + "!" + str(mob.animation_count) + "!" + str(mob.attak) + "!" + str(mob.reset_offset) + "!" + str(mob.offset_x) + "!" + str(mob.offset_y) + "!" + str(mob.speed) + "#"
-
-				new_rects = ""
-
-				for i in big_rects:
-					new_rects += str(i.x) + "!" + str(i.y) + "!" + i.biom + "#"
 
 				message = str(Ron.X) + ", " + str(Ron.Y) + ", " + str(Ron.Home) + ", " + str(start_time) + ", " + new_rects + ", " + new_objects + "|" + str(player.x) + ", " + str(player.y) + ", " + player.direction + ", " + str(costum) + "|"
 				
@@ -6760,12 +6501,6 @@ if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0]
 					
 					Ron.X, Ron.Y, Ron.Home, start_time = int(data[0].split(", ")[0]), int(data[0].split(", ")[1]), eval(data[0].split(", ")[2]), float(data[0].split(", ")[3])
 					
-					big_rects = []
-					
-					for i in data[0].split(", ")[4].split("#")[:-1]:
-
-						big_rects.append(Big_rect.BigRect(int(i.split("!")[0]), int(i.split("!")[1])))
-						big_rects[len(big_rects) - 1].biom = i.split("!")[2]
 					
 					world.objects = []
 					
