@@ -7,13 +7,12 @@ types = ["Just an item", "Weapon", "Food", "Drink", "Mechanism", "Flower", "Seed
 path = os.path.abspath(__file__)[:-33]
 if not os.path.exists(path):
 	path = __file__[:-28]
-	print(1)
 
-class Resourse:
+class Resource:
 
-	"""Items with certain characteristics"""
+	"""Предмет с определёнными харрактеристиками"""
 
-	def __init__(self, name: str, image_path: str, info: list, purpose: list, type: str, special_info=None):
+	def __init__(self, name: str, image_path: str, info: list, purpose: list, type: str, special_info=None, max_stack=99):
 
 		self.name = name
 		self.info = info
@@ -24,17 +23,16 @@ class Resourse:
 		self.image_path = image_path
 		self.image = pygame.transform.scale(pygame.image.load(image_path), (64, 64))
 		self.special_info = special_info
+		self.max_stack = max_stack
 		
 	def __getstate__(self):
 		
-		# Возвращаем словарь состояния, исключая объект Surface
 		state = self.__dict__.copy()
-		del state['image']
+		del state["image"]
 		return state
 
 	def __setstate__(self, state):
-		pass
-		# Восстанавливаем состояние и загружаем изображение
+
 		self.__dict__.update(state)
 		self.image = pygame.transform.scale(pygame.image.load(self.image_path), (64, 64))
 
@@ -90,9 +88,9 @@ class Inventory:
 
 	def __init__(self):
 
-		self.resourses = {
+		self.resources = {
 
-			"Mushroom": Resourse("Mushroom", path + "Gannitto world/files/Images/Items/Mushroom.png", [
+			"Mushroom": Resource("Mushroom", path + "Gannitto world/files/Images/Items/Mushroom.png", [
 				"Просто гриб, ничего больше",
 				"Just a mushroom, nothong more"
 			], [
@@ -102,7 +100,7 @@ class Inventory:
 
 
 			
-			"Red mushroom": Resourse("Red mushroom", path + "Gannitto world/files/Images/Items/Red mushroom.png", [
+			"Red mushroom": Resource("Red mushroom", path + "Gannitto world/files/Images/Items/Red mushroom.png", [
 				"Просто гриб, ничего больше",
 				"Just a mushroom, nothong more"
 			], [
@@ -112,7 +110,7 @@ class Inventory:
 
 
 			
-			"Jar": Resourse("Jar", path + "Gannitto world/files/Images/Items/Jar.png", [
+			"Jar": Resource("Jar", path + "Gannitto world/files/Images/Items/Jar.png", [
 				"Нету",
 				"None"
 			], [
@@ -122,7 +120,7 @@ class Inventory:
 
 
 
-			"Gun": Resourse("Gun", path + "Gannitto world/files/Images/Items/Gun.png", [
+			"Gun": Resource("Gun", path + "Gannitto world/files/Images/Items/Gun.png", [
 				"Пушка, для которой нужны патроны",
 				"A gun, that needs bullets"
 			], [
@@ -132,7 +130,7 @@ class Inventory:
 
 
 
-			"Bullet": Resourse("Bullet", path + "Gannitto world/files/Images/Items/Bullet.png", [
+			"Bullet": Resource("Bullet", path + "Gannitto world/files/Images/Items/Bullet.png", [
 				"Это пуля для пушки",
 				"This is a bullet for gun"
 			], [
@@ -142,7 +140,7 @@ class Inventory:
 
 
 
-			"Arrow": Resourse("Arrow", path + "Gannitto world/files/Images/Items/Arrow.png", [
+			"Arrow": Resource("Arrow", path + "Gannitto world/files/Images/Items/Arrow.png", [
 				"Нету",
 				"None"
 			], [
@@ -152,7 +150,7 @@ class Inventory:
 
 
 
-			"Powder": Resourse("Powder", path + "Gannitto world/files/Images/Items/Powder.png", [
+			"Powder": Resource("Powder", path + "Gannitto world/files/Images/Items/Powder.png", [
 				"Покоритель битв и властелин взрывов",
 				"Conqueror of battles and lord of explosions"
 			], [
@@ -162,7 +160,7 @@ class Inventory:
 
 
 
-			"Grenade": Resourse("Grenade", path + "Gannitto world/files/Images/Items/Grenade.png", [
+			"Grenade": Resource("Grenade", path + "Gannitto world/files/Images/Items/Grenade.png", [
 				"Опасная вещь",
 				"Dangerous thing"
 			], [
@@ -172,7 +170,7 @@ class Inventory:
 
 
 
-			"Almond whater": Resourse("Almond whater", path + "Gannitto world/files/Images/Items/Almond whater.png", [
+			"Almond whater": Resource("Almond whater", path + "Gannitto world/files/Images/Items/Almond whater.png", [
 				"Вода, вкус которой напомянает миндаль или ваниль",
 				"Water, that tastes like almonds or vanilla"
 			], [
@@ -182,7 +180,7 @@ class Inventory:
 
 
 
-			"Blue slime": Resourse("Blue slime", path + "Gannitto world/files/Images/Items/Blue Slime.png", [
+			"Blue slime": Resource("Blue slime", path + "Gannitto world/files/Images/Items/Blue Slime.png", [
 				"Липкий гель синего цвета",
 				"Blue sticky gel"
 			], [
@@ -192,7 +190,7 @@ class Inventory:
 
 
 
-			"Pink slime": Resourse("Pink slime", path + "Gannitto world/files/Images/Items/Pink Slime.png", [
+			"Pink slime": Resource("Pink slime", path + "Gannitto world/files/Images/Items/Pink Slime.png", [
 				"Липкий гель розового цвета",
 				"Pink slicky gel"
 			], [
@@ -202,7 +200,7 @@ class Inventory:
 
 
 
-			"Stick": Resourse("Stick", path + "Gannitto world/files/Images/Items/Stick.png", [
+			"Stick": Resource("Stick", path + "Gannitto world/files/Images/Items/Stick.png", [
 				"Простой и универсальный предмет",
 				"Simple and versatile item"
 			], [
@@ -212,7 +210,7 @@ class Inventory:
 
 
 
-			"Iron ingot": Resourse("Iron ingot", path + "Gannitto world/files/Images/Items/Iron ingot.png", [
+			"Iron ingot": Resource("Iron ingot", path + "Gannitto world/files/Images/Items/Iron ingot.png", [
 				"Ты можешь получить его, переплавив железную руду в печке",
 				"You can get it, by smetling iron ore in a furnace"
 			], [
@@ -222,7 +220,7 @@ class Inventory:
 
 
 
-			"Gold ingot": Resourse("Gold ingod", path + "Gannitto world/files/Images/Items/Gold ingot.png", [
+			"Gold ingot": Resource("Gold ingod", path + "Gannitto world/files/Images/Items/Gold ingot.png", [
 				"Ты можешь получить его, переплавив золотую руду в печке",
 				"You can get it, by smetling gold ore in a furnace"
 			], [
@@ -232,7 +230,7 @@ class Inventory:
 
 
 
-			"Bucket": Resourse("Bucket", path + "Gannitto world/files/Images/Items/Bucket.png", [
+			"Bucket": Resource("Bucket", path + "Gannitto world/files/Images/Items/Bucket.png", [
 				"Ведро...",
 				"Bucket..."
 			], [
@@ -242,7 +240,7 @@ class Inventory:
 
 
 
-			"Whater bucket": Resourse("Whater bucket", path + "Gannitto world/files/Images/Items/Whater bucket.png", [
+			"Whater bucket": Resource("Whater bucket", path + "Gannitto world/files/Images/Items/Whater bucket.png", [
 				"Ведро...",
 				"Bucket..."
 			], [
@@ -252,7 +250,7 @@ class Inventory:
 
 
 
-			"Gold bucket": Resourse("Gold bucket", path + "Gannitto world/files/Images/Items/Gold bucket.png", [
+			"Gold bucket": Resource("Gold bucket", path + "Gannitto world/files/Images/Items/Gold bucket.png", [
 				"Зачем тебе ЗОЛОТОЕ ведро?!",
 				"Why do you need a GOLD bucket?!"
 			], [
@@ -262,7 +260,7 @@ class Inventory:
 
 
 
-			"Thread": Resourse("Thread", path + "Gannitto world/files/Images/Items/Thread.png", [
+			"Thread": Resource("Thread", path + "Gannitto world/files/Images/Items/Thread.png", [
 				"Нету",
 				"None"
 			], [
@@ -272,7 +270,7 @@ class Inventory:
 
 
 
-			"Portal gun": Resourse("Portal gun", path + "Gannitto world/files/Images/Items/Portal gun.png", [
+			"Portal gun": Resource("Portal gun", path + "Gannitto world/files/Images/Items/Portal gun.png", [
 				"С помощью неё, ты можешь создовать порталы для телепортации",
 				"With it, you can create teleportation portals"
 			], [
@@ -282,7 +280,7 @@ class Inventory:
 
 
 
-			"Vending machine": Resourse("Vending machine", path + "Gannitto world/files/Images/Items/Vending machine.png", [
+			"Vending machine": Resource("Vending machine", path + "Gannitto world/files/Images/Items/Vending machine.png", [
 				"С помощью него можно обменивать вещи",
 				"With it, you can vend items"
 			], [
@@ -292,7 +290,7 @@ class Inventory:
 
 
 
-			"Stone": Resourse("Stone", path + "Gannitto world/files/Images/Items/Stone.png", [
+			"Stone": Resource("Stone", path + "Gannitto world/files/Images/Items/Stone.png", [
 				"Спокойно лежит на земле",
 				"Lies quietly on the ground"
 			], [
@@ -302,7 +300,7 @@ class Inventory:
 
 
 
-			"Poppy": Resourse("Poppy", path + "Gannitto world/files/Images/Items/Poppy.png", [
+			"Poppy": Resource("Poppy", path + "Gannitto world/files/Images/Items/Poppy.png", [
 				"Красивый цветок",
 				"A beautiful flower"
 			], [
@@ -312,7 +310,7 @@ class Inventory:
 
 
 
-			"Purple tulip": Resourse("Purple tulip", path + "Gannitto world/files/Images/Items/Purple tulip.png", [
+			"Purple tulip": Resource("Purple tulip", path + "Gannitto world/files/Images/Items/Purple tulip.png", [
 				"Красивый цветок",
 				"A beautiful flower"
 			], [
@@ -322,7 +320,7 @@ class Inventory:
 
 
 
-			"Orange tulip": Resourse("Orange tulip", path + "Gannitto world/files/Images/Items/Orange tulip.png", [
+			"Orange tulip": Resource("Orange tulip", path + "Gannitto world/files/Images/Items/Orange tulip.png", [
 				"Красивый цветок",
 				"A beautiful flower"
 			], [
@@ -332,7 +330,7 @@ class Inventory:
 
 
 
-			"Black tulip": Resourse("Black tulip", path + "Gannitto world/files/Images/Items/Black tulip.png", [
+			"Black tulip": Resource("Black tulip", path + "Gannitto world/files/Images/Items/Black tulip.png", [
 				"Красивый цветок",
 				"A beautiful flower"
 			], [
@@ -342,7 +340,7 @@ class Inventory:
 
 
 
-			"Red tulip": Resourse("Red tulip", path + "Gannitto world/files/Images/Items/Red tulip.png", [
+			"Red tulip": Resource("Red tulip", path + "Gannitto world/files/Images/Items/Red tulip.png", [
 				"Красивый цветок",
 				"A beautiful flower"
 			], [
@@ -352,7 +350,7 @@ class Inventory:
 
 
 
-			"Yellow tulip": Resourse("Yellow tulip", path + "Gannitto world/files/Images/Items/Yellow tulip.png", [
+			"Yellow tulip": Resource("Yellow tulip", path + "Gannitto world/files/Images/Items/Yellow tulip.png", [
 				"Красивый цветок",
 				"A beautiful flower"
 			], [
@@ -362,7 +360,7 @@ class Inventory:
 
 
 
-			"Dandelion": Resourse("Dandelion", path + "Gannitto world/files/Images/Items/Dandelion.png", [
+			"Dandelion": Resource("Dandelion", path + "Gannitto world/files/Images/Items/Dandelion.png", [
 				"Красивый цветок",
 				"A beautiful flower"
 			], [
@@ -372,7 +370,7 @@ class Inventory:
 
 
 
-			"Cotton grass": Resourse("Cotton grass", path + "Gannitto world/files/Images/Items/Cotton grass.png", [
+			"Cotton grass": Resource("Cotton grass", path + "Gannitto world/files/Images/Items/Cotton grass.png", [
 				"Красивый цветок",
 				"A beautiful flower"
 			], [
@@ -382,7 +380,7 @@ class Inventory:
 
 
 
-			"Rope": Resourse("Rope", path + "Gannitto world/files/Images/Items/Rope.png", [
+			"Rope": Resource("Rope", path + "Gannitto world/files/Images/Items/Rope.png", [
 				"",
 				""
 			], [
@@ -392,7 +390,7 @@ class Inventory:
 
 
 
-			"Stone spear": Resourse("Stone spear", path + "Gannitto world/files/Images/Items/Stone spear.png", [
+			"Stone spear": Resource("Stone spear", path + "Gannitto world/files/Images/Items/Stone spear.png", [
 				"Таким же оружием пользовались древние люди",
 				"Ancient people used the same weapons"
 			], [
@@ -402,7 +400,7 @@ class Inventory:
 
 
 
-			"Wooden": Resourse("Wooden", path + "Gannitto world/files/Images/Items/Wooden.png", [
+			"Wooden": Resource("Wooden", path + "Gannitto world/files/Images/Items/Wooden.png", [
 				"Материал, получаемый из деревьев. Является необходимым компонентом для любого строителя",
 				"Material obtained from trees. Is a necessary component for any builder"
 			], [
@@ -412,7 +410,7 @@ class Inventory:
 
 
 
-			"Dark wooden": Resourse("Dark wooden", path + "Gannitto world/files/Images/Items/Dark wooden.png", [
+			"Dark wooden": Resource("Dark wooden", path + "Gannitto world/files/Images/Items/Dark wooden.png", [
 				"Материал, получаемый из деревьев. Является необходимым компонентом для любого строителя",
 				"Material obtained from trees. Is a necessary component for any builder"
 			], [
@@ -422,7 +420,7 @@ class Inventory:
 
 
 
-			"Birch wooden": Resourse("Birch wooden", path + "Gannitto world/files/Images/Items/Birch wooden.png", [
+			"Birch wooden": Resource("Birch wooden", path + "Gannitto world/files/Images/Items/Birch wooden.png", [
 				"Материал, получаемый из деревьев. Является необходимым компонентом для любого строителя",
 				"Material obtained from trees. Is a necessary component for any builder"
 			], [
@@ -432,7 +430,7 @@ class Inventory:
 
 
 
-			"Table": Resourse("Table", path + "Gannitto world/files/Images/Items/Table.png", [
+			"Table": Resource("Table", path + "Gannitto world/files/Images/Items/Table.png", [
 				"Деревянный стол, на котором можно изготавливать предметы",
 				"Wooden table, on which you can craft items"
 			], [
@@ -442,7 +440,7 @@ class Inventory:
 
 
 
-			"Wall table": Resourse("Wall table", path + "Gannitto world/files/Images/Items/Wall table.png", [
+			"Wall table": Resource("Wall table", path + "Gannitto world/files/Images/Items/Wall table.png", [
 				"Деревянный стол, на котором можно изготавливать стены",
 				"Wooden table, on which you can craft walls"
 			], [
@@ -452,7 +450,7 @@ class Inventory:
 
 
 
-			"Clay": Resourse("Clay", path + "Gannitto world/files/Images/Items/Clay.png", [
+			"Clay": Resource("Clay", path + "Gannitto world/files/Images/Items/Clay.png", [
 				"Как песок, но очень липкий",
 				"Like sand, but very sticky"
 			], [
@@ -462,7 +460,7 @@ class Inventory:
 
 
 
-			"Brick": Resourse("Brick", path + "Gannitto world/files/Images/Items/Brick.png", [
+			"Brick": Resource("Brick", path + "Gannitto world/files/Images/Items/Brick.png", [
 				"Нету",
 				"None"
 			], [
@@ -472,7 +470,7 @@ class Inventory:
 
 
 
-			"Pot": Resourse("Pot", path + "Gannitto world/files/Images/Items/Pot.png", [
+			"Pot": Resource("Pot", path + "Gannitto world/files/Images/Items/Pot.png", [
 				"Глиняный горшок",
 				"Clay pot"
 			], [
@@ -482,7 +480,7 @@ class Inventory:
 
 
 
-			"Wire": Resourse("Wire", path + "Gannitto world/files/Images/Items/Wire.png", [
+			"Wire": Resource("Wire", path + "Gannitto world/files/Images/Items/Wire.png", [
 				"Нету",
 				"None"
 			], [
@@ -492,7 +490,7 @@ class Inventory:
 
 
 
-			"Random box": Resourse("Random box", path + "Gannitto world/files/Images/Items/Random box.png", [
+			"Random box": Resource("Random box", path + "Gannitto world/files/Images/Items/Random box.png", [
 				"Нету",
 				"None"
 			], [
@@ -502,7 +500,7 @@ class Inventory:
 
 
 
-			"Lever": Resourse("Lever", path + "Gannitto world/files/Images/Items/Lever.png", [
+			"Lever": Resource("Lever", path + "Gannitto world/files/Images/Items/Lever.png", [
 				"Нету",
 				"None"
 			], [
@@ -512,7 +510,7 @@ class Inventory:
 
 
 
-			"Motherboard": Resourse("Motherboard", path + "Gannitto world/files/Images/Items/Motherboard.png", [
+			"Motherboard": Resource("Motherboard", path + "Gannitto world/files/Images/Items/Motherboard.png", [
 				"Нету",
 				"None"
 			], [
@@ -522,7 +520,7 @@ class Inventory:
 
 
 
-			"Wrench": Resourse("Wrench", path + "Gannitto world/files/Images/Items/Wrench.png", [
+			"Wrench": Resource("Wrench", path + "Gannitto world/files/Images/Items/Wrench.png", [
 				"Какая-то штука",
 				"Some thing"
 			], [
@@ -532,7 +530,7 @@ class Inventory:
 
 
 
-			"Stone pickaxe": Resourse("Stone pickaxe", path + "Gannitto world/files/Images/Items/Stone pickaxe.png", [
+			"Stone pickaxe": Resource("Stone pickaxe", path + "Gannitto world/files/Images/Items/Stone pickaxe.png", [
 				"Понадобится любому шахтёру",
 				"Nny miner needs"
 			], [
@@ -542,7 +540,7 @@ class Inventory:
 
 
 
-			"Stone hammer": Resourse("Stone hammer", path + "Gannitto world/files/Images/Items/Stone hammer.png", [
+			"Stone hammer": Resource("Stone hammer", path + "Gannitto world/files/Images/Items/Stone hammer.png", [
 				"Нету",
 				"None"
 			], [
@@ -552,7 +550,7 @@ class Inventory:
 
 
 
-			"Stone shovel": Resourse("Stone shovel", path + "Gannitto world/files/Images/Items/Stone shovel.png", [
+			"Stone shovel": Resource("Stone shovel", path + "Gannitto world/files/Images/Items/Stone shovel.png", [
 				"Нету",
 				"None"
 			], [
@@ -562,7 +560,7 @@ class Inventory:
 
 
 
-			"Furnace": Resourse("Furnace", path + "Gannitto world/files/Images/Items/Furnace.png", [
+			"Furnace": Resource("Furnace", path + "Gannitto world/files/Images/Items/Furnace.png", [
 				"Можно поставить",
 				"You can put it"
 			], [
@@ -572,7 +570,7 @@ class Inventory:
 
 
 
-			"Stone brick": Resourse("Stone brick", path + "Gannitto world/files/Images/Items/Stone brick.png", [
+			"Stone brick": Resource("Stone brick", path + "Gannitto world/files/Images/Items/Stone brick.png", [
 				"Нету"
 				"None"
 			], [
@@ -582,7 +580,7 @@ class Inventory:
 
 
 
-			"Wooden wall": Resourse("Wooden wall", path + "Gannitto world/files/Images/Items/Wooden wall.png", [
+			"Wooden wall": Resource("Wooden wall", path + "Gannitto world/files/Images/Items/Wooden wall.png", [
 				"Стена, которая может сгореть",
 				"A wall that can burn"
 			], [
@@ -592,7 +590,7 @@ class Inventory:
 
 
 
-			"Brick wall": Resourse("Brick wall", path + "Gannitto world/files/Images/Items/Brick wall.png", [
+			"Brick wall": Resource("Brick wall", path + "Gannitto world/files/Images/Items/Brick wall.png", [
 				"Стена, которая не может сгореть",
 				"A wall that can't burn"
 			], [
@@ -602,7 +600,7 @@ class Inventory:
 
 
 
-			"Stone brick wall": Resourse("Stone brick wall", path + "Gannitto world/files/Images/Items/Stone brick wall.png", [
+			"Stone brick wall": Resource("Stone brick wall", path + "Gannitto world/files/Images/Items/Stone brick wall.png", [
 				"Стена, которая не может сгореть",
 				"A wall that can't burn"
 			], [
@@ -612,7 +610,7 @@ class Inventory:
 
 
 
-			"Wooden door": Resourse("Wooden door", path + "Gannitto world/files/Images/Items/Wooden door.png", [
+			"Wooden door": Resource("Wooden door", path + "Gannitto world/files/Images/Items/Wooden door.png", [
 				"Дверь, которая может сгореть",
 				"A door that can burn"
 			], [
@@ -622,7 +620,7 @@ class Inventory:
 
 
 
-			"Iron ore": Resourse("Iron ore", path + "Gannitto world/files/Images/Items/Iron ore.png", [
+			"Iron ore": Resource("Iron ore", path + "Gannitto world/files/Images/Items/Iron ore.png", [
 				"Блестящий и дорогой",
 				"Shiny and expensive"
 			], [
@@ -632,7 +630,7 @@ class Inventory:
 
 
 
-			"Gold ore": Resourse("Gold ore", path + "Gannitto world/files/Images/Items/Gold ore.png", [
+			"Gold ore": Resource("Gold ore", path + "Gannitto world/files/Images/Items/Gold ore.png", [
 				"Блестящий и дорогой",
 				"Shiny and expensive"
 			], [
@@ -642,7 +640,7 @@ class Inventory:
 
 
 
-			"Candy cane": Resourse("Candy cane", path + "Gannitto world/files/Images/Items/Candy cane.png", [
+			"Candy cane": Resource("Candy cane", path + "Gannitto world/files/Images/Items/Candy cane.png", [
 				"Сладкая и липкая",
 				"Sweet and sticky"
 			], [
@@ -652,7 +650,7 @@ class Inventory:
 
 
 
-			"Beer": Resourse("Beer", path + "Gannitto world/files/Images/Items/Beer.png", [
+			"Beer": Resource("Beer", path + "Gannitto world/files/Images/Items/Beer.png", [
 				"Нету",
 				"None"
 			], [
@@ -662,7 +660,7 @@ class Inventory:
 
 
 
-			"Bow": Resourse("Bow", path + "Gannitto world/files/Images/Items/Bow.png", [
+			"Bow": Resource("Bow", path + "Gannitto world/files/Images/Items/Bow.png", [
 				"Нету",
 				"None"
 			], [
@@ -672,7 +670,7 @@ class Inventory:
 
 
 
-			"Onion": Resourse("Onion", path + "Gannitto world/files/Images/Items/Onion.png", [
+			"Onion": Resource("Onion", path + "Gannitto world/files/Images/Items/Onion.png", [
 				"Горький, больше нечего сказать",
 				"Bitter, nothibg more to say"
 			], [
@@ -682,7 +680,7 @@ class Inventory:
 
 
 
-			"Punch": Resourse("Punch", path + "Gannitto world/files/Images/Items/Punch.png", [
+			"Punch": Resource("Punch", path + "Gannitto world/files/Images/Items/Punch.png", [
 				"Нету",
 				"None"
 			], [
@@ -692,7 +690,7 @@ class Inventory:
 
 
 
-			"Stone hoe": Resourse("Stone hoe", path + "Gannitto world/files/Images/Items/Stone hoe.png", [
+			"Stone hoe": Resource("Stone hoe", path + "Gannitto world/files/Images/Items/Stone hoe.png", [
 				"Древний инструмент земледелия",
 				"Ancient farming tool"
 			], [
@@ -702,7 +700,7 @@ class Inventory:
 
 
 
-			"Carrot": Resourse("Carrot", path + "Gannitto world/files/Images/Items/Carrot.png", [
+			"Carrot": Resource("Carrot", path + "Gannitto world/files/Images/Items/Carrot.png", [
 				"Вкусная и оранжевая",
 				"Tasty and orange"
 			], [
@@ -712,7 +710,7 @@ class Inventory:
 
 
 
-			"Tomato": Resourse("Tomato", path + "Gannitto world/files/Images/Items/Tomato.png", [
+			"Tomato": Resource("Tomato", path + "Gannitto world/files/Images/Items/Tomato.png", [
 				"Вкусный и красный",
 				"Tasty and red"
 			], [
@@ -722,7 +720,7 @@ class Inventory:
 
 
 			
-			"Cucumber": Resourse("Cucumber", path + "Gannitto world/files/Images/Items/Cucumber.png", [
+			"Cucumber": Resource("Cucumber", path + "Gannitto world/files/Images/Items/Cucumber.png", [
 				"Вкусный и зелёный",
 				"Tasty and green"
 			], [
@@ -732,7 +730,7 @@ class Inventory:
 
 
 			
-			"Corn": Resourse("Corn", path + "Gannitto world/files/Images/Items/Corn.png", [
+			"Corn": Resource("Corn", path + "Gannitto world/files/Images/Items/Corn.png", [
 				"Вкусная и жёлтая",
 				"Tasty and yellow"
 			], [
@@ -742,7 +740,7 @@ class Inventory:
 
 
 			
-			"Wheat": Resourse("Wheat", path + "Gannitto world/files/Images/Items/Wheat.png", [
+			"Wheat": Resource("Wheat", path + "Gannitto world/files/Images/Items/Wheat.png", [
 				"",
 				""
 			], [
@@ -752,7 +750,7 @@ class Inventory:
 
 
 
-			"Cucumber seeds": Resourse("Cucumber seeds", path + "Gannitto world/files/Images/Items/Cucumber seeds.png", [
+			"Cucumber seeds": Resource("Cucumber seeds", path + "Gannitto world/files/Images/Items/Cucumber seeds.png", [
 				"Семена для сельского хозяйства",
 				"Seeds for agriculture"
 			], [
@@ -762,7 +760,7 @@ class Inventory:
 
 
 
-			"Corn seeds": Resourse("Corn seeds", path + "Gannitto world/files/Images/Items/Corn seeds.png", [
+			"Corn seeds": Resource("Corn seeds", path + "Gannitto world/files/Images/Items/Corn seeds.png", [
 				"Семена для сельского хозяйства",
 				"Seeds for agriculture"
 			], [
@@ -772,7 +770,7 @@ class Inventory:
 
 
 
-			"Wheat seeds": Resourse("Wheat seeds", path + "Gannitto world/files/Images/Items/Wheat seeds.png", [
+			"Wheat seeds": Resource("Wheat seeds", path + "Gannitto world/files/Images/Items/Wheat seeds.png", [
 				"Семена для сельского хозяйства",
 				"Seeds for agriculture"
 			], [
@@ -830,20 +828,58 @@ class Inventory:
 		"""Выдаёт предмет в инвентарь"""
 		
 		try:
-			self.resourses[name].amount += amount
+			resource_template = self.resources[name]
+			remaining = amount
+			
+			# Сначала пытаемся добавить в существующие стеки
 			for item in self.whole_inventory:
 				if item is not None and item.name == name:
-					item.amount += amount
+					space = item.max_stack - item.amount
+					if space > 0:
+						add = min(remaining, space)
+						item.amount += add
+						remaining -= add
+						if remaining == 0:
+							self.update_whole()
+							return
+			
+			# Если остались предметы, создаем новые слоты
+			while remaining > 0:
+				# Ищем пустой слот
+				empty_slot = None
+				for i, slot in enumerate(self.whole_inventory):
+					if slot is None:
+						empty_slot = i
+						break
+				
+				if empty_slot is None:
+					# Нет свободных слотов
+					from Gannitto_world import t, chat_message
+					chat_message(t("<<< Inventory is full! >>>"))
 					break
-			else:
-				self.update_whole()
+				
+				# Создаем новый предмет
+				new_item = Resource(
+					resource_template.name,
+					resource_template.image_path,
+					resource_template.info,
+					resource_template.purpose,
+					resource_template.type,
+					resource_template.special_info,
+					resource_template.max_stack
+				)
+				
+				add = min(remaining, new_item.max_stack)
+				new_item.amount = add
+				self.whole_inventory[empty_slot] = new_item
+				remaining -= add
 		except KeyError:
 			from Gannitto_world import t, chat_message
 			chat_message(t("<<< Error increasing: item not found >>>"))
 	
 	def update_whole(self):
 		
-		for name, resource in self.resourses.items():
+		for name, resource in self.resources.items():
 			if resource.amount != 0 and resource not in self.whole_inventory:
 				self.whole_inventory.insert(self.whole_inventory.index(None), resource)
 				self.whole_inventory.remove(None)
@@ -853,19 +889,62 @@ class Inventory:
 				if cell is not None and cell.amount > 99:
 					for _ in range(int(cell.amount / 99)):
 						a = self.whole_inventory.index(None)
-						self.whole_inventory[a] = Resourse(cell.name, cell.image_path, cell.info, cell.purpose, cell.type)
+						self.whole_inventory[a] = Resource(cell.name, cell.image_path, cell.info, cell.purpose, cell.type)
 						self.whole_inventory[a].amount = 99
 					cell.amount -= int(cell.amount / 99) * 99
 					check()
 
 		check()
-	
+
+	def compact_inventory(self):
+		"""Компактизирует инвентарь: объединяет одинаковые предметы и убирает пустые слоты"""
+		
+		# Словарь для группировки предметов по имени
+		items_dict = {}
+		
+		for item in self.whole_inventory:
+			if item is not None:
+				if item.name not in items_dict:
+					items_dict[item.name] = []
+				items_dict[item.name].append(item)
+		
+		self.whole_inventory = [None] * len(self.whole_inventory)
+		current_index = 0
+		
+		# Предметы объединяются, потом добавляются обратно
+		for name, items in items_dict.items():
+			total_amount = sum(item.amount for item in items)
+			template = items[0]  # Первый предмет берётся как шаблон
+			
+			# Разбиваем на стеки по максимальному размеру
+			while total_amount > 0:
+				if current_index >= len(self.whole_inventory):
+					# Инвентарь переполнен
+					break
+				
+				stack_size = min(total_amount, template.max_stack)
+				
+				new_item = Resource(
+					template.name,
+					template.image_path,
+					template.info,
+					template.purpose,
+					template.type,
+					template.special_info,
+					template.max_stack
+				)
+				new_item.amount = stack_size
+				
+				self.whole_inventory[current_index] = new_item
+				current_index += 1
+				total_amount -= stack_size
+
 	def get_amout(self, name: str):
 		
 		"""Возвращает количество предмета"""
 
 		try:
-			return self.resourses[name].amount
+			return self.resources[name].amount
 		except KeyError:
 			return -1
 	
@@ -950,35 +1029,45 @@ class Inventory:
 		
 		"""Перемещает слоты в инвентаре"""
 		
-		if self.whole_inventory[self.start_cell] is not None and inventory.whole_inventory[self.start_cell] != self.whole_inventory[self.end_cell]:
-
-			if self.end_cell_inventory == 0 and self.whole_inventory[self.end_cell] is not None and self.whole_inventory[self.start_cell].name == self.whole_inventory[self.end_cell].name :
-
-				self.whole_inventory[self.end_cell].amount += self.whole_inventory[self.start_cell].amount
-				self.whole_inventory[self.start_cell] = None
-
-			else:
-
-				if self.Split_items and self.whole_inventory[self.start_cell].amount % 2 == 0:
-					self.whole_inventory[self.start_cell].amount //= 2
-					self.whole_inventory[self.end_cell] = self.whole_inventory[self.start_cell]
-				elif self.end_cell_inventory == 1:
-					temp = craft_items_list[self.end_cell]
-					craft_items_list[self.end_cell] = self.whole_inventory[self.start_cell].name
-					craft_amounts_list[self.end_cell] = self.whole_inventory[self.start_cell].amount
-					craft_images_list[self.end_cell] = self.whole_inventory[self.start_cell].image
-					self.resourses[self.whole_inventory[self.start_cell].name].amount = 0
-					self.whole_inventory[self.start_cell] = temp
-					self.start_cell = 0
-					self.end_cell = 0
+		if self.whole_inventory[self.start_cell] is not None:
+			if self.end_cell_inventory == 0:
+				# Обычная замена слотов в инвентаре
+				if self.whole_inventory[self.end_cell] is not None and self.whole_inventory[self.start_cell].name == self.whole_inventory[self.end_cell].name:
+					# Объединяем стеки
+					space = self.whole_inventory[self.end_cell].max_stack - self.whole_inventory[self.end_cell].amount
+					if space > 0:
+						move_amount = min(self.whole_inventory[self.start_cell].amount, space)
+						self.whole_inventory[self.end_cell].amount += move_amount
+						self.whole_inventory[self.start_cell].amount -= move_amount
+						if self.whole_inventory[self.start_cell].amount == 0:
+							self.whole_inventory[self.start_cell] = None
 				else:
-					temp = self.whole_inventory[self.end_cell]
-					self.whole_inventory[self.end_cell] = self.whole_inventory[self.start_cell]
-					self.whole_inventory[self.start_cell] = temp
-					self.start_cell = 0
-					self.end_cell = 0
-
-		self.update_whole()
+					
+					if self.Split_items:
+						if self.whole_inventory[self.start_cell].amount % 2 == 0:
+							self.whole_inventory[self.start_cell].amount //= 2
+							self.whole_inventory[self.end_cell] = self.whole_inventory[self.start_cell]
+					else:
+						# Обычный обмен
+						temp = self.whole_inventory[self.end_cell]
+						self.whole_inventory[self.end_cell] = self.whole_inventory[self.start_cell]
+						self.whole_inventory[self.start_cell] = temp
+			
+			elif self.end_cell_inventory == 1:
+				# Перемещение в крафт
+				temp = craft_items_list[self.end_cell]
+				craft_items_list[self.end_cell] = self.whole_inventory[self.start_cell].name
+				craft_amounts_list[self.end_cell] = self.whole_inventory[self.start_cell].amount
+				craft_images_list[self.end_cell] = self.whole_inventory[self.start_cell].image
+				self.whole_inventory[self.start_cell] = None
+				
+				if temp is not None:
+					# Возвращаем предмет из крафта
+					self.increate(temp, 1)
+		
+		self.start_cell = 0
+		self.end_cell = 0
+		# self.compact_inventory()	# Компактизируем после каждого изменения
 		return craft_items_list, craft_amounts_list, craft_images_list
 
 	def check_recipies(self):

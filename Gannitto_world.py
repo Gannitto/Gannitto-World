@@ -140,7 +140,7 @@ def save(darken:bool=True, save_world_settings:bool=False):
 			Saver.save_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Info.save", [player.x, player.y, Backrooms.InBackrooms, Backrooms.Level, world.current_cave, player.speed, player.HP, start_time, Ron.X, Ron.Y, Ron.Home, world.chunk_manager.generator.seed])
 			Saver.save_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Walls.save", world.walls)
 			Saver.save_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Inventory.save", inventory.whole_inventory)
-			Saver.save_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Resourses.save", inventory.resourses)
+			Saver.save_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Resources.save", inventory.resources)
 			Saver.save_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Effects.save", player.effects)
 
 			new_particles = particles.copy()
@@ -226,17 +226,17 @@ arrow_right = pygame.transform.scale(pygame.image.load(path + "Gannitto world/fi
 arrow_up = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/UP.png"), (64, 64))
 
 Inventory_slot = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Inventory slot.png"), (64, 64))
-Changed_inventory_slot = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Changed inventory slot.png"), (64, 64))
+Changed_inventory_slot = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Inventory slot 2.png"), (64, 64))
 
 Craft_list_inventory_slot = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Craft list slot.png"), (64, 64))
-Changed_craft_list_inventory_slot = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Changed craft list slot.png"), (64, 64))
+Changed_craft_list_inventory_slot = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Craft list slot 2.png"), (64, 64))
 
-Object_inventory_slot = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Object inventory slot.png"), (64, 64))
+Object_inventory_slot = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Object inventory slot 2.png"), (64, 64))
 
-Tool_inventory_slot = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Tool inventory slot.png"), (64, 64))
+Tool_inventory_slot = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Tool inventory slot 2.png"), (64, 64))
 
-Split_items1 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Split items1.png"), (64, 64))
-Split_items2 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Split items2.png"), (64, 64))
+Split_items1 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Split items.png"), (64, 64))
+Split_items2 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Split items 2.png"), (64, 64))
 
 Inventory_slot.set_alpha(Settings["Display"][1])
 Changed_inventory_slot.set_alpha(Settings["Display"][1])
@@ -3825,7 +3825,7 @@ def start_game():
 
 	# Загрузка данных мира
 
-	from Inventory import Resourse
+	from Inventory import Resource
 
 	world.chunk_manager.save_directory = path + "Gannitto world/files/Worlds/" + world_name + "/Chunks/"
 
@@ -3860,9 +3860,9 @@ def start_game():
 				case "Item":
 
 					try:
-						inventory.resourses[i[1]] = Resourse(i[1], i[2], [i[3], i[4]], [i[5], i[6]], i[7])
+						inventory.resources[i[1]] = Resource(i[1], i[2], [i[3], i[4]], [i[5], i[6]], i[7])
 					except FileNotFoundError:
-						inventory.resourses[i[1]] = Resourse(i[1], path + "Gannitto world/files/Images/No-file texture.png", [i[3], i[4]], [i[5], i[6]], i[7])
+						inventory.resources[i[1]] = Resource(i[1], path + "Gannitto world/files/Images/No-file texture.png", [i[3], i[4]], [i[5], i[6]], i[7])
 
 				case "Recipe":
 
@@ -3959,7 +3959,6 @@ def start_game():
 						input_text = ""
 						chat_input = False
 				else:
-
 					if event.key == pygame.K_LALT:
 						alt_pressed = not alt_pressed
 					if event.key == hot_keys["Use item"]:
@@ -4218,7 +4217,7 @@ def start_game():
 
 				for object in Backrooms.objects:
 					i += 1
-					backrooms_objects.append(Object(object, Backrooms.objects_x[i], Backrooms.objects_y[i], "Gannitto world/files/Images/Items/" + inventory.resourses[object].name + ".png", special_flags="Item"))
+					backrooms_objects.append(Object(object, Backrooms.objects_x[i], Backrooms.objects_y[i], "Gannitto world/files/Images/Items/" + inventory.resources[object].name + ".png", special_flags="Item"))
 
 				x = 0
 				y = 0
@@ -4433,7 +4432,7 @@ def start_game():
 							if object.get_right_pressed() and inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].type == "Flower":
 								world.chunk_manager.get_chunk_at(object.x, object.y).items.append(Object(inventory.whole_inventory[changed_slot].name, object.x, object.y + 36, 64, 64, inventory.whole_inventory[changed_slot].image))
 								inventory.whole_inventory[changed_slot].amount -= 1
-								inventory.resourses[inventory.whole_inventory[changed_slot].name].amount -= 1
+								inventory.resources[inventory.whole_inventory[changed_slot].name].amount -= 1
 								if inventory.whole_inventory[changed_slot].amount == 0:
 									inventory.whole_inventory[changed_slot] = None
 				
@@ -4579,7 +4578,7 @@ def start_game():
 							if object.get_right_pressed() and inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].type == "Flower":
 								world.chunk_manager.get_chunk_at(object.x, object.y + 36).items.append(Object(inventory.whole_inventory[changed_slot].name, object.x, object.y + 36, 64, 64, inventory.whole_inventory[changed_slot].image))
 								inventory.whole_inventory[changed_slot].amount -= 1
-								inventory.resourses[inventory.whole_inventory[changed_slot].name].amount -= 1
+								inventory.resources[inventory.whole_inventory[changed_slot].name].amount -= 1
 								if inventory.whole_inventory[changed_slot].amount == 0:
 									inventory.whole_inventory[changed_slot] = None
 
@@ -4731,7 +4730,7 @@ def start_game():
 						if object.get_right_pressed() and inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].type == "Flower":
 							world.chunk_manager.get_chunk_at(object.x, object.y).items.append(Object(inventory.whole_inventory[changed_slot].name, object.x, object.y + 36, 64, 64, inventory.whole_inventory[changed_slot].image))
 							inventory.whole_inventory[changed_slot].amount -= 1
-							inventory.resourses[inventory.whole_inventory[changed_slot].name].amount -= 1
+							inventory.resources[inventory.whole_inventory[changed_slot].name].amount -= 1
 							if inventory.whole_inventory[changed_slot].amount == 0:
 								inventory.whole_inventory[changed_slot] = None
 
@@ -5351,8 +5350,8 @@ def start_game():
 					special_slot_animations["Craft list slot"][1] += 1   
 					
 				if special_slot_animations["Craft list slot"][0] and Settings["Display"][5]:
-					try:win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Changed craft list slot.png"), (64 - special_slot_animations["Craft list slot"][2], 64 - special_slot_animations["Craft list slot"][2])), (Width // 2 + radius - 32, Height // 2 - 32))
-					except: win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Changed craft list slot.png"), (64, 64)), (Width // 2 + radius - 32, Height // 2 - 32))
+					try:win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Craft list slot 2.png"), (64 - special_slot_animations["Craft list slot"][2], 64 - special_slot_animations["Craft list slot"][2])), (Width // 2 + radius - 32, Height // 2 - 32))
+					except: win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Craft list slot 2.png"), (64, 64)), (Width // 2 + radius - 32, Height // 2 - 32))
 				
 				else:
 					win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Craft list slot.png"), (64, 64)), (Width // 2 + radius - 32, Height // 2 - 32))
@@ -5381,8 +5380,8 @@ def start_game():
 					special_slot_animations["Game menu slot"][1] += 1   
 
 				if special_slot_animations["Game menu slot"][0] and Settings["Display"][5]:
-					try:win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Changed game menu slot.png"), (64 - special_slot_animations["Game menu slot"][2], 64 - special_slot_animations["Game menu slot"][2])), (Width // 2 + cos((2 * pi) / 6) * radius - 32, Height // 2 + sin((2 * pi) / 6) * radius - 32))
-					except: win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Changed game menu slot.png"), (64, 64)), (Width // 2 + cos((2 * pi) / 6) * radius - 32, Height // 2 + sin((2 * pi) / 6) * radius - 32))
+					try:win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Game menu slot 2.png"), (64 - special_slot_animations["Game menu slot"][2], 64 - special_slot_animations["Game menu slot"][2])), (Width // 2 + cos((2 * pi) / 6) * radius - 32, Height // 2 + sin((2 * pi) / 6) * radius - 32))
+					except: win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Game menu slot 2.png"), (64, 64)), (Width // 2 + cos((2 * pi) / 6) * radius - 32, Height // 2 + sin((2 * pi) / 6) * radius - 32))
 				
 				else:
 					win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Game menu slot.png"), (64, 64)), (Width // 2 + cos((2 * pi) / 6) * radius - 32, Height // 2 + sin((2 * pi) / 6) * radius - 32))
@@ -5443,8 +5442,8 @@ def start_game():
 					special_slot_animations["Multyplayer slot"][1] += 1   
 
 				if special_slot_animations["Multyplayer slot"][0] and Settings["Display"][5]:
-					try:win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Changed multyplayer slot.png"), (64 - special_slot_animations["Multyplayer slot"][2], 64 - special_slot_animations["Multyplayer slot"][2])), (Width // 2 + cos((2 * pi * 3) / 6) * radius - 32, Height // 2 + sin((2 * pi * 3) / 6) * radius - 32))
-					except: win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Changed multyplayer slot.png"), (64, 64)), (Width // 2 + cos((2 * pi * 3) / 6) * radius - 32, Height // 2 + sin((2 * pi * 3) / 6) * radius - 32))
+					try:win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Multyplayer slot 2.png"), (64 - special_slot_animations["Multyplayer slot"][2], 64 - special_slot_animations["Multyplayer slot"][2])), (Width // 2 + cos((2 * pi * 3) / 6) * radius - 32, Height // 2 + sin((2 * pi * 3) / 6) * radius - 32))
+					except: win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Multyplayer slot 2.png"), (64, 64)), (Width // 2 + cos((2 * pi * 3) / 6) * radius - 32, Height // 2 + sin((2 * pi * 3) / 6) * radius - 32))
 				
 				else:
 					win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Multyplayer slot.png"), (64, 64)), (Width // 2 + cos((2 * pi * 3) / 6) * radius - 32, Height // 2 + sin((2 * pi * 3) / 6) * radius - 32))
@@ -5473,8 +5472,8 @@ def start_game():
 					special_slot_animations["Close slot"][1] += 1   
 
 				if special_slot_animations["Close slot"][0] and Settings["Display"][5]:
-					try:win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Changed close slot.png"), (64 - special_slot_animations["Close slot"][2], 64 - special_slot_animations["Close slot"][2])), (Width // 2 + cos((2 * pi * 4) / 6) * radius - 32, Height // 2 + sin((2 * pi * 4) / 6) * radius - 32))
-					except: win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Changed close slot.png"), (64, 64)), (Width // 2 + cos((2 * pi * 4) / 6) * radius - 32, Height // 2 + sin((2 * pi * 4) / 6) * radius - 32))
+					try:win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Close slot 2.png"), (64 - special_slot_animations["Close slot"][2], 64 - special_slot_animations["Close slot"][2])), (Width // 2 + cos((2 * pi * 4) / 6) * radius - 32, Height // 2 + sin((2 * pi * 4) / 6) * radius - 32))
+					except: win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Close slot 2.png"), (64, 64)), (Width // 2 + cos((2 * pi * 4) / 6) * radius - 32, Height // 2 + sin((2 * pi * 4) / 6) * radius - 32))
 				
 				else:
 					win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Close slot.png"), (64, 64)), (Width // 2 + cos((2 * pi * 4) / 6) * radius - 32, Height // 2 + sin((2 * pi * 4) / 6) * radius - 32))
@@ -5503,8 +5502,8 @@ def start_game():
 					special_slot_animations["Reference slot"][1] += 1   
 
 				if special_slot_animations["Reference slot"][0] and Settings["Display"][5]:
-					try:win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Changed reference slot.png"), (64 - special_slot_animations["Reference slot"][2], 64 - special_slot_animations["Reference slot"][2])), (Width // 2 + cos((2 * pi * 5) / 6) * radius - 32, Height // 2 + sin((2 * pi * 4) / 6) * radius - 32))
-					except: win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Changed reference slot.png"), (64, 64)), (Width // 2 + cos((2 * pi * 5) / 6) * radius - 32, Height // 2 + sin((2 * pi * 5) / 6) * radius - 32))
+					try:win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Reference slot 2.png"), (64 - special_slot_animations["Reference slot"][2], 64 - special_slot_animations["Reference slot"][2])), (Width // 2 + cos((2 * pi * 5) / 6) * radius - 32, Height // 2 + sin((2 * pi * 4) / 6) * radius - 32))
+					except: win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Reference slot 2.png"), (64, 64)), (Width // 2 + cos((2 * pi * 5) / 6) * radius - 32, Height // 2 + sin((2 * pi * 5) / 6) * radius - 32))
 				
 				else:
 					win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Reference slot.png"), (64, 64)), (Width // 2 + cos((2 * pi * 5) / 6) * radius - 32, Height // 2 + sin((2 * pi * 5) / 6) * radius - 32))
@@ -5583,12 +5582,12 @@ def start_game():
 			if a is not None:
 
 				win.blit(Changed_inventory_slot, (730, 250))
-				win.blit(inventory.resourses[a[0]].image, (730, 250))
+				win.blit(inventory.resources[a[0]].image, (730, 250))
 
 				if a[2] is not None:
-					win.blit(inventory.resourses[a[2]].image, (10, 250))
+					win.blit(inventory.resources[a[2]].image, (10, 250))
 				if a[3] is not None:
-					win.blit(inventory.resourses[a[3]].image, (90, 250))
+					win.blit(inventory.resources[a[3]].image, (90, 250))
 				if 730 <= mouse_x <= 810 and 250 <= mouse_y <= 330 and click[0]:
 					inventory.increate(a[0], a[1])
 					craft_items_list = [None] * 7
@@ -5665,7 +5664,7 @@ def start_game():
 								aa += 1
 								win.blit(Inventory_slot, (130 + aa * 80, 130 + a * 80))
 								try:
-									win.blit(inventory.resourses[ii].image, (130 + aa * 80, 130 + a * 80))
+									win.blit(inventory.resources[ii].image, (130 + aa * 80, 130 + a * 80))
 								except KeyError:
 									win.blit(no_file_texture, (130 + aa * 80, 130 + a * 80))
 								win.blit(textInfo.render(str(inventory.recipes[i].ingredients_amounts[aa]), True, (0, 150, 0)), (140 + aa * 80, 172 + a * 80))
@@ -5673,20 +5672,20 @@ def start_game():
 						if inventory.recipes[i].need_object is not None:
 							win.blit(Changed_inventory_slot, (150 + aa * 80, 130 + a * 80))
 							try:
-								win.blit(inventory.resourses[inventory.recipes[i].need_object].image, (200 + aa * 80, 130 + a * 80))
+								win.blit(inventory.resources[inventory.recipes[i].need_object].image, (200 + aa * 80, 130 + a * 80))
 							except KeyError:
 								win.blit(no_file_texture, (200 + aa * 80, 130 + a * 80))
 						aa += 1
 						if inventory.recipes[i].need_tool is not None:
 							win.blit(Changed_inventory_slot, (150 + aa * 80, 130 + a * 80))
 							try:
-								win.blit(inventory.resourses[inventory.recipes[i].need_tool].image, (200 + aa * 80, 130 + a * 80))
+								win.blit(inventory.resources[inventory.recipes[i].need_tool].image, (200 + aa * 80, 130 + a * 80))
 							except KeyError:
 								win.blit(no_file_texture, (200 + aa * 80, 130 + a * 80))
 						aa += 1
 						win.blit(Changed_inventory_slot, (150 + aa * 80, 130 + a * 80))
 						try:
-							win.blit(inventory.resourses[inventory.recipes[i].result].image, (200 + aa * 80, 130 + a * 80))
+							win.blit(inventory.resources[inventory.recipes[i].result].image, (200 + aa * 80, 130 + a * 80))
 							win.blit(textInfo.render(str(inventory.recipes[i].result_amount), True, (0, 150, 0)), (210 + aa * 80, 172 + a * 80))
 						except KeyError:
 							win.blit(no_file_texture, (200 + aa * 80, 130 + a * 80))
@@ -5712,25 +5711,25 @@ def start_game():
 							else:
 								aa += 1
 								win.blit(Inventory_slot, (130 + aa * 80, 130 + a * 80))
-								win.blit(inventory.resourses[ii].image, (130 + aa * 80, 130 + a * 80))
+								win.blit(inventory.resources[ii].image, (130 + aa * 80, 130 + a * 80))
 								win.blit(textInfo.render(str(inventory.recipes[i].ingredients_amounts[aa]), True, (0, 150, 0)), (140 + aa * 80, 172 + a * 80))
 
 						aa += 1
 
 						if inventory.recipes[i].need_object is not None:
 							win.blit(Changed_inventory_slot, (150 + aa * 80, 130 + a * 80))
-							win.blit(inventory.resourses[inventory.recipes[i].need_object].image, (200 + aa * 80, 130 + a * 80))
+							win.blit(inventory.resources[inventory.recipes[i].need_object].image, (200 + aa * 80, 130 + a * 80))
 
 						aa += 1
 
 						if inventory.recipes[i].need_tool is not None:
 							win.blit(Changed_inventory_slot, (150 + aa * 80, 130 + a * 80))
-							win.blit(inventory.resourses[inventory.recipes[i].need_tool].image, (200 + aa * 80, 130 + a * 80))
+							win.blit(inventory.resources[inventory.recipes[i].need_tool].image, (200 + aa * 80, 130 + a * 80))
 
 						aa += 1
 
 						win.blit(Changed_inventory_slot, (150 + aa * 80, 130 + a * 80))
-						win.blit(inventory.resourses[inventory.recipes[i].result].image, (200 + aa * 80, 130 + a * 80))
+						win.blit(inventory.resources[inventory.recipes[i].result].image, (200 + aa * 80, 130 + a * 80))
 						win.blit(textInfo.render(str(inventory.recipes[i].result_amount), True, (0, 150, 0)), (210 + aa * 80, 172 + a * 80))
 						
 			else:
