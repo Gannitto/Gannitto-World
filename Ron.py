@@ -71,7 +71,7 @@ def walk(x: int, y: int):
 			elif Home[1] < Y:
 				Y -= 30
 
-def check_items(x, y, objects: list):
+def check_items(x, y, items: list, world):
 
 	"""Проверяет лежащие предметы вокруг Рона"""
 
@@ -79,7 +79,7 @@ def check_items(x, y, objects: list):
 
 	if Home is None:
 
-		for object in objects:
+		for object in items:
 
 			if x - 256 <= object.x <= x + 256 and y - 256 <= object.y <= y + 256 and object.object_class == "Object" and object.special_flags == "Item" and object.name in ["Arrow", "Stick", "Iron ingot"]:
 				
@@ -100,11 +100,10 @@ def check_items(x, y, objects: list):
 				else:
 
 					inventory[object.name] += 1
-					
-					del objects[objects.index(object)]
+					world.chunk_manager.get_chunk_at(object.x, object.y).objects.remove(object)
 					break
 
-	return objects
+	return items
 
 def check_mobs(mobs: list, Width, Height, FPS, player_bullets: list, Bullet, x, y):
 

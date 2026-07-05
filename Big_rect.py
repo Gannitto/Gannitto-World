@@ -40,23 +40,7 @@ class BigRect:
 		match self.biom:
 
 			case "Forest":
-
-				win.blit(textInfo.render("World generation - 0%", True, (139, 155, 180)), ((Width - textInfo.size("World generation - 0%")[0]) // 2, Height // 2 + 20))
-				win.blit(textInfo.render("Adding bushes...", True, (139, 155, 180)), ((Width - textInfo.size("Adding bushes...")[0]) // 2, Height // 2 + 50))
-				Bush = pygame.image.load(path + "Gannitto world/files/Images/Objects/Bush.png")
-				for _ in range(random.randint(500, 1000)):
-					objects.append(Object(
-						"Bush",
-						random.randint(self.x - 50000, self.x + 50000), random.randint(self.y - 50000, self.y + 50000),
-						"Gannitto world/files/Images/Objects/Bush.png", (128, 128), Bush, is_solid=True))
-				pygame.display.update()
-				clock.tick(60)
 			
-
-
-				win.fill((192, 203, 220), (0, Height // 2 + 18, Width, Height))
-				win.blit(textInfo.render("World generation - 8%", True, (139, 155, 180)), ((Width - textInfo.size("World generation - 8%")[0]) // 2, Height // 2 + 20))
-				win.blit(textInfo.render("Adding ponds with reeds...", True, (139, 155, 180)), ((Width - textInfo.size("Adding ponds...")[0]) // 2, Height // 2 + 50))
 				Pond = pygame.image.load(path + "Gannitto world/files/Images/Objects/Pond.png")
 				Reed = pygame.image.load(path + "Gannitto world/files/Images/Objects/Reed.png")
 				for _ in range(random.randint(100, 500)):
@@ -70,23 +54,6 @@ class BigRect:
 							"Reed",
 							x + random.randint(-100, 612), y + random.randint(-100, 612),
 							"Gannitto world/files/Images/Objects/Reed.png", (256, 256), Reed))
-				pygame.display.update()
-				clock.tick(60)
-
-
-
-
-				win.fill((192, 203, 220), (0, Height // 2 + 18, Width, Height))
-				win.blit(textInfo.render("World generation - 16%", True, (139, 155, 180)), ((Width - textInfo.size("World generation - 16%")[0]) // 2, Height // 2 + 20))
-				win.blit(textInfo.render("Adding stones...", True, (139, 155, 180)), ((Width - textInfo.size("Adding stones...")[0]) // 2, Height // 2 + 50))
-				Stone = pygame.image.load(path + "Gannitto world/files/Images/Items/Stone.png")
-				for _ in range(random.randint(500, 1000)):
-					items.append(Object(
-						"Stone",
-						random.randint(self.x - 50000, self.x + 50000), random.randint(self.y - 50000, self.y + 50000),
-						"Gannitto world/files/Images/Items/Stone.png", image=Stone, special_flags="Item"))
-				pygame.display.update()
-				clock.tick(60)
 
 
 
@@ -186,34 +153,6 @@ class BigRect:
 				pygame.display.update()
 				clock.tick(60)
 
-
-
-				win.fill((192, 203, 220), (0, Height // 2 + 18, Width, Height))
-				win.blit(textInfo.render("World generation - 72%", True, (139, 155, 180)), ((Width - textInfo.size("World generation - 72%")[0]) // 2, Height // 2 + 20))
-				win.blit(textInfo.render("Adding mushrooms...", True, (139, 155, 180)), ((Width - textInfo.size("Adding mushrooms...")[0]) // 2, Height // 2 + 50))
-				Mushroom = pygame.image.load(path + "Gannitto world/files/Images/Items/Mushroom.png")
-				for _ in range(random.randint(1000, 5000)):
-					items.append(Object(
-						"Mushroom",
-						random.randint(self.x - 50000, self.x + 50000), random.randint(self.y - 50000, self.y + 50000),
-						"Gannitto world/files/Images/Items/Mushroom.png", image=Mushroom, special_flags="Item"))
-				pygame.display.update()
-				clock.tick(60)
-
-
-
-				win.fill((192, 203, 220), (0, Height // 2 + 18, Width, Height))
-				win.blit(textInfo.render("World generation - 80%", True, (139, 155, 180)), ((Width - textInfo.size("World generation - 80%")[0]) // 2, Height // 2 + 20))
-				win.blit(textInfo.render("Adding red mushrooms...", True, (139, 155, 180)), ((Width - textInfo.size("Adding red mushrooms...")[0]) // 2, Height // 2 + 50))
-				Red_mushroom = pygame.image.load(path + "Gannitto world/files/Images/Items/Red mushroom.png")
-				for _ in range(random.randint(1000, 5000)):
-					items.append(Object(
-						"Red mushroom",
-						random.randint(self.x - 50000, self.x + 50000), random.randint(self.y - 50000, self.y + 50000),
-						"Gannitto world/files/Images/Items/Red mushroom.png", image=Red_mushroom, special_flags="Item"))
-				pygame.display.update()
-				clock.tick(60)
-
 				
 
 				from Gannitto_world import Cave
@@ -221,60 +160,5 @@ class BigRect:
 					a, b = random.randint(self.x - 50000, self.x + 50000), random.randint(self.y - 50000, self.y + 50000)
 					objects.append(Cave(a, b, 10000, 10000))
 
-
-
-			case "Swamp":
-				
-
-
-				
-				win.fill((192, 203, 220), (0, Height // 2 + 18, Width, Height))
-				win.blit(textInfo.render("World generation - 33%", True, (139, 155, 180)), ((Width - textInfo.size("World generation - 33%")[0]) // 2, Height // 2 + 20))
-				win.blit(textInfo.render("Adding mushrooms...", True, (139, 155, 180)), ((Width - textInfo.size("Adding mushrooms...")[0]) // 2, Height // 2 + 50))
-				Mushroom = pygame.image.load(path + "Gannitto world/files/Images/Items/Mushroom.png")
-				for _ in range(random.randint(1000, 5000)):
-					items.append(Object(
-						"Mushroom",
-						random.randint(self.x - 50000, self.x + 50000), random.randint(self.y - 50000, self.y + 50000),
-						"Gannitto world/files/Images/Items/Mushroom.png", image=Mushroom, special_flags="Item"))
-				pygame.display.update()
-				clock.tick(60)
-
-
-
-				win.fill((192, 203, 220), (0, Height // 2 + 18, Width, Height))
-				win.blit(textInfo.render("World generation - 66%", True, (139, 155, 180)), ((Width - textInfo.size("World generation - 66%")[0]) // 2, Height // 2 + 20))
-				win.blit(textInfo.render("Adding red mushrooms...", True, (139, 155, 180)), ((Width - textInfo.size("Adding red mushrooms...")[0]) // 2, Height // 2 + 50))
-				Red_mushroom = pygame.image.load(path + "Gannitto world/files/Images/Items/Mushroom.png")
-				for _ in range(random.randint(1000, 5000)):
-					items.append(Object(
-						"Red mushroom",
-						random.randint(self.x - 50000, self.x + 50000), random.randint(self.y - 50000, self.y + 50000),
-						"Gannitto world/files/Images/Items/Red mushroom.png", image=Red_mushroom, special_flags="Item"))
-				pygame.display.update()
-				clock.tick(60)
-
-
-
-				win.fill((192, 203, 220), (0, Height // 2 + 18, Width, Height))
-				win.blit(textInfo.render("World generation - 66%", True, (139, 155, 180)), ((Width - textInfo.size("World generation - 66%")[0]) // 2, Height // 2 + 20))
-				win.blit(textInfo.render("Adding cotton grassssss...", True, (139, 155, 180)), ((Width - textInfo.size("Adding cotton grassssss...")[0]) // 2, Height // 2 + 50))
-				Cotton_grass = pygame.image.load(path + "Gannitto world/files/Images/Items/Cotton grass.png")
-				for _ in range(random.randint(1000, 5000)):
-					items.append(Object(
-						"Cotton grass",
-						random.randint(self.x - 50000, self.x + 50000), random.randint(self.y - 50000, self.y + 50000),
-						"Gannitto world/files/Images/Items/Cotton grass.png", image=Cotton_grass, special_flags="Item"))
-		
 		return objects, items
-
-
-
-	def main(self):
-		from Gannitto_world import player
-		if self.x - 50000 <= player.x <= self.x + 50000 and self.y - 50000 <= player.y <= self.y + 50000:
-			return self.biom
-		else:
-			return None
-
 

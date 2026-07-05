@@ -34,7 +34,6 @@ player_bullets = []
 craft_items_list = [None] * 7
 craft_amounts_list = [None] * 7
 craft_images_list = [None] * 7
-in_cave = None
 difficulty = None
 does_lighten = False
 alt_pressed = False

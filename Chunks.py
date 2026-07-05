@@ -8,10 +8,10 @@ tile_size = 256
 
 biomes = ["Desert", "Field", "Forest", "Swamp", "Taiga"]
 
-# Частота появления, (имя, путь к изображению, твёрдый ли)
+# Частота появления, параметры
 biomes_objects = {
 
-		"Desert": (
+		"Desert": ((
 			(1, {
 				"name": "Cactus",
 				"image_path": "Gannitto world/files/Images/Objects/Cactus.png",
@@ -23,50 +23,83 @@ biomes_objects = {
 				"name": "Pile of sand",
 				"image_path": "Gannitto world/files/Images/Objects/Pile of sand.png",
 				"scale_x": (256, 256),
-				})
-			),
+				})),
+			()),
 
-		"Field": (),
+		"Field": ((), ()),
 
-		"Forest": (
-			(3, {
+		"Forest": ((
+			(2, {
 				"name": "Tree",
 				"image_path": "Gannitto world/files/Images/Objects/Tree.png",
 				"scale_x": (256, 256),
 				"special_flags": 100,
 				"is_solid": True}),
-			(3, {
+			(2, {
 				"name": "Birch",
 				"image_path": "Gannitto world/files/Images/Objects/Birch.png",
 				"scale_x": (256, 256),
 				"special_flags": 100,
 				"is_solid": True
-				})
-			),
+				}),
+			(0.5, {
+				"name": "Bush",
+				"image_path": "Gannitto world/files/Images/Objects/Bush.png",
+				"scale_x": (128, 128),
+				"is_solid": True
+				})),
+			(
+			(0.5, {
+				"name": "Stone",
+				"image_path": "Gannitto world/files/Images/Items/Stone.png",
+				}),
+			(0.1, {
+				"name": "Mushroom",
+				"image_path": "Gannitto world/files/Images/Items/Mushroom.png",
+				}),
+			(0.1, {
+				"name": "Red mushroom",
+				"image_path": "Gannitto world/files/Images/Items/Red mushroom.png",
+				}))),
 
-		"Swamp": (
+		"Swamp": ((
 			(2, {
 				"name": "Dark tree",
 				"image_path": "Gannitto world/files/Images/Objects/Dark tree.png",
 				"scale_x": (256, 256),
 				"special_flags": 100,
-				"is_solid": True}),
-			),
-		"Taiga": (
-			(3, {
+				"is_solid": True}),),
+			(
+			(0.5, {
+				"name": "Cotton grass",
+				"image_path": "Gannitto world/files/Images/Items/Cotton grass.png",
+				}),
+			(0.5, {
+				"name": "Mushroom",
+				"image_path": "Gannitto world/files/Images/Items/Mushroom.png",
+				}),
+			(0.5, {
+				"name": "Red mushroom",
+				"image_path": "Gannitto world/files/Images/Items/Red mushroom.png",
+				}))),
+
+
+		"Taiga": ((
+			(2, {
 				"name": "Spruce",
 				"image_path": "Gannitto world/files/Images/Objects/Spruce.png",
 				"scale_x": (512, 512),
 				"special_flags": 100,
 				"is_solid": True
 				}),
-			(2, {
+			(0.5, {
 				"name": "Dark bush",
 				"image_path": "Gannitto world/files/Images/Objects/Dark bush.png",
 				"scale_x": (128, 128),
 				"is_solid": True
-				})
-			)
+				})),
+			())
+			
 		}
 
 class Chunk:
@@ -99,7 +132,7 @@ class ChunkManager:
 	def __init__(self):
 		self.chunks = {}
 		self.loaded_chunks = set()
-		self.view_distance = 3
+		self.view_distance = 1
 		self.generator = NoiseGenerator()
 		self.save_directory = ""
 		
@@ -114,12 +147,10 @@ class ChunkManager:
 		if index >= len(biomes):
 			index = len(biomes) - 1
 		biome = biomes[index]
-		# Добавление игровых объектов через шум Перлина (будет в будущем)
+		# Добавление некоторых игровых объектов через шум Перлина (будет в будущем)
 		# for x, y in product(range(int(bounds["x1"]), int(bounds["x2"]), tile_size), range(int(bounds["y1"]), int(bounds["y2"]), tile_size)):
 			# height = self.generator.get_height(x, y)
-			# Для теста взята текстура цветка
-			# if height > 0.5:
-			#	chunk.objects.append(Object("Orange tulip", x, y, "Gannitto world/files/Images/Items/Orange tulip.png"))
+			# if height > 0.5: ...
 
 		# Сохраняем биом для этого чанка
 		chunk.biome = biome
@@ -128,14 +159,23 @@ class ChunkManager:
 		rng = random.Random((chunk.x * 100000 + chunk.y * 77777) ^ 0x9e3779b9)
 		
 		objects = []
-		for object in biomes_objects[chunk.biome]:
+		for object in biomes_objects[chunk.biome][0]:
 			if rng.random() <= object[0]:
 				for _ in range(rng.randint(1, int(object[0] * 3) + 1)):
 					X = chunk.x * chunk_size + rng.randint(0, chunk_size - 1)
 					Y = chunk.y * chunk_size + rng.randint(0, chunk_size - 1)
 					objects.append(Object(object_x=X, object_y=Y, **object[1]))
+		
+		items = []
+		for item in biomes_objects[chunk.biome][1]:
+			if rng.random() <= item[0]:
+				for _ in range(rng.randint(1, int(item[0] * 3) + 1)):
+					X = chunk.x * chunk_size + rng.randint(0, chunk_size - 1)
+					Y = chunk.y * chunk_size + rng.randint(0, chunk_size - 1)
+					items.append(Object(object_x=X, object_y=Y, **item[1]))
 
 		chunk.objects = objects
+		chunk.items = items
 		chunk.is_generated = True
 	
 	def get_chunk_at(self, X, Y):
@@ -185,24 +225,22 @@ class ChunkManager:
 			chunk_x = center_chunk_x + dx
 			chunk_y = center_chunk_y + dy
 			
-			# Находится ли чанк в радиусе прорисовки
-			if dx * dx + dy * dy <= self.view_distance * self.view_distance:
-				chunk_key = (chunk_x, chunk_y)
-				new_visible_chunks.add(chunk_key)
-				
-				# Если чанк еще не существует, то создаётся
-				if chunk_key not in self.chunks:
-					new_chunk = self._load_chunk_from_disk(chunk_x, chunk_y)
-					if new_chunk is None:
-						new_chunk = Chunk(chunk_x, chunk_y)
-					self.chunks[chunk_key] = new_chunk
-					new_chunk.is_loaded = True
-				
-				# Если чанк существует, но не сгенерирован, то он генерируется
-				chunk = self.chunks[chunk_key]
-				if not chunk.is_generated:
-					self.generate_chunk(chunk)
-					chunk.is_loaded = True
+			chunk_key = (chunk_x, chunk_y)
+			new_visible_chunks.add(chunk_key)
+			
+			# Если чанк еще не существует, то создаётся
+			if chunk_key not in self.chunks:
+				new_chunk = self._load_chunk_from_disk(chunk_x, chunk_y)
+				if new_chunk is None:
+					new_chunk = Chunk(chunk_x, chunk_y)
+				self.chunks[chunk_key] = new_chunk
+				new_chunk.is_loaded = True
+			
+			# Если чанк существует, но не сгенерирован, то он генерируется
+			chunk = self.chunks[chunk_key]
+			if not chunk.is_generated:
+				self.generate_chunk(chunk)
+				chunk.is_loaded = True
 		
 		self.loaded_chunks = new_visible_chunks.copy()
 		
@@ -212,7 +250,6 @@ class ChunkManager:
 			if chunk_key not in new_visible_chunks and chunk.is_loaded:
 				chunks_to_unload.append(chunk_key)
 		
-		# Выгружаем чанки
 		for chunk_key in chunks_to_unload:
 			self._unload_chunk(chunk_key)
 		

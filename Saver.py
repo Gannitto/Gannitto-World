@@ -29,7 +29,7 @@ def save_chunk(chunk, save_directory="Gannitto world/saves/chunks/"):
 		"blocks": chunk.blocks,
 		"caves": chunk.caves,
 		"is_generated": chunk.is_generated,
-		"is_loaded": False	# При загрузке всегда false
+		"is_loaded": False
 	}
 	
 	with open(filepath, "wb") as file:
@@ -46,7 +46,6 @@ def load_chunk(chunk_x, chunk_y, save_directory):
 	with open(filepath, "rb") as file:
 		chunk_data = pickle.load(file)
 	
-	# Создаем новый объект Chunk из сохраненных данных
 	from Chunks import Chunk
 	chunk = Chunk(chunk_data["x"], chunk_data["y"])
 	chunk.biome = chunk_data["biome"]
@@ -56,7 +55,7 @@ def load_chunk(chunk_x, chunk_y, save_directory):
 	chunk.blocks = chunk_data["blocks"]
 	chunk.caves = chunk_data["caves"]
 	chunk.is_generated = chunk_data["is_generated"]
-	chunk.is_loaded = False  # При загрузке всегда false
+	chunk.is_loaded = False
 	
 	return chunk
 
@@ -67,7 +66,7 @@ def chunk_exists(chunk_x, chunk_y, save_directory):
 	return os.path.exists(filepath)
 
 def delete_chunk(chunk_x, chunk_y, save_directory):
-	"""Удаляет файл чанка (если нужно перегенерировать)"""
+	"""Удаляет файл чанка"""
 	filename = f"chunk_{chunk_x}_{chunk_y}.dat"
 	filepath = os.path.join(save_directory, filename)
 	if os.path.exists(filepath):
