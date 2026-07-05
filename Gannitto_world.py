@@ -411,7 +411,8 @@ class Object:
 			  add_path=True,
 			  start_time=None,
 			  is_solid=False,
-			  rect=()):
+			  rect=(),
+			  pickable=False):
 
 		"""
 		Класс основного объекта игры. Такого, как например дерево.
@@ -453,6 +454,7 @@ class Object:
 		self.add_path = add_path
 		self.scale_x = scale_x
 		self.is_solid = is_solid
+		self.pickable = pickable
 
 		if rect == ():
 			self.rect = pygame.Rect(self.x - self.w / 2, self.y + self.h / 2, self.w, self.h)
@@ -503,8 +505,8 @@ class Particle:
 				 start_x: int=0,
 				 start_y: int=0,
 				 image: pygame.Surface=no_file_texture.copy(),
-				 x_bias: str="0", y_bias: str="0",
-				 x_bias_condition: str="True", y_bias_condition: str="True",
+				 x_bias=0, y_bias=0,
+				 x_bias_condition=None, y_bias_condition=None,
 				 else_x_bias: str="0", else_y_bias: str="0",
 				 rotate: int=None,
 				 display_mode=lambda X, Y, w, h: (X - player.x + Width // 2 - w // 2, player.y - Y + Height // 2 - h // 2),
@@ -518,7 +520,7 @@ class Particle:
 				 remove_particle_after_twisting: bool=True,
 				 variable_to_calculate: str="0",
 				 track_ticks: bool=False,
-				 del_self_condition: str="False",
+				 del_self_condition=None,
 				 can_interfere_with_placing: bool=False,
 				 save_particle: bool=False,
 				 save_start_time: bool=True,
@@ -557,7 +559,7 @@ class Particle:
 		remove_particle_after_twisting - Удалить частицу после после полного скручивания
 		variable_to_calculate - Переменная, которая будет расчитываться на каждом тике
 		track_ticks - Слитать ли каждый тик в переменную ticks после создания частицы
-		del_self_condition - Условие, при котором удалится частица. Так же, может быть функцией
+		del_self_condition - Условие, при котором удалится частица
 		can_interfere_with_placing - Может ли частица мешать ставить объекты
 		save_particle - Сохранять ли частицу после выхода из мира
 		save_start_time - Сохранять ли параметр start_time после выхода из мира, если включён save_particle
@@ -663,15 +665,15 @@ class Particle:
 
 		if self.can_go_through_walls:
 			
-			if eval(self.x_bias_condition):
-				self.x += eval(str(self.x_bias))
+			if self.x_bias_condition is None or self.x_bias_condition(self):
+				self.x += self.x_bias if self.x_bias.__class__ == int else self.x_bias(self)
 			else:
-				self.else_x_bias
+				self.else_x_bias()
 			
-			if eval(self.y_bias_condition):
-				self.y += eval(str(self.y_bias))
+			if self.y_bias_condition is None or self.y_bias_condition(self):
+				self.y += self.y_bias if self.y_bias.__class__ == int else self.y_bias(self)
 			else:
-				self.else_y_bias
+				self.else_y_bias()
 
 		else:
 
@@ -679,10 +681,10 @@ class Particle:
 				if i.x - 300 < player.x < i.x + 300 and i.y - 300 < player.y < i.y + 300:
 					a = False
 			
-			if eval(self.x_bias_condition) and a:
-				self.x += eval(str(self.x_bias))
-			if eval(self.y_bias_condition) and a:
-				self.y += eval(str(self.y_bias))
+			if self.x_bias_condition is None or self.x_bias_condition(self) and a:
+				self.x += self.x_bias if self.x_bias.__class__ == int else self.x_bias(self)
+			if self.y_bias_condition is None or self.y_bias_condition(self) and a:
+				self.y += self.y_bias if self.y_bias.__class__ == int else self.y_bias(self)
 
 		if self.rotate is not None:
 			i = self.image.get_rect()
@@ -691,15 +693,7 @@ class Particle:
 			ii.center = j.get_rect().center
 			self.image = j.subsurface(ii).copy()
 			
-		if self.end_x is not None and self.end_y is None and self.end_x - self.end_zone <= self.x <= self.end_x + self.end_zone:
-			eval(self.end_command)
-			particles.remove(self)
-
-		if self.end_y is not None and self.end_x is None and self.end_y - self.end_zone <= self.y <= self.end_y + self.end_zone:
-			eval(self.end_command)
-			particles.remove(self)
-
-		if self.end_x is not None and self.end_y is not None and self.end_x - self.end_zone <= self.x <= self.end_x + self.end_zone and self.end_y - self.end_zone <= self.y <= self.end_y + self.end_zone:
+		if (self.end_x is not None and self.end_y is None and self.end_x - self.end_zone <= self.x <= self.end_x + self.end_zone) or (self.end_y is not None and self.end_x is None and self.end_y - self.end_zone <= self.y <= self.end_y + self.end_zone) or (self.end_x is not None and self.end_y is not None and self.end_x - self.end_zone <= self.x <= self.end_x + self.end_zone and self.end_y - self.end_zone <= self.y <= self.end_y + self.end_zone):
 			eval(self.end_command)
 			particles.remove(self)
 
@@ -3936,7 +3930,6 @@ def start_game():
 						try:
 							eval(input_text[2:])
 							# команды лучше не использовать, так как из-за eval возникает проблема безопасности
-							pass
 						except Exception as e:
 							chat_message(languages("<<< Команда " + Settings["User"][0] + f" получила ошибку {e}" + ". >>>", "<<< " + Settings["User"][0] + f"'s command got an {e}" + "error. >>>", ""))
 						else:
@@ -4004,7 +3997,7 @@ def start_game():
 							world.walls = []
 							mobs = []
 							player.effects = []
-							inventory.whole_inventory = [None] * 40
+							inventory.whole_inventory = [None] * 30
 							menu()
 
 
@@ -4082,19 +4075,19 @@ def start_game():
 				match player.direction:
 					
 					case "Down":
-						x_bias_ = "0"
-						y_bias_ = "-self.calculated_variable[0]"
+						x_bias_ = 0
+						y_bias_ = lambda particle: -particle.calculated_variable[0]
 					case "Up":
-						x_bias_ = "0"
-						y_bias_ = "self.calculated_variable[0]"
+						x_bias_ = 0
+						y_bias_ = lambda particle: particle.calculated_variable[0]
 					case "Left":
-						x_bias_ = "-self.calculated_variable[0]"
-						y_bias_ = "self.calculated_variable[1]"
+						x_bias_ = lambda particle: -particle.calculated_variable[0]
+						y_bias_ = lambda particle: particle.calculated_variable[1]
 					case "Right":
-						x_bias_ = "self.calculated_variable[0]"
-						y_bias_ = "self.calculated_variable[1]"
+						x_bias_ = lambda particle: particle.calculated_variable[0]
+						y_bias_ = lambda particle: particle.calculated_variable[1]
 						
-				particles.append(Particle(player.x, player.y, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Items/" + inventory.whole_inventory[changed_slot].name + ".png"), (64, 64)), x_bias_, y_bias_, variable_to_calculate="(40 - self.ticks * 3, 15 - self.ticks * 8)", track_ticks=True, end_time=0.5, end_command="world.chunk_manager.get_chunk_at(particle.x, particle.y).items.append(Object(particle.special_flags, particle.x, particle.y, 'Gannitto world/files/Images/Items/' + particle.special_flags + '.png', special_flags='Item'))", end_command_globals_in_the_end=("world", "Object"), special_flags=inventory.whole_inventory[changed_slot].name))
+				particles.append(Particle(player.x, player.y, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Items/" + inventory.whole_inventory[changed_slot].name + ".png"), (64, 64)), x_bias_, y_bias_, variable_to_calculate="(40 - self.ticks * 3, 15 - self.ticks * 8)", track_ticks=True, end_time=0.5, end_command="world.chunk_manager.get_chunk_at(particle.x, particle.y).items.append(Object(particle.special_flags, particle.x, particle.y, 'Gannitto world/files/Images/Items/' + particle.special_flags + '.png', special_flags='Item', pickable=True))", end_command_globals_in_the_end=("world", "Object"), special_flags=inventory.whole_inventory[changed_slot].name))
 				
 				del x_bias_
 				del y_bias_
@@ -4114,19 +4107,19 @@ def start_game():
 				match player.direction:
 				
 					case "Down":
-						x_bias_ = "0"
-						y_bias_ = "-self.calculated_variable[0]"
+						x_bias_ = 0
+						y_bias_ = lambda particle: -particle.calculated_variable[0]
 					case "Up":
-						x_bias_ = "0"
-						y_bias_ = "self.calculated_variable[0]"
+						x_bias_ = 0
+						y_bias_ = lambda particle: particle.calculated_variable[0]
 					case "Left":
-						x_bias_ = "-self.calculated_variable[0]"
-						y_bias_ = "self.calculated_variable[1]"
+						x_bias_ = lambda particle: -particle.calculated_variable[0]
+						y_bias_ = lambda particle: particle.calculated_variable[1]
 					case "Right":
-						x_bias_ = "self.calculated_variable[0]"
-						y_bias_ = "self.calculated_variable[1]"
+						x_bias_ = lambda particle: particle.calculated_variable[0]
+						y_bias_ = lambda particle: particle.calculated_variable[1]
 					
-				particles.append(Particle(player.x, player.y, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Items/" + inventory.whole_inventory[changed_slot].name + ".png"), (64, 64)), x_bias_, y_bias_, variable_to_calculate="(40 - self.ticks * 3, 15 - self.ticks * 8)", track_ticks=True, end_time=0.5, end_command="world.chunk_manager.get_chunk_at(particle.x, particle.y).items.append(Object(particle.special_flags, particle.x, particle.y, 'Gannitto world/files/Images/Items/' + particle.special_flags + '.png', special_flags='Item'))", end_command_globals_in_the_end=("world", "Object"), special_flags=inventory.whole_inventory[changed_slot].name))
+				particles.append(Particle(player.x, player.y, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Items/" + inventory.whole_inventory[changed_slot].name + ".png"), (64, 64)), x_bias_, y_bias_, variable_to_calculate="(40 - self.ticks * 3, 15 - self.ticks * 8)", track_ticks=True, end_time=0.5, end_command="world.chunk_manager.get_chunk_at(particle.x, particle.y).items.append(Object(particle.special_flags, particle.x, particle.y, 'Gannitto world/files/Images/Items/' + particle.special_flags + '.png', special_flags='Item', pickable=True))", end_command_globals_in_the_end=("world", "Object"), special_flags=inventory.whole_inventory[changed_slot].name))
 			
 				del x_bias_
 				del y_bias_
@@ -4392,7 +4385,7 @@ def start_game():
 										c.fill(object.image.get_at((a, b)))
 										object.image.set_at((a, b), (0, 0, 0, 99))
 										if random.randint(1, 5) == 1:
-											particles.append(Particle(object.x + (a - 16) * 8, object.y + (b - 16) * 8, c, "5", "-16", 10, end_time=0.5))
+											particles.append(Particle(object.x + (a - 16) * 8, object.y + (b - 16) * 8, c, 5, -16, 10, end_time=0.5))
 
 								object.image.set_alpha(object.image.get_alpha() - 1)
 								object.image = pygame.transform.scale(object.image, (256, 256))
@@ -4421,7 +4414,7 @@ def start_game():
 										c.fill(object.image.get_at((a, b)))
 										object.image.set_at((a, b), (0, 0, 0, 99))
 										if random.randint(1, 5) == 1:
-											particles.append(Particle(object.x + (a - 16) * 8, object.y + (b - 16) * 8, c, "5", "-16", 10, end_time=0.5))
+											particles.append(Particle(object.x + (a - 16) * 8, object.y + (b - 16) * 8, c, 5, -16, 10, end_time=0.5))
 
 								object.image.set_alpha(object.image.get_alpha() - 1)
 								object.image = pygame.transform.scale(object.image, (256, 256))
@@ -4462,7 +4455,7 @@ def start_game():
 							if object.name == "Tree" and click[0]:
 								
 								object.special_flags -= 1
-								object.image = pygame.transform.scale(object.image, (32, 32))
+								object.image = pygame.transform.scale(object.image, (32, 32)).convert_alpha()
 								for _ in range(random.randint(20, 25)):
 									a = random.randint(0, 31)
 									b = random.randint(0, 31)
@@ -4473,13 +4466,13 @@ def start_game():
 										object.image.set_at((a, b), (0, 0, 0, 99))
 										if random.randint(1, 5) == 1:
 											c = c.convert_alpha()
-											particles.append(Particle(object.x + (a - 16) * 8, object.y + (b - 16) * 8, c, "5", "-16", end_time=0.5))
+											particles.append(Particle(object.x + (a - 16) * 8, object.y + (b - 16) * 8, c, 5, -16, end_time=0.5))
 								object.image.set_alpha(object.image.get_alpha() - 1)
 								object.image = pygame.transform.scale(object.image, (256, 256))
 
 								if object.special_flags < 1:
 
-									particles.append(Particle(object.x, object.y, object.image, y_bias="-40", twisting_in_height=80))
+									particles.append(Particle(object.x, object.y, object.image, y_bias=-40, twisting_in_height=80))
 									world.chunk_manager.get_chunk_at(object.x, object.y).objects.remove(object)
 
 									statistics[2] += 1
@@ -4496,7 +4489,7 @@ def start_game():
 							if object.name == "Dark tree" and click[0]:
 
 								object.special_flags -= 1
-								object.image = pygame.transform.scale(object.image, (32, 32))
+								object.image = pygame.transform.scale(object.image, (32, 32)).convert_alpha()
 								for _ in range(random.randint(20, 25)):
 									a = random.randint(0, 31)
 									b = random.randint(0, 31)
@@ -4507,7 +4500,7 @@ def start_game():
 										object.image.set_at((a, b), (0, 0, 0, 99))
 										if random.randint(1, 5) == 1:
 											c = c.convert_alpha()
-											particles.append(Particle(object.x + (a - 16) * 8, object.y + (b - 16) * 8, c, "5", "-16", end_time=0.5))
+											particles.append(Particle(object.x + (a - 16) * 8, object.y + (b - 16) * 8, c, 5, -16, end_time=0.5))
 								object.image.set_alpha(object.image.get_alpha() - 1)
 								object.image = pygame.transform.scale(object.image, (256, 256))
 
@@ -4529,7 +4522,7 @@ def start_game():
 							if object.name == "Birch" and click[0]:
 
 								object.special_flags -= 1
-								object.image = pygame.transform.scale(object.image, (32, 32))
+								object.image = pygame.transform.scale(object.image, (32, 32)).convert_alpha()
 								for _ in range(random.randint(20, 25)):
 									a = random.randint(0, 31)
 									b = random.randint(0, 31)
@@ -4540,7 +4533,7 @@ def start_game():
 										object.image.set_at((a, b), (0, 0, 0, 99))
 										if random.randint(1, 5) == 1:
 											c = c.convert_alpha()
-											particles.append(Particle(object.x + (a - 16) * 8, object.y + (b - 16) * 8, c, "5", "-16", end_time=0.5))
+											particles.append(Particle(object.x + (a - 16) * 8, object.y + (b - 16) * 8, c, 5, -16, end_time=0.5))
 								object.image.set_alpha(object.image.get_alpha() - 1)
 								object.image = pygame.transform.scale(object.image, (256, 256))
 
@@ -4705,8 +4698,8 @@ def start_game():
 				# Отображение предметов
 				for item in world.visible_items:
 					item.main(player.x, player.y)
-					if Settings["Game"][0] and player.x - 150 < item.x < player.x + 150 and player.y - 150 < item.y < player.y + 150:
-						particles.append(Particle(item.x, item.y, item.image, "round(self.calculated_variable[0])", "round(self.calculated_variable[1])", variable_to_calculate="((self.special_flags[0] // 2) / 10 * self.ticks, (self.special_flags[1] // 2) / 10 * self.ticks, (-self.special_flags[0] // 2) / 10 * (self.ticks - 10), (-self.special_flags[1] // 2) / 10 * (self.ticks - 10))", track_ticks=True, end_x=player.x, end_y=player.y, end_zone=30, end_command="(inventory.increate('" + item.name + "'),pygame.mixer.Sound.play(Pick_an_item))", special_flags=(player.x - item.x, player.y - item.y, (0 - 17) // (0 - 10))))
+					if item.pickable and Settings["Game"][0] and player.x - 150 < item.x < player.x + 150 and player.y - 150 < item.y < player.y + 150:
+						particles.append(Particle(item.x, item.y, item.image, lambda particle: round(particle.calculated_variable[0]), lambda particle: round(particle.calculated_variable[1]), variable_to_calculate="((self.special_flags[0] // 2) / 10 * self.ticks, (self.special_flags[1] // 2) / 10 * self.ticks, (-self.special_flags[0] // 2) / 10 * (self.ticks - 10), (-self.special_flags[1] // 2) / 10 * (self.ticks - 10))", track_ticks=True, end_x=player.x, end_y=player.y, end_zone=30, end_command="(inventory.increate('" + item.name + "'),pygame.mixer.Sound.play(Pick_an_item))", special_flags=(player.x - item.x, player.y - item.y, (0 - 17) // (0 - 10))))
 						world.chunk_manager.get_chunk_at(item.x, item.y).items.remove(item)
 
 					if item.x - player.x + Width // 2 - item.image.get_width() // 2 <= mouse_x <= item.x - player.x + Width // 2 + item.image.get_width() // 2 and player.y - item.y + Height // 2 - item.image.get_height() // 2 <= mouse_y <= player.y - item.y + Height // 2 + item.image.get_height() // 2:
@@ -4715,7 +4708,7 @@ def start_game():
 						if click[0]:
 									
 							# , "fabs(player.x - self.x) > fabs(self.special_flags[0] / 2)", "fabs(player.y - self.y) > fabs(self.special_flags[1] / 2)", "round(self.calculated_variable[2])", "round(self.calculated_variable[3])"
-							particles.append(Particle(item.x, item.y, item.image, "round(self.calculated_variable[0])", "round(self.calculated_variable[1])", variable_to_calculate="((self.special_flags[0] // 2) / 10 * self.ticks, (self.special_flags[1] // 2) / 10 * self.ticks, (-self.special_flags[0] // 2) / 10 * (self.ticks - 10), (-self.special_flags[1] // 2) / 10 * (self.ticks - 10))", track_ticks=True, end_x=player.x, end_y=player.y, end_zone=30, end_command="(inventory.increate('" + item.name + "'),pygame.mixer.Sound.play(Pick_an_item))", special_flags=(player.x - item.x, player.y - item.y, (0 - 17) // (0 - 10))))
+							particles.append(Particle(item.x, item.y, item.image, lambda particle: round(particle.calculated_variable[0]), lambda particle: round(particle.calculated_variable[1]), variable_to_calculate="((self.special_flags[0] // 2) / 10 * self.ticks, (self.special_flags[1] // 2) / 10 * self.ticks, (-self.special_flags[0] // 2) / 10 * (self.ticks - 10), (-self.special_flags[1] // 2) / 10 * (self.ticks - 10))", track_ticks=True, end_x=player.x, end_y=player.y, end_zone=30, end_command="(inventory.increate('" + item.name + "'),pygame.mixer.Sound.play(Pick_an_item))", special_flags=(player.x - item.x, player.y - item.y, (0 - 17) // (0 - 10))))
 									
 							world.chunk_manager.get_chunk_at(item.x, item.y).items.remove(item)
 
@@ -5235,7 +5228,7 @@ def start_game():
 
 			particle.main()
 			
-			if (particle.end_time is not None and time.time() - particle.start_time >= particle.end_time) or (particle.del_self_condition.__class__ == str and eval(particle.del_self_condition) or particle.del_self_condition.__class__ != str and  particle.del_self_condition()):
+			if (particle.end_time is not None and time.time() - particle.start_time >= particle.end_time) or (particle.del_self_condition is not None and particle.del_self_condition(particle)):
 				
 				particle.end_command_globals["particle"] = particle
 				particle.end_command_globals["Particle"] = Particle
@@ -5824,7 +5817,7 @@ def start_game():
 					for _ in range(item.amount):
 						rand_x, rand_y = player.x + random.randint(-300, 300), player.y + random.randint(-300, 300)
 						world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object(item.name, rand_x, rand_y, item.image_path, add_path=False))
-			inventory.whole_inventory = [None] * 40
+			inventory.whole_inventory = [None] * 30
 			player.HP = 100
 			x = 0
 			y = 0
@@ -6100,7 +6093,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 				else: 
 					for object in world.visible_items:
 						if pygame.Rect((player.x + mouse_x - Width // 2) // 256 * 256 + 128, (player.y - mouse_y + Height // 2) // 256 * 256 + 128, 256, 256).colliderect(pygame.Rect(object.x, object.y, object.w, object.h)):
-							particles.append(Particle(object.x, object.y, object.image, "round(self.calculated_variable[0])", "round(self.calculated_variable[1])", variable_to_calculate="((self.special_flags[0] // 2) / 10 / 10 * self.ticks, (self.special_flags[1] // 2) / 10 / 10 * self.ticks, (-self.special_flags[0] // 2) / 10 / 10 * (self.ticks - 10), (-self.special_flags[1] // 2) / 10 / 10 * (self.ticks - 10))", track_ticks=True, end_x=player.x, end_y=player.y, end_zone=30, end_command="(inventory.increate('" + object.name + "'),pygame.mixer.Sound.play(Pick_an_item))", special_flags=(player.x - object.x, player.y - object.y, (0 - 17) // (0 - 10))))
+							particles.append(Particle(object.x, object.y, item.image, lambda particle: round(particle.calculated_variable[0]), lambda particle: round(particle.calculated_variable[1]), variable_to_calculate="((self.special_flags[0] // 2) / 10 * self.ticks, (self.special_flags[1] // 2) / 10 * self.ticks, (-self.special_flags[0] // 2) / 10 * (self.ticks - 10), (-self.special_flags[1] // 2) / 10 * (self.ticks - 10))", track_ticks=True, end_x=player.x, end_y=player.y, end_zone=30, end_command="(inventory.increate('" + item.name + "'),pygame.mixer.Sound.play(Pick_an_item))", special_flags=(player.x - item.x, player.y - item.y, (0 - 17) // (0 - 10))))
 							world.chunk_manager.get_chunk_at(object.x, object.y).objects.remove(object)
 							pygame.mixer.Sound.play(Pick_an_item)
 						
@@ -6129,7 +6122,7 @@ if self.special_flags[2]:
 		inventory.increate("Bucket", 1)
 		self.special_flags[2] = False
 		pygame.mixer.Sound.play(pygame.mixer.Sound(path + "Gannitto world/files/Sounds/Watering plants " + str(random.randint(1, 2)) + ".mp3"))""", True, """
-if particle.special_flags[2]: particles.append(Particle(particle.x, particle.y, pygame.transform.scale(pygame.image.load(path + 'Gannitto world/files/Images/Objects/' + particle.special_flags[0] + ' 4.png'), (128, 128)), can_interfere_with_placing=True, save_particle=True, del_self_condition="click[0] and pygame.Rect(particle.x - player.x + Width // 2 - particle.image.get_width() // 2, player.y - particle.y + Height // 2 - particle.image.get_height() // 2, particle.w, particle.h).collidepoint(mouse_x, mouse_y)", end_command='pygame.mixer.Sound.play(pygame.mixer.Sound(path + "Gannitto world/files/Sounds/Breaking.mp3"))'))
+if particle.special_flags[2]: particles.append(Particle(particle.x, particle.y, pygame.transform.scale(pygame.image.load(path + 'Gannitto world/files/Images/Objects/' + particle.special_flags[0] + ' 4.png'), (128, 128)), can_interfere_with_placing=True, save_particle=True, del_self_condition=lambda particle: (click[0] and pygame.Rect(particle.x - player.x + Width // 2 - particle.image.get_width() // 2, player.y - particle.y + Height // 2 - particle.image.get_height() // 2, particle.w, particle.h).collidepoint(mouse_x, mouse_y)), end_command='pygame.mixer.Sound.play(pygame.mixer.Sound(path + "Gannitto world/files/Sounds/Breaking.mp3"))'))
 else: particles.append(Particle(particle.x, particle.y, pygame.transform.scale(pygame.image.load(path + 'Gannitto world/files/Images/Objects/' + particle.special_flags[0] + ' 3.png'), (128, 128)), can_interfere_with_placing=True, save_particle=True, tick_command='''
 if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0], self.display_mode(self.x, self.y, self.w, self.h)[1], self.w, self.h).collidepoint(mouse_x, mouse_y):
 	for _ in range(random.randint(1, 3)):
@@ -6139,7 +6132,7 @@ if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0]
 		for _ in range(random.randint(0, 2)):
 			rand_x, rand_y = self.x + random.randint(-30, 30), self.y + random.randint(-30, 30)
 			world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Wheat seeds", rand_x, rand_y, "Gannitto world/files/Images/Items/Wheat seeds.png"))
-	''', tick_command_globals={"random": random}, tick_command_globals_in_the_end=("Object", "world", "click", "x", "y", "Width", "Height", "mouse_x", "mouse_y"), del_self_condition="click[0] and pygame.Rect(particle.x - player.x + Width // 2 - particle.image.get_width() // 2, player.y - particle.y + Height // 2 - particle.image.get_height() // 2, particle.w, particle.h).collidepoint(mouse_x, mouse_y)", special_flags=particle.special_flags))
+	''', tick_command_globals={"random": random}, tick_command_globals_in_the_end=("Object", "world", "click", "x", "y", "Width", "Height", "mouse_x", "mouse_y"), del_self_condition=lambda particle: (click[0] and pygame.Rect(particle.x - player.x + Width // 2 - particle.image.get_width() // 2, player.y - particle.y + Height // 2 - particle.image.get_height() // 2, particle.w, particle.h).collidepoint(mouse_x, mouse_y)), special_flags=particle.special_flags))
 """]),
 			 "Carrot,Onion,Tomato", "Seed", particle_to_build=True, needed_object="Farmland", remove_part=" seeds")
 		
@@ -6509,7 +6502,7 @@ if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0]
 							if data2[3] == "0":
 								data2[3] = "1" 
 								
-							win.blit(eval("Hiro_" + data2[2].lower() + "_run_" + str(data2[3])), (int(data2[0]) - player.x + Width // 2 - 128, player.y - int(data2[1]) + Height // 2 - 128))
+							win.blit(player.animations[data2[2]][int(data2[3])], (int(data2[0]) - player.x + Width // 2 - 128, player.y - int(data2[1]) + Height // 2 - 128))
 
 				except:
 					pass

@@ -49,9 +49,41 @@ biomes_objects = {
 				"is_solid": True
 				})),
 			(
-			(0.5, {
+			(0.3, {
 				"name": "Stone",
 				"image_path": "Gannitto world/files/Images/Items/Stone.png",
+				}),
+			(0.3, {
+				"name": "Poppy",
+				"image_path": "Gannitto world/files/Images/Items/Poppy.png",
+				}),
+			(0.3, {
+				"name": "Purple tulip",
+				"image_path": "Gannitto world/files/Images/Items/Purple tulip.png",
+				}),
+			(0.3, {
+				"name": "Orange tulip",
+				"image_path": "Gannitto world/files/Images/Items/Orange tulip.png",
+				}),
+			(0.3, {
+				"name": "Purple tulip",
+				"image_path": "Gannitto world/files/Images/Items/Purple tulip.png",
+				}),
+			(0.3, {
+				"name": "Black tulip",
+				"image_path": "Gannitto world/files/Images/Items/Black tulip.png",
+				}),
+			(0.3, {
+				"name": "Red tulip",
+				"image_path": "Gannitto world/files/Images/Items/Red tulip.png",
+				}),
+			(0.3, {
+				"name": "Yellow tulip",
+				"image_path": "Gannitto world/files/Images/Items/Yellow tulip.png",
+				}),
+			(0.1, {
+				"name": "Dandelion",
+				"image_path": "Gannitto world/files/Images/Objects/Dandelion 1.png",
 				}),
 			(0.1, {
 				"name": "Mushroom",

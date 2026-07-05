@@ -827,11 +827,16 @@ class Inventory:
 	
 	def increate(self, name: str, amount: int=1):
 		
-		"""Adds item to inventory"""
+		"""Выдаёт предмет в инвентарь"""
 		
 		try:
 			self.resourses[name].amount += amount
-			self.update_whole()
+			for item in self.whole_inventory:
+				if item is not None and item.name == name:
+					item.amount += amount
+					break
+			else:
+				self.update_whole()
 		except KeyError:
 			from Gannitto_world import t, chat_message
 			chat_message(t("<<< Error increasing: item not found >>>"))
@@ -843,7 +848,7 @@ class Inventory:
 				self.whole_inventory.insert(self.whole_inventory.index(None), resource)
 				self.whole_inventory.remove(None)
 
-		def chek():
+		def check():
 			for cell in self.whole_inventory:
 				if cell is not None and cell.amount > 99:
 					for _ in range(int(cell.amount / 99)):
@@ -851,9 +856,9 @@ class Inventory:
 						self.whole_inventory[a] = Resourse(cell.name, cell.image_path, cell.info, cell.purpose, cell.type)
 						self.whole_inventory[a].amount = 99
 					cell.amount -= int(cell.amount / 99) * 99
-					chek()
+					check()
 
-		chek()
+		check()
 	
 	def get_amout(self, name: str):
 		
