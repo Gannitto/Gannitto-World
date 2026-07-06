@@ -238,6 +238,9 @@ Tool_inventory_slot = pygame.transform.scale(pygame.image.load(path + "Gannitto 
 Split_items1 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Split items.png"), (64, 64))
 Split_items2 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Split items 2.png"), (64, 64))
 
+Compact_inventory1 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Compact inventory.png"), (64, 64))
+Compact_inventory2 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Compact inventory 2.png"), (64, 64))
+
 Inventory_slot.set_alpha(Settings["Display"][1])
 Changed_inventory_slot.set_alpha(Settings["Display"][1])
 Craft_list_inventory_slot.set_alpha(Settings["Display"][1])
@@ -246,6 +249,8 @@ Object_inventory_slot.set_alpha(Settings["Display"][1])
 Tool_inventory_slot.set_alpha(Settings["Display"][1])
 Split_items1.set_alpha(Settings["Display"][1])
 Split_items2.set_alpha(Settings["Display"][1])
+Compact_inventory1.set_alpha(Settings["Display"][1])
+Compact_inventory2.set_alpha(Settings["Display"][1])
 
 Portal_1 = pygame.image.load(path + "Gannitto world/files/Images/Objects/Portal 1.png")
 Portal_1 = pygame.transform.scale(Portal_1, (128, 256))
@@ -2896,6 +2901,8 @@ def settings():
 					Tool_inventory_slot.set_alpha(Settings["Display"][1])
 					Split_items1.set_alpha(Settings["Display"][1])
 					Split_items2.set_alpha(Settings["Display"][1])
+					Compact_inventory1.set_alpha(Settings["Display"][1])
+					Compact_inventory2.set_alpha(Settings["Display"][1])
 					
 			if Settings["Display"][7]:
 
@@ -5593,7 +5600,8 @@ def start_game():
 					craft_items_list = [None] * 7
 					craft_amounts_list = [None] * 7
 					craft_images_list = [None] * 7
-			
+
+			# Разделение предметов
 			if 810 <= mouse_x <= 874 and 10 <= mouse_y <= 74:
 				if special_slot_animations["Split items slot"][0]:
 					if special_slot_animations["Split items slot"][1] < FPS / 6:
@@ -5604,10 +5612,7 @@ def start_game():
 					special_slot_animations["Split items slot"] = [True, 0, 10]
 				
 				if click[0]:
-					if inventory.Split_items:
-						inventory.Split_items = False
-					else:
-						inventory.Split_items = True
+					inventory.Split_items = not inventory.Split_items
 				
 			elif special_slot_animations["Split items slot"][0]:
 				special_slot_animations["Split items slot"][0] = False
@@ -5624,6 +5629,36 @@ def start_game():
 			
 			else:
 				win.blit(pygame.transform.scale(Split_items1, (64, 64)), (810, 10))
+			
+			# Сжатие инвентаря
+			
+			if 810 <= mouse_x <= 874 and 170 <= mouse_y <= 234:
+				if special_slot_animations["Compact inventory slot"][0]:
+					if special_slot_animations["Compact inventory slot"][1] < FPS / 6:
+						special_slot_animations["Compact inventory slot"][1] += 1
+						special_slot_animations["Compact inventory slot"][2] -= 3
+						special_slot_animations["Compact inventory slot"][2] = abs(special_slot_animations["Compact inventory slot"][2])
+				else:
+					special_slot_animations["Compact inventory slot"] = [True, 0, 10]
+				
+				if release:
+					inventory.compact_inventory()
+				
+			elif special_slot_animations["Compact inventory slot"][0]:
+				special_slot_animations["Compact inventory slot"][0] = False
+				special_slot_animations["Compact inventory slot"][1] = 0
+			elif special_slot_animations["Compact inventory slot"][1] < FPS / 4:
+				special_slot_animations["Compact inventory slot"][1] += 1   
+
+			if special_slot_animations["Compact inventory slot"][0]:
+				try:
+					if Settings["Display"][5]: win.blit(pygame.transform.scale(Compact_inventory2, (64 - special_slot_animations["Compact inventory slot"][2], 64 - special_slot_animations["Compact inventory slot"][2])), (810, 170))
+					else: win.blit(pygame.transform.scale(Compact_inventory2, (64, 64)), (810, 170))
+				except: win.blit(pygame.transform.scale(Compact_inventory2, (64, 64)), (810, 170))
+				mouse_object = t("Compact inventory")
+			
+			else:
+				win.blit(pygame.transform.scale(Compact_inventory1, (64, 64)), (810, 170))
 
 			inventory.draw_whole()
 			
