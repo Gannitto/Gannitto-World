@@ -241,6 +241,24 @@ Split_items2 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/f
 Compact_inventory1 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Compact inventory.png"), (64, 64))
 Compact_inventory2 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Compact inventory 2.png"), (64, 64))
 
+Craft_list_slot1 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Craft list slot.png"), (64, 64))
+Craft_list_slot2 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Craft list slot 2.png"), (64, 64))
+
+Game_menu_slot1 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Game menu slot.png"), (64, 64))
+Game_menu_slot2 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Game menu slot 2.png"), (64, 64))
+
+Menu_slot1 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Menu slot.png"), (64, 64))
+Menu_slot2 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Menu slot 2.png"), (64, 64))
+
+Multyplayer_slot1 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Multyplayer slot.png"), (64, 64))
+Multyplayer_slot2 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Multyplayer slot 2.png"), (64, 64))
+
+Close_slot1 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Close slot.png"), (64, 64))
+Close_slot2 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Close slot 2.png"), (64, 64))
+
+Reference_slot1 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Reference slot.png"), (64, 64))
+Reference_slot2 = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Reference slot 2.png"), (64, 64))
+
 Inventory_slot.set_alpha(Settings["Display"][1])
 Changed_inventory_slot.set_alpha(Settings["Display"][1])
 Craft_list_inventory_slot.set_alpha(Settings["Display"][1])
@@ -251,6 +269,18 @@ Split_items1.set_alpha(Settings["Display"][1])
 Split_items2.set_alpha(Settings["Display"][1])
 Compact_inventory1.set_alpha(Settings["Display"][1])
 Compact_inventory2.set_alpha(Settings["Display"][1])
+Craft_list_slot1.set_alpha(Settings["Display"][1])
+Craft_list_slot2.set_alpha(Settings["Display"][1])
+Game_menu_slot1.set_alpha(Settings["Display"][1])
+Game_menu_slot2.set_alpha(Settings["Display"][1])
+Menu_slot1.set_alpha(Settings["Display"][1])
+Menu_slot2.set_alpha(Settings["Display"][1])
+Multyplayer_slot1.set_alpha(Settings["Display"][1])
+Multyplayer_slot2.set_alpha(Settings["Display"][1])
+Close_slot1.set_alpha(Settings["Display"][1])
+Close_slot2.set_alpha(Settings["Display"][1])
+Reference_slot1.set_alpha(Settings["Display"][1])
+Reference_slot2.set_alpha(Settings["Display"][1])
 
 Portal_1 = pygame.image.load(path + "Gannitto world/files/Images/Objects/Portal 1.png")
 Portal_1 = pygame.transform.scale(Portal_1, (128, 256))
@@ -1819,11 +1849,10 @@ class Wall:
 			elif len(self.neigbords) == 4:
 				self.image = self.images[10]
 		
-	def main(self):
+	def main(self, release):
 
-		if self.is_door and click[0] and self.x + Width // 2 - player.x <= mouse_x <= self.x + Width // 2 - player.x + 256 and player.y - self.y + Height // 2 - 128 <= mouse_y <= player.y - self.y + Height // 2 + 128:
+		if self.is_door and release and self.x + Width // 2 - player.x <= mouse_x <= self.x + Width // 2 - player.x + 256 and player.y - self.y + Height // 2 - 128 <= mouse_y <= player.y - self.y + Height // 2 + 128:
 			self.open = not self.open
-			time.sleep(0.4)
 
 		win.blit(self.image, (self.x + Width // 2 - 128 - player.x, player.y - self.y + Height // 2 - 128))
 		
@@ -2328,16 +2357,17 @@ def settings():
 					if event.key == pygame.K_LALT:
 						alt_pressed = not alt_pressed
 
+				if event.type == pygame.KEYUP:
+					if event.key == hot_keys["Change screen"]:
+						if screenmode == "FULLSCREEN":
+							win = pygame.display.set_mode((1000,700), pygame.RESIZABLE)
+							screenmode = "RESIZABLE"
+						else:
+							win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+							screenmode = "FULLSCREEN"
+
 			keys = pygame.key.get_pressed()
 
-			if keys[hot_keys["Change screen"]]:
-				if screenmode == "FULLSCREEN":
-					win = pygame.display.set_mode((1000,700), pygame.RESIZABLE)
-					screenmode = "RESIZABLE"
-				else:
-					win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-					screenmode = "FULLSCREEN"
-				time.sleep(0.1)
 			
 			win.fill((192, 203, 220))
 			pygame.draw.rect(win, (139, 155, 180), (-8, 100, 373, Height), 8)
@@ -2496,20 +2526,20 @@ def settings():
 						input_text += event.unicode
 
 				if event.type == pygame.KEYUP:
+
 					if event.key == pygame.K_LALT:
 						alt_pressed = not alt_pressed
 
+					if event.key == hot_keys["Change screen"]:
+						if screenmode == "FULLSCREEN":
+							win = pygame.display.set_mode((1000,700), pygame.RESIZABLE)
+							screenmode = "RESIZABLE"
+						else:
+							win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+							screenmode = "FULLSCREEN"
+
 
 			keys = pygame.key.get_pressed()
-
-			if keys[hot_keys["Change screen"]]:
-				if screenmode == "FULLSCREEN":
-					win = pygame.display.set_mode((1000,700), pygame.RESIZABLE)
-					screenmode = "RESIZABLE"
-				else:
-					win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-					screenmode = "FULLSCREEN"
-				time.sleep(0.1)
 			
 			win.fill((192, 203, 220))
 			pygame.draw.rect(win, (139, 155, 180), (-8, 100, 373, Height), 8)
@@ -2724,16 +2754,13 @@ def settings():
 				if event.type == pygame.KEYUP:
 					if event.key == pygame.K_LALT:
 						alt_pressed = not alt_pressed
-
-			keys = pygame.key.get_pressed()
-			if keys[hot_keys["Change screen"]]:
-				if screenmode == "FULLSCREEN":
-					win = pygame.display.set_mode((1000,700), pygame.RESIZABLE)
-					screenmode = "RESIZABLE"
-				else:
-					win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-					screenmode = "FULLSCREEN"
-				time.sleep(0.1)
+					if event.key == hot_keys["Change screen"]:
+						if screenmode == "FULLSCREEN":
+							win = pygame.display.set_mode((1000,700), pygame.RESIZABLE)
+							screenmode = "RESIZABLE"
+						else:
+							win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+							screenmode = "FULLSCREEN"
 			
 			win.fill((192, 203, 220))
 			pygame.draw.rect(win, (139, 155, 180), (-8, 100, 373, Height), 8)
@@ -2838,18 +2865,15 @@ def settings():
 				if event.type == pygame.KEYUP:
 					if event.key == pygame.K_LALT:
 						alt_pressed = not alt_pressed
-
+					if event.key == hot_keys["Change screen"]:
+						if screenmode == "FULLSCREEN":
+							win = pygame.display.set_mode((1000,700), pygame.RESIZABLE)
+							screenmode = "RESIZABLE"
+						else:
+							win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+							screenmode = "FULLSCREEN"
 
 			keys = pygame.key.get_pressed()
-				
-			if keys[hot_keys["Change screen"]]:
-				if screenmode == "FULLSCREEN":
-					win = pygame.display.set_mode((1000,700), pygame.RESIZABLE)
-					screenmode = "RESIZABLE"
-				else:
-					win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-					screenmode = "FULLSCREEN"
-				time.sleep(0.1)
 
 			if bigTextInfo.size(t("Nickname"))[0] + 337 <= mouse_x <= bigTextInfo.size(t("Nickname"))[0] + 467 + 120 and 113 <= mouse_y <= 184 and click[0]:
 				Nick = True
@@ -2903,6 +2927,18 @@ def settings():
 					Split_items2.set_alpha(Settings["Display"][1])
 					Compact_inventory1.set_alpha(Settings["Display"][1])
 					Compact_inventory2.set_alpha(Settings["Display"][1])
+					Craft_list_slot1.set_alpha(Settings["Display"][1])
+					Craft_list_slot2.set_alpha(Settings["Display"][1])
+					Game_menu_slot1.set_alpha(Settings["Display"][1])
+					Game_menu_slot2.set_alpha(Settings["Display"][1])
+					Menu_slot1.set_alpha(Settings["Display"][1])
+					Menu_slot2.set_alpha(Settings["Display"][1])
+					Multyplayer_slot1.set_alpha(Settings["Display"][1])
+					Multyplayer_slot2.set_alpha(Settings["Display"][1])
+					Close_slot1.set_alpha(Settings["Display"][1])
+					Close_slot2.set_alpha(Settings["Display"][1])
+					Reference_slot1.set_alpha(Settings["Display"][1])
+					Reference_slot2.set_alpha(Settings["Display"][1])
 					
 			if Settings["Display"][7]:
 
@@ -2992,19 +3028,16 @@ def settings():
 				if event.type == pygame.KEYUP:
 					if event.key == pygame.K_LALT:
 						alt_pressed = not alt_pressed
-
+					if event.key == hot_keys["Change screen"]:
+						if screenmode == "FULLSCREEN":
+							win = pygame.display.set_mode((1000,700), pygame.RESIZABLE)
+							screenmode = "RESIZABLE"
+						else:
+							win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+							screenmode = "FULLSCREEN"
 						
 			keys = pygame.key.get_pressed()
 				
-			if keys[hot_keys["Change screen"]]:
-				if screenmode == "FULLSCREEN":
-					win = pygame.display.set_mode((1000,700), pygame.RESIZABLE)
-					screenmode = "RESIZABLE"
-				else:
-					win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-					screenmode = "FULLSCREEN"
-				time.sleep(0.1)
-
 			if bigTextInfo.size(t("Music volume"))[0] + 337 <= mouse_x <= bigTextInfo.size(t("Music volume"))[0] + 467 + 120 and 113 <= mouse_y <= 184 and click[0]:
 				Music_volume = True
 			if bigTextInfo.size(t("Sound volume"))[0] + 337 <= mouse_x <= bigTextInfo.size(t("Sound volume"))[0] + 467 + 120 and 199 <= mouse_y <= 270 and click[0]:
@@ -3098,19 +3131,16 @@ def settings():
 				if event.type == pygame.KEYUP:
 					if event.key == pygame.K_LALT:
 						alt_pressed = not alt_pressed
-
+					if event.key == hot_keys["Change screen"]:
+						if screenmode == "FULLSCREEN":
+							win = pygame.display.set_mode((1000,700), pygame.RESIZABLE)
+							screenmode = "RESIZABLE"
+						else:
+							win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+							screenmode = "FULLSCREEN"
 
 			keys = pygame.key.get_pressed()
 				
-			if keys[hot_keys["Change screen"]]:
-				if screenmode == "FULLSCREEN":
-					win = pygame.display.set_mode((1000,700), pygame.RESIZABLE)
-					screenmode = "RESIZABLE"
-				else:
-					win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-					screenmode = "FULLSCREEN"
-				time.sleep(0.1)
-			
 			win.fill((192, 203, 220))
 			pygame.draw.rect(win, (139, 155, 180), (-8, 100, 373, Height), 8)
 			pygame.draw.line(win, (139, 155, 180), (307, 103), (Width, 103), 8)
@@ -3204,18 +3234,15 @@ def settings():
 				if event.type == pygame.KEYUP:
 					if event.key == pygame.K_LALT:
 						alt_pressed = not alt_pressed
-
+					if event.key == hot_keys["Change screen"]:
+						if screenmode == "FULLSCREEN":
+							win = pygame.display.set_mode((1000,700), pygame.RESIZABLE)
+							screenmode = "RESIZABLE"
+						else:
+							win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+							screenmode = "FULLSCREEN"
 
 			keys = pygame.key.get_pressed()
-			
-			if keys[hot_keys["Change screen"]]:
-				if screenmode == "FULLSCREEN":
-					win = pygame.display.set_mode((1000,700), pygame.RESIZABLE)
-					screenmode = "RESIZABLE"
-				else:
-					win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-					screenmode = "FULLSCREEN"
-				time.sleep(0.1)
 
 			back_button.main()
 			if back_button.get_pressed() or keys[pygame.K_ESCAPE]:
@@ -3500,18 +3527,15 @@ def settings():
 				if event.type == pygame.KEYUP:
 					if event.key == pygame.K_LALT:
 						alt_pressed = not alt_pressed
-
+					if event.key == hot_keys["Change screen"]:
+						if screenmode == "FULLSCREEN":
+							win = pygame.display.set_mode((1000,700), pygame.RESIZABLE)
+							screenmode = "RESIZABLE"
+						else:
+							win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+							screenmode = "FULLSCREEN"
 
 			keys = pygame.key.get_pressed()
-				
-			if keys[hot_keys["Change screen"]]:
-				if screenmode == "FULLSCREEN":
-					win = pygame.display.set_mode((1000,700), pygame.RESIZABLE)
-					screenmode = "RESIZABLE"
-				else:
-					win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-					screenmode = "FULLSCREEN"
-				time.sleep(0.1)
 			
 			win.fill((192, 203, 220))
 			pygame.draw.rect(win, (139, 155, 180), (-8, 100, 373, Height), 8)
@@ -3647,18 +3671,15 @@ def change_a_character():
 				if event.type == pygame.KEYUP:
 					if event.key == pygame.K_LALT:
 						alt_pressed = not alt_pressed
-
+					if event.key == hot_keys["Change screen"]:
+						if screenmode == "FULLSCREEN":
+							win = pygame.display.set_mode((1000,700), pygame.RESIZABLE)
+							screenmode = "RESIZABLE"
+						else:
+							win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+							screenmode = "FULLSCREEN"
 			
 			keys = pygame.key.get_pressed()
-				
-			if keys[hot_keys["Change screen"]]:
-				if screenmode == "FULLSCREEN":
-					win = pygame.display.set_mode((1000,700), pygame.RESIZABLE)
-					screenmode = "RESIZABLE"
-				else:
-					win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-					screenmode = "FULLSCREEN"
-				time.sleep(0.1)
 			
 			win.fill((192, 203, 220))
 
@@ -3742,16 +3763,17 @@ def change_a_character():
 				if event.type == pygame.QUIT:
 					save()
 					sys.exit()
+				if event.type == pygame.KEYUP:
+					if event.key == hot_keys["Change screen"]:
+						if screenmode == "FULLSCREEN":
+							win = pygame.display.set_mode((1000,700), pygame.RESIZABLE)
+							screenmode = "RESIZABLE"
+						else:
+							win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+							screenmode = "FULLSCREEN"
+
 			
 			keys = pygame.key.get_pressed()
-			if keys[hot_keys["Change screen"]]:
-				if screenmode == "FULLSCREEN":
-					win = pygame.display.set_mode((1000,700), pygame.RESIZABLE)
-					screenmode = "RESIZABLE"
-				else:
-					win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-					screenmode = "FULLSCREEN"
-				time.sleep(0.1)
 
 			win.fill((192, 203, 220))
 
@@ -4037,6 +4059,15 @@ def start_game():
 							craft_items_list = [None] * 7
 							craft_amounts_list = [None] * 7
 							craft_images_list = [None] * 7
+
+					if event.key == hot_keys["Change screen"]:
+						if screenmode == "FULLSCREEN":
+							win = pygame.display.set_mode((1000,700), pygame.RESIZABLE)
+							screenmode = "RESIZABLE"
+						else:
+							win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+							screenmode = "FULLSCREEN"
+
 		
 		if inventory_open:
 			if click[0] and not hold_left:
@@ -4059,18 +4090,6 @@ def start_game():
 						pass
 		
 		keys = pygame.key.get_pressed()
-		
-		if keys[hot_keys["Change screen"]]:
-
-			if screenmode == "FULLSCREEN":
-				win = pygame.display.set_mode((1000,700), pygame.RESIZABLE)
-				screenmode = "RESIZABLE"
-				Hiro_rect = Hiro.get_rect(center=(500, 350))
-			else:
-				win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-				screenmode = "FULLSCREEN"
-				Hiro_rect = Hiro.get_rect(center=(Width / 2, Height / 2))
-			time.sleep(0.1)
 
 		if keys[hot_keys["Throw away the item"]] and inventory.whole_inventory[changed_slot] is not None and not chat_input:
 			
@@ -4810,7 +4829,7 @@ def start_game():
 			bullet.main()
 
 		for wall in world.walls:
-			wall.main()
+			wall.main(release)
 		
 		i = -1
 		mobs_to_remove = []
@@ -5290,13 +5309,12 @@ def start_game():
 
 		if keys[hot_keys["TAB menu"]] and not chat_input:
 
-			pygame.image.save(win, path + "Gannitto world/files/Cache/Win.png")
 			radius = 0   # Расстояние, на котором кнопки находятся относительно центра экрана
 			display_speed = 7   # Скорость отдаления кнопок от центра экрана
 			a = True
 			b = False 
 			time_on_button = 0   # Время, которое прошло спустя тот момент, когда пользователь навёл курсором мыши на одну из кнопок
-
+			win_copy = win.copy()
 			while True:
 				
 				if b:
@@ -5323,15 +5341,25 @@ def start_game():
 				mouse_x, mouse_y = pygame.mouse.get_pos()
 				keys = pygame.key.get_pressed()
 				click = pygame.mouse.get_pressed()
+				release = False
 
 				for event in pygame.event.get():
 
 					if event.type == pygame.QUIT:
-						
 						save()
 						sys.exit()
 
-				win.blit(pygame.image.load(path + "Gannitto world/files/Cache/Win.png"), (0, 0))
+					if event.type == pygame.MOUSEBUTTONUP:
+						release = True
+
+					if event.type == pygame.KEYUP:
+						if event.key == pygame.K_ESCAPE:
+							b = True
+							display_speed = 7
+
+
+
+				win.blit(win_copy, (0, 0))
 				
 				# Дальше идёт отображение всех кнопок по супер сложной формуле, я уже сам хз как это работает
 					
@@ -5344,7 +5372,7 @@ def start_game():
 					else:
 						special_slot_animations["Craft list slot"] = [True, 0, 10]
 					
-					if click[0]:
+					if release:
 						inventory_open = True
 						craft_list_open = True
 						b = True
@@ -5355,13 +5383,12 @@ def start_game():
 					special_slot_animations["Craft list slot"][1] = 0
 				elif special_slot_animations["Craft list slot"][1] < FPS / 4:
 					special_slot_animations["Craft list slot"][1] += 1   
-					
 				if special_slot_animations["Craft list slot"][0] and Settings["Display"][5]:
-					try:win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Craft list slot 2.png"), (64 - special_slot_animations["Craft list slot"][2], 64 - special_slot_animations["Craft list slot"][2])), (Width // 2 + radius - 32, Height // 2 - 32))
-					except: win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Craft list slot 2.png"), (64, 64)), (Width // 2 + radius - 32, Height // 2 - 32))
+					try:win.blit(pygame.transform.scale(Craft_list_slot2, (64 - special_slot_animations["Craft list slot"][2], 64 - special_slot_animations["Craft list slot"][2])), (Width // 2 + radius - 32, Height // 2 - 32))
+					except: win.blit(Craft_list_slot2, (Width // 2 + radius - 32, Height // 2 - 32))
 				
 				else:
-					win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Craft list slot.png"), (64, 64)), (Width // 2 + radius - 32, Height // 2 - 32))
+					win.blit(Craft_list_slot1, (Width // 2 + radius - 32, Height // 2 - 32))
 
 				text(t("Craft list"), Width // 2 + radius, Height // 2 + 40, alignment=True)
 				
@@ -5384,14 +5411,14 @@ def start_game():
 					special_slot_animations["Game menu slot"][0] = False
 					special_slot_animations["Game menu slot"][1] = 0
 				elif special_slot_animations["Game menu slot"][1] < FPS / 4:
-					special_slot_animations["Game menu slot"][1] += 1   
+					special_slot_animations["Game menu slot"][1] += 1
 
-				if special_slot_animations["Game menu slot"][0] and Settings["Display"][5]:
-					try:win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Game menu slot 2.png"), (64 - special_slot_animations["Game menu slot"][2], 64 - special_slot_animations["Game menu slot"][2])), (Width // 2 + cos((2 * pi) / 6) * radius - 32, Height // 2 + sin((2 * pi) / 6) * radius - 32))
-					except: win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Game menu slot 2.png"), (64, 64)), (Width // 2 + cos((2 * pi) / 6) * radius - 32, Height // 2 + sin((2 * pi) / 6) * radius - 32))
+				if special_slot_animations["Game menu slot"][0] and Settings["Display"][5]: ###
+					try:win.blit(pygame.transform.scale(Game_menu_slot2, (64 - special_slot_animations["Game menu slot"][2], 64 - special_slot_animations["Game menu slot"][2])), (Width // 2 + cos((2 * pi) / 6) * radius - 32, Height // 2 + sin((2 * pi) / 6) * radius - 32))
+					except: win.blit(Game_menu_slot2, (Width // 2 + cos((2 * pi) / 6) * radius - 32, Height // 2 + sin((2 * pi) / 6) * radius - 32))
 				
 				else:
-					win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Game menu slot.png"), (64, 64)), (Width // 2 + cos((2 * pi) / 6) * radius - 32, Height // 2 + sin((2 * pi) / 6) * radius - 32))
+					win.blit(Game_menu_slot1, (Width // 2 + cos((2 * pi) / 6) * radius - 32, Height // 2 + sin((2 * pi) / 6) * radius - 32))
 
 				text(t("Game menu"), Width // 2 + cos((2 * pi) / 6) * radius, Height // 2 + sin((2 * pi) / 6) * radius + 40, alignment=True)
 				
@@ -5418,11 +5445,11 @@ def start_game():
 					special_slot_animations["Menu slot"][1] += 1   
 
 				if special_slot_animations["Menu slot"][0] and Settings["Display"][5]:
-					try:win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Changed menu slot.png"), (64 - special_slot_animations["Menu slot"][2], 64 - special_slot_animations["Menu slot"][2])), (Width // 2 + cos((2 * pi * 2) / 6) * radius - 32, Height // 2 + sin((2 * pi) / 6) * radius - 32))
-					except: win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Changed menu slot.png"), (64, 64)), (Width // 2 + cos((2 * pi * 2) / 6) * radius - 32, Height // 2 + sin((2 * pi * 2) / 6) * radius - 32))
+					try:win.blit(pygame.transform.scale(Menu_slot2, (64 - special_slot_animations["Menu slot"][2], 64 - special_slot_animations["Menu slot"][2])), (Width // 2 + cos((2 * pi * 2) / 6) * radius - 32, Height // 2 + sin((2 * pi) / 6) * radius - 32))
+					except: win.blit(Menu_slot2, (Width // 2 + cos((2 * pi * 2) / 6) * radius - 32, Height // 2 + sin((2 * pi * 2) / 6) * radius - 32))
 				
 				else:
-					win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Menu slot.png"), (64, 64)), (Width // 2 + cos((2 * pi * 2) / 6) * radius - 32, Height // 2 + sin((2 * pi * 2) / 6) * radius - 32))
+					win.blit(Menu_slot1, (Width // 2 + cos((2 * pi * 2) / 6) * radius - 32, Height // 2 + sin((2 * pi * 2) / 6) * radius - 32))
 
 				text(t("Extra info menu"), Width // 2 + cos((2 * pi * 2) / 6) * radius, Height // 2 + sin((2 * pi * 2) / 6) * radius + 40, alignment=True)
 				
@@ -5449,11 +5476,11 @@ def start_game():
 					special_slot_animations["Multyplayer slot"][1] += 1   
 
 				if special_slot_animations["Multyplayer slot"][0] and Settings["Display"][5]:
-					try:win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Multyplayer slot 2.png"), (64 - special_slot_animations["Multyplayer slot"][2], 64 - special_slot_animations["Multyplayer slot"][2])), (Width // 2 + cos((2 * pi * 3) / 6) * radius - 32, Height // 2 + sin((2 * pi * 3) / 6) * radius - 32))
-					except: win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Multyplayer slot 2.png"), (64, 64)), (Width // 2 + cos((2 * pi * 3) / 6) * radius - 32, Height // 2 + sin((2 * pi * 3) / 6) * radius - 32))
+					try:win.blit(pygame.transform.scale(Multyplayer_slot2, (64 - special_slot_animations["Multyplayer slot"][2], 64 - special_slot_animations["Multyplayer slot"][2])), (Width // 2 + cos((2 * pi * 3) / 6) * radius - 32, Height // 2 + sin((2 * pi * 3) / 6) * radius - 32))
+					except: win.blit(Multyplayer_slot2, (Width // 2 + cos((2 * pi * 3) / 6) * radius - 32, Height // 2 + sin((2 * pi * 3) / 6) * radius - 32))
 				
 				else:
-					win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Multyplayer slot.png"), (64, 64)), (Width // 2 + cos((2 * pi * 3) / 6) * radius - 32, Height // 2 + sin((2 * pi * 3) / 6) * radius - 32))
+					win.blit(Multyplayer_slot1, (Width // 2 + cos((2 * pi * 3) / 6) * radius - 32, Height // 2 + sin((2 * pi * 3) / 6) * radius - 32))
 
 				text(t("Multiplayer menu"), Width // 2 + cos((2 * pi * 3) / 6) * radius, Height // 2 + sin((2 * pi * 3) / 6) * radius + 40, alignment=True)
 				
@@ -5479,11 +5506,11 @@ def start_game():
 					special_slot_animations["Close slot"][1] += 1   
 
 				if special_slot_animations["Close slot"][0] and Settings["Display"][5]:
-					try:win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Close slot 2.png"), (64 - special_slot_animations["Close slot"][2], 64 - special_slot_animations["Close slot"][2])), (Width // 2 + cos((2 * pi * 4) / 6) * radius - 32, Height // 2 + sin((2 * pi * 4) / 6) * radius - 32))
-					except: win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Close slot 2.png"), (64, 64)), (Width // 2 + cos((2 * pi * 4) / 6) * radius - 32, Height // 2 + sin((2 * pi * 4) / 6) * radius - 32))
+					try:win.blit(pygame.transform.scale(Close_slot2, (64 - special_slot_animations["Close slot"][2], 64 - special_slot_animations["Close slot"][2])), (Width // 2 + cos((2 * pi * 4) / 6) * radius - 32, Height // 2 + sin((2 * pi * 4) / 6) * radius - 32))
+					except: win.blit(Close_slot2, (Width // 2 + cos((2 * pi * 4) / 6) * radius - 32, Height // 2 + sin((2 * pi * 4) / 6) * radius - 32))
 				
 				else:
-					win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Close slot.png"), (64, 64)), (Width // 2 + cos((2 * pi * 4) / 6) * radius - 32, Height // 2 + sin((2 * pi * 4) / 6) * radius - 32))
+					win.blit(Close_slot1, (Width // 2 + cos((2 * pi * 4) / 6) * radius - 32, Height // 2 + sin((2 * pi * 4) / 6) * radius - 32))
 
 				text(t("Close"), Width // 2 + cos((2 * pi * 4) / 6) * radius, Height // 2 + sin((2 * pi * 4) / 6) * radius + 40, alignment=True)
 
@@ -5509,17 +5536,13 @@ def start_game():
 					special_slot_animations["Reference slot"][1] += 1   
 
 				if special_slot_animations["Reference slot"][0] and Settings["Display"][5]:
-					try:win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Reference slot 2.png"), (64 - special_slot_animations["Reference slot"][2], 64 - special_slot_animations["Reference slot"][2])), (Width // 2 + cos((2 * pi * 5) / 6) * radius - 32, Height // 2 + sin((2 * pi * 4) / 6) * radius - 32))
-					except: win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Reference slot 2.png"), (64, 64)), (Width // 2 + cos((2 * pi * 5) / 6) * radius - 32, Height // 2 + sin((2 * pi * 5) / 6) * radius - 32))
+					try:win.blit(pygame.transform.scale(Reference_slot2, (64 - special_slot_animations["Reference slot"][2], 64 - special_slot_animations["Reference slot"][2])), (Width // 2 + cos((2 * pi * 5) / 6) * radius - 32, Height // 2 + sin((2 * pi * 4) / 6) * radius - 32))
+					except: win.blit(Reference_slot2, (Width // 2 + cos((2 * pi * 5) / 6) * radius - 32, Height // 2 + sin((2 * pi * 5) / 6) * radius - 32))
 				
 				else:
-					win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Slots/Reference slot.png"), (64, 64)), (Width // 2 + cos((2 * pi * 5) / 6) * radius - 32, Height // 2 + sin((2 * pi * 5) / 6) * radius - 32))
+					win.blit(Reference_slot1, (Width // 2 + cos((2 * pi * 5) / 6) * radius - 32, Height // 2 + sin((2 * pi * 5) / 6) * radius - 32))
 
 				text(t("Reference"), Width // 2 + cos((2 * pi * 5) / 6) * radius, Height // 2 + sin((2 * pi * 5) / 6) * radius + 40, alignment=True)
-
-				if keys[pygame.K_ESCAPE]:
-					b = True
-					display_speed = 7
 
 				pygame.display.update()
 				clock.tick(FPS)
@@ -5611,7 +5634,7 @@ def start_game():
 				else:
 					special_slot_animations["Split items slot"] = [True, 0, 10]
 				
-				if click[0]:
+				if release:
 					inventory.Split_items = not inventory.Split_items
 				
 			elif special_slot_animations["Split items slot"][0]:
@@ -5677,7 +5700,7 @@ def start_game():
 					
 				if Width - 160 <= mouse_x <= Width - 130 and 130 <= mouse_y <= 160:
 					win.blit(bigTextInfo.render("x", True, (0, 100, 0)), (Width - 160, 130))
-					if click[0]:
+					if release:
 						craft_list_open = False
 						
 				win.blit(bigTextInfo.render(str(craft_list_page), True, (0, 150, 0)), (Width // 2 - 15, Height - 230))
@@ -5778,7 +5801,7 @@ def start_game():
 					else:
 						special_slot_animations["Craft list slot"] = [True, 0, 10]
 					
-					if click[0]:
+					if release:
 						craft_list_open = True
 					
 				elif special_slot_animations["Craft list slot"][0]:
@@ -5800,11 +5823,11 @@ def start_game():
 
 			if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name in ("Wrench"):
 
-				if 810 <= mouse_x <= 874 and 170 <= mouse_y <= 234:
-					win.blit(Changed_inventory_slot, (810, 170))
-					if click[0]: item_settings_open = True; time.sleep(0.1)
+				if 900 <= mouse_x <= 964 and 10 <= mouse_y <= 74:
+					win.blit(Changed_inventory_slot, (900, 10))
+					if release: item_settings_open = True
 				else:
-					win.blit(Inventory_slot, (810, 170))
+					win.blit(Inventory_slot, (900, 10))
 		else:
 			
 			if 10 < mouse_x < 794 and 10 < mouse_y < 74:
@@ -5918,11 +5941,11 @@ def start_game():
 					pygame.draw.circle(win, (0, 150, 0), (Width // 2, 308), 30)
 					pygame.draw.rect(win, (0, 150, 0), (Width - 180, 278, 60, 60), 30)
 
-				if 120 <= mouse_x <= 180 and 278 <= mouse_y <= 338 and click[0]:
+				if 120 <= mouse_x <= 180 and 278 <= mouse_y <= 338 and release:
 					inventory.whole_inventory[changed_slot].settings = ["Only wire"]
-				if Width // 2 - 30 <= mouse_x <= Width // 2 + 30 and 278 <= mouse_y <= 338 and click[0]:
+				if Width // 2 - 30 <= mouse_x <= Width // 2 + 30 and 278 <= mouse_y <= 338 and release:
 					inventory.whole_inventory[changed_slot].settings = []
-				if Width - 180 <= mouse_x <= Width - 120 and 278 <= mouse_y <= 338 and click[0]:
+				if Width - 180 <= mouse_x <= Width - 120 and 278 <= mouse_y <= 338 and release:
 					inventory.whole_inventory[changed_slot].settings = ["All mechanisms, but wire"]
 					
 				
@@ -5933,13 +5956,13 @@ def start_game():
 					
 				if Width - 160 <= mouse_x <= Width - 130 and 130 <= mouse_y <= 160:
 					win.blit(bigTextInfo.render("x", True, (0, 100, 0)), (Width - 160, 130))
-					if click[0]:
+					if release:
 						item_settings_open = False
 		
 		if inventory.whole_inventory[changed_slot] is not None:
 			text(inventory.whole_inventory[changed_slot].name, 10, 320 if inventory_open else 80)
 
-		if Ron.X - player.x + Width // 2 - 128 <= mouse_x <= Ron.X - player.x + Width // 2 + 128 and player.y - Ron.Y + Height // 2 - 128 <= mouse_y <= player.y - Ron.Y + Height // 2 + 128 and click[0]:
+		if Ron.X - player.x + Width // 2 - 128 <= mouse_x <= Ron.X - player.x + Width // 2 + 128 and player.y - Ron.Y + Height // 2 - 128 <= mouse_y <= player.y - Ron.Y + Height // 2 + 128 and release:
 			Ron.window[0] = True
 
 		if Ron.window[0]:
@@ -5955,7 +5978,7 @@ def start_game():
 				
 				win.blit(bigTextInfo.render(t("Set a home point"), True, (0, 100, 0)), (200, 150))
 				
-				if click[0]:
+				if release:
 					Ron.Home = [player.x, player.y]
 
 			if Ron.Home is not None:
@@ -5966,7 +5989,7 @@ def start_game():
 			if 200 <= mouse_x <= 200 + bigTextInfo.size(t("Call"))[0] and 250 <= mouse_y <= 280:
 				
 				win.blit(bigTextInfo.render(t("Call"), True, (0, 100, 0)), (200, 250))
-				if click[0]:
+				if release:
 					Ron.Home = None
 					
 			win.blit(bigTextInfo.render("x", True, (0, 150, 0)), (Width - 160, 130))
@@ -5976,7 +5999,7 @@ def start_game():
 				
 			if Width - 160 <= mouse_x <= Width - 130 and 130 <= mouse_y <= 160:
 				win.blit(bigTextInfo.render("x", True, (0, 100, 0)), (Width - 160, 130))
-				if click[0]:
+				if release:
 					Ron.window[0] = False
 					
 		if in_motherboard is not None:
@@ -6010,7 +6033,7 @@ def start_game():
 				
 			if Width - 160 <= mouse_x <= Width - 130 and 130 <= mouse_y <= 160:
 				win.blit(bigTextInfo.render("x", True, (0, 100, 0)), (Width - 160, 130))
-				if click[0]:
+				if release:
 					in_motherboard = None
 
 		if menu_open:
