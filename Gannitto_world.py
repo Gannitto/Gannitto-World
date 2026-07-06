@@ -4060,6 +4060,36 @@ def start_game():
 							craft_amounts_list = [None] * 7
 							craft_images_list = [None] * 7
 
+					if event.key == hot_keys["Throw away the item"] and inventory.whole_inventory[changed_slot] is not None:
+						
+						if Backrooms.InBackrooms:
+							backrooms_objects.append(Object(inventory.whole_inventory[changed_slot].name, player.x, player.y, "Gannitto world/files/Images/Items/" + inventory.whole_inventory[changed_slot].name + ".png", special_flags="Item"))
+						else:
+							
+							match player.direction:
+								
+								case "Down":
+									x_bias_ = 0
+									y_bias_ = lambda particle: -particle.calculated_variable[0]
+								case "Up":
+									x_bias_ = 0
+									y_bias_ = lambda particle: particle.calculated_variable[0]
+								case "Left":
+									x_bias_ = lambda particle: -particle.calculated_variable[0]
+									y_bias_ = lambda particle: particle.calculated_variable[1]
+								case "Right":
+									x_bias_ = lambda particle: particle.calculated_variable[0]
+									y_bias_ = lambda particle: particle.calculated_variable[1]
+									
+							particles.append(Particle(player.x, player.y, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Items/" + inventory.whole_inventory[changed_slot].name + ".png"), (64, 64)), x_bias_, y_bias_, variable_to_calculate="(30 - self.ticks * 3, 15 - self.ticks * 4)", track_ticks=True, end_time=0.5, end_command="world.chunk_manager.get_chunk_at(particle.x, particle.y).items.append(Object(particle.special_flags, particle.x, particle.y, 'Gannitto world/files/Images/Items/' + particle.special_flags + '.png', special_flags='Item', pickable=True))", end_command_globals_in_the_end=("world", "Object"), special_flags=inventory.whole_inventory[changed_slot].name))
+							
+							del x_bias_
+							del y_bias_
+						
+						inventory.whole_inventory[changed_slot].amount -= 1
+						if inventory.whole_inventory[changed_slot].amount == 0:
+							inventory.whole_inventory[changed_slot] = None
+
 					if event.key == hot_keys["Change screen"]:
 						if screenmode == "FULLSCREEN":
 							win = pygame.display.set_mode((1000,700), pygame.RESIZABLE)
@@ -4090,38 +4120,6 @@ def start_game():
 						pass
 		
 		keys = pygame.key.get_pressed()
-
-		if keys[hot_keys["Throw away the item"]] and inventory.whole_inventory[changed_slot] is not None and not chat_input:
-			
-			if Backrooms.InBackrooms:
-				backrooms_objects.append(Object(inventory.whole_inventory[changed_slot].name, player.x, player.y, "Gannitto world/files/Images/Items/" + inventory.whole_inventory[changed_slot].name + ".png", special_flags="Item"))
-			else:
-				
-				match player.direction:
-					
-					case "Down":
-						x_bias_ = 0
-						y_bias_ = lambda particle: -particle.calculated_variable[0]
-					case "Up":
-						x_bias_ = 0
-						y_bias_ = lambda particle: particle.calculated_variable[0]
-					case "Left":
-						x_bias_ = lambda particle: -particle.calculated_variable[0]
-						y_bias_ = lambda particle: particle.calculated_variable[1]
-					case "Right":
-						x_bias_ = lambda particle: particle.calculated_variable[0]
-						y_bias_ = lambda particle: particle.calculated_variable[1]
-						
-				particles.append(Particle(player.x, player.y, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Items/" + inventory.whole_inventory[changed_slot].name + ".png"), (64, 64)), x_bias_, y_bias_, variable_to_calculate="(40 - self.ticks * 3, 15 - self.ticks * 8)", track_ticks=True, end_time=0.5, end_command="world.chunk_manager.get_chunk_at(particle.x, particle.y).items.append(Object(particle.special_flags, particle.x, particle.y, 'Gannitto world/files/Images/Items/' + particle.special_flags + '.png', special_flags='Item', pickable=True))", end_command_globals_in_the_end=("world", "Object"), special_flags=inventory.whole_inventory[changed_slot].name))
-				
-				del x_bias_
-				del y_bias_
-			
-			inventory.whole_inventory[changed_slot].amount -= 1
-			if inventory.whole_inventory[changed_slot].amount == 0:
-				inventory.whole_inventory[changed_slot] = None
-
-			time.sleep(0.15)
 
 		if False and keys[hot_keys["Throw away stack of items"]] and inventory.whole_inventory[changed_slot] is not None and not chat_input:   # TODO
 		
@@ -6948,7 +6946,7 @@ def worlds():
 				
 				if event.key == pygame.K_BACKSPACE:
 					input_text = input_text[:-1]
-				elif event.key == pygame.K_RETURN and world_name != "con":
+				elif event.key == pygame.K_RETURN:
 					world_name = input_text
 					from Inventory import get_start_items
 					get_start_items()
@@ -6956,7 +6954,7 @@ def worlds():
 					del get_start_items
 					win_darken(win.copy())
 					edit_world()
-				elif event.unicode not in '\\/:*&"<>|':
+				else:
 					input_text += event.unicode
 			if event.type == pygame.KEYUP:
 				if event.key == pygame.K_LALT:

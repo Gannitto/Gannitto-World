@@ -840,7 +840,6 @@ class Inventory:
 						item.amount += add
 						remaining -= add
 						if remaining == 0:
-							self.update_whole()
 							return
 			
 			# Если остались предметы, создаем новые слоты
@@ -939,15 +938,6 @@ class Inventory:
 				current_index += 1
 				total_amount -= stack_size
 
-	def get_amout(self, name: str):
-		
-		"""Возвращает количество предмета"""
-
-		try:
-			return self.resources[name].amount
-		except KeyError:
-			return -1
-	
 	def draw_whole(self):
 		
 		"""Рисует весь инвентарь"""
@@ -1046,7 +1036,16 @@ class Inventory:
 					if self.Split_items:
 						if self.whole_inventory[self.start_cell].amount % 2 == 0:
 							self.whole_inventory[self.start_cell].amount //= 2
-							self.whole_inventory[self.end_cell] = self.whole_inventory[self.start_cell]
+							new_item = Resource(
+								self.whole_inventory[self.start_cell].name,
+								self.whole_inventory[self.start_cell].image_path,
+								self.whole_inventory[self.start_cell].info,
+								self.whole_inventory[self.start_cell].purpose,
+								self.whole_inventory[self.start_cell].type,
+								self.whole_inventory[self.start_cell].special_info,
+								self.whole_inventory[self.start_cell].max_stack
+							)
+							self.whole_inventory[self.end_cell] = new_item
 					else:
 						# Обычный обмен
 						temp = self.whole_inventory[self.end_cell]
