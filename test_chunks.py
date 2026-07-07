@@ -29,7 +29,7 @@ for x in range(width):
 world = pygame.Surface((width * 4, height * 4))
 for x in range(width):
 	for y in range(height):
-		world.blit(biomes[arr[y, x]], (x * 4, y * 4))
+		world.blit(biomes[arr[y, x]], (x * 4, 1000 - y * 4))
 
 # pygame.image.save(world, "world.png")
 

@@ -1,12 +1,10 @@
 import pygame
 import os
+from Globals import path
 pygame.init()
 
 textInfo = pygame.font.Font(None, 20)
 types = ["Just an item", "Weapon", "Food", "Drink", "Mechanism", "Flower", "Seed"]
-path = os.path.abspath(__file__)[:-33]
-if not os.path.exists(path):
-	path = __file__[:-28]
 
 class Resource:
 

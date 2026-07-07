@@ -120,7 +120,6 @@ def save(darken:bool=True, save_world_settings:bool=False):
 	Сохраняет игру
 	darken - Затемнять ли экран
 	save_world_settings - Сохранять ли настройки мира
-	world_name - Тоже надо указать, если сохраняются данные мира
 	"""
 
 	global player
@@ -3814,7 +3813,6 @@ def change_a_character():
 
 
 
-backrooms_portal = BackroomsPortal(-500, 500)
 multyplayer = False
 
 hot_keys = Saver.load_objects(path + "Gannitto world/files/Settings/Hot keys.save")
@@ -3866,7 +3864,7 @@ def start_game():
 		world.walls = Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Walls.save")
 		inventory.whole_inventory = Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Inventory.save")
 		player.effects = Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Effects.save")
-
+		
 	else:
 
 		os.mkdir(path + "Gannitto world/files/Worlds/" + world_name)
@@ -4201,9 +4199,7 @@ def start_game():
 
 		if not Backrooms.InBackrooms and world.current_cave is None:
 
-			backrooms_portal.main()
-			if backrooms_portal.x - 128 <= player.x <= backrooms_portal.x + 128 and backrooms_portal.y - 128 <= player.y <= backrooms_portal.y + 128:
-
+			if False: # TODO тут сделать переход в закулисье
 				Backrooms.InBackrooms = True
 				color = colors["Backrooms"]
 				text_color = colors["Backrooms2"]
@@ -4809,8 +4805,6 @@ def start_game():
 			for mob in mobs:
 
 				i += 1
-				if a == 1 and backrooms_portal.x - 128 <= mob.x <= backrooms_portal.x + 128 and backrooms_portal.y - 128 <= mob.y <= backrooms_portal.y + 128:
-					mobs_to_remove.append(i)
 
 				mob.main()
 

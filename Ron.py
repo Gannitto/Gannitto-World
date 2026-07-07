@@ -1,9 +1,6 @@
 import pygame
 import os
-
-path = __file__[:-27]
-if not os.path.exists(path):
-	path = __file__[:-22]
+from Globals import path
 
 X = 0
 Y = 0

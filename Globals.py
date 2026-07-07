@@ -2,10 +2,16 @@ import os
 import time
 import pygame
 import Saver
+import sys
 
-path = __file__[:-31]
-if not os.path.exists(path):
-	path = __file__[:-26] + "\\"
+if getattr(sys, "frozen", False):
+	path = sys._MEIPASS
+else:
+	path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) + os.sep
+
+# path = __file__[:-31]
+# if not os.path.exists(path):
+# 	path = __file__[:-26] + "\\"
 
 try:
 

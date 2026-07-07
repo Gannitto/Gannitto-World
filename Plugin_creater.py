@@ -3,12 +3,12 @@ import os
 import Saver
 import getpass
 import time
+from Globals import path
 
 pygame.init()
 win = pygame.display.set_mode((800,500), pygame.RESIZABLE)
 clock = pygame.time.Clock()
 textInfo = pygame.font.Font("Font.ttf", 18)
-path = os.path.abspath(__file__)[:-38]
 Width, Height = pygame.display.get_surface().get_size()
 pygame.display.set_icon(pygame.image.load("Icon.ico"))
 pygame.display.set_caption("Plugin creater")
