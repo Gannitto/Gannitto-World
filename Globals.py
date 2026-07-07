@@ -9,10 +9,6 @@ if getattr(sys, "frozen", False):
 else:
 	path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) + os.sep
 
-# path = __file__[:-31]
-# if not os.path.exists(path):
-# 	path = __file__[:-26] + "\\"
-
 try:
 
 	Settings = Saver.load_objects(path + "Gannitto world/files/Settings/Settings.save")

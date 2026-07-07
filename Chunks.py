@@ -8,129 +8,165 @@ tile_size = 256
 
 biomes = ["Desert", "Field", "Forest", "Swamp", "Taiga"]
 
+structures = {
+		"Pond": (0.01, {
+			"Objects": (
+				{
+					"Placement": "Exact",
+					"Position": (0, 0),
+					"Count": (1, 1),
+					"Template": {
+						"name": "Pond",
+						"image_path": "Gannitto world/files/Images/Objects/Pond.png",
+						"scale_x": (512, 512),
+						"special_flags": [100, 20]
+						}
+				},
+				{
+					"Placement": "Random",
+					"Region": (512, 512),
+					"Count": (2, 5),
+					"Template": {
+						"name": "Reed",
+						"image_path": "Gannitto world/files/Images/Objects/Reed.png",
+						"scale_x": (256, 256)
+						}
+				}
+			   ),
+			"Items": ()
+			})
+		}
+
 # Частота появления, параметры
 biomes_objects = {
 
-		"Desert": ((
-			(1, {
-				"name": "Cactus",
-				"image_path": "Gannitto world/files/Images/Objects/Cactus.png",
-				"scale_x": (256, 256),
-				"is_solid": True,
-				"rect": (-80, 116, 160, 232)
-				}),
-			(0.5, {
-				"name": "Pile of sand",
-				"image_path": "Gannitto world/files/Images/Objects/Pile of sand.png",
-				"scale_x": (256, 256),
+		"Desert": {
+			"Objects": (
+				(1, {
+					"name": "Cactus",
+					"image_path": "Gannitto world/files/Images/Objects/Cactus.png",
+					"scale_x": (256, 256),
+					"is_solid": True,
+					"rect": (-80, 116, 160, 232)
+					}),
+				(0.5, {
+					"name": "Pile of sand",
+					"image_path": "Gannitto world/files/Images/Objects/Pile of sand.png",
+					"scale_x": (256, 256),
+					})),
+			"Items": (),
+			"Structures": ()},
+
+		"Field": {"Objects": (), "Items": (), "Structures": ()},
+
+		"Forest": {
+			"Objects": (
+				(2, {
+					"name": "Tree",
+					"image_path": "Gannitto world/files/Images/Objects/Tree.png",
+					"scale_x": (256, 256),
+					"special_flags": 100,
+					"is_solid": True}),
+				(2, {
+					"name": "Birch",
+					"image_path": "Gannitto world/files/Images/Objects/Birch.png",
+					"scale_x": (256, 256),
+					"special_flags": 100,
+					"is_solid": True
+					}),
+				(0.5, {
+					"name": "Bush",
+					"image_path": "Gannitto world/files/Images/Objects/Bush.png",
+					"scale_x": (128, 128),
+					"is_solid": True
 				})),
-			()),
-
-		"Field": ((), ()),
-
-		"Forest": ((
-			(2, {
-				"name": "Tree",
-				"image_path": "Gannitto world/files/Images/Objects/Tree.png",
-				"scale_x": (256, 256),
-				"special_flags": 100,
-				"is_solid": True}),
-			(2, {
-				"name": "Birch",
-				"image_path": "Gannitto world/files/Images/Objects/Birch.png",
-				"scale_x": (256, 256),
-				"special_flags": 100,
-				"is_solid": True
-				}),
-			(0.5, {
-				"name": "Bush",
-				"image_path": "Gannitto world/files/Images/Objects/Bush.png",
-				"scale_x": (128, 128),
-				"is_solid": True
+			"Items": (
+				(0.3, {
+					"name": "Stone",
+					"image_path": "Gannitto world/files/Images/Items/Stone.png",
+					}),
+				(0.3, {
+					"name": "Poppy",
+					"image_path": "Gannitto world/files/Images/Items/Poppy.png",
+					}),
+				(0.3, {
+					"name": "Purple tulip",
+					"image_path": "Gannitto world/files/Images/Items/Purple tulip.png",
+					}),
+				(0.3, {
+					"name": "Orange tulip",
+					"image_path": "Gannitto world/files/Images/Items/Orange tulip.png",
+					}),
+				(0.3, {
+					"name": "Purple tulip",
+					"image_path": "Gannitto world/files/Images/Items/Purple tulip.png",
+					}),
+				(0.3, {
+					"name": "Black tulip",
+					"image_path": "Gannitto world/files/Images/Items/Black tulip.png",
+					}),
+				(0.3, {
+					"name": "Red tulip",
+					"image_path": "Gannitto world/files/Images/Items/Red tulip.png",
+					}),
+				(0.3, {
+					"name": "Yellow tulip",
+					"image_path": "Gannitto world/files/Images/Items/Yellow tulip.png",
+					}),
+				(0.1, {
+					"name": "Dandelion",
+					"image_path": "Gannitto world/files/Images/Objects/Dandelion 1.png",
+					}),
+				(0.1, {
+					"name": "Mushroom",
+					"image_path": "Gannitto world/files/Images/Items/Mushroom.png",
+					}),
+				(0.1, {
+					"name": "Red mushroom",
+					"image_path": "Gannitto world/files/Images/Items/Red mushroom.png",
 				})),
-			(
-			(0.3, {
-				"name": "Stone",
-				"image_path": "Gannitto world/files/Images/Items/Stone.png",
-				}),
-			(0.3, {
-				"name": "Poppy",
-				"image_path": "Gannitto world/files/Images/Items/Poppy.png",
-				}),
-			(0.3, {
-				"name": "Purple tulip",
-				"image_path": "Gannitto world/files/Images/Items/Purple tulip.png",
-				}),
-			(0.3, {
-				"name": "Orange tulip",
-				"image_path": "Gannitto world/files/Images/Items/Orange tulip.png",
-				}),
-			(0.3, {
-				"name": "Purple tulip",
-				"image_path": "Gannitto world/files/Images/Items/Purple tulip.png",
-				}),
-			(0.3, {
-				"name": "Black tulip",
-				"image_path": "Gannitto world/files/Images/Items/Black tulip.png",
-				}),
-			(0.3, {
-				"name": "Red tulip",
-				"image_path": "Gannitto world/files/Images/Items/Red tulip.png",
-				}),
-			(0.3, {
-				"name": "Yellow tulip",
-				"image_path": "Gannitto world/files/Images/Items/Yellow tulip.png",
-				}),
-			(0.1, {
-				"name": "Dandelion",
-				"image_path": "Gannitto world/files/Images/Objects/Dandelion 1.png",
-				}),
-			(0.1, {
-				"name": "Mushroom",
-				"image_path": "Gannitto world/files/Images/Items/Mushroom.png",
-				}),
-			(0.1, {
-				"name": "Red mushroom",
-				"image_path": "Gannitto world/files/Images/Items/Red mushroom.png",
-				}))),
+		"Structures": (structures["Pond"],)},
 
-		"Swamp": ((
-			(2, {
-				"name": "Dark tree",
-				"image_path": "Gannitto world/files/Images/Objects/Dark tree.png",
-				"scale_x": (256, 256),
-				"special_flags": 100,
-				"is_solid": True}),),
-			(
-			(0.5, {
-				"name": "Cotton grass",
-				"image_path": "Gannitto world/files/Images/Items/Cotton grass.png",
-				}),
-			(0.5, {
-				"name": "Mushroom",
-				"image_path": "Gannitto world/files/Images/Items/Mushroom.png",
-				}),
-			(0.5, {
-				"name": "Red mushroom",
-				"image_path": "Gannitto world/files/Images/Items/Red mushroom.png",
-				}))),
-
-
-		"Taiga": ((
-			(2, {
-				"name": "Spruce",
-				"image_path": "Gannitto world/files/Images/Objects/Spruce.png",
-				"scale_x": (512, 512),
-				"special_flags": 100,
-				"is_solid": True
-				}),
-			(0.5, {
-				"name": "Dark bush",
-				"image_path": "Gannitto world/files/Images/Objects/Dark bush.png",
-				"scale_x": (128, 128),
-				"is_solid": True
+		"Swamp": {
+			"Objects": (
+				(2, {
+					"name": "Dark tree",
+					"image_path": "Gannitto world/files/Images/Objects/Dark tree.png",
+					"scale_x": (256, 256),
+					"special_flags": 100,
+					"is_solid": True}),),
+			"Items": (
+				(0.5, {
+					"name": "Cotton grass",
+					"image_path": "Gannitto world/files/Images/Items/Cotton grass.png",
+					}),
+				(0.5, {
+					"name": "Mushroom",
+					"image_path": "Gannitto world/files/Images/Items/Mushroom.png",
+					}),
+				(0.5, {
+					"name": "Red mushroom",
+					"image_path": "Gannitto world/files/Images/Items/Red mushroom.png",
 				})),
-			())
+		"Structures": ()},
+
+		"Taiga": {
+			"Objects": (
+				(2, {
+					"name": "Spruce",
+					"image_path": "Gannitto world/files/Images/Objects/Spruce.png",
+					"scale_x": (512, 512),
+					"special_flags": 100,
+					"is_solid": True
+					}),
+				(0.5, {
+					"name": "Dark bush",
+					"image_path": "Gannitto world/files/Images/Objects/Dark bush.png",
+					"scale_x": (128, 128),
+					"is_solid": True
+				})),
+			"Items": (),
+			"Structures": ()}
 			
 		}
 
@@ -191,7 +227,7 @@ class ChunkManager:
 		rng = random.Random((chunk.x * 100000 + chunk.y * 77777) ^ 0x9e3779b9)
 		
 		objects = []
-		for object in biomes_objects[chunk.biome][0]:
+		for object in biomes_objects[chunk.biome]["Objects"]:
 			if rng.random() <= object[0]:
 				for _ in range(rng.randint(1, int(object[0] * 3) + 1)):
 					X = chunk.x * chunk_size + rng.randint(0, chunk_size - 1)
@@ -199,12 +235,39 @@ class ChunkManager:
 					objects.append(Object(object_x=X, object_y=Y, **object[1]))
 		
 		items = []
-		for item in biomes_objects[chunk.biome][1]:
+		for item in biomes_objects[chunk.biome]["Items"]:
 			if rng.random() <= item[0]:
 				for _ in range(rng.randint(1, int(item[0] * 3) + 1)):
 					X = chunk.x * chunk_size + rng.randint(0, chunk_size - 1)
 					Y = chunk.y * chunk_size + rng.randint(0, chunk_size - 1)
 					items.append(Object(object_x=X, object_y=Y, **item[1]))
+
+		for structure in biomes_objects[chunk.biome]["Structures"]:
+			if rng.random() <= structure[0]:
+				for _ in range(rng.randint(1, int(structure[0] * 3) + 1)):
+					structure_x = chunk.x * chunk_size + rng.randint(0, chunk_size - 1)
+					structure_y = chunk.y * chunk_size + rng.randint(0, chunk_size - 1)
+					for object in structure[1]["Objects"]:
+						for _ in range(rng.randint(object["Count"][0], object["Count"][1])):
+							match object["Placement"]:
+								case "Exact":
+									X = structure_x + object["Position"][0]
+									Y = structure_y + object["Position"][1]
+								case "Random":
+									X = structure_x + rng.randint(-object["Region"][0] // 2, object["Region"][0] // 2)
+									Y = structure_y + rng.randint(-object["Region"][1] // 2, object["Region"][1] // 2)
+							objects.append(Object(object_x=X, object_y=Y, **object["Template"]))
+
+					for item in structure[1]["Items"]:
+						for _ in range(rng.randint(item["Count"][0], item["Count"][1])):
+							match item["Placement"]:
+								case "Exact":
+									X = structure_x + item["Position"][0]
+									Y = structure_y + item["Position"][1]
+								case "Random":
+									X = structure_x + rng.randint(-item["Region"][0] // 2, item["Region"][0] // 2)
+									Y = structure_y + rng.randint(-item["Region"][1] // 2, item["Region"][1] // 2)
+							items.append(Object(object_x=X, object_y=Y, **item["Template"]))
 
 		chunk.objects = objects
 		chunk.items = items
