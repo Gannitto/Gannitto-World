@@ -59,7 +59,7 @@ def build(
 				
 				else:
 				
-					if needed_object in ["Object found", ""]:
+					if needed_object in ("Object found", ""):
 					
 						inventory.whole_inventory[changed_slot].amount -= get_item_from_inventory
 						if inventory.whole_inventory[changed_slot].amount == 0:

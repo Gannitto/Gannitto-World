@@ -5,7 +5,6 @@ from pathlib import Path
 import time
 import random
 import Saver
-import Big_rect
 from math import atan2, cos, sin, pi, sqrt, fabs
 import Backrooms
 import socket
@@ -711,7 +710,7 @@ class Particle:
 
 		else:
 
-			for i in world.walls:
+			for i in world.walls.values():
 				if i.x - 300 < player.x < i.x + 300 and i.y - 300 < player.y < i.y + 300:
 					a = False
 			
@@ -815,7 +814,7 @@ class Player:
 		# if pygame.key.get_pressed()[pygame.K_o]: return False временная функция чтобы для теста ходить сквозь стены
 		self.rect = pygame.Rect(self.x - 35, self.y + 112, 70, 224)
 
-		for wall in world.walls:
+		for wall in world.walls.values():
 			wall_rect = pygame.Rect(wall.x - 128, wall.y + 128, 256, 256)
 			if self.rect.colliderect(wall_rect):
 				return True
@@ -931,7 +930,7 @@ class SlimeEnemy:
 					a = True
 					if player.x < self.attak[0]:
 					
-						for i in world.walls:
+						for i in world.walls.values():
 							if i.x - 256 < self.attak[0] < i.x + 300 and i.y - 256 < self.attak[1] < i.y + 256:
 								a = False
 								self.x = self.attak[0]
@@ -946,7 +945,7 @@ class SlimeEnemy:
 						a = True
 						if player.x < self.attak[0]:
 					
-							for i in world.walls:
+							for i in world.walls.values():
 								if i.x - 300 < self.attak[0] < i.x + 256 and i.y - 256 < self.attak[1] < i.y + 256:
 									a = False
 									self.x = self.attak[0]
@@ -962,7 +961,7 @@ class SlimeEnemy:
 						a = True
 						if player.x < self.attak[0]:
 					
-							for i in world.walls:
+							for i in world.walls.values():
 								if i.x - 256 < self.attak[0] < i.x + 256 and i.y - 256 < self.attak[1] < i.y + 300:
 									a = False
 									self.x = self.attak[0]
@@ -980,7 +979,7 @@ class SlimeEnemy:
 						a = True
 						if player.x < self.attak[0]:
 					
-							for i in world.walls:
+							for i in world.walls.values():
 								if i.x - 256 < self.attak[0] < i.x + 300 and i.y - 256 < self.attak[1] < i.y + 256:
 									a = False
 									self.x = self.attak[0]
@@ -995,7 +994,7 @@ class SlimeEnemy:
 						a = True
 						if player.x < self.attak[0]:
 					
-							for i in world.walls:
+							for i in world.walls.values():
 								if i.x - 300 < self.attak[0] < i.x + 256 and i.y - 256 < self.attak[1] < i.y + 256:
 									a = False
 									self.x = self.attak[0]
@@ -1011,7 +1010,7 @@ class SlimeEnemy:
 						a = True
 						if player.x < self.attak[0]:
 					
-							for i in world.walls:
+							for i in world.walls.values():
 								if i.x - 256 < self.attak[0] < i.x + 256 and i.y - 256 < self.attak[1] < i.y + 300:
 									a = False
 									self.x = self.attak[0]
@@ -1026,7 +1025,7 @@ class SlimeEnemy:
 						a = True
 						if player.x < self.attak[0]:
 					
-							for i in world.walls:
+							for i in world.walls.values():
 								if i.x - 256 < self.attak[0] < i.x + 256 and i.y - 300 < self.attak[1] < i.y + 256:
 									a = False
 									self.x = self.attak[0]
@@ -1064,7 +1063,7 @@ class SlimeEnemy:
 			if player.x + self.offset_x > self.x:
 				
 				a = True
-				for i in world.walls:
+				for i in world.walls.values():
 					if i.x - 300 < self.x < i.x + 256 and i.y - 256 < self.y < i.y + 256:
 						a = False
 						break
@@ -1075,7 +1074,7 @@ class SlimeEnemy:
 			elif player.x + self.offset_x < self.x:
 				
 				a = True
-				for i in world.walls:
+				for i in world.walls.values():
 					if i.x - 256 < self.x < i.x + 300 and i.y - 256 < self.y < i.y + 256:
 						a = False
 						break
@@ -1086,7 +1085,7 @@ class SlimeEnemy:
 			if player.y + self.offset_y > self.y:
 				
 				a = True
-				for i in world.walls:
+				for i in world.walls.values():
 					if i.x - 256 < self.x < i.x + 256 and i.y - 300 < self.y < i.y + 256:
 						a = False
 						break
@@ -1097,7 +1096,7 @@ class SlimeEnemy:
 			elif player.y + self.offset_y < self.y - player.y:
 				
 				a = True
-				for i in world.walls:
+				for i in world.walls.values():
 					if i.x - 256 < self.x < i.x + 256 and i.y - 256 < self.y < i.y + 300:
 						a = False
 						break
@@ -1176,7 +1175,7 @@ class SpiderEnemy:
 		if player.x + self.offset_x > self.x:
 			
 			a = True
-			for i in world.walls:
+			for i in world.walls.values():
 				if i.x - 300 < self.x < i.x + 256 and i.y - 256 < self.y < i.y + 256:
 					a = False
 					break
@@ -1188,7 +1187,7 @@ class SpiderEnemy:
 		elif player.x + self.offset_x < self.x:
 			
 			a = True
-			for i in world.walls:
+			for i in world.walls.values():
 				if i.x - 256 < self.x < i.x + 300 and i.y - 256 < self.y < i.y + 256:
 					a = False
 					break
@@ -1200,7 +1199,7 @@ class SpiderEnemy:
 		if player.y + self.offset_y > self.y:
 			
 			a = True
-			for i in world.walls:
+			for i in world.walls.values():
 				if i.x - 256 < self.x < i.x + 256 and i.y - 300 < self.y < i.y + 256:
 					a = False
 					break
@@ -1211,7 +1210,7 @@ class SpiderEnemy:
 		elif player.y + self.offset_y < self.y - player.y:
 			
 			a = True
-			for i in world.walls:
+			for i in world.walls.values():
 				if i.x - 256 < self.x < i.x + 256 and i.y - 256 < self.y < i.y + 300:
 					a = False
 					break
@@ -1294,7 +1293,7 @@ class ButterflyEnemy:
 		if player.x + self.offset_x > self.x:
 
 			a = True
-			for i in world.walls:
+			for i in world.walls.values():
 				if i.x - 300 < self.x < i.x + 256 and i.y - 256 < self.y < i.y + 256:
 					a = False
 					break
@@ -1305,7 +1304,7 @@ class ButterflyEnemy:
 		elif player.x + self.offset_x < self.x:
 
 			a = True
-			for i in world.walls:
+			for i in world.walls.values():
 				if i.x - 256 < self.x < i.x + 300 and i.y - 256 < self.y < i.y + 256:
 					a = False
 					break
@@ -1316,7 +1315,7 @@ class ButterflyEnemy:
 		if player.y + self.offset_y > self.y:
 
 			a = True
-			for i in world.walls:
+			for i in world.walls.values():
 				if i.x - 256 < self.x < i.x + 256 and i.y - 300 < self.y < i.y + 256:
 					a = False
 					break
@@ -1327,7 +1326,7 @@ class ButterflyEnemy:
 		elif player.y + self.offset_y < self.y - player.y:
 
 			a = True
-			for i in world.walls:
+			for i in world.walls.values():
 				if i.x - 256 < self.x < i.x + 256 and i.y - 256 < self.y < i.y + 300:
 					a = False
 					break
@@ -1772,8 +1771,8 @@ class Wall:
 	def update_neigboors(self):
 
 		self.neigbords = []
-		for wall in world.walls:
-			if ((wall.x == self.x and wall.y in (self.y + 256, self.y - 256)) or (wall.x in (self.x - 256, self.x + 256) and wall.y == self.y)) and (self.x, self.y) != (wall.x, wall.y):
+		for wall in ((self.x - 256, self.y), (self.x + 256, self.y), (self.x, self.y - 256), (self.x, self.y + 256)):
+			if wall in world.walls:
 				self.neigbords.append(wall)
 
 		if self.is_door:
@@ -1786,7 +1785,7 @@ class Wall:
 
 			if len(self.neigbords) == 1:
 
-				if self.neigbords[0].x == self.x:
+				if self.neigbords[0][0] == self.x:
 					if self.open:
 						self.image = self.images[3]
 					else:
@@ -1799,12 +1798,12 @@ class Wall:
 
 			elif len(self.neigbords) == 2:
 
-				if self.neigbords[0].x == self.x == self.neigbords[1].x:
+				if self.neigbords[0][0] == self.x == self.neigbords[1][0]:
 					if self.open:
 						self.image = self.images[3]
 					else:
 						self.image = self.images[1]
-				elif self.neigbords[0].y == self.y == self.neigbords[1].y:
+				elif self.neigbords[0][1] == self.y == self.neigbords[1][1]:
 					if self.open:
 						self.image = self.images[2]
 					else:
@@ -1814,35 +1813,35 @@ class Wall:
 
 			if len(self.neigbords) == 1:
 
-				if self.neigbords[0].x == self.x:
+				if self.neigbords[0][0] == self.x:
 					self.image = self.images[1]
 				else:
 					self.image = self.images[0]
 
 			elif len(self.neigbords) == 2:
 
-				if self.neigbords[0].x == self.x == self.neigbords[1].x:
+				if self.neigbords[0][0] == self.x == self.neigbords[1][0]:
 					self.image = self.images[1]
-				elif self.neigbords[0].y == self.y == self.neigbords[1].y:
+				elif self.neigbords[0][1] == self.y == self.neigbords[1][1]:
 					self.image = self.images[0]
-				elif (self.neigbords[0].x == self.x - 256 and self.neigbords[1].y == self.y + 256) or (self.neigbords[1].x == self.x - 256 and self.neigbords[0].y == self.y + 256):
+				elif (self.neigbords[0][0] == self.x - 256 and self.neigbords[1][1] == self.y + 256) or (self.neigbords[1][0] == self.x - 256 and self.neigbords[0][1] == self.y + 256):
 					self.image = self.images[2]
-				elif (self.neigbords[0].x == self.x + 256 and self.neigbords[1].y == self.y + 256) or (self.neigbords[1].x == self.x + 256 and self.neigbords[0].y == self.y + 256):
+				elif (self.neigbords[0][0] == self.x + 256 and self.neigbords[1][1] == self.y + 256) or (self.neigbords[1][0] == self.x + 256 and self.neigbords[0][1] == self.y + 256):
 					self.image = self.images[3]
-				elif (self.neigbords[0].x == self.x + 256 and self.neigbords[1].y == self.y - 256) or (self.neigbords[1].x == self.x + 256 and self.neigbords[0].y == self.y - 256):
+				elif (self.neigbords[0][0] == self.x + 256 and self.neigbords[1][1] == self.y - 256) or (self.neigbords[1][0] == self.x + 256 and self.neigbords[0][1] == self.y - 256):
 					self.image = self.images[4]
-				elif (self.neigbords[0].x == self.x - 256 and self.neigbords[1].y == self.y - 256) or (self.neigbords[1].x == self.x - 256 and self.neigbords[0].y == self.y - 256):
+				elif (self.neigbords[0][0] == self.x - 256 and self.neigbords[1][1] == self.y - 256) or (self.neigbords[1][0] == self.x - 256 and self.neigbords[0][1] == self.y - 256):
 					self.image = self.images[5]
 
 			elif len(self.neigbords) == 3:
 
-				if self.neigbords[0].y != self.y + 256 and self.neigbords[1].y != self.y + 256 and self.neigbords[2].y != self.y + 256:
+				if self.neigbords[0][1] != self.y + 256 and self.neigbords[1][1] != self.y + 256 and self.neigbords[2][1] != self.y + 256:
 					self.image = self.images[6]
-				if self.neigbords[0].y != self.y - 256 and self.neigbords[1].y != self.y - 256 and self.neigbords[2].y != self.y - 256:
+				if self.neigbords[0][1] != self.y - 256 and self.neigbords[1][1] != self.y - 256 and self.neigbords[2][1] != self.y - 256:
 					self.image = self.images[7]
-				if self.neigbords[0].x != self.x + 256 and self.neigbords[1].x != self.x + 256 and self.neigbords[2].x != self.x + 256:
+				if self.neigbords[0][0] != self.x + 256 and self.neigbords[1][0] != self.x + 256 and self.neigbords[2][0] != self.x + 256:
 					self.image = self.images[8]
-				if self.neigbords[0].x != self.x - 256 and self.neigbords[1].x != self.x - 256 and self.neigbords[2].x != self.x - 256:
+				if self.neigbords[0][0] != self.x - 256 and self.neigbords[1][0] != self.x - 256 and self.neigbords[2][0] != self.x - 256:
 					self.image = self.images[9]
 
 			elif len(self.neigbords) == 4:
@@ -1858,9 +1857,8 @@ class Wall:
 	def __getstate__(self):
 		
 		state = self.__dict__.copy()
-		del state["image"]
+		state["image"] = self.images.index(self.image)
 		del state["images"]
-		del state["neigbords"]
 		return state
 
 	def __setstate__(self, state):
@@ -1893,10 +1891,7 @@ class Wall:
 				pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Objects/" + self.wall_type + " 11.png"), (256, 256))
 
 			]
-		self.image = self.images[0]
-		self.neigbords = []
-		self.update_neigboors()
-
+		self.image = self.images[self.image]
 
 class Random_box:
 
@@ -2152,7 +2147,7 @@ class World:
 		
 		# Списки всех игровых объектов оставлены для совместимости. От такого надо постепенно отказываться
 		self.objects = []
-		self.walls = []
+		self.walls = {}
 		
 	def update(self):
 
@@ -4020,7 +4015,7 @@ def start_game():
 							statistics[1] += (time.time() - start_time) / 3600
 							save()
 							world.chunk_manager.chunks = {}
-							world.walls = []
+							world.walls = {}
 							mobs = []
 							player.effects = []
 							inventory.whole_inventory = [None] * 30
@@ -4792,7 +4787,7 @@ def start_game():
 		for bullet in player_bullets:
 			bullet.main()
 
-		for wall in world.walls:
+		for wall in world.walls.values():
 			wall.main(release)
 		
 		i = -1
@@ -5170,32 +5165,6 @@ def start_game():
 				clock.tick(FPS)
 				pygame.display.update()
 			time.sleep(0.1)
-
-		if keys[pygame.K_UP] or keys[pygame.K_w] or (Settings["Game"][1] and up_b.get_pressed()):
-
-			for i in world.walls:
-				if i.x - 256 < player.x < i.x + 256 and i.y - 256 < player.y < i.y + 256:
-					text(t("Unfortunately you can't walk through walls"), Width // 2, Height // 2, (200, 30, 30), alignment=True)
-
-		if keys[pygame.K_DOWN] or keys[pygame.K_s] or (Settings["Game"][1] and down_b.get_pressed()):
-
-			for i in world.walls:
-				if i.x - 256 < player.x < i.x + 256 and i.y - 256 < player.y < i.y + 256:
-					text(t("Unfortunately you can't walk through walls"), Width // 2, Height // 2, (200, 30, 30), alignment=True)
-
-		if keys[pygame.K_LEFT] or keys[pygame.K_a] or (Settings["Game"][1] and left_b.get_pressed()):
-
-			for i in world.walls:
-				if i.x - 256 < player.x < i.x + 256 and i.y - 256 < player.y < i.y + 256:
-					text(t("Unfortunately you can't walk through walls"), Width // 2, Height // 2, (200, 30, 30), alignment=True)
-		
-		if keys[pygame.K_RIGHT] or keys[pygame.K_d] or (Settings["Game"][1] and right_b.get_pressed()):
-			
-			for i in world.walls:
-				if i.x - 256 < player.x < i.x + 256 and i.y - 256 < player.y < i.y + 256:
-					text(t("Unfortunately you can't walk through walls"), Width // 2, Height // 2, (200, 30, 30), alignment=True)
-
-		
 
 		# Отрисовка погоды
 					
@@ -6011,7 +5980,9 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Wire":
 
 			if in_motherboard is None:
-				pygame.draw.rect(win, text_color, ((player.x // 64) * 64 - player.x + mouse_x - mouse_x % 64, player.y - (player.y // 64) * 64 + mouse_y - mouse_y % 64, 64, 64), 4)
+				pos = (player.x + mouse_x - Width // 2) // 64 * 64 + 32, (player.y - mouse_y + Height // 2) // 64 * 64 + 32
+				pygame.draw.rect(win, text_color, (pos[0] - player.x + Width // 2 - 128, player.y - pos[1] + Height // 2 - 128, 256, 256), 4)
+
 				a = True
 				if click[0]:
 					for mechanism in mechanisms:
@@ -6040,8 +6011,8 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 
 		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Lever":
 
-			pygame.draw.rect(win, text_color, ((player.x // 64) * 64 - player.x + mouse_x - mouse_x % 64, player.y - (player.y // 64) * 64 + mouse_y - mouse_y % 64, 64, 64), 4)
-
+			pos = (player.x + mouse_x - Width // 2) // 64 * 64 + 32, (player.y - mouse_y + Height // 2) // 64 * 64 + 32
+			pygame.draw.rect(win, text_color, (pos[0] - player.x + Width // 2 - 128, player.y - pos[1] + Height // 2 - 128, 256, 256), 4)
 			a = True
 			if click[0]:
 				for mechanism in mechanisms:
@@ -6056,8 +6027,8 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 
 		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Wrench":
 
-			pygame.draw.rect(win, text_color, ((player.x // 64) * 64 - player.x + mouse_x - mouse_x % 64, player.y - (player.y // 64) * 64 + mouse_y - mouse_y % 64, 64, 64), 4)
-
+			pos = (player.x + mouse_x - Width // 2) // 64 * 64 + 32, (player.y - mouse_y + Height // 2) // 64 * 64 + 32
+			pygame.draw.rect(win, text_color, (pos[0] - player.x + Width // 2 - 128, player.y - pos[1] + Height // 2 - 128, 256, 256), 4)
 			if click[0]:
 				for mechanism in mechanisms:
 					if mechanism.x == (player.x + mouse_x - Width // 2) // 64 and mechanism.y == (player.y - mouse_y + Height // 2) // 64:
@@ -6067,8 +6038,8 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 
 		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Random box":
 
-			pygame.draw.rect(win, text_color, ((player.x // 64) * 64 - player.x + mouse_x - mouse_x % 64, player.y - (player.y // 64) * 64 + mouse_y - mouse_y % 64, 64, 64), 4)
-
+			pos = (player.x + mouse_x - Width // 2) // 64 * 64 + 32, (player.y - mouse_y + Height // 2) // 64 * 64 + 32
+			pygame.draw.rect(win, text_color, (pos[0] - player.x + Width // 2 - 128, player.y - pos[1] + Height // 2 - 128, 256, 256), 4)
 			a = True
 
 			if click[0]:
@@ -6085,8 +6056,8 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 
 		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Motherboard":
 
-			pygame.draw.rect(win, text_color, ((player.x // 64) * 64 - player.x + mouse_x - mouse_x % 64, player.y - (player.y // 64) * 64 + mouse_y - mouse_y % 64, 64, 64), 4)
-
+			pos = (player.x + mouse_x - Width // 2) // 64 * 64 + 32, (player.y - mouse_y + Height // 2) // 64 * 64 + 32
+			pygame.draw.rect(win, text_color, (pos[0] - player.x + Width // 2 - 128, player.y - pos[1] + Height // 2 - 128, 256, 256), 4)
 			a = True
 			if click[0]:
 				for mechanism in mechanisms:
@@ -6162,55 +6133,56 @@ if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0]
 		#particles.append(Particle(particle.x, particle.y, path + "Gannitto world/files/Images/Objects/" + particle.special_flags[0] + " 3.png"))
 		
 		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name in ("Wooden wall", "Brick wall", "Stone brick wall"):
-
-			pygame.draw.rect(win, text_color, ((player.x // 256) * 256 - player.x + mouse_x - mouse_x % 256, player.y - (player.y // 256) * 256 + mouse_y - mouse_y % 256, 256, 256), 4)
+			
+			wall_pos = (player.x + mouse_x - Width // 2) // 256 * 256 + 128, (player.y - mouse_y + Height // 2) // 256 * 256 + 128
+			pygame.draw.rect(win, text_color, (wall_pos[0] - player.x + Width // 2 - 128, player.y - wall_pos[1] + Height // 2 - 128, 256, 256), 4)
 
 			if click[0]:
-				for wall in world.walls:
-					if (wall.x, wall.y) == ((player.x + mouse_x - Width // 2) // 256 * 256 + 128, (player.y - mouse_y + Height // 2) // 256 * 256 + 128):
-						break
-				else:
+
+				if wall_pos not in world.walls:
 					# TODO сделать подбирание предметов при пересечении
 					for object in world.visible_objects:
 						if pygame.Rect((player.x + mouse_x - Width // 2) // 256 * 256 + 128, (player.y - mouse_y + Height // 2) // 256 * 256 + 128, 256, 256).colliderect(pygame.Rect(object.x, object.y, object.w, object.h)):
 							break
 					
 					else:
-						world.walls.append(Wall(inventory.whole_inventory[changed_slot].name, (player.x + mouse_x - Width // 2) // 256 * 256 + 128, (player.y - mouse_y + Height // 2) // 256 * 256 + 128))
-					for wall in world.walls: wall.update_neigboors()
-					inventory.whole_inventory[changed_slot].amount -= 1
-					if inventory.whole_inventory[changed_slot].amount == 0:
-						inventory.whole_inventory[changed_slot] = None
+						world.walls[wall_pos] = Wall(inventory.whole_inventory[changed_slot].name, wall_pos[0], wall_pos[1])
+						for wall in (((wall_pos[0] - 256, wall_pos[1]), (wall_pos[0] + 256, wall_pos[1]), (wall_pos[0], wall_pos[1] - 256), (wall_pos[0], wall_pos[1] + 256))):
+							if wall in world.walls:
+								world.walls[wall].update_neigboors()
+						inventory.whole_inventory[changed_slot].amount -= 1
+						if inventory.whole_inventory[changed_slot].amount == 0:
+							inventory.whole_inventory[changed_slot] = None
 
-		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name in ("Wooden door"):
+		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Wooden door":
 
-			pygame.draw.rect(win, text_color, ((player.x // 256) * 256 - player.x + mouse_x - mouse_x % 256, player.y - (player.y // 256) * 256 + mouse_y - mouse_y % 256, 256, 256), 4)
+			wall_pos = (player.x + mouse_x - Width // 2) // 256 * 256 + 128, (player.y - mouse_y + Height // 2) // 256 * 256 + 128
+			pygame.draw.rect(win, text_color, (wall_pos[0] - player.x + Width // 2 - 128, player.y - wall_pos[1] + Height // 2 - 128, 256, 256), 4)
 
 			if click[0]:
-				for wall in world.walls:
-					if (wall.x, wall.y) == ((player.x + mouse_x - Width // 2) // 256 * 256 + 128, (player.y - mouse_y + Height // 2) // 256 * 256 + 128):
-						break
+				if wall_pos not in world.walls:
 					for object in world.visible_objects:
 						if pygame.Rect((player.x + mouse_x - Width // 2) // 256 * 256 + 128, (player.y - mouse_y + Height // 2) // 256 * 256 + 128, 256, 256).colliderect(pygame.Rect(object.x, object.y, object.w, object.h)):
 							break
 					
 					else:
-						world.walls.append(Wall(inventory.whole_inventory[changed_slot].name, (player.x + mouse_x - Width // 2) // 256 * 256 + 128, (player.y - mouse_y + Height // 2) // 256 * 256 + 128, True))
-						for wall in world.walls: wall.update_neigboors()
+						world.walls[wall_pos] = Wall(inventory.whole_inventory[changed_slot].name, wall_pos[0], wall_pos[1], True)
+						for wall in (((wall_pos[0] - 256, wall_pos[1]), (wall_pos[0] + 256, wall_pos[1]), (wall_pos[0], wall_pos[1] - 256), (wall_pos[0], wall_pos[1] + 256))):
+							if wall in world.walls:
+								world.walls[wall].update_neigboors()
 						inventory.whole_inventory[changed_slot].amount -= 1
 						if inventory.whole_inventory[changed_slot].amount == 0:
 							inventory.whole_inventory[changed_slot] = None
 
-		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name in ("Stone hammer"):
+		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Stone hammer":
 
-			pygame.draw.rect(win, text_color, ((player.x // 256) * 256 - player.x + mouse_x - mouse_x % 256, player.y - (player.y // 256) * 256 + mouse_y - mouse_y % 256, 256, 256), 4)
+			wall_pos = (player.x + mouse_x - Width // 2) // 256 * 256 + 128, (player.y - mouse_y + Height // 2) // 256 * 256 + 128
+			pygame.draw.rect(win, text_color, (wall_pos[0] - player.x + Width // 2 - 128, player.y - wall_pos[1] + Height // 2 - 128, 256, 256), 4)
 
 			if click[0]:
-				for object in world.walls:
-					if object.x == (player.x + mouse_x - Width // 2) - (player.x + mouse_x - Width // 2) % 256 and object.y == (player.y - mouse_y + Height // 2) - (player.y - mouse_y + Height // 2) % 256:
-						inventory.increate(object.wall_type)
-						world.walls.remove(object)
-						break
+				if wall_pos in world.walls:
+					inventory.increate(world.walls[wall_pos].wall_type)
+					world.walls.pop(wall_pos, None)
 
 		if mouse_object is not None and Settings["Display"][8]:
 			if screenmode == "FULLSCREEN":
@@ -6377,7 +6349,7 @@ if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0]
 						sock.connect((input_text, 10000))
 						world_name = "ᴥᴥᴥ░▒▓█╬█▓▒░ᴥᴥᴥ_Multiplayer_ᴥᴥᴥ░▒▓█╬█▓▒░ᴥᴥᴥ"
 						mobs = []
-						world.walls = []
+						world.walls = {}
 						mechanisms = []
 						player_bullets = []
 						player.effects = []
