@@ -917,15 +917,14 @@ class BaseEnemy:
 		distance = self._get_distance_to(player)
 		
 		if self.HP <= 0:
-			self.state = "dead"
+			self.state = "Dead"
 		elif distance < self.attack_range:
-			self.state = "attacking"
+			self.state = "Attacking"
 			self._attack(player)
 		elif distance < self.detection_range:
-			print(1234)
-			self.state = "chasing"
+			self.state = "Chasing"
 		else:
-			self.state = "idle"
+			self.state = "Idle"
 			
 	def _update_position(self, world):
 		"""Обновляет позицию в зависимости от состояния"""
@@ -1271,6 +1270,7 @@ class SlimeEnemy(BaseEnemy):
 
 		slime_type = random.choice((1, 2))
 		animation_frames = SLIME_TYPES[slime_type]
+		self.name = "Slime"
 		
 		super().__init__(
 			x=x, y=y,
@@ -1287,7 +1287,7 @@ class SlimeEnemy(BaseEnemy):
 		self.wander_angle = random.uniform(0, 2 * pi)
 		self.wander_distance = random.uniform(100, self.wander_radius)
 		self.wander_timer = 0
-		self.wander_change_interval = FPS * 0.5
+		self.wander_change_interval = FPS
 
 		# Параметры атаки
 		self.attack_cooldown = 0
@@ -1306,13 +1306,13 @@ class SlimeEnemy(BaseEnemy):
 		
 		# Флаг урона
 		self.damage_dealt = False
-	# #
+	
 	def update(self, player, world):
 
 		self._update_animation()
 		
 		if self.HP < 16 and self.speed < 8:
-			self.speed += 1  # Ускорение при низком HP
+			self.speed += 10  # Ускорение при низком HP
 	
 		self.attack_cooldown = max(0, self.attack_cooldown - 1)
 
@@ -1442,8 +1442,9 @@ class SlimeEnemy(BaseEnemy):
 	def _attack(self, player):
 		"""Атака игрока"""
 		if not player.god_mode and self.attack_cooldown <= 0:
-			player.HP -= 10
-			player.HP_animation_tick = 1
+			if pygame.Rect(self.x - 50, self.y + 50, 100, 100).colliderect(pygame.Rect(player.x - 100, player.y + 100, 200, 200)):
+				player.HP -= 10
+				player.HP_animation_tick = 1
 			self.attack_cooldown = FPS
 
 	def _check_collision(self, x, y, world):
@@ -1477,7 +1478,7 @@ class SlimeEnemy(BaseEnemy):
 	def __setstate__(self, state):
 		
 		self.__dict__.update(state)
-		self.animation_images = SLIME_TYPES[self.slime_type]
+		self.animation_frames = SLIME_TYPES[self.slime_type]
 
 class SpiderEnemy:
 
@@ -1711,6 +1712,7 @@ class Bullet:
 		self.y_vel = sin(self.angle) * 100
 		self.image = pygame.transform.rotate(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Items/" + type + ".png"),
 																	(64, 64)), atan2(mouse_x - Width / 2, mouse_y - Height / 2) * 180 / pi + 180)
+		self.end_time = int(time.time()) + 3
 
 	def main(self):
 
@@ -1723,6 +1725,8 @@ class Bullet:
 
 		if Settings["Display"][3]:
 			pygame.draw.rect(win, (0, 0, 0), (self.x - player.x + Width // 2 - 32, player.y - self.y + Height // 2 - 32, 64, 64), 3)
+		if time.time() >= self.end_time:
+			player_bullets.remove(self)
 
 class Button:
 
@@ -4203,7 +4207,7 @@ def start_game():
 
 	if os.path.exists(path + "Gannitto world/files/Worlds/" + world_name):
 		
-		mobs = []## Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Mobs.save")
+		mobs = Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Mobs.save")
 		player.x, player.y, Backrooms.InBackrooms, Backrooms.Level, world.current_cave, player.speed, player.HP, start_time, Ron.X, Ron.Y, Ron.Home, world.chunk_manager.generator.seed = Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Info.save")
 		difficulty, player.god_mode = Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Settings.save")
 		inventory.whole_inventory = Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Inventory.save")
@@ -5142,17 +5146,12 @@ def start_game():
 		for wall in world.visible_walls.values():
 			wall.main(release)
 		
-		i = -1
-		mobs_to_remove = []
-
 		if len(mobs) != 0 and not Backrooms.InBackrooms and world.current_cave is None:
 
 			# Отображение мобов
 
 			for mob in mobs:
 
-				i += 1
-				# #
 				mob.update(player, world)
 				mob.draw(player)
 
@@ -5164,28 +5163,19 @@ def start_game():
 
 							mob.HP -= 15
 
-							try:
-								if mob.mob_class == "SlimeEnemy":
-									temp = mob.animation_images[(mob.animation_count - mob.animation_count % 5) // 5].copy()
-								if mob.mob_class == "SpiderEnemy":
-									if mob.position == "Left":
-										temp = mob.left_animation_images[(mob.animation_count - mob.animation_count % 5) // 5].copy()
-									else:
-										temp = mob.right_animation_images[(mob.animation_count - mob.animation_count % 5) // 5].copy()
-							except IndexError:
-								if mob.mob_class == "SlimeEnemy":
-									temp = mob.animation_images[(mob.animation_count - mob.animation_count % 5) // 5 - 1]
-								if mob.mob_class == "SpiderEnemy":
-									if mob.position == "Left":
-										temp = mob.left_animation_images[(mob.animation_count - mob.animation_count % 5) // 5 - 1].copy()
-									else:
-										temp = mob.right_animation_images[(mob.animation_count - mob.animation_count % 5) // 5 - 1].copy()
+							if mob.name == "Slime":
+								temp = mob.animation_frames[(mob.animation_count - mob.animation_count % 5) // 5].copy()
+							if mob.name == "Spider":
+								if mob.position == "Left":
+									temp = mob.left_animation_images[(mob.animation_count - mob.animation_count % 5) // 5].copy()
+								else:
+									temp = mob.right_animation_images[(mob.animation_count - mob.animation_count % 5) // 5].copy()
 
 							for a, b in product(range(128), range(128)):
 								if temp.get_at((a, b)).a != 0:
 									temp.set_at((a, b), (200, 0, 0, 80))
 
-							particles.append(Particle(mob.x + random.randint(-64, 64), mob.y + random.randint(-64, 64), text("-15", 0, 0, (180, 10, 10), return_surface=True), y_bias=3, end_time=0.5))
+							particles.append(Particle(mob.x + random.randint(-64, 64), mob.y + random.randint(-64, 64), text("-15", 0, 0, (180, 10, 10), return_surface=True), y_bias=3, end_time=50.0))
 							win.blit(temp, (mob.x - player.x + Width // 2 - 64, player.y - mob.y + Height // 2 - 32))
 							win.blit(text(str(mob.HP), 0, 0, (180, 10, 10), return_surface=True), (mob.x + 58 - player.x + Width // 2 - 64, player.y - mob.y + Height // 2 - 32))
 
@@ -5207,36 +5197,21 @@ def start_game():
 
 				if mob.HP < 1:
 
-					if mob.mob_class == "SlimeEnemy":
+					if mob.name == "Slime":
 
-						if mob.attak is None:
+						for _ in range(random.randint(1, 3)):
+							if mob.slime_type == 1:
+								rand_x, rand_y = mob.x + random.randint(-30, 30), mob.y + random.randint(-30, 30)
+								world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Blue slime", rand_x, rand_y, "Gannitto world/files/Images/Items/Blue Slime.png"))
+							else:
+								rand_x, rand_y = mob.x + random.randint(-30, 30), mob.y + random.randint(-30, 30)
+								world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Pink slime", rand_x, rand_y, "Gannitto world/files/Images/Items/Pink Slime.png"))
+						mobs.remove(mob)
 
-							for _ in range(random.randint(1, 3)):
-								if mob.rand_mob == 1:
-									rand_x, rand_y = mob.x + random.randint(-30, 30), mob.y + random.randint(-30, 30)
-									world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Blue slime", rand_x, rand_y, "Gannitto world/files/Images/Items/Blue slime.png"))
-								else:
-									rand_x, rand_y = mob.x + random.randint(-30, 30), mob.y + random.randint(-30, 30)
-									world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Pink slime", rand_x, rand_y, "Gannitto world/files/Images/Items/Pink slime.png"))
-								del mobs[i]
-								break
-
-						else:
-
-							for _ in range(random.randint(1, 3)):
-								if mob.rand_mob == 1:
-									rand_x, rand_y = mob.attak[0] + random.randint(-30, 30), mob.attak[1] + random.randint(-30, 30)
-									world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Blue slime", rand_x, rand_y, "Gannitto world/files/Images/Items/Blue slime.png"))
-								else:
-									rand_x, rand_y = mob.attak[0] + random.randint(-30, 30), mob.attak[1] + random.randint(-30, 30)
-									world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Pink slime", rand_x, rand_y, "Gannitto world/files/Images/Items/Pink slime.png"))
-								del mobs[i]
-								break
-
-					elif mob.mob_class == "SpiderEnemy":
+					elif mob.name == "Spider":
 						rand_x, rand_y = mob.x + random.randint(-30, 30), mob.y + random.randint(-30, 30)
 						world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Thread", mob.x + random.randint(-30, 30), mob.y + random.randint(-30, 30), "Gannitto world/files/Images/Items/Thread.png"))
-						del mobs[i]
+						mobs.remove(mob)
 
 		# Отрисовка игрока
 		
