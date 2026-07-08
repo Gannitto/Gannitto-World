@@ -3818,7 +3818,7 @@ dt = 0
 
 def start_game():
 	
-	global win, Hiro_rect, changed_slot, menu_open, multyplayer_menu_open, screenmode, inventory_open, hold_left, backrooms, text_color, bullet_num, craft_items_list, craft_amounts_list, craft_images_list, screenshot_num, mechanisms, mouse_x, mouse_y, item_settings_open, multyplayer_panel, mobs, chat_tick, craft_list_open, craft_list_page, click, in_motherboard, os, mouse_click_image, world_name, player_bullets, color, multyplayer_mode, multyplayer, Hiro, game_time, animation, start_time, weather, new_particles, inside_files, difficulty, alt_pressed, dt, player, world
+	global win, Hiro_rect, changed_slot, menu_open, multyplayer_menu_open, screenmode, inventory_open, hold_left, backrooms, text_color, bullet_num, craft_items_list, craft_amounts_list, craft_images_list, screenshot_num, mechanisms, mouse_x, mouse_y, item_settings_open, multyplayer_panel, mobs, chat_tick, chat, chat_message, craft_list_open, craft_list_page, click, in_motherboard, os, mouse_click_image, world_name, player_bullets, color, multyplayer_mode, multyplayer, Hiro, game_time, animation, start_time, weather, new_particles, inside_files, difficulty, alt_pressed, dt, player, world
 
 	night_playing = False
 	input_text = ""
@@ -4018,6 +4018,9 @@ def start_game():
 							world.walls = {}
 							mobs = []
 							player.effects = []
+							chat = []
+							main_chat = []
+							chat_tick = 0
 							inventory.whole_inventory = [None] * 30
 							menu()
 
@@ -5981,7 +5984,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 
 			if in_motherboard is None:
 				pos = (player.x + mouse_x - Width // 2) // 64 * 64 + 32, (player.y - mouse_y + Height // 2) // 64 * 64 + 32
-				pygame.draw.rect(win, text_color, (pos[0] - player.x + Width // 2 - 128, player.y - pos[1] + Height // 2 - 128, 256, 256), 4)
+				win_fill(rect=(pos[0] - player.x + Width // 2 - 128, player.y - pos[1] + Height // 2 - 128, 256, 256))
 
 				a = True
 				if click[0]:
@@ -6012,7 +6015,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Lever":
 
 			pos = (player.x + mouse_x - Width // 2) // 64 * 64 + 32, (player.y - mouse_y + Height // 2) // 64 * 64 + 32
-			pygame.draw.rect(win, text_color, (pos[0] - player.x + Width // 2 - 128, player.y - pos[1] + Height // 2 - 128, 256, 256), 4)
+			win_fill(rect=(pos[0] - player.x + Width // 2 - 128, player.y - pos[1] + Height // 2 - 128, 256, 256))
 			a = True
 			if click[0]:
 				for mechanism in mechanisms:
@@ -6028,7 +6031,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Wrench":
 
 			pos = (player.x + mouse_x - Width // 2) // 64 * 64 + 32, (player.y - mouse_y + Height // 2) // 64 * 64 + 32
-			pygame.draw.rect(win, text_color, (pos[0] - player.x + Width // 2 - 128, player.y - pos[1] + Height // 2 - 128, 256, 256), 4)
+			win_fill(rect=(pos[0] - player.x + Width // 2 - 128, player.y - pos[1] + Height // 2 - 128, 256, 256))
 			if click[0]:
 				for mechanism in mechanisms:
 					if mechanism.x == (player.x + mouse_x - Width // 2) // 64 and mechanism.y == (player.y - mouse_y + Height // 2) // 64:
@@ -6039,7 +6042,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Random box":
 
 			pos = (player.x + mouse_x - Width // 2) // 64 * 64 + 32, (player.y - mouse_y + Height // 2) // 64 * 64 + 32
-			pygame.draw.rect(win, text_color, (pos[0] - player.x + Width // 2 - 128, player.y - pos[1] + Height // 2 - 128, 256, 256), 4)
+			win_fill(rect=(pos[0] - player.x + Width // 2 - 128, player.y - pos[1] + Height // 2 - 128, 256, 256))
 			a = True
 
 			if click[0]:
@@ -6057,7 +6060,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Motherboard":
 
 			pos = (player.x + mouse_x - Width // 2) // 64 * 64 + 32, (player.y - mouse_y + Height // 2) // 64 * 64 + 32
-			pygame.draw.rect(win, text_color, (pos[0] - player.x + Width // 2 - 128, player.y - pos[1] + Height // 2 - 128, 256, 256), 4)
+			win_fill(rect=(pos[0] - player.x + Width // 2 - 128, player.y - pos[1] + Height // 2 - 128, 256, 256))
 			a = True
 			if click[0]:
 				for mechanism in mechanisms:
@@ -6072,7 +6075,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 
 		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Portal gun":
 
-			pygame.draw.rect(win, text_color, ((player.x // 128) * 128 - player.x + mouse_x - mouse_x % 128, player.y - (player.y // 256) * 256 + mouse_y - mouse_y % 256, 128, 256), 4)
+			win_fill(rect=((player.x // 128) * 128 - player.x + mouse_x - mouse_x % 128, player.y - (player.y // 256) * 256 + mouse_y - mouse_y % 256, 128, 256))
 
 			if click[0]:
 
@@ -6089,7 +6092,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 						
 					world.chunk_manager.get_chunk_at((player.x + mouse_x - Width // 2) // 128, (player.y + mouse_y - Height // 2) // 256).objects.append(Portal())
 
-		build_tuple = (changed_slot, player, world.visible_objects, particles, Width, Height)
+		build_tuple = (changed_slot, player, particles, Width, Height, world)
 		build(build_tuple, Object("Table", 0, 0, "Gannitto world/files/Images/Objects/Table.png", (256, 256), special_flags=1), "Table")
 		build(build_tuple, Object("Wall table", 0, 0, "Gannitto world/files/Images/Objects/Wall table.png", (256, 256), special_flags=1), "Wall table")
 		build(build_tuple, Object("Furnace", 0, 0, "Gannitto world/files/Images/Items/Furnace.png", (256, 256), special_flags=1), "Furnace")
@@ -6135,7 +6138,7 @@ if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0]
 		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name in ("Wooden wall", "Brick wall", "Stone brick wall"):
 			
 			wall_pos = (player.x + mouse_x - Width // 2) // 256 * 256 + 128, (player.y - mouse_y + Height // 2) // 256 * 256 + 128
-			pygame.draw.rect(win, text_color, (wall_pos[0] - player.x + Width // 2 - 128, player.y - wall_pos[1] + Height // 2 - 128, 256, 256), 4)
+			win_fill(rect=(wall_pos[0] - player.x + Width // 2 - 128, player.y - wall_pos[1] + Height // 2 - 128, 256, 256))
 
 			if click[0]:
 
@@ -6157,7 +6160,7 @@ if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0]
 		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Wooden door":
 
 			wall_pos = (player.x + mouse_x - Width // 2) // 256 * 256 + 128, (player.y - mouse_y + Height // 2) // 256 * 256 + 128
-			pygame.draw.rect(win, text_color, (wall_pos[0] - player.x + Width // 2 - 128, player.y - wall_pos[1] + Height // 2 - 128, 256, 256), 4)
+			win_fill(rect=(wall_pos[0] - player.x + Width // 2 - 128, player.y - wall_pos[1] + Height // 2 - 128, 256, 256))
 
 			if click[0]:
 				if wall_pos not in world.walls:
@@ -6177,7 +6180,7 @@ if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0]
 		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Stone hammer":
 
 			wall_pos = (player.x + mouse_x - Width // 2) // 256 * 256 + 128, (player.y - mouse_y + Height // 2) // 256 * 256 + 128
-			pygame.draw.rect(win, text_color, (wall_pos[0] - player.x + Width // 2 - 128, player.y - wall_pos[1] + Height // 2 - 128, 256, 256), 4)
+			win_fill(rect=(wall_pos[0] - player.x + Width // 2 - 128, player.y - wall_pos[1] + Height // 2 - 128, 256, 256))
 
 			if click[0]:
 				if wall_pos in world.walls:

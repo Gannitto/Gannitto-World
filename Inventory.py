@@ -124,7 +124,7 @@ class Inventory:
 			], [
 				"С её помощью ты можешь стрелять, нажав на пробел",
 				"You can shoot with it by pressing the spase"
-			], types[1]),
+			], types[1], max_stack=1),
 
 
 
@@ -274,7 +274,7 @@ class Inventory:
 			], [
 				"Можно использовать для быстрого передвижения",
 				"Can be used for fast movement"
-			], types[0]),
+			], types[0], max_stack=1),
 
 
 
@@ -524,7 +524,7 @@ class Inventory:
 			], [
 				"С помощью него можно убрать провод", 
 				"With it, you can remove the wire"
-			], types[3]),
+			], types[3], max_stack=1),
 
 
 
@@ -534,7 +534,7 @@ class Inventory:
 			], [
 				"С помощью неё ты можешь копать руду", 
 				"with it you can dig ore"
-			], types[0]),
+			], types[0], max_stack=1),
 
 
 
@@ -544,7 +544,7 @@ class Inventory:
 			], [
 				"Нету",
 				"None"
-			], types[0]),
+			], types[0], max_stack=1),
 
 
 
@@ -554,7 +554,7 @@ class Inventory:
 			], [
 				"Нету",
 				"None"
-			], types[0]),
+			], types[0], max_stack=1),
 
 
 
@@ -664,7 +664,7 @@ class Inventory:
 			], [
 				"Нету",
 				"None"
-			], types[0]),
+			], types[0], max_stack=1),
 
 
 
@@ -694,7 +694,7 @@ class Inventory:
 			], [
 				"Вы можете вскопать грядки с помощью неё",
 				"You can dig up a farmland with it"
-			], types[0]),
+			], types[0], max_stack=1),
 
 
 
