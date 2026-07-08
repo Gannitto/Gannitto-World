@@ -60,7 +60,7 @@ pygame.init()
 
 t = translator.get
 
-def text(text: str, text_x: int, text_y: int, color: tuple=text_color, size: int=20, alignment: bool=False, letter_spasing: int=10, surface: pygame.Surface=win, max_width: int=0, return_surface: bool=False, spase_between_strings: int=10):
+def text(text: str, text_x: int, text_y: int, color: tuple=text_color, size: int=20, alignment: bool=False, letter_spasing: int=10, surface: pygame.Surface=win, max_width: int=0, max_height: int=0, return_surface: bool=False, spase_between_strings: int=10):
 	
 	"""
 	Выводит текст на экран
@@ -82,8 +82,10 @@ def text(text: str, text_x: int, text_y: int, color: tuple=text_color, size: int
 	
 	if max_width == 0:
 		max_width = surface.get_size()[0] - 10
+	if max_height == 0:
+		max_height = surface.get_size()[1] - 10
 
-	all_text_surface = pygame.Surface((max_width, Height), pygame.SRCALPHA)
+	all_text_surface = pygame.Surface((max_width, max_height), pygame.SRCALPHA)
 
 	temp_font = pygame.font.Font(path + "Gannitto world/files/Font.ttf", size)
 
@@ -601,7 +603,7 @@ class Particle:
 		can_interfere_with_placing - Может ли частица мешать ставить объекты
 		save_particle - Сохранять ли частицу после выхода из мира
 		save_start_time - Сохранять ли параметр start_time после выхода из мира, если включён save_particle
-		start_time - Время создания частицы. По умолчанию выстовляется автоматически
+		start_time - Время создания частицы. По умолчанию выставляется автоматически
 		end_x - Координата X, при достижении которой частица пропадёт
 		end_y - Координата Y, при достижении которой частица пропадёт
 		end_zone - Если нужно, чтобы частица пропадала, когда она находится не именно на end_x и/или end_y, а на определённом растоянии или ближе, то можно использовать end_zone. За это расстояние этот аргумент и отвечает.
@@ -704,12 +706,12 @@ class Particle:
 		if self.can_go_through_walls:
 			
 			if self.x_bias_condition is None or self.x_bias_condition(self):
-				self.x += self.x_bias if self.x_bias.__class__ == int else self.x_bias(self)
+				self.x += self.x_bias if self.x_bias.__class__ in (int, float) else self.x_bias(self)
 			else:
 				self.else_x_bias()
 			
 			if self.y_bias_condition is None or self.y_bias_condition(self):
-				self.y += self.y_bias if self.y_bias.__class__ == int else self.y_bias(self)
+				self.y += self.y_bias if self.y_bias.__class__ in (int, float) else self.y_bias(self)
 			else:
 				self.else_y_bias()
 
@@ -720,9 +722,9 @@ class Particle:
 					a = False
 			
 			if self.x_bias_condition is None or self.x_bias_condition(self) and a:
-				self.x += self.x_bias if self.x_bias.__class__ == int else self.x_bias(self)
+				self.x += self.x_bias if self.x_bias.__class__ in (int, float) else self.x_bias(self)
 			if self.y_bias_condition is None or self.y_bias_condition(self) and a:
-				self.y += self.y_bias if self.y_bias.__class__ == int else self.y_bias(self)
+				self.y += self.y_bias if self.y_bias.__class__ in (int, float) else self.y_bias(self)
 
 		if self.rotate is not None:
 			i = self.image.get_rect()
@@ -1451,8 +1453,8 @@ class SlimeEnemy(BaseEnemy):
 		"""Проверка столкновения со стенами"""
 		margin = 32
 		for wall in world.visible_walls.values():
-			if (wall.x - margin < x < wall.x + wall.width + margin and
-				wall.y - margin < y < wall.y + wall.height + margin):
+			if (wall.x - margin < x < wall.x + 256 + margin and
+				wall.y - margin < y < wall.y + 256 + margin):
 				return True
 		return False
 		
@@ -5175,23 +5177,10 @@ def start_game():
 								if temp.get_at((a, b)).a != 0:
 									temp.set_at((a, b), (200, 0, 0, 80))
 
-							particles.append(Particle(mob.x + random.randint(-64, 64), mob.y + random.randint(-64, 64), text("-15", 0, 0, (180, 10, 10), return_surface=True), y_bias=3, end_time=50.0))
+							particles.append(Particle(mob.x + random.randint(-64, 64), mob.y + random.randint(-64, 64), text("-15", 0, 0, (180, 10, 10), max_width=44, max_height=50, return_surface=True), y_bias=3, increased_transparency=30, end_time=0.5))
 							win.blit(temp, (mob.x - player.x + Width // 2 - 64, player.y - mob.y + Height // 2 - 32))
 							win.blit(text(str(mob.HP), 0, 0, (180, 10, 10), return_surface=True), (mob.x + 58 - player.x + Width // 2 - 64, player.y - mob.y + Height // 2 - 32))
 
-							# try:
-
-							#	 if mob.rand_mob == 1:
-							#		 temp = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Objects/Blue Slime " + str((mob.animation_count - mob.animation_count % 5) // 5 + 1) + ".png"), (128, 128))
-							#	 else:
-							#		 temp = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Objects/Pink Slime " + str((mob.animation_count - mob.animation_count % 5) // 5 + 1) + ".png"), (128, 128))
-
-							# except FileNotFoundError:
-
-							#	 if mob.rand_mob == 1:
-							#		 temp = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Objects/Blue Slime " + str((mob.animation_count - mob.animation_count % 5) // 5) + ".png"), (128, 128))
-							#	 else:
-							#		 temp = pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Objects/Pink Slime " + str((mob.animation_count - mob.animation_count % 5) // 5) + ".png"), (128, 128))
 							player_bullets.remove(ii)
 							break
 
