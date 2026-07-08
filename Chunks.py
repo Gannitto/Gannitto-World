@@ -175,14 +175,13 @@ class Chunk:
 	def __init__(self, X, Y):
 		self.x = X
 		self.y = Y
-		self.blocks = []
 		self.mobs = []
 		self.objects = []
 		self.items = []
 		self.particles = []
+		self.walls = {}
 		self.caves = []
 		self.biome = None
-		self.objects = []
 		self.is_loaded = False
 		self.is_generated = False
 		self.modified = True # TODO изменён ли чанк игроком
@@ -220,7 +219,6 @@ class ChunkManager:
 			# height = self.generator.get_height(x, y)
 			# if height > 0.5: ...
 
-		# Сохраняем биом для этого чанка
 		chunk.biome = biome
 
 		# Генерация объектов в чанке
@@ -290,12 +288,13 @@ class ChunkManager:
 		"""Выгружает чанк из памяти, сохраняя если нужно"""
 		chunk = self.chunks.get(chunk_key)
 		if chunk and chunk.is_loaded:
-			# Сохраняем чанк, если он был изменен
+			# Сохранение чанка, если он был изменен
+			# Пока что механика изменённых чанков ещё не реализована, так что у всех чанков modified равен True
 			if chunk.modified:
 				save_chunk(chunk, self.save_directory)
 			
-			# Очищаем данные для экономии памяти
-			chunk.blocks.clear()
+			# Очистка данных для экономии памяти
+			chunk.walls.clear()
 			chunk.objects.clear()
 			chunk.mobs.clear()
 			chunk.items.clear()

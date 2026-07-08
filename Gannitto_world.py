@@ -136,7 +136,6 @@ def save(darken:bool=True, save_world_settings:bool=False):
 
 			Saver.save_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Mobs.save", mobs)
 			Saver.save_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Info.save", [player.x, player.y, Backrooms.InBackrooms, Backrooms.Level, world.current_cave, player.speed, player.HP, start_time, Ron.X, Ron.Y, Ron.Home, world.chunk_manager.generator.seed])
-			Saver.save_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Walls.save", world.walls)
 			Saver.save_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Inventory.save", inventory.whole_inventory)
 			Saver.save_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Resources.save", inventory.resources)
 			Saver.save_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Effects.save", player.effects)
@@ -710,7 +709,7 @@ class Particle:
 
 		else:
 
-			for i in world.walls.values():
+			for i in world.visible_walls.values():
 				if i.x - 300 < player.x < i.x + 300 and i.y - 300 < player.y < i.y + 300:
 					a = False
 			
@@ -814,7 +813,7 @@ class Player:
 		# if pygame.key.get_pressed()[pygame.K_o]: return False временная функция чтобы для теста ходить сквозь стены
 		self.rect = pygame.Rect(self.x - 35, self.y + 112, 70, 224)
 
-		for wall in world.walls.values():
+		for wall in world.visible_walls.values():
 			wall_rect = pygame.Rect(wall.x - 128, wall.y + 128, 256, 256)
 			if self.rect.colliderect(wall_rect):
 				return True
@@ -930,7 +929,7 @@ class SlimeEnemy:
 					a = True
 					if player.x < self.attak[0]:
 					
-						for i in world.walls.values():
+						for i in world.visible_walls.values():
 							if i.x - 256 < self.attak[0] < i.x + 300 and i.y - 256 < self.attak[1] < i.y + 256:
 								a = False
 								self.x = self.attak[0]
@@ -945,7 +944,7 @@ class SlimeEnemy:
 						a = True
 						if player.x < self.attak[0]:
 					
-							for i in world.walls.values():
+							for i in world.visible_walls.values():
 								if i.x - 300 < self.attak[0] < i.x + 256 and i.y - 256 < self.attak[1] < i.y + 256:
 									a = False
 									self.x = self.attak[0]
@@ -961,7 +960,7 @@ class SlimeEnemy:
 						a = True
 						if player.x < self.attak[0]:
 					
-							for i in world.walls.values():
+							for i in world.visible_walls.values():
 								if i.x - 256 < self.attak[0] < i.x + 256 and i.y - 256 < self.attak[1] < i.y + 300:
 									a = False
 									self.x = self.attak[0]
@@ -979,7 +978,7 @@ class SlimeEnemy:
 						a = True
 						if player.x < self.attak[0]:
 					
-							for i in world.walls.values():
+							for i in world.visible_walls.values():
 								if i.x - 256 < self.attak[0] < i.x + 300 and i.y - 256 < self.attak[1] < i.y + 256:
 									a = False
 									self.x = self.attak[0]
@@ -994,7 +993,7 @@ class SlimeEnemy:
 						a = True
 						if player.x < self.attak[0]:
 					
-							for i in world.walls.values():
+							for i in world.visible_walls.values():
 								if i.x - 300 < self.attak[0] < i.x + 256 and i.y - 256 < self.attak[1] < i.y + 256:
 									a = False
 									self.x = self.attak[0]
@@ -1010,7 +1009,7 @@ class SlimeEnemy:
 						a = True
 						if player.x < self.attak[0]:
 					
-							for i in world.walls.values():
+							for i in world.visible_walls.values():
 								if i.x - 256 < self.attak[0] < i.x + 256 and i.y - 256 < self.attak[1] < i.y + 300:
 									a = False
 									self.x = self.attak[0]
@@ -1025,7 +1024,7 @@ class SlimeEnemy:
 						a = True
 						if player.x < self.attak[0]:
 					
-							for i in world.walls.values():
+							for i in world.visible_walls.values():
 								if i.x - 256 < self.attak[0] < i.x + 256 and i.y - 300 < self.attak[1] < i.y + 256:
 									a = False
 									self.x = self.attak[0]
@@ -1063,7 +1062,7 @@ class SlimeEnemy:
 			if player.x + self.offset_x > self.x:
 				
 				a = True
-				for i in world.walls.values():
+				for i in world.visible_walls.values():
 					if i.x - 300 < self.x < i.x + 256 and i.y - 256 < self.y < i.y + 256:
 						a = False
 						break
@@ -1074,7 +1073,7 @@ class SlimeEnemy:
 			elif player.x + self.offset_x < self.x:
 				
 				a = True
-				for i in world.walls.values():
+				for i in world.visible_walls.values():
 					if i.x - 256 < self.x < i.x + 300 and i.y - 256 < self.y < i.y + 256:
 						a = False
 						break
@@ -1085,7 +1084,7 @@ class SlimeEnemy:
 			if player.y + self.offset_y > self.y:
 				
 				a = True
-				for i in world.walls.values():
+				for i in world.visible_walls.values():
 					if i.x - 256 < self.x < i.x + 256 and i.y - 300 < self.y < i.y + 256:
 						a = False
 						break
@@ -1096,7 +1095,7 @@ class SlimeEnemy:
 			elif player.y + self.offset_y < self.y - player.y:
 				
 				a = True
-				for i in world.walls.values():
+				for i in world.visible_walls.values():
 					if i.x - 256 < self.x < i.x + 256 and i.y - 256 < self.y < i.y + 300:
 						a = False
 						break
@@ -1175,7 +1174,7 @@ class SpiderEnemy:
 		if player.x + self.offset_x > self.x:
 			
 			a = True
-			for i in world.walls.values():
+			for i in world.visible_walls.values():
 				if i.x - 300 < self.x < i.x + 256 and i.y - 256 < self.y < i.y + 256:
 					a = False
 					break
@@ -1187,7 +1186,7 @@ class SpiderEnemy:
 		elif player.x + self.offset_x < self.x:
 			
 			a = True
-			for i in world.walls.values():
+			for i in world.visible_walls.values():
 				if i.x - 256 < self.x < i.x + 300 and i.y - 256 < self.y < i.y + 256:
 					a = False
 					break
@@ -1199,7 +1198,7 @@ class SpiderEnemy:
 		if player.y + self.offset_y > self.y:
 			
 			a = True
-			for i in world.walls.values():
+			for i in world.visible_walls.values():
 				if i.x - 256 < self.x < i.x + 256 and i.y - 300 < self.y < i.y + 256:
 					a = False
 					break
@@ -1210,7 +1209,7 @@ class SpiderEnemy:
 		elif player.y + self.offset_y < self.y - player.y:
 			
 			a = True
-			for i in world.walls.values():
+			for i in world.visible_walls.values():
 				if i.x - 256 < self.x < i.x + 256 and i.y - 256 < self.y < i.y + 300:
 					a = False
 					break
@@ -1293,7 +1292,7 @@ class ButterflyEnemy:
 		if player.x + self.offset_x > self.x:
 
 			a = True
-			for i in world.walls.values():
+			for i in world.visible_walls.values():
 				if i.x - 300 < self.x < i.x + 256 and i.y - 256 < self.y < i.y + 256:
 					a = False
 					break
@@ -1304,7 +1303,7 @@ class ButterflyEnemy:
 		elif player.x + self.offset_x < self.x:
 
 			a = True
-			for i in world.walls.values():
+			for i in world.visible_walls.values():
 				if i.x - 256 < self.x < i.x + 300 and i.y - 256 < self.y < i.y + 256:
 					a = False
 					break
@@ -1315,7 +1314,7 @@ class ButterflyEnemy:
 		if player.y + self.offset_y > self.y:
 
 			a = True
-			for i in world.walls.values():
+			for i in world.visible_walls.values():
 				if i.x - 256 < self.x < i.x + 256 and i.y - 300 < self.y < i.y + 256:
 					a = False
 					break
@@ -1326,7 +1325,7 @@ class ButterflyEnemy:
 		elif player.y + self.offset_y < self.y - player.y:
 
 			a = True
-			for i in world.walls.values():
+			for i in world.visible_walls.values():
 				if i.x - 256 < self.x < i.x + 256 and i.y - 256 < self.y < i.y + 300:
 					a = False
 					break
@@ -1772,7 +1771,7 @@ class Wall:
 
 		self.neigbords = []
 		for wall in ((self.x - 256, self.y), (self.x + 256, self.y), (self.x, self.y - 256), (self.x, self.y + 256)):
-			if wall in world.walls:
+			if wall in world.chunk_manager.get_chunk_at(*wall).walls:
 				self.neigbords.append(wall)
 
 		if self.is_door:
@@ -2143,11 +2142,8 @@ class World:
 
 		self.visible_objects = []
 		self.visible_items = []
+		self.visible_walls = {}
 		self.visible_caves = []
-		
-		# Списки всех игровых объектов оставлены для совместимости. От такого надо постепенно отказываться
-		self.objects = []
-		self.walls = {}
 		
 	def update(self):
 
@@ -2156,10 +2152,13 @@ class World:
 		# Сборка объектов из загруженных чанков
 		self.visible_objects.clear()
 		self.visible_items.clear()
+		self.visible_walls.clear()
+		self.visible_caves.clear()
 		for chunk_key in self.chunk_manager.loaded_chunks:
 			chunk = self.chunk_manager.chunks[chunk_key]
 			self.visible_objects.extend(chunk.objects)
 			self.visible_items.extend(chunk.items)
+			self.visible_walls.update(chunk.walls)
 			self.visible_caves.extend(chunk.caves)
 		
 
@@ -3856,7 +3855,6 @@ def start_game():
 		mobs = Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Mobs.save")
 		player.x, player.y, Backrooms.InBackrooms, Backrooms.Level, world.current_cave, player.speed, player.HP, start_time, Ron.X, Ron.Y, Ron.Home, world.chunk_manager.generator.seed = Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Info.save")
 		difficulty, player.god_mode = Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Settings.save")
-		world.walls = Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Walls.save")
 		inventory.whole_inventory = Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Inventory.save")
 		player.effects = Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Effects.save")
 		
@@ -4015,7 +4013,6 @@ def start_game():
 							statistics[1] += (time.time() - start_time) / 3600
 							save()
 							world.chunk_manager.chunks = {}
-							world.walls = {}
 							mobs = []
 							player.effects = []
 							chat = []
@@ -4790,7 +4787,7 @@ def start_game():
 		for bullet in player_bullets:
 			bullet.main()
 
-		for wall in world.walls.values():
+		for wall in world.visible_walls.values():
 			wall.main(release)
 		
 		i = -1
@@ -6142,17 +6139,17 @@ if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0]
 
 			if click[0]:
 
-				if wall_pos not in world.walls:
+				if wall_pos not in world.visible_walls:
 					# TODO сделать подбирание предметов при пересечении
 					for object in world.visible_objects:
 						if pygame.Rect((player.x + mouse_x - Width // 2) // 256 * 256 + 128, (player.y - mouse_y + Height // 2) // 256 * 256 + 128, 256, 256).colliderect(pygame.Rect(object.x, object.y, object.w, object.h)):
 							break
 					
 					else:
-						world.walls[wall_pos] = Wall(inventory.whole_inventory[changed_slot].name, wall_pos[0], wall_pos[1])
+						world.chunk_manager.get_chunk_at(*wall_pos).walls[wall_pos] = Wall(inventory.whole_inventory[changed_slot].name, wall_pos[0], wall_pos[1])
 						for wall in (((wall_pos[0] - 256, wall_pos[1]), (wall_pos[0] + 256, wall_pos[1]), (wall_pos[0], wall_pos[1] - 256), (wall_pos[0], wall_pos[1] + 256))):
-							if wall in world.walls:
-								world.walls[wall].update_neigboors()
+							if wall in world.visible_walls:
+								world.visible_walls[wall].update_neigboors()
 						inventory.whole_inventory[changed_slot].amount -= 1
 						if inventory.whole_inventory[changed_slot].amount == 0:
 							inventory.whole_inventory[changed_slot] = None
@@ -6163,16 +6160,16 @@ if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0]
 			win_fill(rect=(wall_pos[0] - player.x + Width // 2 - 128, player.y - wall_pos[1] + Height // 2 - 128, 256, 256))
 
 			if click[0]:
-				if wall_pos not in world.walls:
+				if wall_pos not in world.visible_walls:
 					for object in world.visible_objects:
 						if pygame.Rect((player.x + mouse_x - Width // 2) // 256 * 256 + 128, (player.y - mouse_y + Height // 2) // 256 * 256 + 128, 256, 256).colliderect(pygame.Rect(object.x, object.y, object.w, object.h)):
 							break
 					
 					else:
-						world.walls[wall_pos] = Wall(inventory.whole_inventory[changed_slot].name, wall_pos[0], wall_pos[1], True)
+						world.chunk_manager.get_chunk_at(*wall_pos).walls[wall_pos] = Wall(inventory.whole_inventory[changed_slot].name, wall_pos[0], wall_pos[1], True)
 						for wall in (((wall_pos[0] - 256, wall_pos[1]), (wall_pos[0] + 256, wall_pos[1]), (wall_pos[0], wall_pos[1] - 256), (wall_pos[0], wall_pos[1] + 256))):
-							if wall in world.walls:
-								world.walls[wall].update_neigboors()
+							if wall in world.visible_walls:
+								world.visible_walls[wall].update_neigboors()
 						inventory.whole_inventory[changed_slot].amount -= 1
 						if inventory.whole_inventory[changed_slot].amount == 0:
 							inventory.whole_inventory[changed_slot] = None
@@ -6183,9 +6180,9 @@ if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0]
 			win_fill(rect=(wall_pos[0] - player.x + Width // 2 - 128, player.y - wall_pos[1] + Height // 2 - 128, 256, 256))
 
 			if click[0]:
-				if wall_pos in world.walls:
-					inventory.increate(world.walls[wall_pos].wall_type)
-					world.walls.pop(wall_pos, None)
+				if wall_pos in world.visible_walls:
+					inventory.increate(world.chunk_manager.get_chunk_at(*wall_pos).walls[wall_pos].wall_type)
+					world.chunk_manager.get_chunk_at(*wall_pos).walls.pop(wall_pos, None)
 
 		if mouse_object is not None and Settings["Display"][8]:
 			if screenmode == "FULLSCREEN":
@@ -6352,7 +6349,6 @@ if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0]
 						sock.connect((input_text, 10000))
 						world_name = "ᴥᴥᴥ░▒▓█╬█▓▒░ᴥᴥᴥ_Multiplayer_ᴥᴥᴥ░▒▓█╬█▓▒░ᴥᴥᴥ"
 						mobs = []
-						world.walls = {}
 						mechanisms = []
 						player_bullets = []
 						player.effects = []

@@ -26,7 +26,7 @@ def save_chunk(chunk, save_directory="Gannitto world/saves/chunks/"):
 		"objects": chunk.objects,
 		"mobs": chunk.mobs,
 		"items": chunk.items,
-		"blocks": chunk.blocks,
+		"walls": chunk.walls,
 		"caves": chunk.caves,
 		"is_generated": chunk.is_generated,
 		"is_loaded": False
@@ -52,7 +52,7 @@ def load_chunk(chunk_x, chunk_y, save_directory):
 	chunk.objects = chunk_data["objects"]
 	chunk.mobs = chunk_data["mobs"]
 	chunk.items = chunk_data["items"]
-	chunk.blocks = chunk_data["blocks"]
+	chunk.walls = chunk_data["walls"]
 	chunk.caves = chunk_data["caves"]
 	chunk.is_generated = chunk_data["is_generated"]
 	chunk.is_loaded = False
