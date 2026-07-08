@@ -33,7 +33,7 @@ pygame.init()
 	Загрузка данных мира
 	Отображение объектов
 	Отображение мобов
-	Анимация хиро
+	Анимация игрока
 	Рон
 	Механика использования еды и некоторых предметов через пробел
 	Отрисовка погоды
@@ -47,14 +47,14 @@ pygame.init()
 Меню миров
 Меню
 
-	########                    ########     ###      ###          ########
-   ##########                 #########      ###      ###	     ######### 
-   #        ####             ###             ###      ###	    ###        
-   #############              ########       ###      ###	     ########  
-   #############               ########      ###      ###	      ######## 
-   #############                     ###     ###      ###	            ###
-   ####   ####               ##########      ############	    ########## 
-   ####   ####              #########          ########  	   #########   
+	########					########	 ###	  ###		   ########
+   ##########				  #########		 ###	  ###		 ######### 
+   #		####			 ###			 ###	  ###		###		   
+   #############			  ########		 ###	  ###		 ########  
+   #############			   ########		 ###	  ###		  ######## 
+   #############					 ###	 ###	  ###				###
+   ####   ####				 ##########		 ############		########## 
+   ####   ####				#########		   ########		   #########   
 
 """
 
@@ -334,6 +334,12 @@ Slime2_3 = pygame.image.load(path + "Gannitto world/files/Images/Objects/Pink Sl
 Slime2_3 = pygame.transform.scale(Slime2_3, (128, 128))
 Slime2_4 = pygame.image.load(path + "Gannitto world/files/Images/Objects/Pink Slime 4.png")
 Slime2_4 = pygame.transform.scale(Slime2_4, (128, 128))
+
+
+SLIME_TYPES = {
+	1: [Slime1, Slime1_2, Slime1_3, Slime1_4],
+	2: [Slime2, Slime2_2, Slime2_3, Slime2_4]
+}
 
 Butterfly1 = pygame.image.load(path + "Gannitto world/files/Images/Objects/Butterfly 1 1.png")
 Butterfly1 = pygame.transform.scale(Butterfly1, (32, 32))
@@ -735,9 +741,9 @@ class Particle:
 			pygame.draw.rect(win, (0, 0, 0), (self.display_mode(self.x, self.y, self.w, self.h)[0], self.display_mode(self.x, self.y, self.w, self.h)[1], self.w, self.h), 3)
 	
 	# def get_pressed(self, button=0, del_self=False) -> bool:
-	# 	if click[button] and pygame.Rect(eval(self.display_mode)[0], eval(self.display_mode)[1], self.w, self.h).collidepoint(mouse_x, mouse_y):
-	# 		return True
-	# 	return False
+	#	if click[button] and pygame.Rect(eval(self.display_mode)[0], eval(self.display_mode)[1], self.w, self.h).collidepoint(mouse_x, mouse_y):
+	#		return True
+	#	return False
 
 # Работа с анимациями	
 class PlayerAnimations:
@@ -882,8 +888,141 @@ class TextureCache:
 			cls._textures[key] = image
 		return cls._textures[key]
 
+class BaseEnemy:
+	def __init__(self, x, y, HP, speed, animation_frames):
+		self.x = x
+		self.y = y
+		self.HP = HP
+		self.max_hp = HP
+		self.speed = speed
+		self.animation_frames = animation_frames
+		self.animation_count = 0
+		self.rect = animation_frames[0].get_rect()
+		self.state = "Idle"  # Idle, Wonder, Jumping, Retreat
+		self.attack_cooldown = 0
+		self.detection_range = 1000
+		self.attack_range = 200
+		
+	def update(self, player, world):
+		"""Обновляет состояние моба"""
+		self._update_animation()
+		self._update_state(player, world)
+		self._update_position(world)
+		
+	def _update_animation(self):
+		self.animation_count = (self.animation_count + 1) % 20
+		
+	def _update_state(self, player, world):
+		"""Определяет текущее состояние на основе расстояния до игрока"""
+		distance = self._get_distance_to(player)
+		
+		if self.HP <= 0:
+			self.state = "dead"
+		elif distance < self.attack_range:
+			self.state = "attacking"
+			self._attack(player)
+		elif distance < self.detection_range:
+			print(1234)
+			self.state = "chasing"
+		else:
+			self.state = "idle"
+			
+	def _update_position(self, world):
+		"""Обновляет позицию в зависимости от состояния"""
+		if self.state == "chasing":
+			self._move_towards_player(world)
+		elif self.state == "idle":
+			self._random_movement(world)
+			
+	def _move_towards_player(self, world):
+		"""Движение к игроку с проверкой стен"""
+		dx = player.x - self.x
+		dy = player.y - self.y
+		distance = sqrt(dx**2 + dy**2)
+		
+		if distance > 0:
+			# Нормализуем вектор движения
+			dx = dx / distance * self.speed
+			dy = dy / distance * self.speed
+			
+			# Пробуем движение по X
+			new_x = self.x + dx
+			if not self._check_collision(new_x, self.y, world):
+				self.x = new_x
+				
+			# Пробуем движение по Y
+			new_y = self.y + dy
+			if not self._check_collision(self.x, new_y, world):
+				self.y = new_y
 
-class SlimeEnemy:
+class CollisionManager:
+
+	@staticmethod
+	def check_wall_collision(x, y, walls, margin=32):
+		"""Проверяет столкновение с любыми стенами"""
+		for wall in walls.values():
+			if (wall.x - margin < x < wall.x + 256 + margin and
+				wall.y - margin < y < wall.y + 256 + margin):
+				return True
+		return False
+	
+	@staticmethod
+	def check_entity_collision(entity1, entity2, margin=0):
+		"""Проверяет столкновение между двумя сущностями"""
+		return (abs(entity1.x - entity2.x) < margin and abs(entity1.y - entity2.y) < margin)
+
+collision_manager = CollisionManager()
+
+class BehaviorStrategy:
+	def __init__(self, speed_multiplier=1.0):
+		self.speed_multiplier = speed_multiplier
+		
+	def move(self, enemy, target, world):
+		"""Базовое движение к цели"""
+		dx = target.x - enemy.x
+		dy = target.y - enemy.y
+		distance = sqrt(dx**2 + dy**2)
+		
+		if distance > 0:
+			dx = dx / distance * enemy.speed * self.speed_multiplier
+			dy = dy / distance * enemy.speed * self.speed_multiplier
+			
+			# Пробуем двигаться
+			new_x = enemy.x + dx
+			if not self._has_collision(new_x, enemy.y, world):
+				enemy.x = new_x
+				
+			new_y = enemy.y + dy
+			if not self._has_collision(enemy.x, new_y, world):
+				enemy.y = new_y
+				
+	def _has_collision(self, x, y, world):
+		return collision_manager.check_wall_collision(x, y, world.visible_walls)
+
+class AggressiveBehavior(BehaviorStrategy):
+	def __init__(self):
+		super().__init__(speed_multiplier=1.5)
+		
+class CautiousBehavior(BehaviorStrategy):
+	def __init__(self):
+		super().__init__(speed_multiplier=0.7)
+		
+class SlimeBehavior(BehaviorStrategy):
+	def __init__(self):
+		super().__init__(speed_multiplier=1.0)
+		self.wander_offset_x = random.randint(-3000, 3000)
+		self.wander_offset_y = random.randint(-3000, 3000)
+		
+	def move(self, enemy, target, world):
+		# Специальная логика для слизня с блужданием
+		if enemy.state == "idle":
+			# Блуждание вокруг точки
+			pass
+		else:
+			super().move(enemy, target, world)
+
+# Старый класс слизня
+class SlimeEnemyOld:
 
 	def __init__(self, mob_x: int, mob_y: int):
 
@@ -1126,6 +1265,220 @@ class SlimeEnemy:
 		if self.rand_mob == 1: self.animation_images = [Slime1, Slime1_2, Slime1_3, Slime1_4]
 		else: self.animation_images = [Slime2, Slime2_2, Slime2_3, Slime2_4]
 
+class SlimeEnemy(BaseEnemy):
+	
+	def __init__(self, x, y):
+
+		slime_type = random.choice((1, 2))
+		animation_frames = SLIME_TYPES[slime_type]
+		
+		super().__init__(
+			x=x, y=y,
+			HP=50,
+			speed=random.randint(10, 20),
+			animation_frames=animation_frames
+		)
+		
+		self.slime_type = slime_type
+		self.behavior = SlimeBehavior()
+		self.state = "Wander"
+
+		self.wander_radius = 1000
+		self.wander_angle = random.uniform(0, 2 * pi)
+		self.wander_distance = random.uniform(100, self.wander_radius)
+		self.wander_timer = 0
+		self.wander_change_interval = FPS * 0.5
+
+		# Параметры атаки
+		self.attack_cooldown = 0
+		self.attack_charge_time = 0.5 * FPS
+		self.charge_timer = 0
+		self.jump_speed = 50  # Скорость прыжка
+		self.retreat_speed = 50	# Скорость отскока
+		self.attack_range = 150  # Дистанция атаки
+		self.detection_range = 1000	# Дистанция обнаружения
+		
+		# Состояние прыжка
+		self.start_x = x
+		self.start_y = y
+		self.target_x = x
+		self.target_y = y
+		
+		# Флаг урона
+		self.damage_dealt = False
+	# #
+	def update(self, player, world):
+
+		self._update_animation()
+		
+		if self.HP < 16 and self.speed < 8:
+			self.speed += 1  # Ускорение при низком HP
+	
+		self.attack_cooldown = max(0, self.attack_cooldown - 1)
+
+		match self.state:
+			case "Wander": self._handle_wander(player, world)
+			case "Prepare attak": self._handle_prepare_attack(player, world)
+			case "Jumping": self._handle_jumping(player, world)
+			case "Retreat": self._handle_retreat(player, world)
+	
+	def _handle_wander(self, player, world):
+
+		"""Блуждание вокруг игрока"""
+
+		distance = sqrt((player.x - self.x) ** 2 + (player.y - self.y) ** 2)
+		if (distance < self.detection_range and 
+			self.attack_cooldown == 0 and
+			random.random() < 0.02):  # 2% шанс начать атаку
+			self.state = "Prepare attak"
+			self.charge_timer = self.attack_charge_time
+			self.start_x = self.x
+			self.start_y = self.y
+			return
+			
+		# Случайное блуждание по окружности вокруг игрока
+		self.wander_timer += 1
+		
+		# Меняем направление через определенные интервалы
+		if self.wander_timer >= self.wander_change_interval:
+			self.wander_timer = 0
+			self.wander_angle += random.uniform(-pi/4, pi/4)
+			self.wander_distance = random.uniform(150, self.wander_radius)
+			
+		# Целевая точка для блуждания
+		target_x = player.x + cos(self.wander_angle) * self.wander_distance
+		target_y = player.y + sin(self.wander_angle) * self.wander_distance
+		
+		# Движение к целевой точке
+		dx = target_x - self.x
+		dy = target_y - self.y
+		dist = sqrt(dx**2 + dy**2)
+		
+		if dist > 10:  # Если не достигли цели
+			move_x = dx / dist * self.speed
+			move_y = dy / dist * self.speed
+			
+			# Проверка стен
+			if not self._check_collision(self.x + move_x, self.y, world):
+				self.x += move_x
+			if not self._check_collision(self.x, self.y + move_y, world):
+				self.y += move_y
+				
+	def _handle_prepare_attack(self, player, world):
+		"""Подготовка к прыжку (прицеливание)"""
+		self.charge_timer -= 1
+		
+		# Слизень слегка дрожит в процессе подготовки
+		if self.charge_timer % 4 < 2:
+			self.y -= 2
+		else:
+			self.y += 2
+			
+		if self.charge_timer <= 0:
+			self.state = "Jumping"
+			self.target_x = player.x
+			self.target_y = player.y
+			self.damage_dealt = False
+			self.start_x = self.x
+			self.start_y = self.y
+			
+	def _handle_jumping(self, player, world):
+		"""Прыжок на игрока"""
+		# Движение к цели
+		dx = self.target_x - self.x
+		dy = self.target_y - self.y
+		dist = sqrt(dx**2 + dy**2)
+		
+		if dist > 5:
+			# Движение к цели
+			move_x = dx / dist * self.jump_speed
+			move_y = dy / dist * self.jump_speed
+			
+			# Проверяем стены
+			if not self._check_collision(self.x + move_x, self.y, world):
+				self.x += move_x
+			if not self._check_collision(self.x, self.y + move_y, world):
+				self.y += move_y
+				
+			# Эффект прыжка - немного подпрыгиваем вверх
+			jump_height = sin((1 - dist / (sqrt((self.x - self.target_x)**2 + (self.y - self.target_y)**2))) * pi) * 20
+			self._jump_offset = -jump_height
+			
+			# Наносим урон, если достигли игрока
+			if dist < 50 and not self.damage_dealt:
+				self._attack(player)
+				self.damage_dealt = True
+				self.state = "Retreat"
+				
+		else:
+			# Достигли цели - отскок назад
+			self.state = "Retreat"
+			self._jump_offset = 0
+			
+			# TODO Создать частицы при столкновении
+			
+	def _handle_retreat(self, player, world):
+		"""Отскок на начальную позицию"""
+		# Движение обратно к начальной позиции
+		dx = self.start_x - self.x
+		dy = self.start_y - self.y
+		dist = sqrt(dx**2 + dy**2)
+		
+		if dist > 10:
+			move_x = dx / dist * self.retreat_speed
+			move_y = dy / dist * self.retreat_speed
+			
+			if not self._check_collision(self.x + move_x, self.y, world):
+				self.x += move_x
+			if not self._check_collision(self.x, self.y + move_y, world):
+				self.y += move_y
+		else:
+			# Вернулись на место
+			self.x = self.start_x
+			self.y = self.start_y
+			self.state = "Wander"
+			self.attack_cooldown = FPS * 2
+
+	def _attack(self, player):
+		"""Атака игрока"""
+		if not player.god_mode and self.attack_cooldown <= 0:
+			player.HP -= 10
+			player.HP_animation_tick = 1
+			self.attack_cooldown = FPS
+
+	def _check_collision(self, x, y, world):
+		"""Проверка столкновения со стенами"""
+		margin = 32
+		for wall in world.visible_walls.values():
+			if (wall.x - margin < x < wall.x + wall.width + margin and
+				wall.y - margin < y < wall.y + wall.height + margin):
+				return True
+		return False
+		
+	def draw(self, player, show_hitbox=False):
+		"""Отрисовка слизня"""
+		screen_x = self.x - player.x + Width // 2 - 64
+		screen_y = player.y - self.y + Height // 2 - 32
+		
+		frame_index = (self.animation_count - self.animation_count % 5) // 5
+		frame = self.animation_frames[frame_index]
+		
+		win.blit(frame, (screen_x, screen_y))
+		
+		if show_hitbox:
+			pygame.draw.rect(win, (0, 0, 0), (screen_x, screen_y - 8, 128, 128), 3)
+
+	def __getstate__(self):
+		
+		state = self.__dict__.copy()
+		del state["animation_frames"]
+		return state
+
+	def __setstate__(self, state):
+		
+		self.__dict__.update(state)
+		self.animation_images = SLIME_TYPES[self.slime_type]
+
 class SpiderEnemy:
 
 	def __init__(self, mob_x: int, mob_y: int):
@@ -1349,8 +1702,6 @@ class Bullet:
 		mouse_y - y мыши
 		type - Тип патрона, например стрела
 		"""
-
-		from math import pi
 
 		self.x = bullet_x
 		self.y = bullet_y
@@ -2433,7 +2784,7 @@ def settings():
 				win.blit(Inventory_slot, (625, 509))
 				win.blit(Changed_inventory_slot, (1185, 509))
 				win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Items/Brick.png"), (64, 64)), (1185, 509))
-				win.blit(textInfo.render(languages("   Если положить определённую комбинацию предметов, то можно будет", "   If you put a certain combination of items, then you can", "Егер сіз элементтердің белгілі бір комбинациясын қойсаңыз, онда сіз жасай аласыз"), True, (139, 155, 180)), (385, 599))
+				win.blit(textInfo.render(languages("   Если положить определённую комбинацию предметов, то можно будет", "	 If you put a certain combination of items, then you can", "Егер сіз элементтердің белгілі бір комбинациясын қойсаңыз, онда сіз жасай аласыз"), True, (139, 155, 180)), (385, 599))
 				win.blit(textInfo.render(languages("получить что-либо. Например, если поставить печь и положить глину в ячейки", "get something. For example, if you put a furnace and put clay in the cells of", "бірдеңе алу. Мысалы, пешті қойып, ұяшықтарға балшық салсаңыз"), True, (139, 155, 180)), (385, 629))
 				win.blit(textInfo.render(languages("крафта, то можно будет получить кирпич, а чтобы его получить, нажми.", "crafting, you can get a brick, and to get it, click.", "қолөнер, сіз кірпіш алуға болады, және оны алу үшін басыңыз."), True, (139, 155, 180)), (385, 659))
 			
@@ -3817,7 +4168,7 @@ dt = 0
 
 def start_game():
 	
-	global win, Hiro_rect, changed_slot, menu_open, multyplayer_menu_open, screenmode, inventory_open, hold_left, backrooms, text_color, bullet_num, craft_items_list, craft_amounts_list, craft_images_list, screenshot_num, mechanisms, mouse_x, mouse_y, item_settings_open, multyplayer_panel, mobs, chat_tick, chat, chat_message, craft_list_open, craft_list_page, click, in_motherboard, os, mouse_click_image, world_name, player_bullets, color, multyplayer_mode, multyplayer, Hiro, game_time, animation, start_time, weather, new_particles, inside_files, difficulty, alt_pressed, dt, player, world
+	global win, Hiro_rect, changed_slot, menu_open, multyplayer_menu_open, screenmode, inventory_open, hold_left, backrooms, text_color, bullet_num, craft_items_list, craft_amounts_list, craft_images_list, screenshot_num, mechanisms, mouse_x, mouse_y, item_settings_open, multyplayer_panel, mobs, chat_tick, chat, main_chat, craft_list_open, craft_list_page, click, in_motherboard, os, mouse_click_image, world_name, player_bullets, color, multyplayer_mode, multyplayer, Hiro, game_time, animation, start_time, weather, new_particles, inside_files, difficulty, alt_pressed, dt, player, world
 
 	night_playing = False
 	input_text = ""
@@ -3852,7 +4203,7 @@ def start_game():
 
 	if os.path.exists(path + "Gannitto world/files/Worlds/" + world_name):
 		
-		mobs = Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Mobs.save")
+		mobs = []## Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Mobs.save")
 		player.x, player.y, Backrooms.InBackrooms, Backrooms.Level, world.current_cave, player.speed, player.HP, start_time, Ron.X, Ron.Y, Ron.Home, world.chunk_manager.generator.seed = Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Info.save")
 		difficulty, player.god_mode = Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Settings.save")
 		inventory.whole_inventory = Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Inventory.save")
@@ -4021,7 +4372,8 @@ def start_game():
 							inventory.whole_inventory = [None] * 30
 							menu()
 
-
+					if event.key == pygame.K_o:
+						mobs.append(SlimeEnemy(0,0))
 					if event.key == pygame.K_1: changed_slot = 0
 					if event.key == pygame.K_2: changed_slot = 1
 					if event.key == pygame.K_3: changed_slot = 2
@@ -4800,8 +5152,9 @@ def start_game():
 			for mob in mobs:
 
 				i += 1
-
-				mob.main()
+				# #
+				mob.update(player, world)
+				mob.draw(player)
 
 				if player_bullets != []:
 
@@ -5234,17 +5587,17 @@ def start_game():
 						slot_animations[yy * 10 + xx][0] = False
 						slot_animations[yy * 10 + xx][1] = 0
 					elif slot_animations[yy * 10 + xx][1] < FPS / 4:
-						slot_animations[yy * 10 + xx][1] += 1   
+						slot_animations[yy * 10 + xx][1] += 1	
 
 		# Меню на клавише TAB
 
 		if keys[hot_keys["TAB menu"]] and not chat_input:
 
-			radius = 0   # Расстояние, на котором кнопки находятся относительно центра экрана
-			display_speed = 7   # Скорость отдаления кнопок от центра экрана
+			radius = 0	 # Расстояние, на котором кнопки находятся относительно центра экрана
+			display_speed = 7	# Скорость отдаления кнопок от центра экрана
 			a = True
 			b = False 
-			time_on_button = 0   # Время, которое прошло спустя тот момент, когда пользователь навёл курсором мыши на одну из кнопок
+			time_on_button = 0	 # Время, которое прошло спустя тот момент, когда пользователь навёл курсором мыши на одну из кнопок
 			win_copy = win.copy()
 			while True:
 				
@@ -5313,7 +5666,7 @@ def start_game():
 					special_slot_animations["Craft list slot"][0] = False
 					special_slot_animations["Craft list slot"][1] = 0
 				elif special_slot_animations["Craft list slot"][1] < FPS / 4:
-					special_slot_animations["Craft list slot"][1] += 1   
+					special_slot_animations["Craft list slot"][1] += 1	 
 				if special_slot_animations["Craft list slot"][0] and Settings["Display"][5]:
 					try:win.blit(pygame.transform.scale(Craft_list_slot2, (64 - special_slot_animations["Craft list slot"][2], 64 - special_slot_animations["Craft list slot"][2])), (Width // 2 + radius - 32, Height // 2 - 32))
 					except: win.blit(Craft_list_slot2, (Width // 2 + radius - 32, Height // 2 - 32))
@@ -5434,7 +5787,7 @@ def start_game():
 					special_slot_animations["Close slot"][0] = False
 					special_slot_animations["Close slot"][1] = 0
 				elif special_slot_animations["Close slot"][1] < FPS / 4:
-					special_slot_animations["Close slot"][1] += 1   
+					special_slot_animations["Close slot"][1] += 1	
 
 				if special_slot_animations["Close slot"][0] and Settings["Display"][5]:
 					try:win.blit(pygame.transform.scale(Close_slot2, (64 - special_slot_animations["Close slot"][2], 64 - special_slot_animations["Close slot"][2])), (Width // 2 + cos((2 * pi * 4) / 6) * radius - 32, Height // 2 + sin((2 * pi * 4) / 6) * radius - 32))
@@ -5464,7 +5817,7 @@ def start_game():
 					special_slot_animations["Reference slot"][0] = False
 					special_slot_animations["Reference slot"][1] = 0
 				elif special_slot_animations["Reference slot"][1] < FPS / 4:
-					special_slot_animations["Reference slot"][1] += 1   
+					special_slot_animations["Reference slot"][1] += 1	
 
 				if special_slot_animations["Reference slot"][0] and Settings["Display"][5]:
 					try:win.blit(pygame.transform.scale(Reference_slot2, (64 - special_slot_animations["Reference slot"][2], 64 - special_slot_animations["Reference slot"][2])), (Width // 2 + cos((2 * pi * 5) / 6) * radius - 32, Height // 2 + sin((2 * pi * 4) / 6) * radius - 32))
@@ -5602,7 +5955,7 @@ def start_game():
 				special_slot_animations["Compact inventory slot"][0] = False
 				special_slot_animations["Compact inventory slot"][1] = 0
 			elif special_slot_animations["Compact inventory slot"][1] < FPS / 4:
-				special_slot_animations["Compact inventory slot"][1] += 1   
+				special_slot_animations["Compact inventory slot"][1] += 1	
 
 			if special_slot_animations["Compact inventory slot"][0]:
 				try:
@@ -5739,7 +6092,7 @@ def start_game():
 					special_slot_animations["Craft list slot"][0] = False
 					special_slot_animations["Craft list slot"][1] = 0
 				elif special_slot_animations["Craft list slot"][1] < FPS / 4:
-					special_slot_animations["Craft list slot"][1] += 1   
+					special_slot_animations["Craft list slot"][1] += 1	 
 
 				if special_slot_animations["Craft list slot"][0] and Settings["Display"][5]:
 					try:win.blit(pygame.transform.scale(Changed_craft_list_inventory_slot, (64 - special_slot_animations["Craft list slot"][2], 64 - special_slot_animations["Craft list slot"][2])), (810, 90))
@@ -7143,22 +7496,22 @@ def show_intro():
 		# success, video_image = video.read()
 		
 		# while success:
-		# 	for event in pygame.event.get():
-		# 		if event.type == pygame.QUIT:
-		# 			run = False
+		#	for event in pygame.event.get():
+		#		if event.type == pygame.QUIT:
+		#			run = False
 	
-		# 	success, video_image = video.read()
-		# 	if success:
-		# 		video_surf = pygame.image.frombuffer(
-		# 			video_image.tobytes(), 
-		# 			video_image.shape[1::-1], 
-		# 			"BGR"
-		# 		)   
-		# 	else:
-		# 		run = False
-		# 	win.blit(pygame.transform.scale(video_surf, (Width, Height)), (0, 0))
-		# 	pygame.display.flip()
-		# 	clock.tick(20)
+		#	success, video_image = video.read()
+		#	if success:
+		#		video_surf = pygame.image.frombuffer(
+		#			video_image.tobytes(), 
+		#			video_image.shape[1::-1], 
+		#			"BGR"
+		#		)	
+		#	else:
+		#		run = False
+		#	win.blit(pygame.transform.scale(video_surf, (Width, Height)), (0, 0))
+		#	pygame.display.flip()
+		#	clock.tick(20)
 			
 		try: menu()
 		except Exception as e:
