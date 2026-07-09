@@ -974,298 +974,6 @@ class CollisionManager:
 
 collision_manager = CollisionManager()
 
-class BehaviorStrategy:
-	def __init__(self, speed_multiplier=1.0):
-		self.speed_multiplier = speed_multiplier
-		
-	def move(self, enemy, target, world):
-		"""Базовое движение к цели"""
-		dx = target.x - enemy.x
-		dy = target.y - enemy.y
-		distance = sqrt(dx**2 + dy**2)
-		
-		if distance > 0:
-			dx = dx / distance * enemy.speed * self.speed_multiplier
-			dy = dy / distance * enemy.speed * self.speed_multiplier
-			
-			# Пробуем двигаться
-			new_x = enemy.x + dx
-			if not self._has_collision(new_x, enemy.y, world):
-				enemy.x = new_x
-				
-			new_y = enemy.y + dy
-			if not self._has_collision(enemy.x, new_y, world):
-				enemy.y = new_y
-				
-	def _has_collision(self, x, y, world):
-		return collision_manager.check_wall_collision(x, y, world.visible_walls)
-
-class AggressiveBehavior(BehaviorStrategy):
-	def __init__(self):
-		super().__init__(speed_multiplier=1.5)
-		
-class CautiousBehavior(BehaviorStrategy):
-	def __init__(self):
-		super().__init__(speed_multiplier=0.7)
-		
-class SlimeBehavior(BehaviorStrategy):
-	def __init__(self):
-		super().__init__(speed_multiplier=1.0)
-		self.wander_offset_x = random.randint(-3000, 3000)
-		self.wander_offset_y = random.randint(-3000, 3000)
-		
-	def move(self, enemy, target, world):
-		# Специальная логика для слизня с блужданием
-		if enemy.state == "idle":
-			# Блуждание вокруг точки
-			pass
-		else:
-			super().move(enemy, target, world)
-
-# Старый класс слизня
-class SlimeEnemyOld:
-
-	def __init__(self, mob_x: int, mob_y: int):
-
-		self.mob_class = "SlimeEnemy"
-		self.x = mob_x
-		self.y = mob_y
-		self.rand_mob = random.randint(1, 2)
-		if self.rand_mob == 1: self.animation_images = [Slime1, Slime1_2, Slime1_3, Slime1_4]
-		else: self.animation_images = [Slime2, Slime2_2, Slime2_3, Slime2_4]
-		self.rect = self.animation_images[0].get_rect()   # Хитбокс моба
-		self.HP = 50
-		self.animation_count = -1
-		self.attak = None
-		self.reset_offset = 0
-		self.offset_x = random.randint(-3000, 3000)
-		self.offset_y = random.randint(-3000, 3000)
-		self.speed = random.randint(1, 3)
-	
-	def main(self):
-
-		global player
-
-		a = True
-
-		self.animation_count += 1
-		if self.animation_count == 20:
-			self.animation_count = 0
-
-		try:
-
-			if self.attak is not None:
-
-				if player.x - 128 < self.attak[0] < player.x + 128 and player.y - 128 < self.attak[1] < player.y + 128 and self.attak[2] == 1:
-					if not player.god_mode:
-						player.HP -= 10
-						player.HP_animation_tick = 1
-						win_fill((200, 0, 0))
-						win_fill((200, 0, 0))
-					self.attak[2] = 2
-
-				if self.attak[2] == 1:
-
-					a = True
-					if player.x < self.attak[0]:
-					
-						for i in world.visible_walls.values():
-							if i.x - 256 < self.attak[0] < i.x + 300 and i.y - 256 < self.attak[1] < i.y + 256:
-								a = False
-								self.x = self.attak[0]
-								self.y = self.attak[1]
-								self.attak = None
-								break
-
-						if a: 
-							self.attak[0] -= self.speed * 10
-					else:
-
-						a = True
-						if player.x < self.attak[0]:
-					
-							for i in world.visible_walls.values():
-								if i.x - 300 < self.attak[0] < i.x + 256 and i.y - 256 < self.attak[1] < i.y + 256:
-									a = False
-									self.x = self.attak[0]
-									self.y = self.attak[1]
-									self.attak = None
-									break
-
-						if a: 
-							self.attak[0] += self.speed * 10
-
-					if player.y < self.attak[1]:
-
-						a = True
-						if player.x < self.attak[0]:
-					
-							for i in world.visible_walls.values():
-								if i.x - 256 < self.attak[0] < i.x + 256 and i.y - 256 < self.attak[1] < i.y + 300:
-									a = False
-									self.x = self.attak[0]
-									self.y = self.attak[1]
-									self.attak = None
-									break
-
-						if a: 
-							self.attak[1] -= self.speed * 10
-					else:
-						self.attak[1] += self.speed * 10
-				else:
-					if self.x < self.attak[1]:
-
-						a = True
-						if player.x < self.attak[0]:
-					
-							for i in world.visible_walls.values():
-								if i.x - 256 < self.attak[0] < i.x + 300 and i.y - 256 < self.attak[1] < i.y + 256:
-									a = False
-									self.x = self.attak[0]
-									self.y = self.attak[1]
-									self.attak = None
-									break
-
-						if a: 
-							self.attak[0] -= self.speed * 10
-					else:
-
-						a = True
-						if player.x < self.attak[0]:
-					
-							for i in world.visible_walls.values():
-								if i.x - 300 < self.attak[0] < i.x + 256 and i.y - 256 < self.attak[1] < i.y + 256:
-									a = False
-									self.x = self.attak[0]
-									self.y = self.attak[1]
-									self.attak = None
-									break
-
-						if a: 
-							self.attak[0] += self.speed * 10
-
-					if self.y < self.attak[1]:
-
-						a = True
-						if player.x < self.attak[0]:
-					
-							for i in world.visible_walls.values():
-								if i.x - 256 < self.attak[0] < i.x + 256 and i.y - 256 < self.attak[1] < i.y + 300:
-									a = False
-									self.x = self.attak[0]
-									self.y = self.attak[1]
-									self.attak = None
-									break
-
-						if a: 
-							self.attak[1] -= self.speed * 10
-					else:
-
-						a = True
-						if player.x < self.attak[0]:
-					
-							for i in world.visible_walls.values():
-								if i.x - 256 < self.attak[0] < i.x + 256 and i.y - 300 < self.attak[1] < i.y + 256:
-									a = False
-									self.x = self.attak[0]
-									self.y = self.attak[1]
-									self.attak = None
-									break
-
-						if a: 
-							self.attak[1] += self.speed * 10
-
-				if self.x - 300 < self.attak[0] < self.x + 300 and self.y - 300 < self.attak[1] < self.y + 300 and self.attak[2] == 2:
-					self.attak = None
-
-			elif random.randint(1, 50) == 1 and player.x - 1000 < self.x < player.x + 1000 and player.y - 1000 < self.y < player.y + 1000:
-				self.attak = [self.x, self.y, 1]
-
-		except TypeError:
-			pass
-
-		if self.attak is None:
-
-			if self.reset_offset == 0:
-
-				if self.HP < 16:
-					self.reset_offset = random.randint(1200, 1500)
-					self.offset_x = random.randint(-30000, 30000)
-					self.offset_y = random.randint(-30000, 30000)
-				else:
-					self.reset_offset = random.randint(120, 150)
-					self.offset_x = random.randint(-3000, 3000)
-					self.offset_y = random.randint(-3000, 3000)
-			else:
-				self.reset_offset -= 1
-			
-			if player.x + self.offset_x > self.x:
-				
-				a = True
-				for i in world.visible_walls.values():
-					if i.x - 300 < self.x < i.x + 256 and i.y - 256 < self.y < i.y + 256:
-						a = False
-						break
-
-				if a:
-					self.x += self.speed // FPS
-
-			elif player.x + self.offset_x < self.x:
-				
-				a = True
-				for i in world.visible_walls.values():
-					if i.x - 256 < self.x < i.x + 300 and i.y - 256 < self.y < i.y + 256:
-						a = False
-						break
-
-				if a:
-					self.x -= self.speed
-		
-			if player.y + self.offset_y > self.y:
-				
-				a = True
-				for i in world.visible_walls.values():
-					if i.x - 256 < self.x < i.x + 256 and i.y - 300 < self.y < i.y + 256:
-						a = False
-						break
-
-				if a: 
-					self.y += self.speed
-
-			elif player.y + self.offset_y < self.y - player.y:
-				
-				a = True
-				for i in world.visible_walls.values():
-					if i.x - 256 < self.x < i.x + 256 and i.y - 256 < self.y < i.y + 300:
-						a = False
-						break
-
-				if a: 
-					self.y -= self.speed
-
-			if self.HP < 16 and self.speed < 8:
-				self.speed += 1
-		
-		if self.attak is not None:
-			win.blit(self.animation_images[(self.animation_count - self.animation_count % 5) // 5], (self.attak[0] - player.x + Width // 2 - 64, player.y - self.attak[1] + Height // 2 - 32))
-		else:
-			win.blit(self.animation_images[(self.animation_count - self.animation_count % 5) // 5], (self.x - player.x + Width // 2 - 64, player.y - self.y + Height // 2 - 32))
-
-		if Settings["Display"][3]:
-			pygame.draw.rect(win, (0, 0, 0), (self.x - player.x + Width // 2 - 64, player.y - self.y + Height // 2 - 24, 128, 128), 3)
-			
-	def __getstate__(self):
-		
-		state = self.__dict__.copy()
-		del state["animation_images"]
-		return state
-
-	def __setstate__(self, state):
-		
-		self.__dict__.update(state)
-		if self.rand_mob == 1: self.animation_images = [Slime1, Slime1_2, Slime1_3, Slime1_4]
-		else: self.animation_images = [Slime2, Slime2_2, Slime2_3, Slime2_4]
-
 class SlimeEnemy(BaseEnemy):
 	
 	def __init__(self, x, y):
@@ -1282,7 +990,6 @@ class SlimeEnemy(BaseEnemy):
 		)
 		
 		self.slime_type = slime_type
-		self.behavior = SlimeBehavior()
 		self.state = "Wander"
 
 		self.wander_radius = 1000
@@ -1482,7 +1189,7 @@ class SlimeEnemy(BaseEnemy):
 		self.__dict__.update(state)
 		self.animation_frames = SLIME_TYPES[self.slime_type]
 
-class SpiderEnemy:
+class SpiderEnemyOld:
 
 	def __init__(self, mob_x: int, mob_y: int):
 
@@ -1616,6 +1323,148 @@ class SpiderEnemy:
 		self.__dict__.update(state)
 		self.left_animation_images = [pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Objects/Spider.png"), (128, 128))] * 4
 		self.right_animation_images = [pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Objects/Spider 2.png"), (128, 128))] * 4
+
+class SpiderEnemy(BaseEnemy):
+	
+	def __init__(self, x, y):
+
+		self.name = "Spider"
+		self.direction = "Right"
+		
+		super().__init__(
+			x=x, y=y,
+			HP=50,
+			speed=random.randint(10, 20),
+			animation_frames=[
+				pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Objects/Spider.png"), (256, 256)),
+				pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Objects/Spider 2.png"), (256, 256))]
+		)
+		
+		self.animation_images = {
+			"Left": pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Objects/Spider.png"), (256, 256)),
+			"Left attack": pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Objects/Spider attack.png"), (256, 256)),
+			"Right": pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Objects/Spider 2.png"), (256, 256)),
+			"Right attack": pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Objects/Spider 2 attack.png"), (256, 256))}
+		
+		self.state = "Going towards player"
+
+		# Параметры атаки
+		self.attack_cooldown = 0
+		self.attack_charge_time = 0.5 * FPS
+		self.attack_range = 150  # Дистанция атаки
+		self.shoot_range = 900
+		self.shoot_cooldown = 0
+		self.shoot_charge_time = FPS * 3
+		self.shoot_prepare_charge_time = FPS * 0.5
+		self.shoot_charge_timer = 0
+		self.detection_range = 1000	# Дистанция обнаружения
+		
+		# Флаг урона
+		self.damage_dealt = False
+	
+	def update(self, player, world):
+
+		if self.HP < 16 and self.speed < 8:
+			self.speed += 10  # Ускорение при низком HP
+		
+		self.attack_cooldown = max(0, self.attack_cooldown - 1)
+		self.shoot_cooldown = max(0, self.shoot_cooldown - 1)
+
+		distance = sqrt((player.x - self.x) ** 2 + (player.y - self.y) ** 2)
+
+		match self.state:
+			case "Attacking": self.state = "Going towards player"
+			case "Prepare shoot": self._handle_prepare_shoot(player, world)
+			case "Going towards player": self._handle_go_towards_player(player, world)
+		
+	def _handle_prepare_shoot(self, player, world):
+		"""Подготовка к атаке паутиной (прицеливание)"""
+		self.shoot_charge_timer -= 1
+		
+		# Паук слегка дрожит в процессе подготовки
+		if self.shoot_charge_timer % 4 < 2:
+			self.y -= 2
+		else:
+			self.y += 2
+			
+		if self.shoot_charge_timer <= 0:
+			self.shoot_cooldown = self.shoot_charge_time
+			dx = player.x - self.x
+			dy = player.y - self.y
+			dist = sqrt(dx**2 + dy**2)
+			move_x = dx / dist * 50
+			move_y = dy / dist * 50
+			particles.append(Particle(self.x, self.y, pygame.transform.rotate(no_file_texture, atan2(move_y, -move_x)), move_x, move_y))
+			self.state = "Attacking"
+
+	def _handle_go_towards_player(self, player, world):
+		
+		dx = player.x - self.x
+		dy = player.y - self.y
+		dist = sqrt(dx**2 + dy**2)
+
+		if dist <= self.detection_range:
+			if dist > 100:
+				# Движение к цели
+				move_x = dx / dist * self.speed
+				move_y = dy / dist * self.speed
+				if not self._check_collision(self.x + move_x, self.y, world):
+					self.x += move_x
+					if move_x > 0: self.direction = "Right"
+					else: self.direction = "Left"
+				if not self._check_collision(self.x, self.y + move_y, world):
+					self.y += move_y
+
+			else:
+				self._attack(player)
+			
+			if dist <= self.shoot_range and self.shoot_cooldown <= 0:
+				self.shoot_charge_timer = self.shoot_prepare_charge_time
+				self.state = "Prepare shoot"
+			
+	def _attack(self, player):
+		"""Атака игрока"""
+		if not player.god_mode and self.attack_cooldown <= 0:
+			self.state = "Attacking"
+			if pygame.Rect(self.x - 50, self.y + 50, 100, 100).colliderect(pygame.Rect(player.x - 100, player.y + 100, 200, 200)):
+				player.HP -= 10
+				player.HP_animation_tick = 1
+			self.attack_cooldown = self.attack_charge_time
+
+	def _check_collision(self, x, y, world):
+		"""Проверка столкновения со стенами"""
+		margin = 32
+		for wall in world.visible_walls.values():
+			if (wall.x - margin < x < wall.x + 256 + margin and
+				wall.y - margin < y < wall.y + 256 + margin):
+				return True
+		return False
+		
+	def draw(self, player, show_hitbox=False):
+		"""Отрисовка паука"""
+		screen_x = self.x - player.x + Width // 2 - 64
+		screen_y = player.y - self.y + Height // 2 - 32
+		
+		if self.state == "Attacking":
+			frame = self.animation_images[self.direction + " attack"]
+		else:
+			frame = self.animation_images[self.direction]
+
+		win.blit(frame, (screen_x, screen_y))
+		
+		if show_hitbox:
+			pygame.draw.rect(win, (0, 0, 0), (screen_x, screen_y - 8, 128, 128), 3)
+
+	def __getstate__(self):
+		
+		state = self.__dict__.copy()
+		del state["animation_frames"]
+		return state
+
+	def __setstate__(self, state):
+		
+		self.__dict__.update(state)
+		self.animation_frames = SLIME_TYPES[self.slime_type]
 
 class ButterflyEnemy:
 
@@ -4209,7 +4058,7 @@ def start_game():
 
 	if os.path.exists(path + "Gannitto world/files/Worlds/" + world_name):
 		
-		mobs = Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Mobs.save")
+		mobs = []# Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Mobs.save")
 		player.x, player.y, Backrooms.InBackrooms, Backrooms.Level, world.current_cave, player.speed, player.HP, start_time, Ron.X, Ron.Y, Ron.Home, world.chunk_manager.generator.seed = Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Info.save")
 		difficulty, player.god_mode = Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Settings.save")
 		inventory.whole_inventory = Saver.load_objects(path + "Gannitto world/files/Worlds/" + world_name + "/Inventory.save")
@@ -4379,7 +4228,7 @@ def start_game():
 							menu()
 
 					if event.key == pygame.K_o:
-						mobs.append(SlimeEnemy(0,0))
+						mobs.append(SpiderEnemy(0,0))
 					if event.key == pygame.K_1: changed_slot = 0
 					if event.key == pygame.K_2: changed_slot = 1
 					if event.key == pygame.K_3: changed_slot = 2
@@ -5168,10 +5017,7 @@ def start_game():
 							if mob.name == "Slime":
 								temp = mob.animation_frames[(mob.animation_count - mob.animation_count % 5) // 5].copy()
 							if mob.name == "Spider":
-								if mob.position == "Left":
-									temp = mob.left_animation_images[(mob.animation_count - mob.animation_count % 5) // 5].copy()
-								else:
-									temp = mob.right_animation_images[(mob.animation_count - mob.animation_count % 5) // 5].copy()
+								temp = mob.animation_images[mob.direction].copy()
 
 							for a, b in product(range(128), range(128)):
 								if temp.get_at((a, b)).a != 0:
