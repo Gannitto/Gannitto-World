@@ -1704,7 +1704,7 @@ class Button:
 			self.image = self.image1
 			self.hold = 0
 			if self.info_y > 0: self.info_back = True
-		
+
 		if hovered and click[0]:
 			self.is_pressed = True
 		else:
@@ -1720,7 +1720,10 @@ class Button:
 							self.action()
 						if action is not None:
 							action()
-
+		
+		if not click[0]:
+			self.is_pressed = False
+		
 		if self.alignment:
 			self.surface.blit(self.image, (self.x - self.w / 2, self.y - self.h / 2))
 		else:
@@ -2500,24 +2503,29 @@ def settings():
 	global does_lighten
 
 	does_lighten = False
-	
-	back_button = Button(-20, -20, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Back.png"), (128, 128)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Back 2.png"), (128, 128)), win)
+	def page_back():
+		global page
+		page = max(1, page - 1)
+	def next_page():
+		global page
+		page += 1 
+	back_button = Button(-20, -20, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Back.png"), (128, 128)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Back 2.png"), (128, 128)))
 
-	help_button = Button(10, 117, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Help.png"), (132, 64)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Help 2.png"), (132, 64)), win)
-	display_button = Button(10, 192, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Display.png"), (222, 64)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Display 2.png"), (222, 64)), win)
-	languages_button = Button(10, 267, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Languages.png"), (272, 64)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Languages 2.png"), (272, 64)), win)
-	user_button = Button(10, 342, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/User.png"), (132, 64)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/User 2.png"), (132, 64)), win)
-	sound_button = Button(10, 417, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Sound.png"), (160, 64)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Sound 2.png"), (160, 64)), win)
-	statistics_button = Button(10, 492, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Statistics.png"), (300, 64)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Statistics 2.png"), (300, 64)), win)
-	keys_button = Button(10, 567, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Keys.png"), (132, 64)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Keys 2.png"), (132, 64)), win)
-	game_button = Button(10, 642, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Game.png"), (132, 64)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Game 2.png"), (132, 64)), win)
+	help_button = Button(10, 117, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Help.png"), (132, 64)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Help 2.png"), (132, 64)))
+	display_button = Button(10, 192, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Display.png"), (222, 64)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Display 2.png"), (222, 64)))
+	languages_button = Button(10, 267, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Languages.png"), (272, 64)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Languages 2.png"), (272, 64)))
+	user_button = Button(10, 342, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/User.png"), (132, 64)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/User 2.png"), (132, 64)))
+	sound_button = Button(10, 417, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Sound.png"), (160, 64)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Sound 2.png"), (160, 64)))
+	statistics_button = Button(10, 492, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Statistics.png"), (300, 64)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Statistics 2.png"), (300, 64)))
+	keys_button = Button(10, 567, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Keys.png"), (132, 64)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Keys 2.png"), (132, 64)))
+	game_button = Button(10, 642, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Game.png"), (132, 64)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Game 2.png"), (132, 64)))
 	
-	english_button = Button(385, 198, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/English.png"), (220, 64)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/English 2.png"), (220, 64)), win)
-	russian_button = Button(385, 267, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Russian.png"), (220, 64)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Russian 2.png"), (220, 64)), win)
-	kazach_button = Button(385, 336, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Kazach.png"), (188, 64)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Kazach 2.png"), (188, 64)), win)
+	english_button = Button(385, 198, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/English.png"), (220, 64)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/English 2.png"), (220, 64)))
+	russian_button = Button(385, 267, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Russian.png"), (220, 64)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Russian 2.png"), (220, 64)))
+	kazach_button = Button(385, 336, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Kazach.png"), (188, 64)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Kazach 2.png"), (188, 64)))
 
-	page_back_button = Button(361, Height - 138, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Back.png"), (128, 128)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Back 2.png"), (128, 128)), win)
-	page_next_button = Button(Width - 138, Height - 138, pygame.transform.flip(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Back.png"), (128, 128)), True, False), pygame.transform.flip(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Back 2.png"), (128, 128)), True, False), win)
+	page_back_button = Button(361, Height - 138, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Back.png"), (128, 128)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Back 2.png"), (128, 128)), action=page_back)
+	page_next_button = Button(Width - 138, Height - 138, pygame.transform.flip(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Back.png"), (128, 128)), True, False), pygame.transform.flip(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Back 2.png"), (128, 128)), True, False), action=next_page)
 
 	bigTextInfo = pygame.font.Font(path + "Gannitto world/files/Font.ttf", 36)
 	
@@ -2532,7 +2540,7 @@ def settings():
 				Settings = {
 					
 					"Display": [100, 90, 0, False, True, True, 30, True, True, True, True],
-					"User": ["Gannitto"],
+					"User": ["Gannitto", 0],
 					"Sound": [1, 1],
 					"Keys": ["a", "s", "w", "d", "e", "c", "TAB", "SPACE"],
 					"Game": [True, False]
@@ -2566,7 +2574,6 @@ def settings():
 							screenmode = "FULLSCREEN"
 
 			keys = pygame.key.get_pressed()
-
 			
 			win.fill((192, 203, 220))
 			pygame.draw.rect(win, (139, 155, 180), (-8, 100, 373, Height), 8)
@@ -2580,9 +2587,9 @@ def settings():
 				menu()
 				
 			page_back_button.main()
-			if (page_back_button.get_pressed() or keys[pygame.K_LEFT]) and page > 1: page -= 1
 			page_next_button.main()
-			if (page_next_button.get_pressed() or keys[pygame.K_RIGHT]) and page < 3: page += 1
+			page = min(page, 2)
+
 			win.blit(bigTextInfo.render(str(page), True, (139, 155, 180)), ((Width - 415) // 2 + 391, Height - 96))
 			win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Help 2.png"), (132, 64)), (10, 117))
 			display_button.main(display)
@@ -2698,25 +2705,30 @@ def settings():
 				elif event.type == pygame.MOUSEBUTTONUP:
 					if event.button == 1:
 						release = True
+
 				elif event.type == pygame.KEYDOWN and (Brightness or Inventory_alpha or Distance or fps):
 
 					if event.key == pygame.K_RETURN or len(input_text) == 3:
 
 						if Brightness:
 							Brightness = False
-							Settings["Display"][0] = int(input_text)
+							if input_text != "":
+								Settings["Display"][0] = int(input_text)
 
 						elif Inventory_alpha:
 							Inventory_alpha = False
-							Settings["Display"][1] = int(input_text)
+							if input_text != "":
+								Settings["Display"][1] = int(input_text)
 
 						elif Distance:
 							Distance = False
-							Settings["Display"][2] = int(input_text)
+							if input_text != "":
+								Settings["Display"][2] = int(input_text)
 
 						elif fps:
 							fps = False
-							Settings["Display"][6] = int(input_text)
+							if input_text != "":
+								Settings["Display"][6] = int(input_text)
 
 						input_text = ""
 					elif event.key == pygame.K_BACKSPACE:
@@ -2752,10 +2764,9 @@ def settings():
 				menu()
 			   
 			page_back_button.main()
-			if (page_back_button.get_pressed() or keys[pygame.K_LEFT]) and page > 1: page -= 1
 			page_next_button.main()
-			if (page_next_button.get_pressed() or keys[pygame.K_RIGHT]) and page < 3: page += 1
-			
+			page = min(page, 3)
+
 			win.blit(bigTextInfo.render(str(page), True, (139, 155, 180)), ((Width - 415) // 2 + 391, Height - 96))
 			help_button.main(help)
 			win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Display 2.png"), (222, 64)), (10, 192))
@@ -2949,7 +2960,7 @@ def settings():
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
 					save()
-					quit
+					sys.exit()
 				if event.type == pygame.KEYUP:
 					if event.key == pygame.K_LALT:
 						alt_pressed = not alt_pressed
@@ -2961,6 +2972,8 @@ def settings():
 							win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 							screenmode = "FULLSCREEN"
 			
+			keys = pygame.key.get_pressed()
+
 			win.fill((192, 203, 220))
 			pygame.draw.rect(win, (139, 155, 180), (-8, 100, 373, Height), 8)
 			pygame.draw.line(win, (139, 155, 180), (307, 103), (Width, 103), 8)
@@ -2972,9 +2985,9 @@ def settings():
 			show_reset_settings()
 			
 			page_back_button.main()
-			if (page_back_button.get_pressed() or keys[pygame.K_LEFT]) and page > 1: page -= 1
 			page_next_button.main()
-			if (page_next_button.get_pressed() or keys[pygame.K_RIGHT]) and page < 3: page += 1
+			page = min(page, 1)
+
 			win.blit(bigTextInfo.render(t("You can choose one of these"), True, (139, 155, 180)), (385, 123))
 			win.blit(bigTextInfo.render(t("languages:"), True, (139, 155, 180)), (385, 153))
 
@@ -3049,17 +3062,19 @@ def settings():
 					sys.exit()
 
 				elif event.type == pygame.KEYDOWN and (Nick or Inventory_alpha):
-					if event.key == pygame.K_RETURN or len(input_text) == 3:
+					if event.key == pygame.K_RETURN or ((Nick and len(input_text) == 10) or (Inventory_alpha and len(input_text) == 3)):
 						if Nick:
 							Nick = False
-							Settings["Display"][2] = input_text
+							if input_text != "":
+								Settings["User"][0] = input_text
 						elif Inventory_alpha:
 							Inventory_alpha = False
-							Settings["Display"][1] = int(input_text)
+							if input_text != "":
+								Settings["User"][1] = int(input_text)
 						input_text = ""
 					elif event.key == pygame.K_BACKSPACE:
 						input_text = input_text[:-1]
-					elif event.unicode in "0123456789":
+					elif Nick or event.unicode in "0123456789":
 						input_text += event.unicode
 				if event.type == pygame.KEYUP:
 					if event.key == pygame.K_LALT:
@@ -3090,10 +3105,9 @@ def settings():
 			show_reset_settings()
 				
 			page_back_button.main()
-			if (page_back_button.get_pressed() or keys[pygame.K_LEFT]) and page > 1: page -= 1
 			page_next_button.main()
-			if (page_next_button.get_pressed() or keys[pygame.K_RIGHT]) and page < 3: page += 1
-			
+			page = min(page, 1)
+
 			win.blit(bigTextInfo.render(str(page), True, (139, 155, 180)), ((Width - 415) // 2 + 391, Height - 96))
 			help_button.main(help)
 			display_button.main(display)
@@ -3191,33 +3205,35 @@ def settings():
 					if event.key == pygame.K_RETURN or len(input_text) == 3:
 						if Music_volume:
 							Music_volume = False
-							Settings["Sound"][0] = int(input_text) / 100
-							music_channel.set_volume(Settings["Sound"][0], Settings["Sound"][0])
+							if input_text != "":
+								Settings["Sound"][0] = int(input_text) / 100
+								music_channel.set_volume(Settings["Sound"][0], Settings["Sound"][0])
 
 						elif Volume_of_sounds:
 							Volume_of_sounds = False
-							Settings["Sound"][1] = int(input_text) / 100
-							Button_click.set_volume(Settings["Sound"][1])
-							Stone_breaking1.set_volume(Settings["Sound"][1])
-							Stone_breaking2.set_volume(Settings["Sound"][1])
-							Grass_walking1.set_volume(Settings["Sound"][1])
-							Grass_walking2.set_volume(Settings["Sound"][1])
-							Grass_walking3.set_volume(Settings["Sound"][1])
-							Snow_walking1.set_volume(Settings["Sound"][1])
-							Snow_walking2.set_volume(Settings["Sound"][1])
-							Snow_walking3.set_volume(Settings["Sound"][1])
-							Sand_walking1.set_volume(Settings["Sound"][1])
-							Sand_walking2.set_volume(Settings["Sound"][1])
-							Sand_walking3.set_volume(Settings["Sound"][1])
-							Swamp_walking1.set_volume(Settings["Sound"][1])
-							Swamp_walking2.set_volume(Settings["Sound"][1])
-							Swamp_walking3.set_volume(Settings["Sound"][1])
-							Cave_walking1.set_volume(Settings["Sound"][1])
-							Cave_walking2.set_volume(Settings["Sound"][1])
-							Cave_walking3.set_volume(Settings["Sound"][1])
-							Backrooms_lamps.set_volume(Settings["Sound"][1])
-							Backrooms_rand_sound_1.set_volume(Settings["Sound"][1])
-							Pick_an_item.set_volume(Settings["Sound"][1])
+							if input_text != "":
+								Settings["Sound"][1] = int(input_text) / 100
+								Button_click.set_volume(Settings["Sound"][1])
+								Stone_breaking1.set_volume(Settings["Sound"][1])
+								Stone_breaking2.set_volume(Settings["Sound"][1])
+								Grass_walking1.set_volume(Settings["Sound"][1])
+								Grass_walking2.set_volume(Settings["Sound"][1])
+								Grass_walking3.set_volume(Settings["Sound"][1])
+								Snow_walking1.set_volume(Settings["Sound"][1])
+								Snow_walking2.set_volume(Settings["Sound"][1])
+								Snow_walking3.set_volume(Settings["Sound"][1])
+								Sand_walking1.set_volume(Settings["Sound"][1])
+								Sand_walking2.set_volume(Settings["Sound"][1])
+								Sand_walking3.set_volume(Settings["Sound"][1])
+								Swamp_walking1.set_volume(Settings["Sound"][1])
+								Swamp_walking2.set_volume(Settings["Sound"][1])
+								Swamp_walking3.set_volume(Settings["Sound"][1])
+								Cave_walking1.set_volume(Settings["Sound"][1])
+								Cave_walking2.set_volume(Settings["Sound"][1])
+								Cave_walking3.set_volume(Settings["Sound"][1])
+								Backrooms_lamps.set_volume(Settings["Sound"][1])
+								Backrooms_rand_sound_1.set_volume(Settings["Sound"][1])
+								Pick_an_item.set_volume(Settings["Sound"][1])
 
 						input_text = ""
 					elif event.key == pygame.K_BACKSPACE:
@@ -3254,9 +3270,8 @@ def settings():
 				menu()
 				
 			page_back_button.main()
-			if (page_back_button.get_pressed() or keys[pygame.K_LEFT]) and page > 1: page -= 1
 			page_next_button.main()
-			if (page_next_button.get_pressed() or keys[pygame.K_RIGHT]) and page < 3: page += 1
+			page = min(page, 1)
 			
 			win.blit(bigTextInfo.render(str(page), True, (139, 155, 180)), ((Width - 415) // 2 + 391, Height - 96))
 			help_button.main(help)
@@ -3351,9 +3366,8 @@ def settings():
 			show_reset_settings()
 				
 			page_back_button.main()
-			if (page_back_button.get_pressed() or keys[pygame.K_LEFT]) and page > 1: page -= 1
 			page_next_button.main()
-			if (page_next_button.get_pressed() or keys[pygame.K_RIGHT]) and page < 3: page += 1
+			page = min(page, 1)
 			
 			win.blit(bigTextInfo.render(str(page), True, (139, 155, 180)), ((Width - 415) // 2 + 391, Height - 96))
 			help_button.main(help)
@@ -3607,7 +3621,7 @@ def settings():
 				else:
 					pygame.draw.rect(win, key_color, (935 + i * 50, 373, 40, 40), 3)
 					win.blit(littleTextInfo.render(j, True, key_color), (940 + i * 50, 380))
-
+			
 			win.blit(textInfo.render(t("Hotkeys are highlighted in dark blue"), True, (139, 155, 180)), (385, 440))
 			win.blit(textInfo.render(t("Locked keys are highlighted in white"), True, (255, 255, 255)), (385, 470))
 			win.blit(textInfo.render(t("To change the hot key, click on it"), True, (139, 155, 180)), (385, 500))
@@ -3747,9 +3761,8 @@ def settings():
 			show_reset_settings()
 				
 			page_back_button.main()
-			if (page_back_button.get_pressed() or keys[pygame.K_LEFT]) and page > 1: page -= 1
 			page_next_button.main()
-			if (page_next_button.get_pressed() or keys[pygame.K_RIGHT]) and page < 3: page += 1
+			page = min(page, 1)
 			
 			win.blit(bigTextInfo.render(str(page), True, (139, 155, 180)), ((Width - 415) // 2 + 391, Height - 96))
 			help_button.main(help)
@@ -3823,11 +3836,11 @@ def change_a_character():
 
 	does_lighten = False
 
-	back_button = Button(-20, -20, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Back.png"), (128, 128)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Back 2.png"), (128, 128)), win)
-	character_button = Button(10, 120, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Character.png"), (272, 64)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Character 2.png"), (272, 64)), win)
-	pets_button = Button(10, 192, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Pets.png"), (132, 64)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Pets 2.png"), (132, 64)), win)
-	page_back_button = Button(361, Height - 138, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Back.png"), (128, 128)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Back 2.png"), (128, 128)), win)
-	page_next_button = Button(Width - 138, Height - 138, pygame.transform.flip(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Back.png"), (128, 128)), True, False), pygame.transform.flip(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Back 2.png"), (128, 128)), True, False), win)
+	back_button = Button(-20, -20, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Back.png"), (128, 128)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Back 2.png"), (128, 128)))
+	character_button = Button(10, 120, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Character.png"), (272, 64)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Character 2.png"), (272, 64)))
+	pets_button = Button(10, 192, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Pets.png"), (132, 64)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Pets 2.png"), (132, 64)))
+	page_back_button = Button(361, Height - 138, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Back.png"), (128, 128)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Back 2.png"), (128, 128)))
+	page_next_button = Button(Width - 138, Height - 138, pygame.transform.flip(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Back.png"), (128, 128)), True, False), pygame.transform.flip(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Back 2.png"), (128, 128)), True, False))
 
 	bigTextInfo = pygame.font.Font(path + "Gannitto world/files/Font.ttf", 36)
 	
@@ -3862,6 +3875,8 @@ def change_a_character():
 		changed_character_num = 0
 
 		while True:
+
+			mouse_x, mouse_y = pygame.mouse.get_pos()
 
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
@@ -3943,7 +3958,7 @@ def change_a_character():
 				draw_key("ESC", 44, 108)
 				draw_key("<-", 425, Height - 168)
 				draw_key("->", Width - 74, Height - 168)
-				
+
 			win_fill(alpha=100 - Settings["Display"][0])
 			
 			if not does_lighten:
@@ -3958,6 +3973,9 @@ def change_a_character():
 		global win, screenmode, mouse_click_image, does_lighten
 		
 		while True:
+			
+			mouse_x, mouse_y = pygame.mouse.get_pos()
+
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
 					save()
@@ -3971,7 +3989,6 @@ def change_a_character():
 							win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 							screenmode = "FULLSCREEN"
 
-			
 			keys = pygame.key.get_pressed()
 
 			win.fill((192, 203, 220))
@@ -4045,10 +4062,10 @@ def start_game():
 	new_particles = []
 
 	if Settings["Game"][1]:
-		up_b = Button(Width - 148, Height - 148, arrow_up, arrow_up, win, sound=False, cooldown=0)
-		left_b = Button(Width - 222, Height - 74, arrow_left, arrow_left, win, sound=False, cooldown=0)
-		down_b = Button(Width - 148, Height - 74, arrow_down, arrow_down, win, sound=False, cooldown=0)
-		right_b = Button(Width - 74, Height - 74, arrow_right, arrow_right, win, sound=False, cooldown=0)
+		up_b = Button(Width - 148, Height - 148, arrow_up, arrow_up, sound=False, cooldown=0)
+		left_b = Button(Width - 222, Height - 74, arrow_left, arrow_left, sound=False, cooldown=0)
+		down_b = Button(Width - 148, Height - 74, arrow_down, arrow_down, sound=False, cooldown=0)
+		right_b = Button(Width - 74, Height - 74, arrow_right, arrow_right, sound=False, cooldown=0)
 
 	# Загрузка данных мира
 
@@ -5781,8 +5798,8 @@ def start_game():
 			
 			if craft_list_open:
 
-				back_button = Button(114, Height - 176, bigTextInfo.render("<", True, (0, 150, 0)), bigTextInfo.render("<", True, (0, 100, 0)), win)
-				next_button = Button(Width - 144, Height - 176, bigTextInfo.render(">", True, (0, 150, 0)), bigTextInfo.render(">", True, (0, 100, 0)), win)
+				back_button = Button(114, Height - 176, bigTextInfo.render("<", True, (0, 150, 0)), bigTextInfo.render("<", True, (0, 100, 0)))
+				next_button = Button(Width - 144, Height - 176, bigTextInfo.render(">", True, (0, 150, 0)), bigTextInfo.render(">", True, (0, 100, 0)))
 				win.blit(Changed_craft_list_inventory_slot, (810, 90))
 				win_fill()
 				pygame.draw.rect(win, text_color, (100, 100, Width - 200, Height - 200))
@@ -6379,8 +6396,8 @@ if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0]
 
 		if multyplayer_menu_open:
 			
-			enable_multiplayer = Button(Width // 2, Height // 2 - 30, bigTextInfo.render(t("Enable multiplayer"), True, (139, 155, 180)), bigTextInfo.render(t("Enable multiplayer"), True, (58, 68, 102)), win, True, info=t("Your IP-address - ") + socket.gethostbyname(socket.gethostname()))
-			enter_another_game = Button(Width // 2, Height // 2 + 30, bigTextInfo.render(t("Enter another game"), True, (139, 155, 180)), bigTextInfo.render(t("Enter another game"), True, (58, 68, 102)), win, True)
+			enable_multiplayer = Button(Width // 2, Height // 2 - 30, bigTextInfo.render(t("Enable multiplayer"), True, (139, 155, 180)), bigTextInfo.render(t("Enable multiplayer"), True, (58, 68, 102)), alignment=True, info=t("Your IP-address - ") + socket.gethostbyname(socket.gethostname()))
+			enter_another_game = Button(Width // 2, Height // 2 + 30, bigTextInfo.render(t("Enter another game"), True, (139, 155, 180)), bigTextInfo.render(t("Enter another game"), True, (58, 68, 102)), alignment=True)
 			
 			pygame.image.save(win, path + "Gannitto world/files/Cache/Win.png")
 			win_darken(win.copy())
@@ -6438,7 +6455,7 @@ if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0]
 				if b == 1:
 
 					input_text = ""
-					i = Button(Width // 2, Height // 2, textInfo.render("Next", True, text_color), textInfo.render("Next", True, (0, 0, 0)), win, True)
+					i = Button(Width // 2, Height // 2, textInfo.render("Next", True, text_color), textInfo.render("Next", True, (0, 0, 0)), alignment=True)
 
 					while a:
 
@@ -6519,7 +6536,7 @@ if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0]
 						
 					except:
 						
-						a = Button(Width // 2, Height // 2 + 20, bigTextInfo.render(i("Next"), True, (139, 155, 180)), bigTextInfo.render(t("Next"), True, (58, 68, 102)), win, True)
+						a = Button(Width // 2, Height // 2 + 20, bigTextInfo.render(i("Next"), True, (139, 155, 180)), bigTextInfo.render(t("Next"), True, (58, 68, 102)), alignment=True)
 
 						while True:
 						
@@ -6737,10 +6754,10 @@ def edit_world():
 	input_text = ""
 	world_name_input = False
 
-	easy_but = Button(50, 200, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Easy.png"), (132, 64)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Easy 2.png"), (132, 64)), win)
-	norm_but = Button(50, 270, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Norm.png"), (132, 64)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Norm 2.png"), (132, 64)), win)
-	hard_but = Button(50, 340, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Hard.png"), (132, 64)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Hard 2.png"), (132, 64)), win)
-	skull_but = Button(50, 410, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Skull.png"), (132, 64)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Skull 2.png"), (132, 64)), win)
+	easy_but = Button(50, 200, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Easy.png"), (132, 64)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Easy 2.png"), (132, 64)))
+	norm_but = Button(50, 270, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Norm.png"), (132, 64)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Norm 2.png"), (132, 64)))
+	hard_but = Button(50, 340, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Hard.png"), (132, 64)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Hard 2.png"), (132, 64)))
+	skull_but = Button(50, 410, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Skull.png"), (132, 64)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Skull 2.png"), (132, 64)))
 	
 	win.fill((192, 203, 220))
 
@@ -6805,7 +6822,7 @@ def edit_world():
 				if event.button == 1:
 					release = True
 
-			elif event.type == pygame.KEYDOWN and world_name_input:
+			elif event.type == pygame.KEYDOWN and world_name_input and input_text != "":
 				if event.key == pygame.K_RETURN or len(input_text) == 50:
 					if world_name_input:
 						world_name_input = False
@@ -6914,8 +6931,8 @@ def edit_world():
 					win_fill()
 					a = win.copy()
 				
-					yes_button = Button(Width // 2 - 150, Height // 2, bigTextInfo.render(t("Yes"), True, (139, 155, 180)), bigTextInfo.render(t("Yes"), True, (58, 68, 102)), win, True)
-					no_button = Button(Width // 2 + 150, Height // 2, bigTextInfo.render(t("No"), True, (139, 155, 180)), bigTextInfo.render(t("No"), True, (58, 68, 102)), win, True)
+					yes_button = Button(Width // 2 - 150, Height // 2, bigTextInfo.render(t("Yes"), True, (139, 155, 180)), bigTextInfo.render(t("Yes"), True, (58, 68, 102)), alignment=True)
+					no_button = Button(Width // 2 + 150, Height // 2, bigTextInfo.render(t("No"), True, (139, 155, 180)), bigTextInfo.render(t("No"), True, (58, 68, 102)), alignment=True)
 
 					while True:
 					
@@ -6985,10 +7002,10 @@ def worlds():
 
 	global world_name, mouse, mouse_click_image, keys, alt_pressed
 
-	page_back_button = Button(10, Height - 138, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Back.png"), (128, 128)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Back 2.png"), (128, 128)), win)
-	page_next_button = Button(Width - 148, Height - 148, pygame.transform.flip(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Back.png"), (128, 128)), True, False), pygame.transform.flip(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Back 2.png"), (128, 128)), True, False), win)
-	create_new_world_button = Button(Width // 2, 50, textInfo.render(t("Create world"), True, (139, 155, 180)), textInfo.render(t("Create world"), True, (58, 68, 102)), win, True)
-	back_button = Button(-20, -20, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Back.png"), (128, 128)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Back 2.png"), (128, 128)), win)
+	page_back_button = Button(10, Height - 138, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Back.png"), (128, 128)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Back 2.png"), (128, 128)))
+	page_next_button = Button(Width - 148, Height - 148, pygame.transform.flip(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Back.png"), (128, 128)), True, False), pygame.transform.flip(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Back 2.png"), (128, 128)), True, False))
+	create_new_world_button = Button(Width // 2, 50, textInfo.render(t("Create world"), True, (139, 155, 180)), textInfo.render(t("Create world"), True, (58, 68, 102)), alignment=True)
+	back_button = Button(-20, -20, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Back.png"), (128, 128)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Back 2.png"), (128, 128)))
 	page = 1
 	input_text = None
 
@@ -7178,15 +7195,15 @@ def menu():
 	
 	global win, screenmode, mobs, num, mouse_click_image
 
-	play_button = Button(Width / 2, Height / 2 - 150, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Play.png"), (264, 128)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Play 2.png"), (264, 128)), win, True, info="Подсказка: вы можете нажать enter, чтобы сразу начать игру.", action=worlds)
-	settings_button = Button(Width / 2, Height / 2, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Settings.png"), (488, 128)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Settings 2.png"), (488, 128)), win, True, action=settings)
-	change_a_character_button = Button(Width / 2, Height / 2 + 150, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Change a character.png"), (960, 128)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Change a character 2.png"), (960, 128)), win, True, action=change_a_character)
+	play_button = Button(Width / 2, Height / 2 - 150, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Play.png"), (264, 128)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Play 2.png"), (264, 128)), alignment=True, info="Подсказка: вы можете нажать enter, чтобы сразу начать игру.", action=worlds)
+	settings_button = Button(Width / 2, Height / 2, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Settings.png"), (488, 128)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Settings 2.png"), (488, 128)), alignment=True, action=settings)
+	change_a_character_button = Button(Width / 2, Height / 2 + 150, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Change a character.png"), (960, 128)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Change a character 2.png"), (960, 128)), alignment=True, action=change_a_character)
 
 	win.blit(Screensaver2, (0, 0))
 	play_button.main()
 	settings_button.main()
 	change_a_character_button.main()
-	text("© Gannitto World " + open(path + "Gannitto world/files/Version.txt").read() + " oficial version", 5, Height - 30, (255, 255, 255))
+	text("© Gannitto World " + open(path + "Gannitto world/files/Version.txt").read() + " official version", 5, Height - 30, (255, 255, 255))
 	win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Discord logo.png"), (108, 81)), (Width - 90, Height - 80))
 	win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/More.png"), (64, 64)), (Width - 140, Height - 70))
 	win_lighten(win.copy())
@@ -7236,7 +7253,7 @@ def menu():
 			settings_button.main()
 			change_a_character_button.main()
 		
-		text("© Gannitto World " + version + " oficial version", 5, Height - 30, (255, 255, 255))
+		text("© Gannitto World " + version + " official version", 5, Height - 30, (255, 255, 255))
 
 		win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Discord logo.png"), (108, 81)), (Width - 90, Height - 80))
 		if mouse_x > Width - 70 and mouse_y > Height - 80:
