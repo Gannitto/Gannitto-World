@@ -6993,7 +6993,8 @@ def worlds():
 	input_text = None
 
 	win_darken(win.copy())
-	
+
+	inside_folders = []	
 	for dirs, folder, files in os.walk(path + "Gannitto world/files/Worlds/"):
 		inside_folders = folder
 		break
