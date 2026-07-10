@@ -1,3 +1,5 @@
-Worlds/
+Worlds/*
+!Worlds/.gitkeep
 __pycache__/
-Cache/
+Cache/*
+!Cache/.gitkeep
