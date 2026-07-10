@@ -93,7 +93,7 @@ def win_darken(screen: pygame.Surface):
 	screen - Изображение экрана
 	"""
 	from Globals import win, clock
-	from Gannitto_world import save
+	from main import save
 	tick = 0
 	display_speed = 7
 	dark = 0
@@ -125,7 +125,7 @@ def win_lighten(screen: pygame.Surface, start_dark: int=300):
 	"""
 	
 	from Globals import clock, win
-	from Gannitto_world import save
+	from main import save
 
 	dark = start_dark
 	display_speed = 7
@@ -168,7 +168,7 @@ def show_error_window(error_message: str):
 
 	import pyperclip
 	import traceback
-	from Gannitto_world import text
+	from main import text
 
 	pyperclip.copy(traceback.format_exc())
 

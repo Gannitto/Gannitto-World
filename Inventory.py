@@ -54,7 +54,7 @@ class Recipe:
 		"""Проверяет, может ли быть какой-то результат от данных ингридеентов"""
 		
 		from Globals import craft_items_list, craft_amounts_list
-		from Gannitto_world import player, world
+		from main import player, world
 		if craft_items_list == self.ingredients and craft_amounts_list == self.ingredients_amounts:
 			a = True
 			b = None
@@ -851,7 +851,7 @@ class Inventory:
 				
 				if empty_slot is None:
 					# Нет свободных слотов
-					from Gannitto_world import t, chat_message
+					from main import t, chat_message
 					chat_message(t("<<< Inventory is full! >>>"))
 					break
 				
@@ -871,7 +871,7 @@ class Inventory:
 				self.whole_inventory[empty_slot] = new_item
 				remaining -= add
 		except KeyError:
-			from Gannitto_world import t, chat_message
+			from main import t, chat_message
 			chat_message(t("<<< Error increasing: item not found >>>"))
 	
 	def update_whole(self):
@@ -941,7 +941,7 @@ class Inventory:
 		"""Рисует весь инвентарь"""
 
 		from Globals import win, craft_images_list, craft_amounts_list
-		from Gannitto_world import Inventory_slot
+		from main import Inventory_slot
 		cell_x = cell_y = 10
 		for cell in self.whole_inventory:
 			if cell is not None:

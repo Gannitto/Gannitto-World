@@ -30,7 +30,7 @@ def build(
 	
 	from Inventory import inventory
 	changed_slot, player, particles, Width, Height, world = build_tuple
-	from Gannitto_world import Particle, Pick_an_item
+	from main import Particle, Pick_an_item
 	from Functions import win_fill
 	
 	if inventory.whole_inventory[changed_slot] is not None:

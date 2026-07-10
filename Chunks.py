@@ -206,7 +206,7 @@ class ChunkManager:
 	def generate_chunk(self, chunk: Chunk):
 
 		"""Генерация чанка"""
-		from Gannitto_world import Object
+		from main import Object
 		bounds = chunk.get_world_bounds()
 	
 		value = self.generator.get_biome_at(chunk.x, chunk.y)

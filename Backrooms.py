@@ -155,7 +155,7 @@ class Room():
 
 		"""Shows the room"""
 
-		from Gannitto_world import player, win
+		from main import player, win
 		from itertools import product
 		
 		b = pygame.transform.scale(pygame.image.load("Images/Bioms/Backrooms " + str(Level) + " wall.png"), (256, 256))
@@ -229,7 +229,7 @@ class Wall:
 
 	def main(self, player_x: int, player_y: int):
 
-		from Gannitto_world import win
+		from main import win
 		from itertools import product
 
 		a = pygame.Surface((self.Width, self.Height))
