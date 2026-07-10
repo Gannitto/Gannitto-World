@@ -17,7 +17,7 @@ structures = {
 					"Count": (1, 1),
 					"Template": {
 						"name": "Pond",
-						"image_path": "Gannitto world/files/Images/Objects/Pond.png",
+						"image_path": "Images/Objects/Pond.png",
 						"scale_x": (512, 512),
 						"special_flags": [100, 20]
 						}
@@ -28,7 +28,7 @@ structures = {
 					"Count": (2, 5),
 					"Template": {
 						"name": "Reed",
-						"image_path": "Gannitto world/files/Images/Objects/Reed.png",
+						"image_path": "Images/Objects/Reed.png",
 						"scale_x": (256, 256)
 						}
 				}
@@ -44,14 +44,14 @@ biomes_objects = {
 			"Objects": (
 				(1, {
 					"name": "Cactus",
-					"image_path": "Gannitto world/files/Images/Objects/Cactus.png",
+					"image_path": "Images/Objects/Cactus.png",
 					"scale_x": (256, 256),
 					"is_solid": True,
 					"rect": (-80, 116, 160, 232)
 					}),
 				(0.5, {
 					"name": "Pile of sand",
-					"image_path": "Gannitto world/files/Images/Objects/Pile of sand.png",
+					"image_path": "Images/Objects/Pile of sand.png",
 					"scale_x": (256, 256),
 					})),
 			"Items": (),
@@ -63,67 +63,67 @@ biomes_objects = {
 			"Objects": (
 				(2, {
 					"name": "Tree",
-					"image_path": "Gannitto world/files/Images/Objects/Tree.png",
+					"image_path": "Images/Objects/Tree.png",
 					"scale_x": (256, 256),
 					"special_flags": 100,
 					"is_solid": True}),
 				(2, {
 					"name": "Birch",
-					"image_path": "Gannitto world/files/Images/Objects/Birch.png",
+					"image_path": "Images/Objects/Birch.png",
 					"scale_x": (256, 256),
 					"special_flags": 100,
 					"is_solid": True
 					}),
 				(0.5, {
 					"name": "Bush",
-					"image_path": "Gannitto world/files/Images/Objects/Bush.png",
+					"image_path": "Images/Objects/Bush.png",
 					"scale_x": (128, 128),
 					"is_solid": True
 				})),
 			"Items": (
 				(0.3, {
 					"name": "Stone",
-					"image_path": "Gannitto world/files/Images/Items/Stone.png",
+					"image_path": "Images/Items/Stone.png",
 					}),
 				(0.3, {
 					"name": "Poppy",
-					"image_path": "Gannitto world/files/Images/Items/Poppy.png",
+					"image_path": "Images/Items/Poppy.png",
 					}),
 				(0.3, {
 					"name": "Purple tulip",
-					"image_path": "Gannitto world/files/Images/Items/Purple tulip.png",
+					"image_path": "Images/Items/Purple tulip.png",
 					}),
 				(0.3, {
 					"name": "Orange tulip",
-					"image_path": "Gannitto world/files/Images/Items/Orange tulip.png",
+					"image_path": "Images/Items/Orange tulip.png",
 					}),
 				(0.3, {
 					"name": "Purple tulip",
-					"image_path": "Gannitto world/files/Images/Items/Purple tulip.png",
+					"image_path": "Images/Items/Purple tulip.png",
 					}),
 				(0.3, {
 					"name": "Black tulip",
-					"image_path": "Gannitto world/files/Images/Items/Black tulip.png",
+					"image_path": "Images/Items/Black tulip.png",
 					}),
 				(0.3, {
 					"name": "Red tulip",
-					"image_path": "Gannitto world/files/Images/Items/Red tulip.png",
+					"image_path": "Images/Items/Red tulip.png",
 					}),
 				(0.3, {
 					"name": "Yellow tulip",
-					"image_path": "Gannitto world/files/Images/Items/Yellow tulip.png",
+					"image_path": "Images/Items/Yellow tulip.png",
 					}),
 				(0.1, {
 					"name": "Dandelion",
-					"image_path": "Gannitto world/files/Images/Objects/Dandelion 1.png",
+					"image_path": "Images/Objects/Dandelion 1.png",
 					}),
 				(0.1, {
 					"name": "Mushroom",
-					"image_path": "Gannitto world/files/Images/Items/Mushroom.png",
+					"image_path": "Images/Items/Mushroom.png",
 					}),
 				(0.1, {
 					"name": "Red mushroom",
-					"image_path": "Gannitto world/files/Images/Items/Red mushroom.png",
+					"image_path": "Images/Items/Red mushroom.png",
 				})),
 		"Structures": (structures["Pond"],)},
 
@@ -131,22 +131,22 @@ biomes_objects = {
 			"Objects": (
 				(2, {
 					"name": "Dark tree",
-					"image_path": "Gannitto world/files/Images/Objects/Dark tree.png",
+					"image_path": "Images/Objects/Dark tree.png",
 					"scale_x": (256, 256),
 					"special_flags": 100,
 					"is_solid": True}),),
 			"Items": (
 				(0.5, {
 					"name": "Cotton grass",
-					"image_path": "Gannitto world/files/Images/Items/Cotton grass.png",
+					"image_path": "Images/Items/Cotton grass.png",
 					}),
 				(0.5, {
 					"name": "Mushroom",
-					"image_path": "Gannitto world/files/Images/Items/Mushroom.png",
+					"image_path": "Images/Items/Mushroom.png",
 					}),
 				(0.5, {
 					"name": "Red mushroom",
-					"image_path": "Gannitto world/files/Images/Items/Red mushroom.png",
+					"image_path": "Images/Items/Red mushroom.png",
 				})),
 		"Structures": ()},
 
@@ -154,14 +154,14 @@ biomes_objects = {
 			"Objects": (
 				(2, {
 					"name": "Spruce",
-					"image_path": "Gannitto world/files/Images/Objects/Spruce.png",
+					"image_path": "Images/Objects/Spruce.png",
 					"scale_x": (512, 512),
 					"special_flags": 100,
 					"is_solid": True
 					}),
 				(0.5, {
 					"name": "Dark bush",
-					"image_path": "Gannitto world/files/Images/Objects/Dark bush.png",
+					"image_path": "Images/Objects/Dark bush.png",
 					"scale_x": (128, 128),
 					"is_solid": True
 				})),

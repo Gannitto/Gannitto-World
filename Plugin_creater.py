@@ -36,7 +36,7 @@ class Button:
 			self.image = self.image2
 			if click[0] == 1:
 				time.sleep(0.1)
-				pygame.mixer.Sound.play(pygame.mixer.Sound(path + "Gannitto world/files/Sounds/Button Pressed.mp3"))
+				pygame.mixer.Sound.play(pygame.mixer.Sound(path + "Sounds/Button Pressed.mp3"))
 				if action is not None:
 					action()
 		else:
@@ -121,7 +121,7 @@ def create_new_plugin():
 							try:
 								win.blit(pygame.transform.scale(pygame.image.load(i[2]), (64, 64)), (textInfo.size(i[0])[0] + 100, 50 + a * 94))
 							except FileNotFoundError:
-								win.blit(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/No-file texture.png"), (64, 64)), (textInfo.size(i[0])[0] + 100, 50 + a * 94))
+								win.blit(pygame.transform.scale(pygame.image.load(path + "Images/No-file texture.png"), (64, 64)), (textInfo.size(i[0])[0] + 100, 50 + a * 94))
 							if 50 <= mouse_x <= 50 + textInfo.size(i[0])[0] and 50 + a * 94 <= mouse_y <= 50 + a * 94 + textInfo.size(i[0])[1] and click[0]:
 								win.blit(textInfo.render(i[0], True, (58, 68, 102)), (50, 50 + a * 94))
 								stage += 1
@@ -428,9 +428,9 @@ def create_new_plugin():
 			case 4:
 
 				try:
-					Saver.save_objects(path + "Gannitto world/files/" + plugin_name + ".save", additions)
+					Saver.save_objects(path + "" + plugin_name + ".save", additions)
 				except OSError:
-					Saver.save_objects(path + "Gannitto world/files/My plugin.save", additions)
+					Saver.save_objects(path + "My plugin.save", additions)
 				my_plugins()
 
 		pygame.display.update()
@@ -439,8 +439,8 @@ def create_new_plugin():
 def upload_plugin():
 	
 	plugin_path = os.getcwd()
-	page_back_button = Button(74, Height - 74, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Back.png"), (128, 128)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Back 2.png"), (128, 128)), win)
-	page_next_button = Button(Width - 74, Height - 74, pygame.transform.flip(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Back.png"), (128, 128)), True, False), pygame.transform.flip(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Back 2.png"), (128, 128)), True, False), win)
+	page_back_button = Button(74, Height - 74, pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Back.png"), (128, 128)), pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Back 2.png"), (128, 128)), win)
+	page_next_button = Button(Width - 74, Height - 74, pygame.transform.flip(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Back.png"), (128, 128)), True, False), pygame.transform.flip(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Back 2.png"), (128, 128)), True, False), win)
 	page = 1
 
 	while 1:
@@ -541,8 +541,8 @@ def upload_plugin():
 
 def my_plugins():
 
-	page_back_button = Button(74, Height - 74, pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Back.png"), (128, 128)), pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Back 2.png"), (128, 128)), win)
-	page_next_button = Button(Width - 74, Height - 74, pygame.transform.flip(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Back.png"), (128, 128)), True, False), pygame.transform.flip(pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Buttons/Back 2.png"), (128, 128)), True, False), win)
+	page_back_button = Button(74, Height - 74, pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Back.png"), (128, 128)), pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Back 2.png"), (128, 128)), win)
+	page_next_button = Button(Width - 74, Height - 74, pygame.transform.flip(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Back.png"), (128, 128)), True, False), pygame.transform.flip(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Back 2.png"), (128, 128)), True, False), win)
 	page = 1
 
 	while 1:

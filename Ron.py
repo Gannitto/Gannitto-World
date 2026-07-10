@@ -13,7 +13,7 @@ window = [False, 0]
 
 down_images = [
 
-	pygame.transform.scale(pygame.image.load(path + "Gannitto world/files/Images/Players/Ron/Normal/Down/1.png"), (256, 256))
+	pygame.transform.scale(pygame.image.load(path + "Images/Players/Ron/Normal/Down/1.png"), (256, 256))
 
 	]
 

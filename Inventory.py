@@ -88,7 +88,7 @@ class Inventory:
 
 		self.resources = {
 
-			"Mushroom": Resource("Mushroom", path + "Gannitto world/files/Images/Items/Mushroom.png", [
+			"Mushroom": Resource("Mushroom", path + "Images/Items/Mushroom.png", [
 				"Просто гриб, ничего больше",
 				"Just a mushroom, nothong more"
 			], [
@@ -98,7 +98,7 @@ class Inventory:
 
 
 			
-			"Red mushroom": Resource("Red mushroom", path + "Gannitto world/files/Images/Items/Red mushroom.png", [
+			"Red mushroom": Resource("Red mushroom", path + "Images/Items/Red mushroom.png", [
 				"Просто гриб, ничего больше",
 				"Just a mushroom, nothong more"
 			], [
@@ -108,7 +108,7 @@ class Inventory:
 
 
 			
-			"Jar": Resource("Jar", path + "Gannitto world/files/Images/Items/Jar.png", [
+			"Jar": Resource("Jar", path + "Images/Items/Jar.png", [
 				"Нету",
 				"None"
 			], [
@@ -118,7 +118,7 @@ class Inventory:
 
 
 
-			"Gun": Resource("Gun", path + "Gannitto world/files/Images/Items/Gun.png", [
+			"Gun": Resource("Gun", path + "Images/Items/Gun.png", [
 				"Пушка, для которой нужны патроны",
 				"A gun, that needs bullets"
 			], [
@@ -128,7 +128,7 @@ class Inventory:
 
 
 
-			"Bullet": Resource("Bullet", path + "Gannitto world/files/Images/Items/Bullet.png", [
+			"Bullet": Resource("Bullet", path + "Images/Items/Bullet.png", [
 				"Это пуля для пушки",
 				"This is a bullet for gun"
 			], [
@@ -138,7 +138,7 @@ class Inventory:
 
 
 
-			"Arrow": Resource("Arrow", path + "Gannitto world/files/Images/Items/Arrow.png", [
+			"Arrow": Resource("Arrow", path + "Images/Items/Arrow.png", [
 				"Нету",
 				"None"
 			], [
@@ -148,7 +148,7 @@ class Inventory:
 
 
 
-			"Powder": Resource("Powder", path + "Gannitto world/files/Images/Items/Powder.png", [
+			"Powder": Resource("Powder", path + "Images/Items/Powder.png", [
 				"Покоритель битв и властелин взрывов",
 				"Conqueror of battles and lord of explosions"
 			], [
@@ -158,7 +158,7 @@ class Inventory:
 
 
 
-			"Grenade": Resource("Grenade", path + "Gannitto world/files/Images/Items/Grenade.png", [
+			"Grenade": Resource("Grenade", path + "Images/Items/Grenade.png", [
 				"Опасная вещь",
 				"Dangerous thing"
 			], [
@@ -168,7 +168,7 @@ class Inventory:
 
 
 
-			"Almond whater": Resource("Almond whater", path + "Gannitto world/files/Images/Items/Almond whater.png", [
+			"Almond whater": Resource("Almond whater", path + "Images/Items/Almond whater.png", [
 				"Вода, вкус которой напомянает миндаль или ваниль",
 				"Water, that tastes like almonds or vanilla"
 			], [
@@ -178,7 +178,7 @@ class Inventory:
 
 
 
-			"Blue slime": Resource("Blue slime", path + "Gannitto world/files/Images/Items/Blue Slime.png", [
+			"Blue slime": Resource("Blue slime", path + "Images/Items/Blue Slime.png", [
 				"Липкий гель синего цвета",
 				"Blue sticky gel"
 			], [
@@ -188,7 +188,7 @@ class Inventory:
 
 
 
-			"Pink slime": Resource("Pink slime", path + "Gannitto world/files/Images/Items/Pink Slime.png", [
+			"Pink slime": Resource("Pink slime", path + "Images/Items/Pink Slime.png", [
 				"Липкий гель розового цвета",
 				"Pink slicky gel"
 			], [
@@ -198,7 +198,7 @@ class Inventory:
 
 
 
-			"Stick": Resource("Stick", path + "Gannitto world/files/Images/Items/Stick.png", [
+			"Stick": Resource("Stick", path + "Images/Items/Stick.png", [
 				"Простой и универсальный предмет",
 				"Simple and versatile item"
 			], [
@@ -208,7 +208,7 @@ class Inventory:
 
 
 
-			"Iron ingot": Resource("Iron ingot", path + "Gannitto world/files/Images/Items/Iron ingot.png", [
+			"Iron ingot": Resource("Iron ingot", path + "Images/Items/Iron ingot.png", [
 				"Ты можешь получить его, переплавив железную руду в печке",
 				"You can get it, by smetling iron ore in a furnace"
 			], [
@@ -218,7 +218,7 @@ class Inventory:
 
 
 
-			"Gold ingot": Resource("Gold ingod", path + "Gannitto world/files/Images/Items/Gold ingot.png", [
+			"Gold ingot": Resource("Gold ingod", path + "Images/Items/Gold ingot.png", [
 				"Ты можешь получить его, переплавив золотую руду в печке",
 				"You can get it, by smetling gold ore in a furnace"
 			], [
@@ -228,7 +228,7 @@ class Inventory:
 
 
 
-			"Bucket": Resource("Bucket", path + "Gannitto world/files/Images/Items/Bucket.png", [
+			"Bucket": Resource("Bucket", path + "Images/Items/Bucket.png", [
 				"Ведро...",
 				"Bucket..."
 			], [
@@ -238,7 +238,7 @@ class Inventory:
 
 
 
-			"Whater bucket": Resource("Whater bucket", path + "Gannitto world/files/Images/Items/Whater bucket.png", [
+			"Whater bucket": Resource("Whater bucket", path + "Images/Items/Whater bucket.png", [
 				"Ведро...",
 				"Bucket..."
 			], [
@@ -248,7 +248,7 @@ class Inventory:
 
 
 
-			"Gold bucket": Resource("Gold bucket", path + "Gannitto world/files/Images/Items/Gold bucket.png", [
+			"Gold bucket": Resource("Gold bucket", path + "Images/Items/Gold bucket.png", [
 				"Зачем тебе ЗОЛОТОЕ ведро?!",
 				"Why do you need a GOLD bucket?!"
 			], [
@@ -258,7 +258,7 @@ class Inventory:
 
 
 
-			"Thread": Resource("Thread", path + "Gannitto world/files/Images/Items/Thread.png", [
+			"Thread": Resource("Thread", path + "Images/Items/Thread.png", [
 				"Нету",
 				"None"
 			], [
@@ -268,7 +268,7 @@ class Inventory:
 
 
 
-			"Portal gun": Resource("Portal gun", path + "Gannitto world/files/Images/Items/Portal gun.png", [
+			"Portal gun": Resource("Portal gun", path + "Images/Items/Portal gun.png", [
 				"С помощью неё, ты можешь создовать порталы для телепортации",
 				"With it, you can create teleportation portals"
 			], [
@@ -278,7 +278,7 @@ class Inventory:
 
 
 
-			"Vending machine": Resource("Vending machine", path + "Gannitto world/files/Images/Items/Vending machine.png", [
+			"Vending machine": Resource("Vending machine", path + "Images/Items/Vending machine.png", [
 				"С помощью него можно обменивать вещи",
 				"With it, you can vend items"
 			], [
@@ -288,7 +288,7 @@ class Inventory:
 
 
 
-			"Stone": Resource("Stone", path + "Gannitto world/files/Images/Items/Stone.png", [
+			"Stone": Resource("Stone", path + "Images/Items/Stone.png", [
 				"Спокойно лежит на земле",
 				"Lies quietly on the ground"
 			], [
@@ -298,7 +298,7 @@ class Inventory:
 
 
 
-			"Poppy": Resource("Poppy", path + "Gannitto world/files/Images/Items/Poppy.png", [
+			"Poppy": Resource("Poppy", path + "Images/Items/Poppy.png", [
 				"Красивый цветок",
 				"A beautiful flower"
 			], [
@@ -308,7 +308,7 @@ class Inventory:
 
 
 
-			"Purple tulip": Resource("Purple tulip", path + "Gannitto world/files/Images/Items/Purple tulip.png", [
+			"Purple tulip": Resource("Purple tulip", path + "Images/Items/Purple tulip.png", [
 				"Красивый цветок",
 				"A beautiful flower"
 			], [
@@ -318,7 +318,7 @@ class Inventory:
 
 
 
-			"Orange tulip": Resource("Orange tulip", path + "Gannitto world/files/Images/Items/Orange tulip.png", [
+			"Orange tulip": Resource("Orange tulip", path + "Images/Items/Orange tulip.png", [
 				"Красивый цветок",
 				"A beautiful flower"
 			], [
@@ -328,7 +328,7 @@ class Inventory:
 
 
 
-			"Black tulip": Resource("Black tulip", path + "Gannitto world/files/Images/Items/Black tulip.png", [
+			"Black tulip": Resource("Black tulip", path + "Images/Items/Black tulip.png", [
 				"Красивый цветок",
 				"A beautiful flower"
 			], [
@@ -338,7 +338,7 @@ class Inventory:
 
 
 
-			"Red tulip": Resource("Red tulip", path + "Gannitto world/files/Images/Items/Red tulip.png", [
+			"Red tulip": Resource("Red tulip", path + "Images/Items/Red tulip.png", [
 				"Красивый цветок",
 				"A beautiful flower"
 			], [
@@ -348,7 +348,7 @@ class Inventory:
 
 
 
-			"Yellow tulip": Resource("Yellow tulip", path + "Gannitto world/files/Images/Items/Yellow tulip.png", [
+			"Yellow tulip": Resource("Yellow tulip", path + "Images/Items/Yellow tulip.png", [
 				"Красивый цветок",
 				"A beautiful flower"
 			], [
@@ -358,7 +358,7 @@ class Inventory:
 
 
 
-			"Dandelion": Resource("Dandelion", path + "Gannitto world/files/Images/Items/Dandelion.png", [
+			"Dandelion": Resource("Dandelion", path + "Images/Items/Dandelion.png", [
 				"Красивый цветок",
 				"A beautiful flower"
 			], [
@@ -368,7 +368,7 @@ class Inventory:
 
 
 
-			"Cotton grass": Resource("Cotton grass", path + "Gannitto world/files/Images/Items/Cotton grass.png", [
+			"Cotton grass": Resource("Cotton grass", path + "Images/Items/Cotton grass.png", [
 				"Красивый цветок",
 				"A beautiful flower"
 			], [
@@ -378,7 +378,7 @@ class Inventory:
 
 
 
-			"Rope": Resource("Rope", path + "Gannitto world/files/Images/Items/Rope.png", [
+			"Rope": Resource("Rope", path + "Images/Items/Rope.png", [
 				"",
 				""
 			], [
@@ -388,7 +388,7 @@ class Inventory:
 
 
 
-			"Stone spear": Resource("Stone spear", path + "Gannitto world/files/Images/Items/Stone spear.png", [
+			"Stone spear": Resource("Stone spear", path + "Images/Items/Stone spear.png", [
 				"Таким же оружием пользовались древние люди",
 				"Ancient people used the same weapons"
 			], [
@@ -398,7 +398,7 @@ class Inventory:
 
 
 
-			"Wooden": Resource("Wooden", path + "Gannitto world/files/Images/Items/Wooden.png", [
+			"Wooden": Resource("Wooden", path + "Images/Items/Wooden.png", [
 				"Материал, получаемый из деревьев. Является необходимым компонентом для любого строителя",
 				"Material obtained from trees. Is a necessary component for any builder"
 			], [
@@ -408,7 +408,7 @@ class Inventory:
 
 
 
-			"Dark wooden": Resource("Dark wooden", path + "Gannitto world/files/Images/Items/Dark wooden.png", [
+			"Dark wooden": Resource("Dark wooden", path + "Images/Items/Dark wooden.png", [
 				"Материал, получаемый из деревьев. Является необходимым компонентом для любого строителя",
 				"Material obtained from trees. Is a necessary component for any builder"
 			], [
@@ -418,7 +418,7 @@ class Inventory:
 
 
 
-			"Birch wooden": Resource("Birch wooden", path + "Gannitto world/files/Images/Items/Birch wooden.png", [
+			"Birch wooden": Resource("Birch wooden", path + "Images/Items/Birch wooden.png", [
 				"Материал, получаемый из деревьев. Является необходимым компонентом для любого строителя",
 				"Material obtained from trees. Is a necessary component for any builder"
 			], [
@@ -428,7 +428,7 @@ class Inventory:
 
 
 
-			"Table": Resource("Table", path + "Gannitto world/files/Images/Items/Table.png", [
+			"Table": Resource("Table", path + "Images/Items/Table.png", [
 				"Деревянный стол, на котором можно изготавливать предметы",
 				"Wooden table, on which you can craft items"
 			], [
@@ -438,7 +438,7 @@ class Inventory:
 
 
 
-			"Wall table": Resource("Wall table", path + "Gannitto world/files/Images/Items/Wall table.png", [
+			"Wall table": Resource("Wall table", path + "Images/Items/Wall table.png", [
 				"Деревянный стол, на котором можно изготавливать стены",
 				"Wooden table, on which you can craft walls"
 			], [
@@ -448,7 +448,7 @@ class Inventory:
 
 
 
-			"Clay": Resource("Clay", path + "Gannitto world/files/Images/Items/Clay.png", [
+			"Clay": Resource("Clay", path + "Images/Items/Clay.png", [
 				"Как песок, но очень липкий",
 				"Like sand, but very sticky"
 			], [
@@ -458,7 +458,7 @@ class Inventory:
 
 
 
-			"Brick": Resource("Brick", path + "Gannitto world/files/Images/Items/Brick.png", [
+			"Brick": Resource("Brick", path + "Images/Items/Brick.png", [
 				"Нету",
 				"None"
 			], [
@@ -468,7 +468,7 @@ class Inventory:
 
 
 
-			"Pot": Resource("Pot", path + "Gannitto world/files/Images/Items/Pot.png", [
+			"Pot": Resource("Pot", path + "Images/Items/Pot.png", [
 				"Глиняный горшок",
 				"Clay pot"
 			], [
@@ -478,7 +478,7 @@ class Inventory:
 
 
 
-			"Wire": Resource("Wire", path + "Gannitto world/files/Images/Items/Wire.png", [
+			"Wire": Resource("Wire", path + "Images/Items/Wire.png", [
 				"Нету",
 				"None"
 			], [
@@ -488,7 +488,7 @@ class Inventory:
 
 
 
-			"Random box": Resource("Random box", path + "Gannitto world/files/Images/Items/Random box.png", [
+			"Random box": Resource("Random box", path + "Images/Items/Random box.png", [
 				"Нету",
 				"None"
 			], [
@@ -498,7 +498,7 @@ class Inventory:
 
 
 
-			"Lever": Resource("Lever", path + "Gannitto world/files/Images/Items/Lever.png", [
+			"Lever": Resource("Lever", path + "Images/Items/Lever.png", [
 				"Нету",
 				"None"
 			], [
@@ -508,7 +508,7 @@ class Inventory:
 
 
 
-			"Motherboard": Resource("Motherboard", path + "Gannitto world/files/Images/Items/Motherboard.png", [
+			"Motherboard": Resource("Motherboard", path + "Images/Items/Motherboard.png", [
 				"Нету",
 				"None"
 			], [
@@ -518,7 +518,7 @@ class Inventory:
 
 
 
-			"Wrench": Resource("Wrench", path + "Gannitto world/files/Images/Items/Wrench.png", [
+			"Wrench": Resource("Wrench", path + "Images/Items/Wrench.png", [
 				"Какая-то штука",
 				"Some thing"
 			], [
@@ -528,7 +528,7 @@ class Inventory:
 
 
 
-			"Stone pickaxe": Resource("Stone pickaxe", path + "Gannitto world/files/Images/Items/Stone pickaxe.png", [
+			"Stone pickaxe": Resource("Stone pickaxe", path + "Images/Items/Stone pickaxe.png", [
 				"Понадобится любому шахтёру",
 				"Nny miner needs"
 			], [
@@ -538,7 +538,7 @@ class Inventory:
 
 
 
-			"Stone hammer": Resource("Stone hammer", path + "Gannitto world/files/Images/Items/Stone hammer.png", [
+			"Stone hammer": Resource("Stone hammer", path + "Images/Items/Stone hammer.png", [
 				"Нету",
 				"None"
 			], [
@@ -548,7 +548,7 @@ class Inventory:
 
 
 
-			"Stone shovel": Resource("Stone shovel", path + "Gannitto world/files/Images/Items/Stone shovel.png", [
+			"Stone shovel": Resource("Stone shovel", path + "Images/Items/Stone shovel.png", [
 				"Нету",
 				"None"
 			], [
@@ -558,7 +558,7 @@ class Inventory:
 
 
 
-			"Furnace": Resource("Furnace", path + "Gannitto world/files/Images/Items/Furnace.png", [
+			"Furnace": Resource("Furnace", path + "Images/Items/Furnace.png", [
 				"Можно поставить",
 				"You can put it"
 			], [
@@ -568,7 +568,7 @@ class Inventory:
 
 
 
-			"Stone brick": Resource("Stone brick", path + "Gannitto world/files/Images/Items/Stone brick.png", [
+			"Stone brick": Resource("Stone brick", path + "Images/Items/Stone brick.png", [
 				"Нету"
 				"None"
 			], [
@@ -578,7 +578,7 @@ class Inventory:
 
 
 
-			"Wooden wall": Resource("Wooden wall", path + "Gannitto world/files/Images/Items/Wooden wall.png", [
+			"Wooden wall": Resource("Wooden wall", path + "Images/Items/Wooden wall.png", [
 				"Стена, которая может сгореть",
 				"A wall that can burn"
 			], [
@@ -588,7 +588,7 @@ class Inventory:
 
 
 
-			"Brick wall": Resource("Brick wall", path + "Gannitto world/files/Images/Items/Brick wall.png", [
+			"Brick wall": Resource("Brick wall", path + "Images/Items/Brick wall.png", [
 				"Стена, которая не может сгореть",
 				"A wall that can't burn"
 			], [
@@ -598,7 +598,7 @@ class Inventory:
 
 
 
-			"Stone brick wall": Resource("Stone brick wall", path + "Gannitto world/files/Images/Items/Stone brick wall.png", [
+			"Stone brick wall": Resource("Stone brick wall", path + "Images/Items/Stone brick wall.png", [
 				"Стена, которая не может сгореть",
 				"A wall that can't burn"
 			], [
@@ -608,7 +608,7 @@ class Inventory:
 
 
 
-			"Wooden door": Resource("Wooden door", path + "Gannitto world/files/Images/Items/Wooden door.png", [
+			"Wooden door": Resource("Wooden door", path + "Images/Items/Wooden door.png", [
 				"Дверь, которая может сгореть",
 				"A door that can burn"
 			], [
@@ -618,7 +618,7 @@ class Inventory:
 
 
 
-			"Iron ore": Resource("Iron ore", path + "Gannitto world/files/Images/Items/Iron ore.png", [
+			"Iron ore": Resource("Iron ore", path + "Images/Items/Iron ore.png", [
 				"Блестящий и дорогой",
 				"Shiny and expensive"
 			], [
@@ -628,7 +628,7 @@ class Inventory:
 
 
 
-			"Gold ore": Resource("Gold ore", path + "Gannitto world/files/Images/Items/Gold ore.png", [
+			"Gold ore": Resource("Gold ore", path + "Images/Items/Gold ore.png", [
 				"Блестящий и дорогой",
 				"Shiny and expensive"
 			], [
@@ -638,7 +638,7 @@ class Inventory:
 
 
 
-			"Candy cane": Resource("Candy cane", path + "Gannitto world/files/Images/Items/Candy cane.png", [
+			"Candy cane": Resource("Candy cane", path + "Images/Items/Candy cane.png", [
 				"Сладкая и липкая",
 				"Sweet and sticky"
 			], [
@@ -648,7 +648,7 @@ class Inventory:
 
 
 
-			"Beer": Resource("Beer", path + "Gannitto world/files/Images/Items/Beer.png", [
+			"Beer": Resource("Beer", path + "Images/Items/Beer.png", [
 				"Нету",
 				"None"
 			], [
@@ -658,7 +658,7 @@ class Inventory:
 
 
 
-			"Bow": Resource("Bow", path + "Gannitto world/files/Images/Items/Bow.png", [
+			"Bow": Resource("Bow", path + "Images/Items/Bow.png", [
 				"Нету",
 				"None"
 			], [
@@ -668,7 +668,7 @@ class Inventory:
 
 
 
-			"Onion": Resource("Onion", path + "Gannitto world/files/Images/Items/Onion.png", [
+			"Onion": Resource("Onion", path + "Images/Items/Onion.png", [
 				"Горький, больше нечего сказать",
 				"Bitter, nothibg more to say"
 			], [
@@ -678,7 +678,7 @@ class Inventory:
 
 
 
-			"Punch": Resource("Punch", path + "Gannitto world/files/Images/Items/Punch.png", [
+			"Punch": Resource("Punch", path + "Images/Items/Punch.png", [
 				"Нету",
 				"None"
 			], [
@@ -688,7 +688,7 @@ class Inventory:
 
 
 
-			"Stone hoe": Resource("Stone hoe", path + "Gannitto world/files/Images/Items/Stone hoe.png", [
+			"Stone hoe": Resource("Stone hoe", path + "Images/Items/Stone hoe.png", [
 				"Древний инструмент земледелия",
 				"Ancient farming tool"
 			], [
@@ -698,7 +698,7 @@ class Inventory:
 
 
 
-			"Carrot": Resource("Carrot", path + "Gannitto world/files/Images/Items/Carrot.png", [
+			"Carrot": Resource("Carrot", path + "Images/Items/Carrot.png", [
 				"Вкусная и оранжевая",
 				"Tasty and orange"
 			], [
@@ -708,7 +708,7 @@ class Inventory:
 
 
 
-			"Tomato": Resource("Tomato", path + "Gannitto world/files/Images/Items/Tomato.png", [
+			"Tomato": Resource("Tomato", path + "Images/Items/Tomato.png", [
 				"Вкусный и красный",
 				"Tasty and red"
 			], [
@@ -718,7 +718,7 @@ class Inventory:
 
 
 			
-			"Cucumber": Resource("Cucumber", path + "Gannitto world/files/Images/Items/Cucumber.png", [
+			"Cucumber": Resource("Cucumber", path + "Images/Items/Cucumber.png", [
 				"Вкусный и зелёный",
 				"Tasty and green"
 			], [
@@ -728,7 +728,7 @@ class Inventory:
 
 
 			
-			"Corn": Resource("Corn", path + "Gannitto world/files/Images/Items/Corn.png", [
+			"Corn": Resource("Corn", path + "Images/Items/Corn.png", [
 				"Вкусная и жёлтая",
 				"Tasty and yellow"
 			], [
@@ -738,7 +738,7 @@ class Inventory:
 
 
 			
-			"Wheat": Resource("Wheat", path + "Gannitto world/files/Images/Items/Wheat.png", [
+			"Wheat": Resource("Wheat", path + "Images/Items/Wheat.png", [
 				"",
 				""
 			], [
@@ -748,7 +748,7 @@ class Inventory:
 
 
 
-			"Cucumber seeds": Resource("Cucumber seeds", path + "Gannitto world/files/Images/Items/Cucumber seeds.png", [
+			"Cucumber seeds": Resource("Cucumber seeds", path + "Images/Items/Cucumber seeds.png", [
 				"Семена для сельского хозяйства",
 				"Seeds for agriculture"
 			], [
@@ -758,7 +758,7 @@ class Inventory:
 
 
 
-			"Corn seeds": Resource("Corn seeds", path + "Gannitto world/files/Images/Items/Corn seeds.png", [
+			"Corn seeds": Resource("Corn seeds", path + "Images/Items/Corn seeds.png", [
 				"Семена для сельского хозяйства",
 				"Seeds for agriculture"
 			], [
@@ -768,7 +768,7 @@ class Inventory:
 
 
 
-			"Wheat seeds": Resource("Wheat seeds", path + "Gannitto world/files/Images/Items/Wheat seeds.png", [
+			"Wheat seeds": Resource("Wheat seeds", path + "Images/Items/Wheat seeds.png", [
 				"Семена для сельского хозяйства",
 				"Seeds for agriculture"
 			], [

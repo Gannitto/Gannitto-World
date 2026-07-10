@@ -30,11 +30,11 @@ def shadow(
 	from Globals import Settings
 	
 	if Settings["Display"][4]:
-		if not os.path.exists(path + "Gannitto world/files/Cache"):
-			os.mkdir(path + "Gannitto world/files/Cache")
+		if not os.path.exists(path + "Cache"):
+			os.mkdir(path + "Cache")
 
-		if os.path.exists(path + "Gannitto world/files/Cache/" + name + ".png"):
-			return pygame.image.load(path + "Gannitto world/files/Cache/" + name + ".png")
+		if os.path.exists(path + "Cache/" + name + ".png"):
+			return pygame.image.load(path + "Cache/" + name + ".png")
 
 		else:
 			
@@ -62,7 +62,7 @@ def shadow(
 				new_surface.blit(shadow_surface, (0, 0))
 			
 			shadow_surface.set_alpha(intensity)
-			pygame.image.save(new_surface, path + "Gannitto world/files/Cache/" + name + ".png")
+			pygame.image.save(new_surface, path + "Cache/" + name + ".png")
 			
 			return new_surface
 	else:

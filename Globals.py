@@ -7,11 +7,11 @@ import sys
 if getattr(sys, "frozen", False):
 	path = sys._MEIPASS
 else:
-	path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) + os.sep
+	path = os.path.dirname(os.path.abspath(__file__)) + os.sep
 
 try:
 
-	Settings = Saver.load_objects(path + "Gannitto world/files/Settings/Settings.save")
+	Settings = Saver.load_objects(path + "Settings/Settings.save")
 
 except FileNotFoundError:
 
@@ -27,7 +27,7 @@ except FileNotFoundError:
 		
 		}
 	
-	Saver.save_objects(path + "Gannitto world/files/Settings/Settings.save", Settings)
+	Saver.save_objects(path + "Settings/Settings.save", Settings)
 
 costum = 0
 changed_slot = 0
@@ -54,8 +54,8 @@ text_color = (0, 180, 0)
 blue_color = (139, 155, 180)
 menu_open = False
 multyplayer_menu_open = False
-textInfo = pygame.font.Font(path + "Gannitto world/files/Font.ttf", 18)
-bigTextInfo = pygame.font.Font(path + "Gannitto world/files/Font.ttf", 36)
+textInfo = pygame.font.Font(path + "Font.ttf", 18)
+bigTextInfo = pygame.font.Font(path + "Font.ttf", 36)
 changed_language = "Russian"
 mouse_x, mouse_y = pygame.mouse.get_pos()
 inventory_open = False
@@ -77,7 +77,7 @@ special_slot_animations = {"Craft list slot": [False, 0.6], "Game menu slot": [F
 
 try:
 
-	statistics = Saver.load_objects(path + "Gannitto world/files/Settings/Statistics.save")
+	statistics = Saver.load_objects(path + "Settings/Statistics.save")
 
 except FileNotFoundError:
 
@@ -87,7 +87,7 @@ except FileNotFoundError:
 	
 try:
 	
-	hot_keys = Saver.load_objects(path + "Gannitto world/files/Settings/Hot keys.save")
+	hot_keys = Saver.load_objects(path + "Settings/Hot keys.save")
 	
 except FileNotFoundError:
 	
@@ -106,7 +106,7 @@ except FileNotFoundError:
 	
 		}
 
-	Saver.save_objects(path + "Gannitto world/files/Settings/Hot keys.save", hot_keys)
+	Saver.save_objects(path + "Settings/Hot keys.save", hot_keys)
 
 clock = pygame.time.Clock()
 chat = []
