@@ -9,7 +9,7 @@ def load_objects(file_path):
 	with open(file_path, "rb") as file:
 		return pickle.load(file)
 
-def save_chunk(chunk, save_directory="Gannitto world/saves/chunks/"):
+def save_chunk(chunk, save_directory):
 	"""Сохраняет отдельный чанк в файл"""
 	if not os.path.exists(save_directory):
 		os.makedirs(save_directory)

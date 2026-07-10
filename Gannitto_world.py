@@ -107,9 +107,9 @@ def text(text: str, text_x: int, text_y: int, color: tuple=text_color, size: int
 			
 			line_surface.blit(word_surface, (TextX, 0))
 			TextX += word_width + letter_spasing
+
 		if return_surface:
 			all_text_surface.blit(line_surface, (X - TextX // 2 if alignment else X, Y))
-
 		else:
 			surface.blit(line_surface, (X - TextX // 2 if alignment else X, Y))
 		Y += word_height + spase_between_strings
@@ -4670,11 +4670,13 @@ def start_game():
 				# Отображение предметов
 				for item in world.visible_items:
 					item.main(player.x, player.y)
+					try_pick = True
 					if item.pickable and Settings["Game"][0] and player.x - 150 < item.x < player.x + 150 and player.y - 150 < item.y < player.y + 150:
 						particles.append(Particle(item.x, item.y, item.image, lambda particle: round(particle.calculated_variable[0]), lambda particle: round(particle.calculated_variable[1]), variable_to_calculate="((self.special_flags[0] // 2) / 10 * self.ticks, (self.special_flags[1] // 2) / 10 * self.ticks, (-self.special_flags[0] // 2) / 10 * (self.ticks - 10), (-self.special_flags[1] // 2) / 10 * (self.ticks - 10))", track_ticks=True, end_x=player.x, end_y=player.y, end_zone=30, end_command="(inventory.increate('" + item.name + "'),pygame.mixer.Sound.play(Pick_an_item))", special_flags=(player.x - item.x, player.y - item.y, (0 - 17) // (0 - 10))))
 						world.chunk_manager.get_chunk_at(item.x, item.y).items.remove(item)
+						try_pick = False
 
-					if item.x - player.x + Width // 2 - item.image.get_width() // 2 <= mouse_x <= item.x - player.x + Width // 2 + item.image.get_width() // 2 and player.y - item.y + Height // 2 - item.image.get_height() // 2 <= mouse_y <= player.y - item.y + Height // 2 + item.image.get_height() // 2:
+					if try_pick and item.x - player.x + Width // 2 - item.image.get_width() // 2 <= mouse_x <= item.x - player.x + Width // 2 + item.image.get_width() // 2 and player.y - item.y + Height // 2 - item.image.get_height() // 2 <= mouse_y <= player.y - item.y + Height // 2 + item.image.get_height() // 2:
 						mouse_object = t("Click to pick the ") + item.name
 								
 						if click[0]:
@@ -5042,14 +5044,6 @@ def start_game():
 		
 		if (inventory.whole_inventory[changed_slot] is not None and (use_item_pressed or (click[0] and Settings["Game"][1]))) and not chat_input:
 
-			if inventory.whole_inventory[changed_slot].type == "Food":
-				
-				player.HP += inventory.whole_inventory[changed_slot].special_info
-				if inventory.whole_inventory[changed_slot].amount > 1:
-					inventory.whole_inventory[changed_slot].amount -= 1
-				else:
-					inventory.whole_inventory[changed_slot] = None
-
 			match inventory.whole_inventory[changed_slot].name:
 
 				case "Gun":
@@ -5103,9 +5097,15 @@ def start_game():
 					else:
 						inventory.whole_inventory[changed_slot] = None
 						
+			if inventory.whole_inventory[changed_slot].type == "Food":
+				
+				player.HP += inventory.whole_inventory[changed_slot].special_info
+				if inventory.whole_inventory[changed_slot].amount > 1:
+					inventory.whole_inventory[changed_slot].amount -= 1
+				else:
+					inventory.whole_inventory[changed_slot] = None
 				
 		
-
 
 		if keys[hot_keys["Screenshot"]] and keys[pygame.K_LALT]:
 			
@@ -6454,14 +6454,32 @@ if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0]
 					pass
 
 		if inventory.whole_inventory[inventory.start_cell] is not None and inventory.start_cell > 0 and hold_left:
+
+			item_text = languages(inventory.whole_inventory[inventory.start_cell].info[0], inventory.whole_inventory[inventory.start_cell].info[1], "") + "\n" + languages(inventory.whole_inventory[inventory.start_cell].purpose[0], inventory.whole_inventory[inventory.start_cell].purpose[1], "")
 			
-			pygame.draw.rect(win, text_color, (mouse_x, mouse_y, max(textInfo.size(languages(inventory.whole_inventory[inventory.start_cell].info[0], inventory.whole_inventory[inventory.start_cell].info[1], ""))[0], textInfo.size(languages(inventory.whole_inventory[inventory.start_cell].purpose[0], inventory.whole_inventory[inventory.start_cell].purpose[1], ""))[0]) + 40, 130), 3)   # TODO исправить ошибку
-			win.blit(textInfo.render(languages(inventory.whole_inventory[inventory.start_cell].info[0], inventory.whole_inventory[inventory.start_cell].info[1], ""), True, text_color), (mouse_x + 20, mouse_y + 20))
-			win.blit(textInfo.render(languages(inventory.whole_inventory[inventory.start_cell].purpose[0], inventory.whole_inventory[inventory.start_cell].purpose[1], ""), True, text_color), (mouse_x + 20, mouse_y + 50))
+			text_height = 40
+
+			tempTextInfo = pygame.font.Font(path + "Font.ttf", 20)
+			for line in (item_word.split(" ") for item_word in item_text.splitlines()):
+				TextX = 0
+				text_height += 28
+				for word in line:
+					word_width = tempTextInfo.size(word)[0]
+					if TextX + word_width >= Width // 3:
+						TextX = 0
+						text_height += 28
+					TextX += word_width + 10
 			
 			if inventory.whole_inventory[inventory.start_cell].type == "Food":
-				win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Heart.png"), (64, 64)), (mouse_x + 20, mouse_y + 65))
-				win.blit(textInfo.render(str(inventory.whole_inventory[inventory.start_cell].special_info), True, text_color), (mouse_x + 52 - textInfo.size(str(inventory.whole_inventory[inventory.start_cell].special_info))[0] // 2, mouse_y + 90))
+				text_height += 84
+
+			pygame.draw.rect(win, text_color, (mouse_x, mouse_y, Width // 3 + 40, text_height))
+			pygame.draw.rect(win, (0, 150, 0), (mouse_x, mouse_y, Width // 3 + 40, text_height), 3)
+			text(item_text, mouse_x + 20, mouse_y + 20, color=(0, 150, 0), max_width=Width // 3)
+			
+			if inventory.whole_inventory[inventory.start_cell].type == "Food":
+				win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Heart.png"), (64, 64)), (mouse_x + 20, mouse_y + text_height - 84))
+				win.blit(textInfo.render(str(inventory.whole_inventory[inventory.start_cell].special_info), True, text_color), (mouse_x + 52 - textInfo.size(str(inventory.whole_inventory[inventory.start_cell].special_info))[0] // 2, mouse_y + text_height - 59))
 			
 			win.blit(inventory.whole_inventory[inventory.start_cell].image, (mouse_x - 32, mouse_y - 32))
 		

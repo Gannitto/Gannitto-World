@@ -142,7 +142,7 @@ class Inventory:
 				"Нету",
 				"None"
 			], [
-				"Нету"
+				"Нету",
 				"None"
 			], types[0]),
 
@@ -379,8 +379,8 @@ class Inventory:
 
 
 			"Rope": Resource("Rope", path + "Images/Items/Rope.png", [
-				"",
-				""
+				"Нету",
+				"None"
 			], [
 				"Нету",
 				"None"
@@ -739,11 +739,11 @@ class Inventory:
 
 			
 			"Wheat": Resource("Wheat", path + "Images/Items/Wheat.png", [
-				"",
-				""
+				"Нету",
+				"None"
 			], [
-				"",
-				""
+				"Нету",
+				"None"
 			], types[0], 10),
 
 
