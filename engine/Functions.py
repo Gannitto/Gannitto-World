@@ -3,14 +3,53 @@ import sys
 import os
 import pygame
 from itertools import product
-from Globals import Width, Height, path
+from Globals import *
 
 def languages(Russian: str, English: str, Kazach: str) -> str:
-	"""Переводит текст на выбранный язык. Эта функция устарела и нужно постепенно от неё отказываться."""
 	from Globals import changed_language
 	if changed_language == "Russian": return Russian
 	if changed_language == "English": return English
 	if changed_language == "Kazach": return Kazach
+
+def text(text: str, text_x: int, text_y: int, color: tuple=text_color, size: int=20, alignment: bool=False, letter_spasing: int=10, surface: pygame.Surface=win, max_width: int=0, max_height: int=0, return_surface: bool=False, spase_between_strings: int=10):
+	pos = (text_x, text_y)
+	text = text.replace("\t\t", "")
+	X, Y = pos
+	
+	if max_width == 0:
+		max_width = surface.get_size()[0] - 10
+	if max_height == 0:
+		max_height = surface.get_size()[1] - 10
+
+	all_text_surface = pygame.Surface((max_width, max_height), pygame.SRCALPHA)
+
+	temp_font = pygame.font.Font(path + "Font.ttf", size)
+
+	for line in (word.split(" ") for word in text.splitlines()):
+		
+		line_surface = pygame.Surface((max_width, size), pygame.SRCALPHA)
+		TextX = 0
+
+		for word in line:
+
+			word_surface = temp_font.render(word, True, color)
+			word_width, word_height = word_surface.get_size()
+			if TextX + word_width >= max_width:
+				surface.blit(line_surface, (X - TextX // 2 if alignment else X, Y))
+				line_surface = pygame.Surface((max_width, size), pygame.SRCALPHA)
+				TextX = 0
+				Y += word_height + spase_between_strings
+			
+			line_surface.blit(word_surface, (TextX, 0))
+			TextX += word_width + letter_spasing
+		if return_surface:
+			all_text_surface.blit(line_surface, (X - TextX // 2 if alignment else X, Y))
+
+		else:
+			surface.blit(line_surface, (X - TextX // 2 if alignment else X, Y))
+		Y += word_height + spase_between_strings
+
+	return all_text_surface
 
 def shadow(
 		surface: pygame.Surface,

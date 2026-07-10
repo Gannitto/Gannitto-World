@@ -1,6 +1,6 @@
 import pygame
 import sys
-from Chunks import Chunk, ChunkManager
+from world.Chunks import Chunk, ChunkManager
 import numpy
 
 chunk_manager = ChunkManager()

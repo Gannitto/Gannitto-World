@@ -28,10 +28,10 @@ def build(
 	command - Команда, которую надо выполнить, если поставился объект
 	"""
 	
-	from Inventory import inventory
+	from ui.Inventory import inventory
 	changed_slot, player, particles, Width, Height, world = build_tuple
 	from main import Particle, Pick_an_item
-	from Functions import win_fill
+	from engine.Functions import win_fill
 	
 	if inventory.whole_inventory[changed_slot] is not None:
 

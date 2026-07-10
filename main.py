@@ -12,12 +12,12 @@ import os
 import Ron
 import sys
 from itertools import product
-from Functions import *
-from Build import build
-from Chunks import ChunkManager
-from Inventory import inventory
-from Translator import translator
-from Cache import TextureCache
+from engine.Functions import *
+from game.Build import build
+from world.Chunks import ChunkManager
+from ui.Inventory import inventory
+from config.Translator import translator
+from rendering.Cache import TextureCache
 from Globals import *
 
 pygame.init()
@@ -61,60 +61,6 @@ pygame.init()
 
 t = translator.get
 
-def text(text: str, text_x: int, text_y: int, color: tuple=text_color, size: int=20, alignment: bool=False, letter_spasing: int=10, surface: pygame.Surface=win, max_width: int=0, max_height: int=0, return_surface: bool=False, spase_between_strings: int=10):
-	
-	"""
-	Выводит текст на экран
-	Аргументы:
-	text - Сам текст
-	text_x, text_y - Координаты текста
-	color - Цвет текста
-	size - Размер шрифта
-	alignment - Выравнивание текста по центру
-	letter_spasing - Размер пробела
-	surface - Поверхность, на которой будет текст
-	max_width - Максимальная длина текста
-	return_surface - Выводить ли текст на экран или методом return
-	"""
-	
-	pos = (text_x, text_y)
-	text = text.replace("\t\t", "")
-	X, Y = pos
-	
-	if max_width == 0:
-		max_width = surface.get_size()[0] - 10
-	if max_height == 0:
-		max_height = surface.get_size()[1] - 10
-
-	all_text_surface = pygame.Surface((max_width, max_height), pygame.SRCALPHA)
-
-	temp_font = pygame.font.Font(path + "Font.ttf", size)
-
-	for line in (word.split(" ") for word in text.splitlines()):
-		
-		line_surface = pygame.Surface((max_width, size), pygame.SRCALPHA)
-		TextX = 0
-
-		for word in line:
-
-			word_surface = temp_font.render(word, True, color)
-			word_width, word_height = word_surface.get_size()
-			if TextX + word_width >= max_width:
-				surface.blit(line_surface, (X - TextX // 2 if alignment else X, Y))
-				line_surface = pygame.Surface((max_width, size), pygame.SRCALPHA)
-				TextX = 0
-				Y += word_height + spase_between_strings
-			
-			line_surface.blit(word_surface, (TextX, 0))
-			TextX += word_width + letter_spasing
-		if return_surface:
-			all_text_surface.blit(line_surface, (X - TextX // 2 if alignment else X, Y))
-
-		else:
-			surface.blit(line_surface, (X - TextX // 2 if alignment else X, Y))
-		Y += word_height + spase_between_strings
-
-	return all_text_surface
 
 def save(darken:bool=True, save_world_settings:bool=False):
 
@@ -3816,7 +3762,7 @@ def start_game():
 
 	# Загрузка данных мира
 
-	from Inventory import Resource
+	from ui.Inventory import Resource
 
 	world.chunk_manager.save_directory = path + "Worlds/" + world_name + "/Chunks/"
 
@@ -3859,7 +3805,7 @@ def start_game():
 
 				case "Recipe":
 
-					from Inventory import Recipe
+					from ui.Inventory import Recipe
 					a = []
 					for ii in i[2]: a.append(str(ii))
 					inventory.recipes.append(Recipe(i[1], a, i[3], i[4], i[5], i[6]))
@@ -6825,7 +6771,7 @@ def worlds():
 					input_text = input_text[:-1]
 				elif event.key == pygame.K_RETURN:
 					world_name = input_text
-					from Inventory import get_start_items
+					from ui.Inventory import get_start_items
 					get_start_items()
 					Ron.get_start_items()
 					del get_start_items

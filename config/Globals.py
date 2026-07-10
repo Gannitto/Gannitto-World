@@ -3,13 +3,12 @@ import time
 import pygame
 import Saver
 import sys
-from pathlib import Path
 
 if getattr(sys, "frozen", False):
 	path = sys._MEIPASS
 else:
-    current_dir = Path(__file__).resolve().parent 
-    path = str(current_dir) + os.sep
+	path = os.path.dirname(os.path.abspath(__file__)) + os.sep
+
 try:
 
 	Settings = Saver.load_objects(path + "Settings/Settings.save")

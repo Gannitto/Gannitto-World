@@ -22,7 +22,7 @@ inventory = {"Bow": 0, "Arrow": 0, "Stick": 0, "Iron ingot": 0}
 def show(x, y):
 
 	from main  import win, Width, Height
-	from Functions import shadow
+	from engine.Functions import shadow
 
 	match Ron_run:
 
