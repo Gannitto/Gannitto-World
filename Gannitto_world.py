@@ -5,7 +5,7 @@ from pathlib import Path
 import time
 import random
 import Saver
-from math import atan2, cos, sin, pi, sqrt, fabs
+from math import atan2, cos, sin, pi, sqrt, fabs, degrees
 import Backrooms
 import socket
 import os
@@ -351,6 +351,8 @@ Butterfly1_2 = pygame.transform.scale(Butterfly1_2, (32, 32))
 Butterfly1_3 = pygame.image.load(path + "Images/Objects/Butterfly 1 3.png")
 Butterfly1_3 = pygame.transform.scale(Butterfly1_3, (32, 32))
 
+web_texture = pygame.transform.scale(pygame.image.load(path + "Images/Objects/Piece of web.png"), (128, 128))
+
 Bacteria_walk_left = (
 
 	pygame.transform.scale(pygame.image.load(path + "Images/Objects/Bacteria 1.png"), (256, 512)),
@@ -681,8 +683,11 @@ class Particle:
 	
 	def main(self):
 		
-		for i in self.tick_command_globals_in_the_end: self.tick_command_globals[i] = eval(i)
-		exec(self.tick_command, self.tick_command_globals, self.tick_command_locals)
+		if self.tick_command.__class__ == str:
+			for i in self.tick_command_globals_in_the_end: self.tick_command_globals[i] = eval(i)
+			exec(self.tick_command, self.tick_command_globals, self.tick_command_locals)
+		else:
+			self.tick_command(self)
 
 		if self.track_ticks: self.ticks += 1
 		self.calculated_variable = eval(self.variable_to_calculate)
@@ -1169,141 +1174,6 @@ class SlimeEnemy(BaseEnemy):
 		self.__dict__.update(state)
 		self.animation_frames = SLIME_TYPES[self.slime_type]
 
-class SpiderEnemyOld:
-
-	def __init__(self, mob_x: int, mob_y: int):
-
-		self.mob_class = "SpiderEnemy"
-		self.x = mob_x
-		self.y = mob_y
-		self.left_animation_images = [pygame.transform.scale(pygame.image.load(path + "Images/Objects/Spider.png"), (128, 128))] * 4
-		self.right_animation_images = [pygame.transform.scale(pygame.image.load(path + "Images/Objects/Spider 2.png"), (128, 128))] * 4
-		self.HP = 50
-		self.animation_count = -1
-		self.attak = False
-		self.reset_offset = 0
-		self.offset_x = random.randint(-3000, 3000)
-		self.offset_y = random.randint(-3000, 3000)
-		self.speed = random.randint(1, 3)
-		self.position = "Left"
-	
-	def main(self):
-
-		global player
-
-		a = True
-		b = None
-
-		self.animation_count += 1
-		if self.animation_count == 20:
-			self.animation_count = 0
-		
-		if random.randint(1, 50) == 1 and player.x - 1000 < self.x < player.x + 1000 and player.y - 1000 < self.y < player.y + 1000:
-			self.attak = True
-			
-		if self.reset_offset == 0:
-
-			if self.HP < 16:
-				self.reset_offset = random.randint(1200, 1500)
-				self.offset_x = random.randint(-3000, 3000)
-				self.offset_y = random.randint(-3000, 3000)
-			else:
-				self.reset_offset = random.randint(120, 150)
-				self.offset_x = random.randint(-300, 300)
-				self.offset_y = random.randint(-300, 300)
-		else:
-			self.reset_offset -= 1
-		
-		if player.x + self.offset_x > self.x:
-			
-			a = True
-			for i in world.visible_walls.values():
-				if i.x - 300 < self.x < i.x + 256 and i.y - 256 < self.y < i.y + 256:
-					a = False
-					break
-
-			if a:
-				self.x += self.speed
-				b = "Right"
-
-		elif player.x + self.offset_x < self.x:
-			
-			a = True
-			for i in world.visible_walls.values():
-				if i.x - 256 < self.x < i.x + 300 and i.y - 256 < self.y < i.y + 256:
-					a = False
-					break
-
-			if a:
-				self.x -= self.speed
-				b = "Left"
-		
-		if player.y + self.offset_y > self.y:
-			
-			a = True
-			for i in world.visible_walls.values():
-				if i.x - 256 < self.x < i.x + 256 and i.y - 300 < self.y < i.y + 256:
-					a = False
-					break
-
-			if a: 
-				self.y += self.speed
-
-		elif player.y + self.offset_y < self.y - player.y:
-			
-			a = True
-			for i in world.visible_walls.values():
-				if i.x - 256 < self.x < i.x + 256 and i.y - 256 < self.y < i.y + 300:
-					a = False
-					break
-
-			if a: 
-				self.y -= self.speed
-
-		if self.HP < 16 and self.speed < 8:
-			self.speed += 1
-		
-		
-		if b in (None, "Right"):
-
-			self.position = "Right"
-
-			if random.randint(1, 50) == 1 and player.x - 256 < self.x < player.x + 256 and player.y - 256 < self.y < player.y + 256:
-				if not player.god_mode:
-					player.HP -= 15
-					player.HP_animation_tick = 1
-				win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Objects/Spider 2 attak.png"), (128, 128)), (self.x - player.x + Width // 2 - 64, player.y - self.y + Height // 2 - 32))
-			else:
-				win.blit(self.right_animation_images[(self.animation_count - self.animation_count % 5) // 5], (self.x - player.x + Width // 2 - 64, player.y - self.y + Height // 2 - 32))
-
-		else:
-			
-			self.position = "Left"
-
-			if random.randint(1, 50) == 1 and player.x - 256 < self.x < player.x + 256 and player.y - 256 < self.y < player.y + 256:
-				if not player.god_mode:
-					player.HP -= 15
-					player.HP_animation_tick = 1
-				win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Objects/Spider attak.png"), (128, 128)), (self.x - player.x + Width // 2 - 64, player.y - self.y + Height // 2 - 32))
-			else:
-				win.blit(self.left_animation_images[(self.animation_count - self.animation_count % 5) // 5], (self.x - player.x + Width // 2 - 64, player.y - self.y + Height // 2 - 32))
-
-		if Settings["Display"][3]:
-			pygame.draw.rect(win, (0, 0, 0), (self.x - player.x + Width // 2 - 64, player.y - self.y + Height // 2 - 24, 128, 128), 3)
-			
-	def __getstate__(self):
-		
-		state = self.__dict__.copy()
-		del state["left_animation_images"]
-		del state["right_animation_images"]
-		return state
-
-	def __setstate__(self, state):
-		
-		self.__dict__.update(state)
-		self.left_animation_images = [pygame.transform.scale(pygame.image.load(path + "Images/Objects/Spider.png"), (128, 128))] * 4
-		self.right_animation_images = [pygame.transform.scale(pygame.image.load(path + "Images/Objects/Spider 2.png"), (128, 128))] * 4
-
 class SpiderEnemy(BaseEnemy):
 	
 	def __init__(self, x, y):
@@ -1372,9 +1242,9 @@ class SpiderEnemy(BaseEnemy):
 			dx = player.x - self.x
 			dy = player.y - self.y
 			dist = sqrt(dx**2 + dy**2)
-			move_x = dx / dist * 50
-			move_y = dy / dist * 50
-			particles.append(Particle(self.x, self.y, pygame.transform.rotate(no_file_texture, atan2(move_y, -move_x)), move_x, move_y))
+			move_x = dx / dist * FPS * 1.5
+			move_y = dy / dist * FPS * 1.5
+			particles.append(Particle(self.x, self.y, pygame.transform.rotate(web_texture, -degrees(atan2(-move_y, move_x))), move_x, move_y, del_self_condition="pygame.Rect(particle.x - 32, particle.y + 32, 64, 64).colliderect(pygame.Rect(player.x - 100, player.y + 100, 200, 200))", end_command="", end_time=FPS*3)) # TODO наложить эффект замедления
 			self.state = "Attacking"
 
 	def _handle_go_towards_player(self, player, world):
@@ -1422,8 +1292,8 @@ class SpiderEnemy(BaseEnemy):
 		
 	def draw(self, player, show_hitbox=False):
 		"""Отрисовка паука"""
-		screen_x = self.x - player.x + Width // 2 - 64
-		screen_y = player.y - self.y + Height // 2 - 32
+		screen_x = self.x - player.x + Width // 2 - 128
+		screen_y = player.y - self.y + Height // 2 - 128
 		
 		if self.state == "Attacking":
 			frame = self.animation_images[self.direction + " attack"]
@@ -1439,12 +1309,21 @@ class SpiderEnemy(BaseEnemy):
 		
 		state = self.__dict__.copy()
 		del state["animation_frames"]
+		del state["animation_images"]
 		return state
 
 	def __setstate__(self, state):
 		
 		self.__dict__.update(state)
-		self.animation_frames = SLIME_TYPES[self.slime_type]
+		self.animation_frames=(
+			pygame.transform.scale(pygame.image.load(path + "Images/Objects/Spider.png"), (256, 256)),
+			pygame.transform.scale(pygame.image.load(path + "Images/Objects/Spider 2.png"), (256, 256))
+		)
+		self.animation_images = {
+			"Left": pygame.transform.scale(pygame.image.load(path + "Images/Objects/Spider.png"), (256, 256)),
+			"Left attack": pygame.transform.scale(pygame.image.load(path + "Images/Objects/Spider attack.png"), (256, 256)),
+			"Right": pygame.transform.scale(pygame.image.load(path + "Images/Objects/Spider 2.png"), (256, 256)),
+			"Right attack": pygame.transform.scale(pygame.image.load(path + "Images/Objects/Spider 2 attack.png"), (256, 256))}
 
 class ButterflyEnemy:
 
@@ -3943,7 +3822,7 @@ def start_game():
 
 	if os.path.exists(path + "Worlds/" + world_name):
 		
-		mobs = []# Saver.load_objects(path + "Worlds/" + world_name + "/Mobs.save")
+		mobs = Saver.load_objects(path + "Worlds/" + world_name + "/Mobs.save")
 		player.x, player.y, Backrooms.InBackrooms, Backrooms.Level, world.current_cave, player.speed, player.HP, start_time, Ron.X, Ron.Y, Ron.Home, world.chunk_manager.generator.seed = Saver.load_objects(path + "Worlds/" + world_name + "/Info.save")
 		difficulty, player.god_mode = Saver.load_objects(path + "Worlds/" + world_name + "/Settings.save")
 		inventory.whole_inventory = Saver.load_objects(path + "Worlds/" + world_name + "/Inventory.save")
@@ -4900,21 +4779,29 @@ def start_game():
 
 					for ii in player_bullets:
 
-						if mob.x - 64 <= ii.x <= mob.x + 64 and mob.y - 64 <= ii.y <= mob.y + 64:
+						if mob.name == "Slime": mob_rect = pygame.Rect((mob.x, mob.y, 128, 128))
+						else: mob_rect = pygame.Rect((mob.x, mob.y - 128, 256, 256))
+
+						if mob_rect.collidepoint((ii.x, ii.y)):
 
 							mob.HP -= 15
 
 							if mob.name == "Slime":
-								temp = mob.animation_frames[(mob.animation_count - mob.animation_count % 5) // 5].copy()
+								temp = mob.animation_frames[(mob.animation_count - mob.animation_count % 5) // 5].copy().convert_alpha()
 							if mob.name == "Spider":
-								temp = mob.animation_images[mob.direction].copy()
+								temp = mob.animation_images[mob.direction].copy().convert_alpha()
 
-							for a, b in product(range(128), range(128)):
+							for a, b in product(range(128 if mob.name == "Slime" else 256), range(128 if mob.name == "Slime" else 256)):
 								if temp.get_at((a, b)).a != 0:
 									temp.set_at((a, b), (200, 0, 0, 80))
 
 							particles.append(Particle(mob.x + random.randint(-64, 64), mob.y + random.randint(-64, 64), text("-15", 0, 0, (180, 10, 10), max_width=44, max_height=50, return_surface=True), y_bias=3, increased_transparency=30, end_time=0.5))
-							win.blit(temp, (mob.x - player.x + Width // 2 - 64, player.y - mob.y + Height // 2 - 32))
+
+							if mob.name == "Slime":
+								win.blit(temp, (mob.x - player.x + Width // 2 - 64, player.y - mob.y + Height // 2 - 64))
+							else:
+								win.blit(temp, (mob.x - player.x + Width // 2 - 128, player.y - mob.y + Height // 2 - 128))
+
 							win.blit(text(str(mob.HP), 0, 0, (180, 10, 10), return_surface=True), (mob.x + 58 - player.x + Width // 2 - 64, player.y - mob.y + Height // 2 - 32))
 
 							player_bullets.remove(ii)
@@ -4927,15 +4814,15 @@ def start_game():
 						for _ in range(random.randint(1, 3)):
 							if mob.slime_type == 1:
 								rand_x, rand_y = mob.x + random.randint(-30, 30), mob.y + random.randint(-30, 30)
-								world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Blue slime", rand_x, rand_y, "Images/Items/Blue Slime.png"))
+								world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Blue slime", rand_x, rand_y, "Images/Items/Blue Slime.png", pickable=True))
 							else:
 								rand_x, rand_y = mob.x + random.randint(-30, 30), mob.y + random.randint(-30, 30)
-								world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Pink slime", rand_x, rand_y, "Images/Items/Pink Slime.png"))
+								world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Pink slime", rand_x, rand_y, "Images/Items/Pink Slime.png", pickable=True))
 						mobs.remove(mob)
 
 					elif mob.name == "Spider":
 						rand_x, rand_y = mob.x + random.randint(-30, 30), mob.y + random.randint(-30, 30)
-						world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Thread", mob.x + random.randint(-30, 30), mob.y + random.randint(-30, 30), "Images/Items/Thread.png"))
+						world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Thread", mob.x + random.randint(-30, 30), mob.y + random.randint(-30, 30), "Images/Items/Thread.png", pickable=True))
 						mobs.remove(mob)
 
 		# Отрисовка игрока
@@ -5237,16 +5124,20 @@ def start_game():
 
 			particle.main()
 			
-			if (particle.end_time is not None and time.time() - particle.start_time >= particle.end_time) or (particle.del_self_condition is not None and particle.del_self_condition(particle)):
+			if (particle.end_time is not None and time.time() - particle.start_time >= particle.end_time) or (particle.del_self_condition is not None and ((particle.del_self_condition.__class__ == str and eval(particle.del_self_condition)) or (particle.del_self_condition.__class__ != str and particle.del_self_condition(particle)))):
 				
-				particle.end_command_globals["particle"] = particle
-				particle.end_command_globals["Particle"] = Particle
-				particle.end_command_globals["particles"] = particles
-				particle.end_command_globals["pygame"] = pygame
-				particle.end_command_globals["path"] = path
-				
-				for i in particle.end_command_globals_in_the_end: particle.end_command_globals[i] = eval(i)
-				exec(particle.end_command, particle.end_command_globals, particle.end_command_globals)
+				if particle.end_command.__class__ == str:
+					particle.end_command_globals["particle"] = particle
+					particle.end_command_globals["Particle"] = Particle
+					particle.end_command_globals["particles"] = particles
+					particle.end_command_globals["pygame"] = pygame
+					particle.end_command_globals["path"] = path
+					
+					for i in particle.end_command_globals_in_the_end: particle.end_command_globals[i] = eval(i)
+					exec(particle.end_command, particle.end_command_globals, particle.end_command_globals)
+				else:
+					pass # TODO сделать нормальные конечные команды частиц
+
 				particles.remove(particle)
 
 		for particle in new_particles:
