@@ -4047,8 +4047,20 @@ def start_game():
 								case "Right":
 									x_bias_ = lambda particle: particle.calculated_variable[0]
 									y_bias_ = lambda particle: particle.calculated_variable[1]
-									
-							particles.append(Particle(player.x, player.y, pygame.transform.scale(pygame.image.load(path + "Images/Items/" + inventory.whole_inventory[changed_slot].name + ".png"), (64, 64)), x_bias_, y_bias_, variable_to_calculate="(30 - self.ticks * 3, 15 - self.ticks * 4)", track_ticks=True, end_time=0.5, end_command="world.chunk_manager.get_chunk_at(particle.x, particle.y).items.append(Object(particle.special_flags, particle.x, particle.y, 'Images/Items/' + particle.special_flags + '.png', special_flags='Item', pickable=True))", end_command_globals_in_the_end=("world", "Object"), special_flags=inventory.whole_inventory[changed_slot].name))
+								case "Up-right":
+									x_bias_ = lambda particle: particle.calculated_variable[0]
+									y_bias_ = lambda particle: particle.calculated_variable[0]
+								case "Up-left":
+									x_bias_ = lambda particle: -particle.calculated_variable[0]
+									y_bias_ = lambda particle: particle.calculated_variable[0]
+								case "Down-right":
+									x_bias_ = lambda particle: particle.calculated_variable[0]
+									y_bias_ = lambda particle: -particle.calculated_variable[0]
+								case "Down-left":
+									x_bias_ = lambda particle: -particle.calculated_variable[0]
+									y_bias_ = lambda particle: -particle.calculated_variable[0]
+
+							particles.append(Particle(player.x, player.y, pygame.transform.scale(pygame.image.load(path + "Images/Items/" + inventory.whole_inventory[changed_slot].name + ".png"), (64, 64)), x_bias_, y_bias_, variable_to_calculate="(30 - self.ticks * 2.5, 15 - self.ticks * 4)", track_ticks=True, end_time=0.5, end_command="world.chunk_manager.get_chunk_at(particle.x, particle.y).items.append(Object(particle.special_flags, particle.x, particle.y, 'Images/Items/' + particle.special_flags + '.png', special_flags='Item', pickable=True))", end_command_globals_in_the_end=("world", "Object"), special_flags=inventory.whole_inventory[changed_slot].name))
 							
 							del x_bias_
 							del y_bias_
