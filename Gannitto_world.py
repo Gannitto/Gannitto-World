@@ -17,6 +17,7 @@ from Build import build
 from Chunks import ChunkManager
 from Inventory import inventory
 from Translator import translator
+from Cache import TextureCache
 from Globals import *
 
 pygame.init()
@@ -391,14 +392,6 @@ Backrooms_portal_images = (
 	pygame.transform.scale(pygame.image.load(path + "Images/Objects/Backrooms portal 9.png"), (256, 256)),
 	pygame.transform.scale(pygame.image.load(path + "Images/Objects/Backrooms portal 10.png"), (256, 256))
 )
-
-mouse_click_images = (
-	 pygame.transform.scale(pygame.image.load(path + "Images/Mouse click 1.png"), (128, 128)),
-	 pygame.transform.scale(pygame.image.load(path + "Images/Mouse click 2.png"), (128, 128)),
-	 pygame.transform.scale(pygame.image.load(path + "Images/Mouse click 3.png"), (128, 128)),
-	 pygame.transform.scale(pygame.image.load(path + "Images/Mouse click 4.png"), (128, 128)),
-	 pygame.transform.scale(pygame.image.load(path + "Images/Mouse click 5.png"), (128, 128))
-	 )
 
 no_file_texture = pygame.transform.scale(pygame.image.load(path + "Images/No-file texture.png"), (64, 64))
 
@@ -876,19 +869,6 @@ class Player:
 			self.rect = pygame.Rect(self.x - 25, self.y + 112, 50, 224)
 			pygame.draw.rect(screen, (0, 255, 0), (Width / 2 - 128, Height / 2 - 128, self.image.get_width(), self.image.get_height()), 2)
 			pygame.draw.rect(win, (0, 0, 0), (self.rect[0] - self.x + Width // 2, self.y - self.rect[1] + Height // 2, self.rect[2], self.rect[3]), 3)
-
-class TextureCache:
-	_textures = {}
-	
-	@classmethod
-	def get(cls, path, scale=None):
-		key = (path, scale)
-		if key not in cls._textures:
-			image = pygame.image.load(path)
-			if scale:
-				image = pygame.transform.scale(image, scale)
-			cls._textures[key] = image
-		return cls._textures[key]
 
 class BaseEnemy:
 	def __init__(self, x, y, HP, speed, animation_frames):
@@ -2551,7 +2531,7 @@ def settings():
 
 	def help():
 
-		global win, screenmode, changed_language, mouse_x, mouse_y, mouse_click_image, does_lighten, page, alt_pressed
+		global win, screenmode, changed_language, mouse_x, mouse_y, does_lighten, page, alt_pressed
 				 
 		while True:
 
@@ -2650,24 +2630,14 @@ def settings():
 				win.blit(textInfo.render(languages("получить что-либо. Например, если поставить печь и положить глину в ячейки", "get something. For example, if you put a furnace and put clay in the cells of", "бірдеңе алу. Мысалы, пешті қойып, ұяшықтарға балшық салсаңыз"), True, (139, 155, 180)), (385, 629))
 				win.blit(textInfo.render(languages("крафта, то можно будет получить кирпич, а чтобы его получить, нажми.", "crafting, you can get a brick, and to get it, click.", "қолөнер, сіз кірпіш алуға болады, және оны алу үшін басыңыз."), True, (139, 155, 180)), (385, 659))
 			
-			if Settings["Display"][7]:
-
-				if pygame.mouse.get_pressed()[0] == 1:
-					mouse_click_image = 1
-				try:
-					win.blit(mouse_click_images[mouse_click_image - 1], (mouse_x - 64, mouse_y - 64))
-					if mouse_click_image == 5:
-						mouse_click_image = None
-					else:
-						mouse_click_image += 1
-				except TypeError:
-					pass
 
 			if alt_pressed:
 				
 				draw_key("ESC", 44, 108)
 				draw_key("<-", 425, Height - 168)
 				draw_key("->", Width - 74, Height - 168)
+
+			animate_click(Settings, win, mouse_x, mouse_y)
 
 			win_fill(alpha=100 - Settings["Display"][0])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
 			
@@ -2681,7 +2651,7 @@ def settings():
 
 	def display():
 
-		global win, screenmode, Settings, click, mouse_x, mouse_y, mouse_click_image, FPS, does_lighten, page, alt_pressed
+		global win, screenmode, Settings, click, mouse_x, mouse_y, FPS, does_lighten, page, alt_pressed
 
 		Brightness = False
 		Inventory_alpha = False
@@ -2921,25 +2891,14 @@ def settings():
 					if bigTextInfo.size(t("Show intro"))[0] + 395 <= mouse_x <= bigTextInfo.size(t("Show intro"))[0] + 466 and 113 <= mouse_y <= 184 and release:
 						Settings["Display"][10] = True
 
-			if Settings["Display"][7]:
-
-				if pygame.mouse.get_pressed()[0] == 1:
-					mouse_click_image = 1
-				try:
-					win.blit(mouse_click_images[mouse_click_image - 1], (mouse_x - 64, mouse_y - 64))
-					if mouse_click_image == 5:
-						mouse_click_image = None
-					else:
-						mouse_click_image += 1
-				except TypeError:
-					pass
-
 			
 			if alt_pressed:
 				
 				draw_key("ESC", 44, 108)
 				draw_key("<-", 425, Height - 168)
 				draw_key("->", Width - 74, Height - 168)
+
+			animate_click(Settings, win, mouse_x, mouse_y)
 
 			win_fill(alpha=100 - Settings["Display"][0])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
 			
@@ -2952,7 +2911,7 @@ def settings():
 
 	def Languages():
 
-		global win, screenmode, changed_language, mouse_click_image, does_lighten, page, alt_pressed
+		global win, screenmode, changed_language, does_lighten, page, alt_pressed
 		
 		while True:
 			
@@ -3016,26 +2975,15 @@ def settings():
 			if keys[pygame.K_2]:
 				changed_language = "English"
 				
-			if Settings["Display"][7]:
-
-				if pygame.mouse.get_pressed()[0] == 1:
-					mouse_click_image = 1
-				try:
-					win.blit(mouse_click_images[mouse_click_image - 1], (mouse_x - 64, mouse_y - 64))
-					if mouse_click_image == 5:
-						mouse_click_image = None
-					else:
-						mouse_click_image += 1
-				except TypeError:
-					pass
-
-			win_fill(alpha=100 - Settings["Display"][0])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
 			
 			if alt_pressed:
 				
 				draw_key("ESC", 44, 108)
 				draw_key("<-", 425, Height - 168)
 				draw_key("->", Width - 74, Height - 168)
+
+			animate_click(Settings, win, mouse_x, mouse_y)
+			win_fill(alpha=100 - Settings["Display"][0])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
 
 			if not does_lighten:
 				win_lighten(win.copy())
@@ -3046,7 +2994,7 @@ def settings():
 
 	def User():
 
-		global win, screenmode, Settings, click, mouse_x, mouse_y, mouse_click_image, does_lighten, page, alt_pressed
+		global win, screenmode, Settings, click, mouse_x, mouse_y, does_lighten, page, alt_pressed
 		
 		mouse_x, mouse_y = pygame.mouse.get_pos()
 		Nick = False
@@ -3153,25 +3101,14 @@ def settings():
 					Reference_slot1.set_alpha(Settings["Display"][1])
 					Reference_slot2.set_alpha(Settings["Display"][1])
 					
-			if Settings["Display"][7]:
-
-				if pygame.mouse.get_pressed()[0] == 1:
-					mouse_click_image = 1
-				try:
-					win.blit(mouse_click_images[mouse_click_image - 1], (mouse_x - 64, mouse_y - 64))
-					if mouse_click_image == 5:
-						mouse_click_image = None
-					else:
-						mouse_click_image += 1
-				except TypeError:
-					pass
-
 			
 			if alt_pressed:
 				
 				draw_key("ESC", 44, 108)
 				draw_key("<-", 425, Height - 168)
 				draw_key("->", Width - 74, Height - 168)
+
+			animate_click(Settings, win, mouse_x, mouse_y)
 
 			win_fill(alpha=100 - Settings["Display"][0])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
 			
@@ -3184,7 +3121,7 @@ def settings():
 
 	def Sound():
 
-		global win, screenmode, Settings, click, mouse_x, mouse_y, mouse_click_image, does_lighten, page, alt_pressed
+		global win, screenmode, Settings, click, mouse_x, mouse_y, does_lighten, page, alt_pressed
 
 		mouse_x, mouse_y = pygame.mouse.get_pos()
 
@@ -3301,24 +3238,14 @@ def settings():
 					win.blit(bigTextInfo.render(str(int(Settings["Sound"][1] * 100)), True, (139, 155, 180)), (bigTextInfo.size(t("Sound volume"))[0] + 405, 209))
 				
 					
-			if Settings["Display"][7]:
 
-				if pygame.mouse.get_pressed()[0] == 1:
-					mouse_click_image = 1
-				try:
-					win.blit(mouse_click_images[mouse_click_image - 1], (mouse_x - 64, mouse_y - 64))
-					if mouse_click_image == 5:
-						mouse_click_image = None
-					else:
-						mouse_click_image += 1
-				except TypeError:
-					pass
-			
 			if alt_pressed:
 				
 				draw_key("ESC", 44, 108)
 				draw_key("<-", 425, Height - 168)
 				draw_key("->", Width - 74, Height - 168)
+
+			animate_click(Settings, win, mouse_x, mouse_y)
 
 			win_fill(alpha=100 - Settings["Display"][0])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
 			
@@ -3331,7 +3258,7 @@ def settings():
 
 	def Statistics():
 
-		global win, screenmode, Settings, mouse_click_image, does_lighten, page, alt_pressed
+		global win, screenmode, Settings, does_lighten, page, alt_pressed
 
 		mouse_x, mouse_y = pygame.mouse.get_pos()
 
@@ -3393,24 +3320,14 @@ def settings():
 				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(t("Trees felled:"))[0] + 395, 285, bigTextInfo.size(str(statistics[2]))[0] + 30, 71), 5)
 				win.blit(bigTextInfo.render(str(statistics[2]), True, (139, 155, 180)), (bigTextInfo.size(t("Trees felled:"))[0] + 405, 295))
 				
-			if Settings["Display"][7]:
 
-				if pygame.mouse.get_pressed()[0] == 1:
-					mouse_click_image = 1
-				try:
-					win.blit(mouse_click_images[mouse_click_image - 1], (mouse_x - 64, mouse_y - 64))
-					if mouse_click_image == 5:
-						mouse_click_image = None
-					else:
-						mouse_click_image += 1
-				except TypeError:
-					pass
-				
 			if alt_pressed:
 				
 				draw_key("ESC", 44, 108)
 				draw_key("<-", 425, Height - 168)
 				draw_key("->", Width - 74, Height - 168)
+
+			animate_click(Settings, win, mouse_x, mouse_y)
 
 			win_fill(alpha=100 - Settings["Display"][0])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
 			
@@ -3423,7 +3340,7 @@ def settings():
 
 	def Keys():
 
-		global win, screenmode, Settings, click, mouse_x, mouse_y, mouse_click_image, does_lighten, page, alt_pressed, hot_keys
+		global win, screenmode, Settings, click, mouse_x, mouse_y, does_lighten, page, alt_pressed, hot_keys
 
 		mouse_x, mouse_y = pygame.mouse.get_pos()
 		
@@ -3672,23 +3589,11 @@ def settings():
 							hot_keys[key] = getattr(pygame, f"K_{changed_key}", None)
 							break
 					looked_key = None
-					
-			if Settings["Display"][7]:
-
-				if pygame.mouse.get_pressed()[0] == 1:
-					mouse_click_image = 1
-				try:
-					win.blit(mouse_click_images[mouse_click_image - 1], (mouse_x - 64, mouse_y - 64))
-					if mouse_click_image == 5:
-						mouse_click_image = None
-					else:
-						mouse_click_image += 1
-				except TypeError:
-					pass
 
 			if alt_pressed:
-				
 				draw_key("ESC", 44, 108)
+
+			animate_click(Settings, win, mouse_x, mouse_y)
 
 			win_fill(alpha=100 - Settings["Display"][0])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
 			
@@ -3701,7 +3606,7 @@ def settings():
 			
 	def Game():
 
-		global win, screenmode, Settings, click, mouse_x, mouse_y, mouse_click_image, does_lighten, page, alt_pressed
+		global win, screenmode, Settings, click, mouse_x, mouse_y, does_lighten, page, alt_pressed
 
 		mouse_x, mouse_y = pygame.mouse.get_pos()
 		
@@ -3798,27 +3703,13 @@ def settings():
 					if bigTextInfo.size(languages("Телефонное управление", "Telephone control", "Телефон арқылы басқару"))[0] + 395 <= mouse_x <= bigTextInfo.size(languages("Телефонное управление", "Telephone control", "Телефон арқылы басқару"))[0] + 466 and 199 <= mouse_y <= 270 and release:
 						Settings["Game"][1] = True
 				
-				
-				
-			if Settings["Display"][7]:
-
-				if pygame.mouse.get_pressed()[0] == 1:
-					mouse_click_image = 1
-				try:
-					win.blit(mouse_click_images[mouse_click_image - 1], (mouse_x - 64, mouse_y - 64))
-					if mouse_click_image == 5:
-						mouse_click_image = None
-					else:
-						mouse_click_image += 1
-				except TypeError:
-					pass
-				
 			if alt_pressed:
-				
 				draw_key("ESC", 44, 108)
 				draw_key("<-", 425, Height - 168)
 				draw_key("->", Width - 74, Height - 168)
-				
+
+			animate_click(Settings, win, mouse_x, mouse_y)
+
 			win_fill(alpha=100 - Settings["Display"][0])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
 			
 			if not does_lighten:
@@ -3848,7 +3739,7 @@ def change_a_character():
 
 	def characters():
 
-		global win, screenmode, mouse_click_image, does_lighten, page, alt_pressed
+		global win, screenmode, does_lighten, page, alt_pressed
 		
 		class Character():
 
@@ -3937,27 +3828,13 @@ def change_a_character():
 				if index // 3 == page - 1:
 					win.blit(character.images_list[character.image_num // 5], (316, 216))
 					
-			if Settings["Display"][7]:
-
-				if pygame.mouse.get_pressed()[0] == 1:
-					mouse_click_image = 1
-				try:
-
-					win.blit(mouse_click_images[mouse_click_image - 1], (mouse_x - 64, mouse_y - 64))
-
-					if mouse_click_image == 5:
-						mouse_click_image = None
-					else:
-						mouse_click_image += 1
-
-				except TypeError:
-					pass
-			
 			if alt_pressed:
 				
 				draw_key("ESC", 44, 108)
 				draw_key("<-", 425, Height - 168)
 				draw_key("->", Width - 74, Height - 168)
+
+			animate_click(Settings, win, mouse_x, mouse_y)
 
 			win_fill(alpha=100 - Settings["Display"][0])
 			
@@ -3970,7 +3847,7 @@ def change_a_character():
 	
 	def pets():
 
-		global win, screenmode, mouse_click_image, does_lighten
+		global win, screenmode, does_lighten
 		
 		while True:
 			
@@ -4005,18 +3882,9 @@ def change_a_character():
 			character_button.main(characters)
 
 			win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Pets 2.png"), (132, 64)), (10, 192))
-			
-			if pygame.mouse.get_pressed()[0] == 1:
-				mouse_click_image = 1
-			try:
-				win.blit(mouse_click_images[mouse_click_image - 1], (mouse_x - 64, mouse_y - 64))
-				if mouse_click_image == 5:
-					mouse_click_image = None
-				else:
-					mouse_click_image += 1
-			except TypeError:
-				pass
-			
+
+			animate_click(Settings, win, mouse_x, mouse_y)
+
 			win_fill(alpha=100 - Settings["Display"][0])
 			
 			if not does_lighten:
@@ -4040,7 +3908,7 @@ dt = 0
 
 def start_game():
 	
-	global win, Hiro_rect, changed_slot, menu_open, multyplayer_menu_open, screenmode, inventory_open, hold_left, backrooms, text_color, bullet_num, craft_items_list, craft_amounts_list, craft_images_list, screenshot_num, mechanisms, mouse_x, mouse_y, item_settings_open, multyplayer_panel, mobs, chat_tick, chat, main_chat, craft_list_open, craft_list_page, click, in_motherboard, os, mouse_click_image, world_name, player_bullets, color, multyplayer_mode, multyplayer, Hiro, game_time, animation, start_time, weather, new_particles, inside_files, difficulty, alt_pressed, dt, player, world
+	global win, Hiro_rect, changed_slot, menu_open, multyplayer_menu_open, screenmode, inventory_open, hold_left, backrooms, text_color, bullet_num, craft_items_list, craft_amounts_list, craft_images_list, screenshot_num, mechanisms, mouse_x, mouse_y, item_settings_open, multyplayer_panel, mobs, chat_tick, chat, main_chat, craft_list_open, craft_list_page, click, in_motherboard, os, world_name, player_bullets, color, multyplayer_mode, multyplayer, Hiro, game_time, animation, start_time, weather, new_particles, inside_files, difficulty, alt_pressed, dt, player, world
 
 	night_playing = False
 	input_text = ""
@@ -6716,23 +6584,8 @@ if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0]
 			pygame.display.update()
 			os.system("python " + path + "Plugin_creater.py")
 
-		if pygame.mouse.get_pressed()[0] == 1:
-			mouse_click_image = 1
-			
-		if Settings["Display"][7]:
+		animate_click(Settings, win, mouse_x, mouse_y)
 
-			try:
-
-				win.blit(mouse_click_images[mouse_click_image - 1], (mouse_x - 64, mouse_y - 64))
-
-				if mouse_click_image == 5:
-					mouse_click_image = None
-				else:
-					mouse_click_image += 1
-
-			except TypeError:
-				pass
-		
 		win_fill((200, 0, 0), 100 - Settings["Display"][0])
 
 		pygame.display.update()
@@ -7005,7 +6858,7 @@ def edit_world():
 
 def worlds():
 
-	global world_name, mouse, mouse_click_image, keys, alt_pressed
+	global world_name, mouse, keys, alt_pressed
 
 	page_back_button = Button(10, Height - 138, pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Back.png"), (128, 128)), pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Back 2.png"), (128, 128)))
 	page_next_button = Button(Width - 148, Height - 148, pygame.transform.flip(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Back.png"), (128, 128)), True, False), pygame.transform.flip(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Back 2.png"), (128, 128)), True, False))
@@ -7172,20 +7025,9 @@ def worlds():
 			text(f"""{t("Enter world name:")}
 {input_text}""", Width // 2, Height // 2 - 15, blue_color, alignment=True)
 			
-		if Settings["Display"][7]:
-
-			if pygame.mouse.get_pressed()[0] == 1:
-				mouse_click_image = 1
-			try:
-				win.blit(mouse_click_images[mouse_click_image - 1], (mouse_x - 64, mouse_y - 64))
-				if mouse_click_image == 5:
-					mouse_click_image = None
-				else:
-					mouse_click_image += 1
-			except TypeError:
-				pass
-		
 		if alt_pressed: draw_key("ESC", 44, 108)
+
+		animate_click(Settings, win, mouse_x, mouse_y)
 
 		win_fill(alpha=100 - Settings["Display"][0])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
 		
@@ -7198,7 +7040,7 @@ def worlds():
 
 def menu():
 	
-	global win, screenmode, mobs, num, mouse_click_image
+	global win, screenmode, mobs, num
 
 	play_button = Button(Width / 2, Height / 2 - 150, pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Play.png"), (264, 128)), pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Play 2.png"), (264, 128)), alignment=True, info="Подсказка: вы можете нажать enter, чтобы сразу начать игру.", action=worlds)
 	settings_button = Button(Width / 2, Height / 2, pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Settings.png"), (488, 128)), pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Settings 2.png"), (488, 128)), alignment=True, action=settings)
@@ -7302,17 +7144,8 @@ def menu():
 			win.blit(pygame.image.load(path + "Images/Rickrolling QR-code.png"), (Width // 2 - 100, Height // 2 - 200))
 			text(t("You can get other information from this QR code"), Width // 2, Height // 2 + 10, blue_color, alignment=True)
 
-		if pygame.mouse.get_pressed()[0] == 1:
-			mouse_click_image = 1
-		try:
-			win.blit(mouse_click_images[mouse_click_image - 1], (mouse_x - 64, mouse_y - 64))
-			if mouse_click_image == 5:
-				mouse_click_image = None
-			else:
-				mouse_click_image += 1
-		except TypeError:
-			pass
-		
+		animate_click(Settings, win, mouse_x, mouse_y)
+
 		win_fill(alpha=100 - Settings["Display"][0])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
 
 		pygame.display.update()

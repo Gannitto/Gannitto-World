@@ -114,4 +114,3 @@ main_chat = []
 chat_tick = 0
 in_motherboard = None
 click = pygame.mouse.get_pressed()
-mouse_click_image = None

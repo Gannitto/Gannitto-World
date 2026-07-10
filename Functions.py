@@ -207,7 +207,19 @@ def show_error_window(error_message: str):
 			pygame.quit()
 			sys.exit()
 
-def animate_click():
+mouse_click_images = (
+	 pygame.transform.scale(pygame.image.load(path + "Images/Mouse click 1.png"), (128, 128)),
+	 pygame.transform.scale(pygame.image.load(path + "Images/Mouse click 2.png"), (128, 128)),
+	 pygame.transform.scale(pygame.image.load(path + "Images/Mouse click 3.png"), (128, 128)),
+	 pygame.transform.scale(pygame.image.load(path + "Images/Mouse click 4.png"), (128, 128)),
+	 pygame.transform.scale(pygame.image.load(path + "Images/Mouse click 5.png"), (128, 128))
+	 )
+
+mouse_click_image = None
+
+def animate_click(Settings, win, mouse_x, mouse_y):
+
+	global mouse_click_image
 
 	if Settings["Display"][7]:
 
