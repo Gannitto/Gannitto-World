@@ -4451,11 +4451,11 @@ def start_game():
 
 									for _ in range(random.randint(2, 5)):
 										rand_x, rand_y = object.x + random.randint(-128, 128), object.y + random.randint(-128, 128)
-										world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Wooden", rand_x, rand_y, "Images/Items/Wooden.png"))
+										world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Wooden", rand_x, rand_y, "Images/Items/Wooden.png", pickable=True))
 							
 									for _ in range(random.randint(1, 3)):
 										rand_x, rand_y = object.x + random.randint(-128, 128), object.y + random.randint(-128, 128)
-										world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Stick", rand_x, rand_y, "Images/Items/Stick.png"))
+										world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Stick", rand_x, rand_y, "Images/Items/Stick.png", pickable=True))
 									break
 						
 							if object.name == "Dark tree" and click[0]:
@@ -4484,11 +4484,11 @@ def start_game():
 
 									for _ in range(random.randint(2, 5)):
 										rand_x, rand_y = object.x + random.randint(-128, 128), object.y + random.randint(-128, 128)
-										world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Dark wooden", rand_x, rand_y, "Images/Items/Dark wooden.png"))
+										world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Dark wooden", rand_x, rand_y, "Images/Items/Dark wooden.png", pickable=True))
 							
 									for _ in range(random.randint(1, 3)):
 										rand_x, rand_y = object.x + random.randint(-128, 128), object.y + random.randint(-128, 128)
-										world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Stick", rand_x, rand_y, "Images/Items/Stick.png"))
+										world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Stick", rand_x, rand_y, "Images/Items/Stick.png", pickable=True))
 									break
 						
 							if object.name == "Birch" and click[0]:
@@ -4517,11 +4517,11 @@ def start_game():
 
 									for _ in range(random.randint(2, 5)):
 										rand_x, rand_y = object.x + random.randint(-128, 128), object.y + random.randint(-128, 128)
-										world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Birch wooden", rand_x, rand_y, "Images/Items/Birch wooden.png"))
+										world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Birch wooden", rand_x, rand_y, "Images/Items/Birch wooden.png", pickable=True))
 							
 									for _ in range(random.randint(1, 3)):
 										rand_x, rand_y = object.x + random.randint(-128, 128), object.y + random.randint(-128, 128)
-										world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Stick", rand_x, rand_y, "Images/Items/Stick.png"))
+										world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Stick", rand_x, rand_y, "Images/Items/Stick.png", pickable=True))
 									break
 
 							if object.name == "Pond":
@@ -4541,7 +4541,7 @@ def start_game():
 				
 								if object.special_flags[1] != 0 and inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Stone shovel" and object.get_left_pressed() and random.randint(1, 30) == 1:
 									rand_x, rand_y = object.x +random.randint(-128, 128), object.y + random.randint(-128, 128)
-									world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Clay", rand_x, rand_y, "Images/Items/Clay.png"))
+									world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Clay", rand_x, rand_y, "Images/Items/Clay.png", pickable=True))
 									object.special_flags[1] -= 1
 
 							mouse_object = object.name
@@ -4580,19 +4580,19 @@ def start_game():
 											if i.name in ("Dark tree", "Birch"):
 												for i in range(random.randint(2, 5)):
 													rand_x, rand_y = random.randint(i.x - 128, i.x + 128), random.randint(i.y - 128, i.y + 128)
-													world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object(i.name + " wooden", rand_x, rand_y, "Images/Items/" + i.name + " wooden.png"))
+													world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object(i.name + " wooden", rand_x, rand_y, "Images/Items/" + i.name + " wooden.png", pickable=True))
 								
 												for i in range(random.randint(1, 3)):
 													rand_x, rand_y = random.randint(i.x - 128, i.x + 128), random.randint(i.y - 128, i.y + 128)
-													world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Stick", rand_x, rand_y, "Images/Items/Stick.png"))
+													world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Stick", rand_x, rand_y, "Images/Items/Stick.png", pickable=True))
 											else:
 												for i in range(random.randint(2, 5)):
 													rand_x, rand_y = random.randint(i.x - 128, i.x + 128), random.randint(i.y - 128, i.y + 128)
-													world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Wooden", rand_x, rand_y, "Images/Items/Wooden.png"))
+													world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Wooden", rand_x, rand_y, "Images/Items/Wooden.png", pickable=True))
 								
 												for i in range(random.randint(1, 3)):
 													rand_x, rand_y = random.randint(i.x - 128, i.x + 128), random.randint(i.y - 128, i.y + 128)
-													world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Stick", rand_x, rand_y, "Images/Items/Stick.png"))
+													world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Stick", rand_x, rand_y, "Images/Items/Stick.png", pickable=True))
 
 								for mob in mobs:
 									if mob.attak is None:
@@ -5760,7 +5760,7 @@ def start_game():
 				if item is not None:
 					for _ in range(item.amount):
 						rand_x, rand_y = player.x + random.randint(-300, 300), player.y + random.randint(-300, 300)
-						world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object(item.name, rand_x, rand_y, item.image_path, add_path=False))
+						world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object(item.name, rand_x, rand_y, item.image_path, add_path=False, pickable=True))
 			inventory.whole_inventory = [None] * 30
 			player.HP = 100
 			x = 0
@@ -6179,17 +6179,23 @@ if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0]
 			win_darken(win.copy())
 			a, b = True, None
 			animation_showed = False
+			release = Fslse
 
 			while multyplayer_menu_open:
 
 				mouse_x, mouse_y = pygame.mouse.get_pos()
-				click = pygame.mouse.get_pressed()	
+				click = pygame.mouse.get_pressed()
+				release = False
 
 				for event in pygame.event.get():
 
 					if event.type == pygame.QUIT:
 						save()
 						sys.exit()
+
+					elif event.type == pygame.MOUSEBUTTONUP:
+						if event.button == 1:
+							release = True
 
 					elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
 						multyplayer_menu_open = False						
@@ -6198,7 +6204,7 @@ if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0]
 
 				if mouse_x <= 128 and mouse_y <= 128:
 					win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Back 2.png"), (128, 128)), (0, 0))
-					if click[0]:
+					if release:
 						multyplayer_menu_open = False
 						
 				else:
@@ -6515,13 +6521,14 @@ if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0]
 
 
 # Меню редактирования мира
-		
+
 def edit_world():
 	
-	global world_name, difficulty, player, alt_pressed
+	global world_name, difficulty, player, alt_pressed, does_lighten
 
 	create_world = False
 	release = False
+	does_lighten = False
 
 	try:
 		difficulty, player.god_mode = Saver.load_objects(path + "Worlds/" + world_name + "/Settings.save")
@@ -6532,6 +6539,7 @@ def edit_world():
 
 	input_text = ""
 	world_name_input = False
+	seed_input = False
 
 	easy_but = Button(50, 200, pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Easy.png"), (132, 64)), pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Easy 2.png"), (132, 64)))
 	norm_but = Button(50, 270, pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Norm.png"), (132, 64)), pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Norm 2.png"), (132, 64)))
@@ -6544,45 +6552,9 @@ def edit_world():
 	win.blit(bigTextInfo.render(t("World name"), True, (139, 155, 180)), (50, 50))
 	pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(t("World name"))[0] + 100, 50, 800, 71), 5)
 	win.blit(bigTextInfo.render(world_name, True, (139, 155, 180)), (bigTextInfo.size(t("World name"))[0] + 120, 60))
-		
-	win.blit(bigTextInfo.render(t("Game difficulty:"), True, (139, 155, 180)), (50, 150))
 
-	easy_but.main()
-	norm_but.main()
-	hard_but.main()
-	skull_but.main()
-	
-	match difficulty:
-		
-		case "easy":
-			win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Easy 2.png"), (132, 64)), (50, 200))
-			
-		case "norm":
-			win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Norm 2.png"), (132, 64)), (50, 270))
-			
-		case "hard":
-			win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Hard 2.png"), (132, 64)), (50, 340))
-			
-		case "skull":
-			win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Skull 2.png"), (132, 64)), (50, 410))
-
-	win.blit(bigTextInfo.render(t("God mode"), True, (139, 155, 180)), (50, 480))
-	
-	pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(t("God mode"))[0] + 60, 470, 71, 71), 5)
-	
-	if player.god_mode:
-		win.blit(bigTextInfo.render(" ✓", True, (139, 155, 180)), (bigTextInfo.size(t("God mode"))[0] + 60, 480))
-	else:
-		win.blit(bigTextInfo.render(" x", True, (139, 155, 180)), (bigTextInfo.size(t("God mode"))[0] + 60, 480))
-		
 	if create_world:
-		
-		win.blit(bigTextInfo.render(t("Create world"), True, (139, 155, 180)), (Width - bigTextInfo.size(t("Create world"))[0] - 50, 150))
-	else:
-		win.blit(bigTextInfo.render(t("Delete world"), True, (139, 155, 180)), (50, 540))
-		win.blit(bigTextInfo.render(t("Copy world"), True, (139, 155, 180)), (50, 600))
-	
-	win_lighten(win.copy())
+		world.chunk_manager.generator.seed = random.randint(0, 2**31 - 1)
 
 	while True:
 		
@@ -6601,16 +6573,21 @@ def edit_world():
 				if event.button == 1:
 					release = True
 
-			elif event.type == pygame.KEYDOWN and world_name_input and input_text != "":
+			elif event.type == pygame.KEYDOWN and (world_name_input or seed_input):
 				if event.key == pygame.K_RETURN or len(input_text) == 50:
 					if world_name_input:
 						world_name_input = False
-						os.rename(path + "Worlds/" + world_name, path + "Worlds/" + input_text)
-						world_name = input_text
+						if input_text != "":
+							os.rename(path + "Worlds/" + world_name, path + "Worlds/" + input_text)
+							world_name = input_text
+					if seed_input:
+						if input_text != "":
+							world.chunk_manager.generator.seed = input_text
+						seed_input = False
 					input_text = ""
 				elif event.key == pygame.K_BACKSPACE:
 					input_text = input_text[:-1]
-				else:
+				elif not seed_input or event.unicode in "0123456789":
 					input_text += event.unicode
 			
 			if event.type == pygame.KEYUP:
@@ -6620,7 +6597,7 @@ def edit_world():
 				if event.key == pygame.K_LALT:
 					alt_pressed = not alt_pressed
 		
-		if bigTextInfo.size(t("World name"))[0] + 100 <= mouse_x <= bigTextInfo.size(t("World name"))[0] + 900 and 50 <= mouse_y <= 121 and click[0]:
+		if bigTextInfo.size(t("World name"))[0] + 100 <= mouse_x <= bigTextInfo.size(t("World name"))[0] + 900 and 50 <= mouse_y <= 121 and release:
 			world_name_input = True
 		
 		win.fill((192, 203, 220))
@@ -6636,14 +6613,14 @@ def edit_world():
 				if not create_world: Saver.save_objects(path + "Worlds/" + world_name + "/Settings.save", [difficulty, player.god_mode])
 				worlds()
 
-		win.blit(bigTextInfo.render(t("World name"), True, (139, 155, 180)), (50, 50))
+		win.blit(bigTextInfo.render(t("World name"), True, (139, 155, 180)), (50, 60))
 		pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(t("World name"))[0] + 100, 50, 800, 71), 5)
 		if world_name_input:
 			win.blit(bigTextInfo.render(input_text, True, (139, 155, 180)), (bigTextInfo.size(t("World name"))[0] + 120, 60))
 		else:
 			win.blit(bigTextInfo.render(world_name, True, (139, 155, 180)), (bigTextInfo.size(t("World name"))[0] + 120, 60))
 			
-		win.blit(bigTextInfo.render(t("Game difficulty"), True, (139, 155, 180)), (50, 150))
+		win.blit(bigTextInfo.render(t("Game difficulty:"), True, (139, 155, 180)), (50, 150))
 
 		easy_but.main()
 		if easy_but.get_pressed():
@@ -6660,6 +6637,8 @@ def edit_world():
 		skull_but.main()
 		if skull_but.get_pressed():
 			difficulty = "skull"
+
+		win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Modes/" + difficulty + ".png"), (548, 274)), (232, 200))
 		
 		match difficulty:
 			
@@ -6675,18 +6654,29 @@ def edit_world():
 			case "skull":
 				win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Skull 2.png"), (132, 64)), (50, 410))
 
-		win.blit(bigTextInfo.render(t("God mode"), True, (139, 155, 180)), (50, 480))
+		win.blit(bigTextInfo.render(t("God mode"), True, (139, 155, 180)), (50, 520))
 		
-		pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(t("God mode"))[0] + 60, 470, 71, 71), 5)
+		pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(t("God mode"))[0] + 60, 510, 71, 71), 5)
 		if player.god_mode:
-			win.blit(bigTextInfo.render(" ✓", True, (139, 155, 180)), (bigTextInfo.size(t("God mode"))[0] + 60, 480))
-			if bigTextInfo.size(t("God mode"))[0] + 60 <= mouse_x <= bigTextInfo.size(t("God mode"))[0] + 131 and 470 <= mouse_y <= 528 and release:
+			win.blit(bigTextInfo.render(" ✓", True, (139, 155, 180)), (bigTextInfo.size(t("God mode"))[0] + 60, 520))
+			if bigTextInfo.size(t("God mode"))[0] + 60 <= mouse_x <= bigTextInfo.size(t("God mode"))[0] + 131 and 510 <= mouse_y <= 568 and release:
 				player.god_mode = False
 		else:
-			win.blit(bigTextInfo.render(" x", True, (139, 155, 180)), (bigTextInfo.size(t("God mode"))[0] + 60, 480))
-			if bigTextInfo.size(t("God mode"))[0] + 60 <= mouse_x <= bigTextInfo.size(t("God mode"))[0] + 131 and 470 <= mouse_y <= 528 and release:
+			win.blit(bigTextInfo.render(" x", True, (139, 155, 180)), (bigTextInfo.size(t("God mode"))[0] + 60, 520))
+			if bigTextInfo.size(t("God mode"))[0] + 60 <= mouse_x <= bigTextInfo.size(t("God mode"))[0] + 131 and 510 <= mouse_y <= 568 and release:
 				player.god_mode = True
-				
+		###		
+		if bigTextInfo.size(t("World seed"))[0] + 100 <= mouse_x <= bigTextInfo.size(t("World seed"))[0] + 900 and 590 <= mouse_y <= 661 and release:
+			seed_input = True
+		
+		win.blit(bigTextInfo.render(t("World seed"), True, (139, 155, 180)), (50, 600))
+		pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(t("World seed"))[0] + 100, 590, 800, 71), 5)
+		if seed_input:
+			win.blit(bigTextInfo.render(input_text, True, (139, 155, 180)), (bigTextInfo.size(t("World seed"))[0] + 120, 600))
+		else:
+			win.blit(bigTextInfo.render(str(world.chunk_manager.generator.seed), True, (139, 155, 180)), (bigTextInfo.size(t("World seed"))[0] + 120, 600))
+		###
+
 		if create_world:
 			
 			win.blit(bigTextInfo.render(t("Create world"), True, (139, 155, 180)), (Width - bigTextInfo.size(t("Create world"))[0] - 50, 150))
@@ -6694,18 +6684,18 @@ def edit_world():
 			if Width - bigTextInfo.size(t("Create world"))[0] - 50 < mouse_x < Width - 50 and 150 < mouse_y < 180:
 				
 				win.blit(bigTextInfo.render(t("Create world"), True, (58, 68, 102)), (Width - bigTextInfo.size(t("Create world"))[0] - 50, 150))
-				if click[0]:
+				if release:
 					win_darken(win.copy())
 					start_game()
 		else:
 			
-			win.blit(bigTextInfo.render(t("Delete world"), True, (139, 155, 180)), (50, 540))
+			win.blit(bigTextInfo.render(t("Delete world"), True, (139, 155, 180)), (50, 660))
 
-			if 50 < mouse_x < 50 + bigTextInfo.size(t("Delete world"))[0] and 540 < mouse_y < 570:
+			if 50 < mouse_x < 50 + bigTextInfo.size(t("Delete world"))[0] and 660 < mouse_y < 690:
 		   
-				win.blit(bigTextInfo.render(t("Delete world"), True, (58, 68, 102)), (50, 540))
+				win.blit(bigTextInfo.render(t("Delete world"), True, (58, 68, 102)), (50, 660))
 			
-				if click[0]:
+				if release:
 				
 					win_fill()
 					a = win.copy()
@@ -6752,7 +6742,7 @@ def edit_world():
 
 			if 50 < mouse_x < 50 + bigTextInfo.size(t("Copy world"))[0] and 600 < mouse_y < 630:
 				win.blit(bigTextInfo.render(t("Copy world"), True, (58, 68, 102)), (50, 600))
-				if click[0]:
+				if release:
 					import shutil
 					shutil.copytree(path + "Worlds/" + world_name, path + "Worlds/" + world_name + t(" - copy"))
 					del shutil
@@ -6769,6 +6759,10 @@ def edit_world():
 		
 		if not create_world:
 			Saver.save_objects(path + "Worlds/" + world_name + "/Settings.save", [difficulty, player.god_mode])
+
+		if not does_lighten:
+			win_lighten(win.copy())
+			does_lighten = True
 		
 		pygame.display.update()
 		clock.tick(30)
@@ -6822,6 +6816,7 @@ def worlds():
 	page_back_button.main()
 	page_next_button.main()
 	back_button.main()
+	release = False
 
 	win_lighten(win.copy())
 
@@ -6830,13 +6825,18 @@ def worlds():
 		mouse_x, mouse_y = pygame.mouse.get_pos()
 		click = pygame.mouse.get_pressed()
 		keys = pygame.key.get_pressed()
+		release = False
 
 		for event in pygame.event.get():
 
 			if event.type == pygame.QUIT:
 				win_darken(win.copy())
 				sys.exit()
-				
+
+			elif event.type == pygame.MOUSEBUTTONUP:
+				if event.button == 1:
+					release = True
+
 			elif event.type == pygame.KEYDOWN and input_text is not None:
 				
 				if event.key == pygame.K_BACKSPACE:
@@ -6898,7 +6898,7 @@ def worlds():
 
 						if 50 + textInfo.size(inside_folders[i])[0] <= mouse_x <= 82 + textInfo.size(inside_folders[i])[0] and 50 + a * 50 <= mouse_y <= 82 + a * 50:
 							win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Edit 2.png"), (32, 32)), (50 + textInfo.size(inside_folders[i])[0], 50 + a * 50))
-							if click[0]:
+							if release:
 								world_name = inside_folders[i]
 								
 								win_darken(win.copy())
@@ -6910,7 +6910,7 @@ def worlds():
 							
 							win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Edit.png"), (32, 32)), (50 + textInfo.size(inside_folders[i])[0], 50 + a * 50))
 							
-							if click[0]:
+							if release:
 								world_name = inside_folders[i]
 								start_game()
 
@@ -6926,7 +6926,7 @@ def worlds():
 						
 						if 50 + textInfo.size(inside_folders[i])[0] <= mouse_x <= 82 + textInfo.size(inside_folders[i])[0] and 50 + a * 50 <= mouse_y <= 82 + a * 50:
 							win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Edit 2.png"), (32, 32)), (50 + textInfo.size(inside_folders[i])[0], 50 + a * 50))
-							if click[0]:
+							if release:
 								world_name = inside_folders[i]
 
 								win_darken(win.copy())
@@ -6938,7 +6938,7 @@ def worlds():
 							
 							win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Edit.png"), (32, 32)), (50 + textInfo.size(inside_folders[i])[0], 50 + a * 50))
 							
-							if click[0]:
+							if release:
 								world_name = inside_folders[i]
 								start_game()
 
@@ -6961,24 +6961,16 @@ def worlds():
 
 def menu():
 	
-	global win, screenmode, mobs, num
+	global win, screenmode, mobs, num, does_lighten
 
 	play_button = Button(Width / 2, Height / 2 - 150, pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Play.png"), (264, 128)), pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Play 2.png"), (264, 128)), alignment=True, info="Подсказка: вы можете нажать enter, чтобы сразу начать игру.", action=worlds)
 	settings_button = Button(Width / 2, Height / 2, pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Settings.png"), (488, 128)), pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Settings 2.png"), (488, 128)), alignment=True, action=settings)
 	change_a_character_button = Button(Width / 2, Height / 2 + 150, pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Change a character.png"), (960, 128)), pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Change a character 2.png"), (960, 128)), alignment=True, action=change_a_character)
 
-	win.blit(Screensaver2, (0, 0))
-	play_button.main()
-	settings_button.main()
-	change_a_character_button.main()
-	text("© Gannitto World " + open(path + "Version.txt").read() + " official version", 5, Height - 30, (255, 255, 255))
-	win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Discord logo.png"), (108, 81)), (Width - 90, Height - 80))
-	win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/More.png"), (64, 64)), (Width - 140, Height - 70))
-	win_lighten(win.copy())
 	version = open(path + "Version.txt").read()
 	more_menu_open = False
-
 	mouse_press = False
+	does_lighten = False
 
 	while True:
 		
@@ -7035,7 +7027,7 @@ def menu():
 		if Width - 140 < mouse_x < Width - 76 and Height - 70 < mouse_y < Height - 6:
 			win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/More 2.png"), (64, 64)), (Width - 140, Height - 70))
 
-			if mouse_press and not click[0]:
+			if mouse_press and not click:
 				if more_menu_open: more_menu_open = False
 				else: more_menu_open = True
 				
@@ -7068,6 +7060,10 @@ def menu():
 		animate_click(Settings, win, mouse_x, mouse_y)
 
 		win_fill(alpha=100 - Settings["Display"][0])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
+
+		if not does_lighten:
+			win_lighten(win.copy())
+			does_lighten = True
 
 		pygame.display.update()
 		clock.tick(FPS)
