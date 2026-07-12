@@ -2206,7 +2206,6 @@ class World:
 	def __init__(self):
 
 		self.chunk_manager = ChunkManager()
-		self.seed = 0
 		self.current_cave = None
 
 		self.visible_objects = []
@@ -4581,7 +4580,7 @@ def start_game():
 									else:
 										inventory.whole_inventory[changed_slot] = None
 
-									inventory.increate("Whater bucket")
+									inventory.increate("Water bucket")
 									object.special_flags[0] -= 1
 									time.sleep(0.15)
 				
@@ -5537,23 +5536,23 @@ def start_game():
 			win.blit(Object_inventory_slot, (10, 250))
 			win.blit(Tool_inventory_slot, (90, 250))
 
-			a = inventory.check_recipies()
+			item_to_get = inventory.check_recipies(player, world, craft_items_list, craft_amounts_list)
 			
-			if a is not None:
+			if item_to_get is not None:
 
 				win.blit(Changed_inventory_slot, (730, 250))
-				win.blit(inventory.resources[a[0]].image, (730, 250))
+				win.blit(inventory.resources[item_to_get[0]].image, (730, 250))
 
-				if a[2] is not None:
-					win.blit(inventory.resources[a[2]].image, (10, 250))
-				if a[3] is not None:
-					win.blit(inventory.resources[a[3]].image, (90, 250))
-				if 730 <= mouse_x <= 810 and 250 <= mouse_y <= 330 and click[0]:
-					inventory.increate(a[0], a[1])
+				if item_to_get[2] is not None:
+					win.blit(inventory.resources[item_to_get[2]].image, (10, 250))
+				if item_to_get[3] is not None:
+					win.blit(inventory.resources[item_to_get[3]].image, (90, 250))
+				if 730 <= mouse_x <= 810 and 250 <= mouse_y <= 330 and release:
+					inventory.increate(item_to_get[0], item_to_get[1])
 					craft_items_list = [None] * 7
 					craft_amounts_list = [None] * 7
 					craft_images_list = [None] * 7
-
+			
 			# Разделение предметов
 			if 810 <= mouse_x <= 874 and 10 <= mouse_y <= 74:
 				if special_slot_animations["Split items slot"][0]:
@@ -5613,7 +5612,7 @@ def start_game():
 			else:
 				win.blit(pygame.transform.scale(Compact_inventory1, (64, 64)), (810, 170))
 
-			inventory.draw_whole()
+			inventory.draw_whole(craft_images_list, craft_amounts_list)
 			
 			if craft_list_open:
 
@@ -6105,7 +6104,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 if self.special_flags[2]:
 	a, b = display_image(self.x, self.y, 128, 128)
 	win_fill((255, 255, 255), 30, (a, b, 128, 128))
-	if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Whater bucket" and pygame.Rect(a, b, 128, 128).collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0]:
+	if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Water bucket" and pygame.Rect(a, b, 128, 128).collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0]:
 		inventory.whole_inventory[changed_slot].amount -= 1
 		if inventory.whole_inventory[changed_slot].amount < 1: inventory.whole_inventory[changed_slot] = None
 		inventory.increate("Bucket", 1)
@@ -6222,7 +6221,7 @@ if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0]
 			win_darken(win.copy())
 			a, b = True, None
 			animation_showed = False
-			release = Fslse
+			release = False
 
 			while multyplayer_menu_open:
 
@@ -6632,7 +6631,7 @@ def edit_world():
 							world_name = input_text
 					if seed_input:
 						if input_text != "":
-							world.chunk_manager.generator.seed = input_text
+							world.chunk_manager.generator.seed = int(input_text)
 						seed_input = False
 					input_text = ""
 				elif event.key == pygame.K_BACKSPACE:

@@ -49,12 +49,10 @@ class Recipe:
 		self.need_object = need_object
 		self.need_tool = need_tool
 
-	def get_result(self):
+	def get_result(self, player, world, craft_items_list, craft_amounts_list):
 
 		"""Проверяет, может ли быть какой-то результат от данных ингридеентов"""
-		
-		from Globals import craft_items_list, craft_amounts_list
-		from Gannitto_world import player, world
+
 		if craft_items_list == self.ingredients and craft_amounts_list == self.ingredients_amounts:
 			a = True
 			b = None
@@ -92,9 +90,9 @@ class Inventory:
 				"Просто гриб, ничего больше",
 				"Just a mushroom, nothong more"
 			], [
-				"Нету",
-				"None"
-			], types[0]),
+				"Можно съесть",
+				"You can eat it"
+			], types[2], 5),
 
 
 			
@@ -102,9 +100,9 @@ class Inventory:
 				"Просто гриб, ничего больше",
 				"Just a mushroom, nothong more"
 			], [
-				"Нету",
-				"None"
-			], types[0]),
+				"Можно съесть",
+				"You can eat it"
+			], types[2], 1),
 
 
 			
@@ -132,18 +130,18 @@ class Inventory:
 				"Это пуля для пушки",
 				"This is a bullet for gun"
 			], [
-				"С её помощью ты можешь стрелять, нажав на пробел(если у вас есть пистолет)",
-				"You can shoot with it by pressing the spase(if you have a gun)"
+				"С её помощью ты можешь стрелять, нажав на пробел (если у вас есть пистолет)",
+				"You can shoot with it by pressing the spase (if you have a gun)"
 			], types[0]),
 
 
 
 			"Arrow": Resource("Arrow", path + "Images/Items/Arrow.png", [
-				"Нету",
-				"None"
+				"Простая в создании, наносит урон",
+				"Easy to create and deals damage"
 			], [
-				"Нету",
-				"None"
+				"С её помощью ты можешь стрелять, нажав на пробел (если у вас есть лук)",
+				"With it, you can shoot by pressing the spacebar (if you have a bow)."
 			], types[0]),
 
 
@@ -172,8 +170,8 @@ class Inventory:
 				"Вода, вкус которой напомянает миндаль или ваниль",
 				"Water, that tastes like almonds or vanilla"
 			], [
-				"Нету",
-				"None"
+				"Можно выпить",
+				"You can drink it"
 			], types[3]),
 
 
@@ -238,12 +236,12 @@ class Inventory:
 
 
 
-			"Whater bucket": Resource("Whater bucket", path + "Images/Items/Whater bucket.png", [
-				"Ведро...",
-				"Bucket..."
+			"Water bucket": Resource("Whater bucket", path + "Images/Items/Whater bucket.png", [
+				"Ведро с водой...",
+				"Bucket with water..."
 			], [
-				"Нету",
-				"None"
+				"Используется для полива растений",
+				"Used for watering plants"
 			], types[0]),
 
 
@@ -459,8 +457,8 @@ class Inventory:
 
 
 			"Brick": Resource("Brick", path + "Images/Items/Brick.png", [
-				"Нету",
-				"None"
+				"Красный глиняный кирпич",
+				"Red clay brick"
 			], [
 				"Из него можно сделать кираичную стену",
 				"You can make a brick wall out of it"
@@ -542,8 +540,8 @@ class Inventory:
 				"Нету",
 				"None"
 			], [
-				"Нету",
-				"None"
+				"Используется для сноса стен",
+				"Used for demolishing walls"
 			], types[0], max_stack=1),
 
 
@@ -572,8 +570,8 @@ class Inventory:
 				"Нету"
 				"None"
 			], [
-				"Нету", 
-				"None"
+				"Используется для создания стен", 
+				"Used to create walls"
 			], types[0]),
 
 
@@ -652,8 +650,8 @@ class Inventory:
 				"Нету",
 				"None"
 			], [
-				"Нету",
-				"None"
+				"Можно выпить",
+				"You can drink it"
 			], types[0]),
 
 
@@ -936,11 +934,11 @@ class Inventory:
 				current_index += 1
 				total_amount -= stack_size
 
-	def draw_whole(self):
+	def draw_whole(self, craft_images_list, craft_amounts_list):
 		
 		"""Рисует весь инвентарь"""
 
-		from Globals import win, craft_images_list, craft_amounts_list
+		from Globals import win
 		from Gannitto_world import Inventory_slot
 		cell_x = cell_y = 10
 		for cell in self.whole_inventory:
@@ -959,14 +957,14 @@ class Inventory:
 		
 		for cell in craft_images_list:
 			i += 1
-			if cell is not None:
+			if cell is None:
+				break
+			else:
 				win.blit(cell, (cell_x, 250))
 				if craft_amounts_list != [None] * 7 and craft_amounts_list[i] > 1:
 					win.blit(textInfo.render(str(craft_amounts_list[i]), True, (0, 150, 0)), (cell_x + 10, 292))
 				cell_x += 80
 				win.blit(Inventory_slot, (cell_x, 250))
-			else:
-				break
 	
 	def draw_panel(self):
 		
@@ -1066,10 +1064,11 @@ class Inventory:
 		# self.compact_inventory()	# Компактизируем после каждого изменения
 		return craft_items_list, craft_amounts_list, craft_images_list
 
-	def check_recipies(self):
+	def check_recipies(self, player, world, craft_items_list, craft_amounts_list):
 		for recipie in self.recipes:
-			if recipie.get_result() is not None:
-				return recipie.get_result()
+			result = recipie.get_result(player, world, craft_items_list, craft_amounts_list)
+			if result is not None:
+				return result
 		return None
 
 inventory = Inventory()
