@@ -994,7 +994,6 @@ class Inventory:
 				if cell_x <= mouse__x <= cell_x + 64 and cell_y <= mouse__y <= cell_y + 64:
 					self.start_cell = yy * 10 + xx
 					return
-
 	
 	def set_end_cell(self, mouse__x: int, mouse__y: int, craft_items_list, craft_amounts_list, craft_images_list):
 

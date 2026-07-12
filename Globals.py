@@ -29,14 +29,12 @@ except FileNotFoundError:
 	
 	Saver.save_objects(path + "Settings/Settings.save", Settings)
 
-costum = 0
 changed_slot = 0
 animation = [None, 0]
 player_bullets = []
 craft_items_list = [None] * 7
 craft_amounts_list = [None] * 7
 craft_images_list = [None] * 7
-difficulty = None
 does_lighten = False
 alt_pressed = False
 win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
@@ -46,7 +44,6 @@ world_name = None
 from Inventory import inventory
 FPS = Settings["Display"][6]
 page = 1
-weather = "Clear"
 Width, Height = pygame.display.get_surface().get_size()
 screenmode = "FULLSCREEN"
 green_color = (87, 245, 66)
@@ -60,18 +57,14 @@ changed_language = "Russian"
 mouse_x, mouse_y = pygame.mouse.get_pos()
 inventory_open = False
 hold_left = False
-# TODO возможность в настройках очистить кеш, переделать кнопку display,           реки, ачивки, берёзовый сок, стена из тёмной древесины, стол из тёмной древесины, музыкальные инструменты, падающие листья, кукуруза в полях, враги вороны, обвал в шахте, летучие мыши, таблички, забор, броня, хвощ(растение), песчаные бури в пустыне
+# TODO возможность в настройках очистить кеш, переделать кнопку display, реки, ачивки, берёзовый сок, стена из тёмной древесины, стол из тёмной древесины, музыкальные инструменты, падающие листья, кукуруза в полях, враги вороны, обвал в шахте, летучие мыши, таблички, забор, броня, хвощ(растение), песчаные бури в пустыне
 backrooms_objects = []
 screenshot_num = 1
 bullet_num = 0
-game_time = 0
 item_settings_open = False
 craft_list_open = False
 craft_list_page = 1
 multyplayer_mode = None
-mobs = []
-mechanisms = []
-particles = []
 slot_animations = [[False, 15] for _ in range(30)]   # Используется для анимации при наведении на слот
 special_slot_animations = {"Craft list slot": [False, 0.6], "Game menu slot": [False, 0.6], "Menu slot": [False, 0.6], "Multyplayer slot": [False, 0.6], "Close slot": [False, 0.6], "Reference slot": [False, 0.6], "Close slot": [False, 0.6], "Split items slot": [False, 0.6], "Compact inventory slot": [False, 0.6]}   # Используется для анимации при наведении на слот, который выполняет какое-либо действие
 
