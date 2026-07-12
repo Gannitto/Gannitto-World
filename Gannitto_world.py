@@ -18,6 +18,7 @@ from Chunks import ChunkManager
 from Inventory import inventory
 from Translator import translator
 from Cache import TextureCache
+from SettingsUI import SettingsUI
 from Globals import *
 
 pygame.init()
@@ -2367,6 +2368,7 @@ class Vending_machine:
 		self.owner = Settings["User"][0]
 		self.image = Vending_machine_image
 
+settings_ui = SettingsUI(win, Settings, bigTextInfo, path)
 
 
 # Кнопки в меню
@@ -2544,8 +2546,7 @@ def settings():
 			pygame.display.update()
 			clock.tick(FPS)
 
-
-	def display():
+	def display_old():
 
 		global win, screenmode, Settings, click, mouse_x, mouse_y, FPS, does_lighten, page, alt_pressed
 
@@ -2803,6 +2804,58 @@ def settings():
 				win_lighten(win.copy())
 				does_lighten = True
 
+			pygame.display.update()
+			clock.tick(FPS)
+
+	def display():
+
+		global win, screenmode, Settings, page, alt_pressed, FPS
+		
+		while True:
+			click = pygame.mouse.get_pressed()
+			mouse_x, mouse_y = pygame.mouse.get_pos()
+			release = False
+			
+			events = pygame.event.get()
+			
+			for event in events:
+				if event.type == pygame.QUIT:
+					save()
+					sys.exit()
+				
+				elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+					release = True
+				
+				elif event.type == pygame.KEYUP:
+					if event.key == pygame.K_LALT:
+						alt_pressed = not alt_pressed
+					if event.key == pygame.K_ESCAPE:
+						Saver.save_objects(path + "Settings/Settings.save", Settings)
+						win_darken(win.copy())
+						menu()
+					if event.key == hot_keys["Change screen"]:
+						# Обработка смены экрана
+						pass
+			
+			# Очистка экрана
+			win.fill((192, 203, 220))
+			
+			# Отрисовка фоновых элементов
+			pygame.draw.rect(win, (139, 155, 180), (-8, 100, 373, Height), 8)
+			pygame.draw.line(win, (139, 155, 180), (307, 103), (Width, 103), 8)
+			
+			# Обработка UI
+			settings_ui.handle_events(events, mouse_x, mouse_y, release)
+			settings_ui.draw()
+			
+			# Остальные элементы интерфейса
+			back_button.main()
+			# ... остальные кнопки ...
+			
+			# Анимация и эффекты
+			animate_click(Settings, win, mouse_x, mouse_y)
+			win_fill(alpha=100 - Settings["Display"][0])
+			
 			pygame.display.update()
 			clock.tick(FPS)
 
