@@ -1,5 +1,8 @@
 import pygame
 from typing import Callable, Any, Optional
+from Translator import translator
+
+t = translator.get
 
 class UIElement:
 	"""Базовый класс для всех UI элементов"""
@@ -12,7 +15,7 @@ class UIElement:
 		if label == "":
 			self.label_width = 0
 		else:
-			self.label_width = self.font.size(self.label)[0] + 10
+			self.label_width = self.font.size(t(self.label))[0] + 10
 		self.rect = pygame.Rect(x + self.label_width, y, width, height)
 	
 	def handle_click(self, mouse_x: int, mouse_y: int, release: bool) -> bool:
@@ -35,9 +38,9 @@ class ToggleButton(UIElement):
 	
 	def draw(self, surface: pygame.Surface):
 
-		text_surface = self.font.render(self.label, True, self.color)
+		text_surface = self.font.render(t(self.label), True, self.color)
 		surface.blit(text_surface, (self.x, self.y + 10))
-
+		
 		# Отрисовка рамки
 		pygame.draw.rect(surface, self.color, self.rect, 5)
 		
@@ -66,7 +69,7 @@ class InputField(UIElement):
 	
 	def draw(self, surface: pygame.Surface):
 
-		text_surface = self.font.render(self.label, True, self.color)
+		text_surface = self.font.render(t(self.label), True, self.color)
 		surface.blit(text_surface, (self.x, self.y + 10))
 
 		# Отрисовка рамки
@@ -131,7 +134,7 @@ class Button(UIElement):
 	
 	def draw(self, surface: pygame.Surface):
 		pygame.draw.rect(surface, self.color, self.rect, 2)
-		text_surface = self.font.render(self.label, True, self.color)
+		text_surface = self.font.render(t(self.label), True, self.color)
 		text_rect = text_surface.get_rect(center=self.rect.center)
 		surface.blit(text_surface, text_rect)
 	

@@ -2810,8 +2810,12 @@ def settings():
 	def display():
 
 		global win, screenmode, Settings, page, alt_pressed, FPS
-		
+
+		bias = 0
+		max_bias = -settings_ui._set_positions(bias, True) + 200
+
 		while True:
+			
 			click = pygame.mouse.get_pressed()
 			mouse_x, mouse_y = pygame.mouse.get_pos()
 			release = False
@@ -2820,6 +2824,7 @@ def settings():
 			
 			for event in events:
 				if event.type == pygame.QUIT:
+					Saver.save_objects(path + "Settings/Settings.save", Settings)
 					save()
 					sys.exit()
 				
@@ -2834,24 +2839,47 @@ def settings():
 						win_darken(win.copy())
 						menu()
 					if event.key == hot_keys["Change screen"]:
-						# Обработка смены экрана
-						pass
+						if screenmode == "FULLSCREEN":
+							win = pygame.display.set_mode((1000,700), pygame.RESIZABLE)
+							screenmode = "RESIZABLE"
+						else:
+							win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+							screenmode = "FULLSCREEN"
+
+				elif event.type == pygame.MOUSEWHEEL:
+					bias = max((min(bias + event.y * 100, 0)), max_bias)
+					settings_ui._set_positions(bias)
 			
 			# Очистка экрана
 			win.fill((192, 203, 220))
-			
-			# Отрисовка фоновых элементов
-			pygame.draw.rect(win, (139, 155, 180), (-8, 100, 373, Height), 8)
-			pygame.draw.line(win, (139, 155, 180), (307, 103), (Width, 103), 8)
 			
 			# Обработка UI
 			settings_ui.handle_events(events, mouse_x, mouse_y, release)
 			settings_ui.draw()
 			
-			# Остальные элементы интерфейса
-			back_button.main()
-			# ... остальные кнопки ...
+			pygame.draw.rect(win, (192, 203, 220), (0, 0, Width, 103))
+			pygame.draw.rect(win, (139, 155, 180), (-8, 100, 373, Height), 8)
+			pygame.draw.line(win, (139, 155, 180), (307, 103), (Width, 103), 8)
 			
+			help_button.main(help)
+			win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Display 2.png"), (222, 64)), (10, 192))
+			languages_button.main(Languages)
+			user_button.main(User)
+			sound_button.main(Sound)
+			statistics_button.main(Statistics)
+			keys_button.main(Keys)
+			game_button.main(Game)
+			back_button.main()
+			show_reset_settings()
+			
+			if alt_pressed:
+				draw_key("ESC", 44, 108)
+
+			if back_button.get_pressed():
+				Saver.save_objects(path + "Settings/Settings.save", Settings)
+				win_darken(win.copy())
+				menu()
+				
 			# Анимация и эффекты
 			animate_click(Settings, win, mouse_x, mouse_y)
 			win_fill(alpha=100 - Settings["Display"][0])
