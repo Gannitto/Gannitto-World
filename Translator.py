@@ -3,7 +3,7 @@ import os
 from Globals import path
 
 class Translator:
-	def __init__(self, lang="ru"):
+	def __init__(self, lang="English"):
 		self.lang = lang
 		self.load_language(lang)
 	

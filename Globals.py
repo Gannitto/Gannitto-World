@@ -20,6 +20,7 @@ except FileNotFoundError:
 	Settings = {
 		
 		"Display": [100, 90, 0, False, True, True, 30, True, True, True, True],
+		"Languages": ["English"],
 		"User": ["Gannitto"],
 		"Sound": [1, 1],
 		"Keys": ["a", "s", "w", "d", "e", "c", "TAB", "SPACE"],
@@ -53,7 +54,6 @@ menu_open = False
 multyplayer_menu_open = False
 textInfo = pygame.font.Font(path + "Font.ttf", 18)
 bigTextInfo = pygame.font.Font(path + "Font.ttf", 36)
-changed_language = "Russian"
 mouse_x, mouse_y = pygame.mouse.get_pos()
 inventory_open = False
 hold_left = False

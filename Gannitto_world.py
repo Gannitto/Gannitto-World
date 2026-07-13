@@ -60,6 +60,7 @@ pygame.init()
 
 """
 
+translator.load_language(Settings["Languages"][0])
 t = translator.get
 
 def text(text: str, text_x: int, text_y: int, color: tuple=text_color, size: int=20, alignment: bool=False, letter_spasing: int=10, surface: pygame.Surface=win, max_width: int=0, max_height: int=0, return_surface: bool=False, spase_between_strings: int=10):
@@ -2415,6 +2416,7 @@ def settings():
 				Settings = {
 					
 					"Display": [100, 90, 0, False, True, True, 30, True, True, True, True],
+					"Languages": ["English"],
 					"User": ["Gannitto", 0],
 					"Sound": [1, 1],
 					"Keys": ["a", "s", "w", "d", "e", "c", "TAB", "SPACE"],
@@ -2426,7 +2428,7 @@ def settings():
 
 	def help():
 
-		global win, screenmode, changed_language, mouse_x, mouse_y, does_lighten, page, alt_pressed
+		global win, screenmode, mouse_x, mouse_y, does_lighten, page, alt_pressed
 		
 		while True:
 
@@ -2812,7 +2814,7 @@ def settings():
 		global win, screenmode, Settings, page, alt_pressed, FPS
 
 		bias = 0
-		max_bias = -settings_ui._set_positions(bias, True) + 200
+		max_bias = -settings_ui._set_positions(bias, "Display", True) + 200
 
 		while True:
 			
@@ -2848,14 +2850,14 @@ def settings():
 
 				elif event.type == pygame.MOUSEWHEEL:
 					bias = max((min(bias + event.y * 100, 0)), max_bias)
-					settings_ui._set_positions(bias)
+					settings_ui._set_positions(bias, "Display")
 			
 			# Очистка экрана
 			win.fill((192, 203, 220))
 			
 			# Обработка UI
-			settings_ui.handle_events(events, mouse_x, mouse_y, release)
-			settings_ui.draw()
+			settings_ui.handle_events(events, mouse_x, mouse_y, release, "Display")
+			settings_ui.draw("Display")
 			
 			pygame.draw.rect(win, (192, 203, 220), (0, 0, Width, 103))
 			pygame.draw.rect(win, (139, 155, 180), (-8, 100, 373, Height), 8)
@@ -2889,7 +2891,7 @@ def settings():
 
 	def Languages():
 
-		global win, screenmode, changed_language, does_lighten, page, alt_pressed
+		global win, screenmode, does_lighten, page, alt_pressed
 		
 		while True:
 			
@@ -2907,13 +2909,28 @@ def settings():
 						menu()
 
 					if event.key == pygame.K_1:
-						changed_language = "English"
+						Settings["Languages"][0] = "English"
+						translator.load_language("English")
+						for element_list in settings_ui.elements.values():
+							for element in element_list:
+								element.label_width = element.font.size(t(element.label))[0] + 10
+								element.rect = pygame.Rect(element.x + element.label_width, element.y, element.width, element.height)
 
 					if event.key == pygame.K_1:
-						changed_language = "Russian"
+						Settings["Languages"][0] = "Russian"
+						translator.load_language("Russian")
+						for element_list in settings_ui.elements.values():
+							for element in element_list:
+								element.label_width = element.font.size(t(element.label))[0] + 10
+								element.rect = pygame.Rect(element.x + element.label_width, element.y, element.width, element.height)
 
 					if event.key == pygame.K_1:
-						changed_language = "Kazach"
+						Settings["Languages"][0] = "Kazach"
+						translator.load_language("Karach")
+						for element_list in settings_ui.elements.values():
+							for element in element_list:
+								element.label_width = element.font.size(t(element.label))[0] + 10
+								element.rect = pygame.Rect(element.x + element.label_width, element.y, element.width, element.height)
 
 					if event.key == hot_keys["Change screen"]:
 						if screenmode == "FULLSCREEN":
@@ -2942,13 +2959,30 @@ def settings():
 
 			english_button.main()
 			if english_button.get_pressed():
-				changed_language = "English"
+				Settings["Languages"][0] = "English"
+				translator.load_language("English")
+				for element_list in settings_ui.elements.values():
+					for element in element_list:
+						element.label_width = element.font.size(t(element.label))[0] + 10
+						element.rect = pygame.Rect(element.x + element.label_width, element.y, element.width, element.height)
+
 			russian_button.main()
 			if russian_button.get_pressed():
-				changed_language = "Russian"
+				Settings["Languages"][0] = "Russian"
+				translator.load_language("Russian")
+				for element_list in settings_ui.elements.values():
+					for element in element_list:
+						element.label_width = element.font.size(t(element.label))[0] + 10
+						element.rect = pygame.Rect(element.x + element.label_width, element.y, element.width, element.height)
+
 			kazach_button.main()
 			if kazach_button.get_pressed():
-				changed_language = "Kazach"
+				Settings["Languages"][0] = "Kazach"
+				translator.load_language("Kazach")
+				for element_list in settings_ui.elements.values():
+					for element in element_list:
+						element.label_width = element.font.size(t(element.label))[0] + 10
+						element.rect = pygame.Rect(element.x + element.label_width, element.y, element.width, element.height)
 
 			win.blit(bigTextInfo.render(str(page), True, (139, 155, 180)), ((Width - 415) // 2 + 391, Height - 96))
 			help_button.main(help)
