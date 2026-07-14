@@ -22,7 +22,7 @@ except FileNotFoundError:
 		"Display": [100, 90, 0, False, True, True, 30, True, True, True, True],
 		"Languages": ["English"],
 		"User": ["Gannitto"],
-		"Sound": [1, 1],
+		"Sound": [100, 100],
 		"Keys": ["a", "s", "w", "d", "e", "c", "TAB", "SPACE"],
 		"Game": [True, False]
 		

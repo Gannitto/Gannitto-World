@@ -85,12 +85,22 @@ class SettingsUI:
 					lambda v: self.settings["Display"].__setitem__(10, v),
 					self.font
 				)
+			],
+		"Sound": [
+				InputField(
+					400, 0, "Music volume",
+					lambda: self.settings["Sound"][0],
+					lambda v: self.settings["Sound"].__setitem__(0, min(v, 100)),
+					self.font, unit="%"
+				),
+				InputField(
+					400, 0, "Sound volume",
+					lambda: self.settings["Sound"][1],
+					lambda v: self.settings["Sound"].__setitem__(1, min(v, 100)),
+					self.font, unit="%"
+				),
 			]
 		}
-
-	def _set_display_value(self, index: int, value):
-		"""Вспомогательный метод для установки значения в списке настроек"""
-		self.settings["Display"][index] = value
 
 	def _set_positions(self, bias, section, get_max_bias=False):
 		
@@ -122,15 +132,42 @@ class SettingsUI:
 				for element in current_elements:
 					element.handle_click(mouse_x, mouse_y, release)
 	
-	def draw(self, section):
-		# Отрисовка заголовков для текущей страницы
+	def draw(self, section, win, Width, Height, bias, max_bias):
+
 		self.draw_labels()
 		
 		# Отрисовка элементов текущей страницы
 		for element in self.elements[section]:
 			element.draw(self.win)
 	
+		self.show_settings_elements(win, Width, Height, bias, max_bias)
+
 	def draw_labels(self):
-		# Отрисовка текстовых меток для элементов
+		# Отрисовка текстовых меток для элементов TODO
 		pass
+
+	def show_settings_elements(self, win, Width, Height, bias, max_bias):
+		
+		pygame.draw.rect(win, (192, 203, 220), (0, 0, Width, 103))
+		pygame.draw.rect(win, (139, 155, 180), (-8, 100, 373, Height), 8)
+		pygame.draw.line(win, (139, 155, 180), (307, 103), (Width, 103), 8)
+		
+		# bar_height = max((Height - 103) * ((Height - 103) / (Height - 103 + abs(max_bias))), 20)
+		# max_scroll = abs(max_bias) - 103
+		# scroll_rel = abs(bias) / max_scroll if max_scroll > 0 else 0
+		# bar_y = abs(bias) + scroll_rel * (Height - 103 - bar_height) + 103
+		
+		# pygame.draw.rect(win, (139, 155, 180), (Width - 10, bar_y, 10, bar_height))
+
+		visible_height = Height - 103
+		content_height = visible_height + abs(max_bias)
+		content_y = abs(bias)
+		scrollbar_height = Height - 103
+
+		bar_height = max(scrollbar_height * (visible_height / content_height), 20)
+		max_scroll = content_height - visible_height
+		scroll_rel = abs(content_y) / max_scroll if max_scroll > 0 else 0
+		bar_y = 103 + scroll_rel * (scrollbar_height - bar_height)
+		
+		pygame.draw.rect(win, (139, 155, 180), (Width - 10, bar_y, 10, bar_height))
 

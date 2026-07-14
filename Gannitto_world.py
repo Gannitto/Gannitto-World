@@ -2418,7 +2418,7 @@ def settings():
 					"Display": [100, 90, 0, False, True, True, 30, True, True, True, True],
 					"Languages": ["English"],
 					"User": ["Gannitto", 0],
-					"Sound": [1, 1],
+					"Sound": [100, 100],
 					"Keys": ["a", "s", "w", "d", "e", "c", "TAB", "SPACE"],
 					"Game": [True, False]
 						
@@ -2548,273 +2548,12 @@ def settings():
 			pygame.display.update()
 			clock.tick(FPS)
 
-	def display_old():
-
-		global win, screenmode, Settings, click, mouse_x, mouse_y, FPS, does_lighten, page, alt_pressed
-
-		Brightness = False
-		Inventory_alpha = False
-		Distance = False
-		fps = False
-		input_text = ""
-		release = False
-
-		while True:
-
-			click = pygame.mouse.get_pressed()
-			mouse_x, mouse_y = pygame.mouse.get_pos()
-			release = False
-
-			for event in pygame.event.get():
-
-				if event.type == pygame.QUIT:
-					save()
-					sys.exit()
-
-				elif event.type == pygame.MOUSEBUTTONUP:
-					if event.button == 1:
-						release = True
-
-				elif event.type == pygame.KEYDOWN and (Brightness or Inventory_alpha or Distance or fps):
-
-					if event.key == pygame.K_RETURN or len(input_text) == 3:
-
-						if Brightness:
-							Brightness = False
-							if input_text != "":
-								Settings["Display"][0] = int(input_text)
-
-						elif Inventory_alpha:
-							Inventory_alpha = False
-							if input_text != "":
-								Settings["Display"][1] = int(input_text)
-
-						elif Distance:
-							Distance = False
-							if input_text != "":
-								Settings["Display"][2] = int(input_text)
-
-						elif fps:
-							fps = False
-							if input_text != "":
-								Settings["Display"][6] = int(input_text)
-
-						input_text = ""
-					elif event.key == pygame.K_BACKSPACE:
-						input_text = input_text[:-1]
-					elif event.unicode in "0123456789":
-						input_text += event.unicode
-
-				if event.type == pygame.KEYUP:
-
-					if event.key == pygame.K_LALT:
-						alt_pressed = not alt_pressed
-					if event.key == pygame.K_ESCAPE:
-						Saver.save_objects(path + "Settings/Settings.save", Settings)
-						win_darken(win.copy())
-						menu()
-
-					if event.key == hot_keys["Change screen"]:
-						if screenmode == "FULLSCREEN":
-							win = pygame.display.set_mode((1000,700), pygame.RESIZABLE)
-							screenmode = "RESIZABLE"
-						else:
-							win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-							screenmode = "FULLSCREEN"
-			
-			win.fill((192, 203, 220))
-			pygame.draw.rect(win, (139, 155, 180), (-8, 100, 373, Height), 8)
-			pygame.draw.line(win, (139, 155, 180), (307, 103), (Width, 103), 8)
-			back_button.main()
-			show_reset_settings()
-			
-			if back_button.get_pressed():
-				Saver.save_objects(path + "Settings/Settings.save", Settings)
-				win_darken(win.copy())
-				menu()
-			   
-			page_back_button.main()
-			page_next_button.main()
-			page = min(page, 3)
-
-			win.blit(bigTextInfo.render(str(page), True, (139, 155, 180)), ((Width - 415) // 2 + 391, Height - 96))
-			help_button.main(help)
-			win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Display 2.png"), (222, 64)), (10, 192))
-			languages_button.main(Languages)
-			user_button.main(User)
-			sound_button.main(Sound)
-			statistics_button.main(Statistics)
-			keys_button.main(Keys)
-			game_button.main(Game)
-			
-
-			if page == 1:
-
-				if bigTextInfo.size(t("Brightness"))[0] + 337 <= mouse_x <= bigTextInfo.size(t("Brightness"))[0] + 467 + 120 and 113 <= mouse_y <= 184 and release:
-					Brightness = True
-				if bigTextInfo.size(t("Inventory transparency"))[0] + 337 <= mouse_x <= bigTextInfo.size(t("Inventory transparency"))[0] + 467 + 120 and 199 <= mouse_y <= 270 and release:
-					Inventory_alpha = True
-				if bigTextInfo.size(t("Distance"))[0] + 337 <= mouse_x <= bigTextInfo.size(t("Distance"))[0] + 467 + 120 and 285 <= mouse_y <= 356 and release:
-					Distance = True
-
-				win.blit(bigTextInfo.render(t("Brightness"), True, (139, 155, 180)), (385, 123))
-				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(t("Brightness"))[0] + 395, 113, 120, 71), 5)
-				win.blit(bigTextInfo.render("%", True, (139, 155, 180)), (bigTextInfo.size(t("Brightness"))[0] + 525, 123))
-
-				if Brightness:
-					win.blit(bigTextInfo.render(input_text, True, (139, 155, 180)), (bigTextInfo.size(t("Brightness"))[0] + 405, 123))
-				else:
-					win.blit(bigTextInfo.render(str(Settings["Display"][0]), True, (139, 155, 180)), (bigTextInfo.size(t("Brightness"))[0] + 405, 123))
-				
-
-
-				win.blit(bigTextInfo.render(t("Inventory transparency"), True, (139, 155, 180)), (385, 209))
-				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(t("Inventory transparency"))[0] + 395, 199, 120, 71), 5)
-				win.blit(bigTextInfo.render("%", True, (139, 155, 180)), (bigTextInfo.size(t("Inventory transparency"))[0] + 525, 209))
-				if Inventory_alpha:
-					win.blit(bigTextInfo.render(input_text, True, (139, 155, 180)), (bigTextInfo.size(t("Inventory transparency"))[0] + 405, 209))
-				else:
-					win.blit(bigTextInfo.render(str(Settings["Display"][1]), True, (139, 155, 180)), (bigTextInfo.size(t("Inventory transparency"))[0] + 405, 209))
-
-
-
-				win.blit(bigTextInfo.render(t("Distance"), True, (139, 155, 180)), (385, 295))
-				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(t("Distance"))[0] + 395, 285, 120, 71), 5)
-				if Distance:
-					win.blit(bigTextInfo.render(input_text, True, (139, 155, 180)), (bigTextInfo.size(t("Distance"))[0] + 405, 295))
-				else:
-					win.blit(bigTextInfo.render(str(Settings["Display"][2]), True, (139, 155, 180)), (bigTextInfo.size(t("Distance"))[0] + 405, 295))
-
-
-
-				win.blit(bigTextInfo.render(t("Display hitboxes"), True, (139, 155, 180)), (385, 381))
-				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(t("Display hitboxes"))[0] + 395, 371, 71, 71), 5)
-				if Settings["Display"][3]:
-					win.blit(bigTextInfo.render(" ✓", True, (139, 155, 180)), (bigTextInfo.size(t("Display hitboxes"))[0] + 405, 381))
-					if bigTextInfo.size(t("Display hitboxes"))[0] + 395 <= mouse_x <= bigTextInfo.size(t("Display hitboxes"))[0] + 466 and 371 <= mouse_y <= 442 and release:
-						Settings["Display"][3] = False
-				else:
-					win.blit(bigTextInfo.render(" x", True, (139, 155, 180)), (bigTextInfo.size(t("Display hitboxes"))[0] + 405, 381))
-					if bigTextInfo.size(t("Display hitboxes"))[0] + 395 <= mouse_x <= bigTextInfo.size(t("Display hitboxes"))[0] + 466 and 371 <= mouse_y <= 442 and release:
-						Settings["Display"][3] = True
-
-
-
-				win.blit(bigTextInfo.render(t("Shadows"), True, (139, 155, 180)), (385, 467))
-				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(t("Shadows"))[0] + 395, 457, 71, 71), 5)
-				if Settings["Display"][4]:
-					win.blit(bigTextInfo.render(" ✓", True, (139, 155, 180)), (bigTextInfo.size(t("Shadows"))[0] + 405, 467))
-					if bigTextInfo.size(t("Shadows"))[0] + 395 <= mouse_x <= bigTextInfo.size(t("Shadows"))[0] + 466 and 457 <= mouse_y <= 528 and release:
-						Settings["Display"][4] = False
-				else:
-					win.blit(bigTextInfo.render(" x", True, (139, 155, 180)), (bigTextInfo.size(t("Shadows"))[0] + 405, 467))
-					if bigTextInfo.size(t("Shadows"))[0] + 395 <= mouse_x <= bigTextInfo.size(t("Shadows"))[0] + 466 and 457 <= mouse_y <= 528 and release:
-						Settings["Display"][4] = True
-
-			if page == 2:
-				
-				if bigTextInfo.size("FPS")[0] + 337 <= mouse_x <= bigTextInfo.size("FPS")[0] + 467 + 120 and 199 <= mouse_y <= 270 and release:
-					fps = True
-
-				win.blit(bigTextInfo.render(t("Inventory slots animation"), True, (139, 155, 180)), (385, 123))
-				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(t("Inventory slots animation"))[0] + 395, 113, 71, 71), 5)
-				if Settings["Display"][5]:
-					win.blit(bigTextInfo.render(" ✓", True, (139, 155, 180)), (bigTextInfo.size(t("Inventory slots animation"))[0] + 405, 123))
-					if bigTextInfo.size(t("Inventory slots animation"))[0] + 395 <= mouse_x <= bigTextInfo.size(t("Inventory slots animation"))[0] + 466 and 113 <= mouse_y <= 184 and release:
-						Settings["Display"][5] = False
-				else:
-					win.blit(bigTextInfo.render(" x", True, (139, 155, 180)), (bigTextInfo.size(t("Inventory slots animation"))[0] + 405, 123))
-					if bigTextInfo.size(t("Inventory slots animation"))[0] + 395 <= mouse_x <= bigTextInfo.size(t("Inventory slots animation"))[0] + 466 and 113 <= mouse_y <= 184 and release:
-						Settings["Display"][5] = True
-
-				win.blit(bigTextInfo.render("FPS", True, (139, 155, 180)), (385, 209))
-				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size("FPS")[0] + 395, 199, 120, 71), 5)
-
-				if fps:
-					win.blit(bigTextInfo.render(input_text, True, (139, 155, 180)), (bigTextInfo.size("FPS")[0] + 405, 209))
-				else:
-					FPS = Settings["Display"][6]
-					win.blit(bigTextInfo.render(str(Settings["Display"][6]), True, (139, 155, 180)), (bigTextInfo.size("FPS")[0] + 405, 209))
-
-
-
-				win.blit(bigTextInfo.render(t("Mouse click display"), True, (139, 155, 180)), (385, 295))
-				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(t("Mouse click display"))[0] + 395, 285, 71, 71), 5)
-
-				if Settings["Display"][7]:
-					win.blit(bigTextInfo.render(" ✓", True, (139, 155, 180)), (bigTextInfo.size(t("Mouse click display"))[0] + 405, 295))
-					if bigTextInfo.size(t("Mouse click display"))[0] + 395 <= mouse_x <= bigTextInfo.size(t("Mouse click display"))[0] + 466 and 285 <= mouse_y <= 356 and release:
-						Settings["Display"][7] = False
-				else:
-					win.blit(bigTextInfo.render(" x", True, (139, 155, 180)), (bigTextInfo.size(t("Mouse click display"))[0] + 405, 295))
-					if bigTextInfo.size(t("Mouse click display"))[0] + 395 <= mouse_x <= bigTextInfo.size(t("Mouse click display"))[0] + 466 and 285 <= mouse_y <= 356 and release:
-						Settings["Display"][7] = True
-
-
-
-				win.blit(bigTextInfo.render(t("Description of the object on hover"), True, (139, 155, 180)), (385, 381))
-				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(t("Description of the object on hover"))[0] + 395, 371, 71, 71), 5)
-
-				if Settings["Display"][8]:
-					win.blit(bigTextInfo.render(" ✓", True, (139, 155, 180)), (bigTextInfo.size(t("Description of the object on hover"))[0] + 405, 381))
-					if bigTextInfo.size(t("Description of the object on hover"))[0] + 395 <= mouse_x <= bigTextInfo.size(t("Description of the object on hover"))[0] + 466 and 371 <= mouse_y <= 442 and release:
-						Settings["Display"][8] = False
-				else:
-					win.blit(bigTextInfo.render(" x", True, (139, 155, 180)), (bigTextInfo.size(t("Description of the object on hover"))[0] + 405, 381))
-					if bigTextInfo.size(t("Description of the object on hover"))[0] + 395 <= mouse_x <= bigTextInfo.size(t("Description of the object on hover"))[0] + 466 and 371 <= mouse_y <= 442 and release:
-						Settings["Display"][8] = True
-
-
-
-				win.blit(bigTextInfo.render(t("Dim screen when turned off"), True, (139, 155, 180)), (385, 467))
-				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(t("Dim screen when turned off"))[0] + 395, 457, 71, 71), 5)
-
-				if Settings["Display"][9]:
-					win.blit(bigTextInfo.render(" ✓", True, (139, 155, 180)), (bigTextInfo.size(t("Dim screen when turned off"))[0] + 405, 467))
-					if bigTextInfo.size(t("Dim screen when turned off"))[0] + 395 <= mouse_x <= bigTextInfo.size(t("Dim screen when turned off"))[0] + 466 and 457 <= mouse_y <= 528 and release:
-						Settings["Display"][9] = False
-				else:
-					win.blit(bigTextInfo.render(" x", True, (139, 155, 180)), (bigTextInfo.size(t("Dim screen when turned off"))[0] + 405, 467))
-					if bigTextInfo.size(t("Dim screen when turned off"))[0] + 395 <= mouse_x <= bigTextInfo.size(t("Dim screen when turned off"))[0] + 466 and 457 <= mouse_y <= 528 and release:
-						Settings["Display"][9] = True
-			
-			if page == 3:
-				
-				win.blit(bigTextInfo.render(t("Show intro"), True, (139, 155, 180)), (385, 123))
-				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(t("Show intro"))[0] + 395, 113, 71, 71), 5)
-				if Settings["Display"][10]:
-					win.blit(bigTextInfo.render(" ✓", True, (139, 155, 180)), (bigTextInfo.size(t("Show intro"))[0] + 405, 123))
-					if bigTextInfo.size(t("Show intro"))[0] + 395 <= mouse_x <= bigTextInfo.size(t("Show intro"))[0] + 466 and 113 <= mouse_y <= 184 and release:
-						Settings["Display"][10] = False
-				else:
-					win.blit(bigTextInfo.render(" x", True, (139, 155, 180)), (bigTextInfo.size(t("Show intro"))[0] + 405, 123))
-					if bigTextInfo.size(t("Show intro"))[0] + 395 <= mouse_x <= bigTextInfo.size(t("Show intro"))[0] + 466 and 113 <= mouse_y <= 184 and release:
-						Settings["Display"][10] = True
-
-			
-			if alt_pressed:
-				
-				draw_key("ESC", 44, 108)
-				draw_key("<-", 425, Height - 168)
-				draw_key("->", Width - 74, Height - 168)
-
-			animate_click(Settings, win, mouse_x, mouse_y)
-
-			win_fill(alpha=100 - Settings["Display"][0])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
-			
-			if not does_lighten:
-				win_lighten(win.copy())
-				does_lighten = True
-
-			pygame.display.update()
-			clock.tick(FPS)
-
 	def display():
 
-		global win, screenmode, Settings, page, alt_pressed, FPS
+		global win, screenmode, Settings, alt_pressed, FPS
 
 		bias = 0
-		max_bias = -settings_ui._set_positions(bias, "Display", True) + 200
+		max_bias = -settings_ui._set_positions(bias, "Display", True) + 900
 
 		while True:
 			
@@ -2857,11 +2596,7 @@ def settings():
 			
 			# Обработка UI
 			settings_ui.handle_events(events, mouse_x, mouse_y, release, "Display")
-			settings_ui.draw("Display")
-			
-			pygame.draw.rect(win, (192, 203, 220), (0, 0, Width, 103))
-			pygame.draw.rect(win, (139, 155, 180), (-8, 100, 373, Height), 8)
-			pygame.draw.line(win, (139, 155, 180), (307, 103), (Width, 103), 8)
+			settings_ui.draw("Display", win, Width, Height, bias, max_bias)
 			
 			help_button.main(help)
 			win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Display 2.png"), (222, 64)), (10, 192))
@@ -3141,71 +2876,35 @@ def settings():
 
 	def Sound():
 
-		global win, screenmode, Settings, click, mouse_x, mouse_y, does_lighten, page, alt_pressed
+		global win, screenmode, Settings, alt_pressed, FPS
 
-		mouse_x, mouse_y = pygame.mouse.get_pos()
-
-		Music_volume = False
-		Volume_of_sounds = False
-		input_text = ""
+		bias = 0
+		max_bias = -settings_ui._set_positions(bias, "Sound", True) + 900
 
 		while True:
-
+			
 			click = pygame.mouse.get_pressed()
 			mouse_x, mouse_y = pygame.mouse.get_pos()
-			for event in pygame.event.get():
+			release = False
+			
+			events = pygame.event.get()
+			
+			for event in events:
 				if event.type == pygame.QUIT:
+					Saver.save_objects(path + "Settings/Settings.save", Settings)
 					save()
 					sys.exit()
-
-				elif event.type == pygame.KEYDOWN and (Music_volume or Volume_of_sounds):
-					if event.key == pygame.K_RETURN or len(input_text) == 3:
-						if Music_volume:
-							Music_volume = False
-							if input_text != "":
-								Settings["Sound"][0] = int(input_text) / 100
-								music_channel.set_volume(Settings["Sound"][0], Settings["Sound"][0])
-
-						elif Volume_of_sounds:
-							Volume_of_sounds = False
-							if input_text != "":
-								Settings["Sound"][1] = int(input_text) / 100
-								Button_click.set_volume(Settings["Sound"][1])
-								Stone_breaking1.set_volume(Settings["Sound"][1])
-								Stone_breaking2.set_volume(Settings["Sound"][1])
-								Grass_walking1.set_volume(Settings["Sound"][1])
-								Grass_walking2.set_volume(Settings["Sound"][1])
-								Grass_walking3.set_volume(Settings["Sound"][1])
-								Snow_walking1.set_volume(Settings["Sound"][1])
-								Snow_walking2.set_volume(Settings["Sound"][1])
-								Snow_walking3.set_volume(Settings["Sound"][1])
-								Sand_walking1.set_volume(Settings["Sound"][1])
-								Sand_walking2.set_volume(Settings["Sound"][1])
-								Sand_walking3.set_volume(Settings["Sound"][1])
-								Swamp_walking1.set_volume(Settings["Sound"][1])
-								Swamp_walking2.set_volume(Settings["Sound"][1])
-								Swamp_walking3.set_volume(Settings["Sound"][1])
-								Cave_walking1.set_volume(Settings["Sound"][1])
-								Cave_walking2.set_volume(Settings["Sound"][1])
-								Cave_walking3.set_volume(Settings["Sound"][1])
-								Backrooms_lamps.set_volume(Settings["Sound"][1])
-								Backrooms_rand_sound_1.set_volume(Settings["Sound"][1])
-								Pick_an_item.set_volume(Settings["Sound"][1])
-
-						input_text = ""
-					elif event.key == pygame.K_BACKSPACE:
-						input_text = input_text[:-1]
-					elif event.unicode in "0123456789":
-						input_text += event.unicode
-
-				if event.type == pygame.KEYUP:
+				
+				elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+					release = True
+				
+				elif event.type == pygame.KEYUP:
 					if event.key == pygame.K_LALT:
 						alt_pressed = not alt_pressed
 					if event.key == pygame.K_ESCAPE:
 						Saver.save_objects(path + "Settings/Settings.save", Settings)
 						win_darken(win.copy())
 						menu()
-
 					if event.key == hot_keys["Change screen"]:
 						if screenmode == "FULLSCREEN":
 							win = pygame.display.set_mode((1000,700), pygame.RESIZABLE)
@@ -3213,28 +2912,43 @@ def settings():
 						else:
 							win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 							screenmode = "FULLSCREEN"
-				
-			if bigTextInfo.size(t("Music volume"))[0] + 337 <= mouse_x <= bigTextInfo.size(t("Music volume"))[0] + 467 + 120 and 113 <= mouse_y <= 184 and click[0]:
-				Music_volume = True
-			if bigTextInfo.size(t("Sound volume"))[0] + 337 <= mouse_x <= bigTextInfo.size(t("Sound volume"))[0] + 467 + 120 and 199 <= mouse_y <= 270 and click[0]:
-				Volume_of_sounds = True
+
+					if event.key == pygame.K_RETURN:
+
+						music_channel.set_volume(Settings["Sound"][0], Settings["Sound"][0] / 100)
+						Button_click.set_volume(Settings["Sound"][1] / 100)
+						Stone_breaking1.set_volume(Settings["Sound"][1] / 100)
+						Stone_breaking2.set_volume(Settings["Sound"][1] / 100)
+						Grass_walking1.set_volume(Settings["Sound"][1] / 100)
+						Grass_walking2.set_volume(Settings["Sound"][1] / 100)
+						Grass_walking3.set_volume(Settings["Sound"][1] / 100)
+						Snow_walking1.set_volume(Settings["Sound"][1] / 100)
+						Snow_walking2.set_volume(Settings["Sound"][1] / 100)
+						Snow_walking3.set_volume(Settings["Sound"][1] / 100)
+						Sand_walking1.set_volume(Settings["Sound"][1] / 100)
+						Sand_walking2.set_volume(Settings["Sound"][1] / 100)
+						Sand_walking3.set_volume(Settings["Sound"][1] / 100)
+						Swamp_walking1.set_volume(Settings["Sound"][1] / 100)
+						Swamp_walking2.set_volume(Settings["Sound"][1] / 100)
+						Swamp_walking3.set_volume(Settings["Sound"][1] / 100)
+						Cave_walking1.set_volume(Settings["Sound"][1] / 100)
+						Cave_walking2.set_volume(Settings["Sound"][1] / 100)
+						Cave_walking3.set_volume(Settings["Sound"][1] / 100)
+						Backrooms_lamps.set_volume(Settings["Sound"][1] / 100)
+						Backrooms_rand_sound_1.set_volume(Settings["Sound"][1] / 100)
+						Pick_an_item.set_volume(Settings["Sound"][1] / 100)
+
+				elif event.type == pygame.MOUSEWHEEL:
+					bias = max((min(bias + event.y * 100, 0)), max_bias)
+					settings_ui._set_positions(bias, "Sound")
 			
+			# Очистка экрана
 			win.fill((192, 203, 220))
-			pygame.draw.rect(win, (139, 155, 180), (-8, 100, 373, Height), 8)
-			pygame.draw.line(win, (139, 155, 180), (307, 103), (Width, 103), 8)
-			back_button.main()
-			show_reset_settings()
 			
-			if back_button.get_pressed():
-				Saver.save_objects(path + "Settings/Settings.save", Settings)
-				win_darken(win.copy())
-				menu()
-				
-			page_back_button.main()
-			page_next_button.main()
-			page = min(page, 1)
+			# Обработка UI
+			settings_ui.handle_events(events, mouse_x, mouse_y, release, "Sound")
+			settings_ui.draw("Sound", win, Width, Height, bias, max_bias)
 			
-			win.blit(bigTextInfo.render(str(page), True, (139, 155, 180)), ((Width - 415) // 2 + 391, Height - 96))
 			help_button.main(help)
 			display_button.main(display)
 			languages_button.main(Languages)
@@ -3243,40 +2957,21 @@ def settings():
 			statistics_button.main(Statistics)
 			keys_button.main(Keys)
 			game_button.main(Game)
-
-			if page == 1:
-				win.blit(bigTextInfo.render(t("Music volume"), True, (139, 155, 180)), (385, 123))
-				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(t("Music volume"))[0] + 395, 113, 120, 71), 5)
-				win.blit(bigTextInfo.render("%", True, (139, 155, 180)), (bigTextInfo.size(t("Music volume"))[0] + 525, 123))
-				if Music_volume:
-					win.blit(bigTextInfo.render(input_text, True, (139, 155, 180)), (bigTextInfo.size(t("Music volume"))[0] + 405, 123))
-				else:
-					win.blit(bigTextInfo.render(str(int(Settings["Sound"][0] * 100)), True, (139, 155, 180)), (bigTextInfo.size(t("Music volume"))[0] + 405, 123))
-				
-				win.blit(bigTextInfo.render(t("Sound volume"), True, (139, 155, 180)), (385, 209))
-				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(t("Sound volume"))[0] + 395, 199, 120, 71), 5)
-				win.blit(bigTextInfo.render("%", True, (139, 155, 180)), (bigTextInfo.size(t("Sound volume"))[0] + 525, 209))
-				if Volume_of_sounds:
-					win.blit(bigTextInfo.render(input_text, True, (139, 155, 180)), (bigTextInfo.size(t("Sound volume"))[0] + 405, 209))
-				else:
-					win.blit(bigTextInfo.render(str(int(Settings["Sound"][1] * 100)), True, (139, 155, 180)), (bigTextInfo.size(t("Sound volume"))[0] + 405, 209))
-				
-					
-
-			if alt_pressed:
-				
-				draw_key("ESC", 44, 108)
-				draw_key("<-", 425, Height - 168)
-				draw_key("->", Width - 74, Height - 168)
-
-			animate_click(Settings, win, mouse_x, mouse_y)
-
-			win_fill(alpha=100 - Settings["Display"][0])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
+			back_button.main()
+			show_reset_settings()
 			
-			if not does_lighten:
-				win_lighten(win.copy())
-				does_lighten = True
+			if alt_pressed:
+				draw_key("ESC", 44, 108)
 
+			if back_button.get_pressed():
+				Saver.save_objects(path + "Settings/Settings.save", Settings)
+				win_darken(win.copy())
+				menu()
+				
+			# Анимация и эффекты
+			animate_click(Settings, win, mouse_x, mouse_y)
+			win_fill(alpha=100 - Settings["Display"][0])
+			
 			pygame.display.update()
 			clock.tick(FPS)
 
