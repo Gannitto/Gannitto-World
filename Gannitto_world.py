@@ -175,6 +175,28 @@ def tp(X: int, Y: int):
 
 # def set_time(a): global game; game.time += a TODO
 
+# Применение настроек TODO
+
+# Inventory_slot.set_alpha(Settings["Display"][1])
+# Changed_inventory_slot.set_alpha(Settings["Display"][1])
+# Object_inventory_slot.set_alpha(Settings["Display"][1])
+# Tool_inventory_slot.set_alpha(Settings["Display"][1])
+# Split_items1.set_alpha(Settings["Display"][1])
+# Split_items2.set_alpha(Settings["Display"][1])
+# Compact_inventory1.set_alpha(Settings["Display"][1])
+# Compact_inventory2.set_alpha(Settings["Display"][1])
+# Craft_list_slot1.set_alpha(Settings["Display"][1])
+# Craft_list_slot2.set_alpha(Settings["Display"][1])
+# Game_menu_slot1.set_alpha(Settings["Display"][1])
+# Game_menu_slot2.set_alpha(Settings["Display"][1])
+# Menu_slot1.set_alpha(Settings["Display"][1])
+# Menu_slot2.set_alpha(Settings["Display"][1])
+# Multyplayer_slot1.set_alpha(Settings["Display"][1])
+# Multyplayer_slot2.set_alpha(Settings["Display"][1])
+# Close_slot1.set_alpha(Settings["Display"][1])
+# Close_slot2.set_alpha(Settings["Display"][1])
+# Reference_slot1.set_alpha(Settings["Display"][1])
+# Reference_slot2.set_alpha(Settings["Display"][1])
 
 
 # Текстуры
@@ -2369,7 +2391,7 @@ class Vending_machine:
 		self.owner = Settings["User"][0]
 		self.image = Vending_machine_image
 
-settings_ui = SettingsUI(win, Settings, bigTextInfo, path)
+settings_ui = SettingsUI(win, Settings, statistics, bigTextInfo, path)
 
 
 # Кнопки в меню
@@ -2417,7 +2439,7 @@ def settings():
 					
 					"Display": [100, 90, 0, False, True, True, 30, True, True, True, True],
 					"Languages": ["English"],
-					"User": ["Gannitto", 0],
+					"User": ["Player"],
 					"Sound": [100, 100],
 					"Keys": ["a", "s", "w", "d", "e", "c", "TAB", "SPACE"],
 					"Game": [True, False]
@@ -2745,7 +2767,7 @@ def settings():
 			pygame.display.update()
 			clock.tick(FPS)
 
-	def User():
+	def User_old():
 
 		global win, screenmode, Settings, click, mouse_x, mouse_y, does_lighten, page, alt_pressed
 		
@@ -2835,26 +2857,6 @@ def settings():
 					win.blit(bigTextInfo.render(input_text, True, (139, 155, 180)), (bigTextInfo.size(t("Comming soon"))[0] + 405, 209))
 				else:
 					win.blit(bigTextInfo.render(str(Settings["Display"][1]), True, (139, 155, 180)), (bigTextInfo.size(t("Comming soon"))[0] + 405, 209))
-					Inventory_slot.set_alpha(Settings["Display"][1])
-					Changed_inventory_slot.set_alpha(Settings["Display"][1])
-					Object_inventory_slot.set_alpha(Settings["Display"][1])
-					Tool_inventory_slot.set_alpha(Settings["Display"][1])
-					Split_items1.set_alpha(Settings["Display"][1])
-					Split_items2.set_alpha(Settings["Display"][1])
-					Compact_inventory1.set_alpha(Settings["Display"][1])
-					Compact_inventory2.set_alpha(Settings["Display"][1])
-					Craft_list_slot1.set_alpha(Settings["Display"][1])
-					Craft_list_slot2.set_alpha(Settings["Display"][1])
-					Game_menu_slot1.set_alpha(Settings["Display"][1])
-					Game_menu_slot2.set_alpha(Settings["Display"][1])
-					Menu_slot1.set_alpha(Settings["Display"][1])
-					Menu_slot2.set_alpha(Settings["Display"][1])
-					Multyplayer_slot1.set_alpha(Settings["Display"][1])
-					Multyplayer_slot2.set_alpha(Settings["Display"][1])
-					Close_slot1.set_alpha(Settings["Display"][1])
-					Close_slot2.set_alpha(Settings["Display"][1])
-					Reference_slot1.set_alpha(Settings["Display"][1])
-					Reference_slot2.set_alpha(Settings["Display"][1])
 					
 			
 			if alt_pressed:
@@ -2873,6 +2875,83 @@ def settings():
 
 			pygame.display.update()
 			clock.tick(FPS)
+
+	def User():
+
+		global win, screenmode, Settings, alt_pressed, FPS
+
+		bias = 0
+		max_bias = -settings_ui._set_positions(bias, "User", True) + 900
+
+		while True:
+			
+			click = pygame.mouse.get_pressed()
+			mouse_x, mouse_y = pygame.mouse.get_pos()
+			release = False
+			
+			events = pygame.event.get()
+			
+			for event in events:
+				if event.type == pygame.QUIT:
+					Saver.save_objects(path + "Settings/Settings.save", Settings)
+					save()
+					sys.exit()
+				
+				elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+					release = True
+				
+				elif event.type == pygame.KEYUP:
+					if event.key == pygame.K_LALT:
+						alt_pressed = not alt_pressed
+					if event.key == pygame.K_ESCAPE:
+						Saver.save_objects(path + "Settings/Settings.save", Settings)
+						win_darken(win.copy())
+						menu()
+					if event.key == hot_keys["Change screen"]:
+						if screenmode == "FULLSCREEN":
+							win = pygame.display.set_mode((1000,700), pygame.RESIZABLE)
+							screenmode = "RESIZABLE"
+						else:
+							win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+							screenmode = "FULLSCREEN"
+
+				elif event.type == pygame.MOUSEWHEEL:
+					bias = max((min(bias + event.y * 100, 0)), max_bias)
+					settings_ui._set_positions(bias, "User")
+			
+			# Очистка экрана
+			win.fill((192, 203, 220))
+			
+			# Обработка UI
+			settings_ui.handle_events(events, mouse_x, mouse_y, release, "User")
+			settings_ui.draw("User", win, Width, Height, bias, max_bias)
+			
+			help_button.main(help)
+			display_button.main(display)
+			languages_button.main(Languages)
+			win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/User 2.png"), (132, 64)), (10, 342))
+			sound_button.main(Sound)
+			statistics_button.main(Statistics)
+			keys_button.main(Keys)
+			game_button.main(Game)
+			back_button.main()
+			show_reset_settings()
+			
+			if alt_pressed:
+				draw_key("ESC", 44, 108)
+
+			if back_button.get_pressed():
+				Saver.save_objects(path + "Settings/Settings.save", Settings)
+				win_darken(win.copy())
+				menu()
+				
+			# Анимация и эффекты
+			animate_click(Settings, win, mouse_x, mouse_y)
+			win_fill(alpha=100 - Settings["Display"][0])
+			
+			pygame.display.update()
+			clock.tick(FPS)
+
 
 	def Sound():
 
@@ -2977,25 +3056,35 @@ def settings():
 
 	def Statistics():
 
-		global win, screenmode, Settings, does_lighten, page, alt_pressed
+		global win, screenmode, Settings, alt_pressed, FPS
 
-		mouse_x, mouse_y = pygame.mouse.get_pos()
+		bias = 0
+		max_bias = -settings_ui._set_positions(bias, "Statistics", True) + 900
 
 		while True:
-
+			
+			click = pygame.mouse.get_pressed()
 			mouse_x, mouse_y = pygame.mouse.get_pos()
-			for event in pygame.event.get():
+			release = False
+			
+			events = pygame.event.get()
+			
+			for event in events:
 				if event.type == pygame.QUIT:
+					Saver.save_objects(path + "Settings/Settings.save", Settings)
 					save()
 					sys.exit()
-				if event.type == pygame.KEYUP:
+				
+				elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+					release = True
+				
+				elif event.type == pygame.KEYUP:
 					if event.key == pygame.K_LALT:
 						alt_pressed = not alt_pressed
 					if event.key == pygame.K_ESCAPE:
 						Saver.save_objects(path + "Settings/Settings.save", Settings)
 						win_darken(win.copy())
 						menu()
-
 					if event.key == hot_keys["Change screen"]:
 						if screenmode == "FULLSCREEN":
 							win = pygame.display.set_mode((1000,700), pygame.RESIZABLE)
@@ -3003,22 +3092,17 @@ def settings():
 						else:
 							win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 							screenmode = "FULLSCREEN"
-				
-			win.fill((192, 203, 220))
-			pygame.draw.rect(win, (139, 155, 180), (-8, 100, 373, Height), 8)
-			pygame.draw.line(win, (139, 155, 180), (307, 103), (Width, 103), 8)
-			back_button.main()
-			if back_button.get_pressed():
-				Saver.save_objects(path + "Settings/Settings.save", Settings)
-				win_darken(win.copy())
-				menu()
-			show_reset_settings()
-				
-			page_back_button.main()
-			page_next_button.main()
-			page = min(page, 1)
+
+				elif event.type == pygame.MOUSEWHEEL:
+					bias = max((min(bias + event.y * 100, 0)), max_bias)
+					settings_ui._set_positions(bias, "Statistics")
 			
-			win.blit(bigTextInfo.render(str(page), True, (139, 155, 180)), ((Width - 415) // 2 + 391, Height - 96))
+			# Очистка экрана
+			win.fill((192, 203, 220))
+			
+			# Обработка UI
+			settings_ui.draw("Statistics", win, Width, Height, bias, max_bias)
+			
 			help_button.main(help)
 			display_button.main(display)
 			languages_button.main(Languages)
@@ -3027,36 +3111,21 @@ def settings():
 			win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Statistics 2.png"), (300, 64)), (10, 492))
 			keys_button.main(Keys)
 			game_button.main(Game)
-
-			if page == 1:
-				
-				win.blit(bigTextInfo.render(t("Visits to the game:"), True, (139, 155, 180)), (385, 123))
-				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(t("Visits to the game:"))[0] + 395, 113, bigTextInfo.size(str(statistics[0]))[0] * 1.9 + 30, 71), 5)
-				win.blit(bigTextInfo.render(str(statistics[0]), True, (139, 155, 180)), (bigTextInfo.size(t("Visits to the game:"))[0] + 405, 123))
-				
-				win.blit(bigTextInfo.render(t("Hours played:"), True, (139, 155, 180)), (385, 209))
-				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(t("Hours played:"))[0] + 395, 199, bigTextInfo.size(str(statistics[1])[:-14])[0] + 30, 71), 5)
-				win.blit(bigTextInfo.render(str(statistics[1])[:-14], True, (139, 155, 180)), (bigTextInfo.size(t("Hours played:"))[0] + 405, 209))
-
-				win.blit(bigTextInfo.render(t("Trees felled:"), True, (139, 155, 180)), (385, 295))
-				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(t("Trees felled:"))[0] + 395, 285, bigTextInfo.size(str(statistics[2]))[0] + 30, 71), 5)
-				win.blit(bigTextInfo.render(str(statistics[2]), True, (139, 155, 180)), (bigTextInfo.size(t("Trees felled:"))[0] + 405, 295))
-				
-
-			if alt_pressed:
-				
-				draw_key("ESC", 44, 108)
-				draw_key("<-", 425, Height - 168)
-				draw_key("->", Width - 74, Height - 168)
-
-			animate_click(Settings, win, mouse_x, mouse_y)
-
-			win_fill(alpha=100 - Settings["Display"][0])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
+			back_button.main()
+			show_reset_settings()
 			
-			if not does_lighten:
-				win_lighten(win.copy())
-				does_lighten = True
+			if alt_pressed:
+				draw_key("ESC", 44, 108)
 
+			if back_button.get_pressed():
+				Saver.save_objects(path + "Settings/Settings.save", Settings)
+				win_darken(win.copy())
+				menu()
+				
+			# Анимация и эффекты
+			animate_click(Settings, win, mouse_x, mouse_y)
+			win_fill(alpha=100 - Settings["Display"][0])
+			
 			pygame.display.update()
 			clock.tick(FPS)
 

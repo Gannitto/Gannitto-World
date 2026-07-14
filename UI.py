@@ -57,7 +57,7 @@ class ToggleButton(UIElement):
 
 class InputField(UIElement):
 	"""Поле ввода текста или числа"""
-	def __init__(self, x: int, y: int, label: str, get_value: Callable, set_value: Callable, font, color=(139, 155, 180), width: int = 120, unit=""):
+	def __init__(self, x: int, y: int, label: str, get_value: Callable, set_value: Callable, font, color=(139, 155, 180), width: int = 120, unit="", can_write_text=False, max_len=3):
 		self.get_value = get_value
 		self.set_value = set_value
 		self.font = font
@@ -65,6 +65,8 @@ class InputField(UIElement):
 		self.is_active = False
 		self.input_text = ""
 		self.unit = unit
+		self.can_write_text = can_write_text
+		self.max_len = max_len
 		super().__init__(x, y, width, 71, label)
 	
 	def draw(self, surface: pygame.Surface):
@@ -109,7 +111,7 @@ class InputField(UIElement):
 				self.is_active = False
 				if self.input_text:
 					try:
-						self.set_value(int(self.input_text))
+						self.set_value(self.input_text if self.can_write_text else int(self.input_text))
 					except ValueError:
 						pass
 				self.input_text = ""
@@ -117,7 +119,7 @@ class InputField(UIElement):
 			elif event.key == pygame.K_BACKSPACE:
 				self.input_text = self.input_text[:-1]
 				return True
-			elif event.unicode in "0123456789" and len(self.input_text) < 3:
+			elif (self.can_write_text or event.unicode in "0123456789") and len(self.input_text) < self.max_len:
 				self.input_text += event.unicode
 				return True
 		return False

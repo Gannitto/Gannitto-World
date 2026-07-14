@@ -3,10 +3,11 @@ from UI import ToggleButton, InputField, Button, PageManager
 
 class SettingsUI:
 
-	def __init__(self, win, settings, font, path):
+	def __init__(self, win, settings, statistics, font, path):
 
 		self.win = win
 		self.settings = settings
+		self.statistics = statistics
 		self.font = font
 		self.path = path
 		
@@ -86,6 +87,14 @@ class SettingsUI:
 					self.font
 				)
 			],
+		"User": [
+				InputField(
+					400, 0, "Nickname",
+					lambda: self.settings["User"][0],
+					lambda v: self.settings["User"].__setitem__(0, v),
+					self.font, can_write_text=True, max_len=10
+				)
+			],
 		"Sound": [
 				InputField(
 					400, 0, "Music volume",
@@ -98,8 +107,28 @@ class SettingsUI:
 					lambda: self.settings["Sound"][1],
 					lambda v: self.settings["Sound"].__setitem__(1, min(v, 100)),
 					self.font, unit="%"
-				),
+				)
 			],
+		"Statistics": [
+				InputField(
+					400, 0, "Visits to the game",
+					lambda: self.statistics[0],
+					lambda v: ...,
+					self.font
+				),
+				InputField(
+					400, 0, "Hours played",
+					lambda: int(self.statistics[1]),
+					lambda v: ...,
+					self.font
+				),
+				InputField(
+					400, 0, "Trees felled",
+					lambda: self.statistics[2],
+					lambda v: ...,
+					self.font
+				)
+				],
 		"Game": [
 				ToggleButton(
 					400, 0, "Automatically pick up items",
