@@ -3332,46 +3332,32 @@ def settings():
 
 			pygame.display.update()
 			clock.tick(FPS)
-			
+
 	def Game():
 
-		global win, screenmode, Settings, click, mouse_x, mouse_y, does_lighten, page, alt_pressed
+		global win, screenmode, Settings, alt_pressed, FPS
 
-		mouse_x, mouse_y = pygame.mouse.get_pos()
-		
-		Music_volume = False
-		Volume_of_sounds = False
-		input_text = ""
-		release = False
+		bias = 0
+		max_bias = -settings_ui._set_positions(bias, "Game", True) + 900
 
 		while True:
-
+			
 			click = pygame.mouse.get_pressed()
 			mouse_x, mouse_y = pygame.mouse.get_pos()
 			release = False
-
-			for event in pygame.event.get():
+			
+			events = pygame.event.get()
+			
+			for event in events:
 				if event.type == pygame.QUIT:
+					Saver.save_objects(path + "Settings/Settings.save", Settings)
 					save()
 					sys.exit()
-				elif event.type == pygame.MOUSEBUTTONUP:
-					if event.button == 1:
-						release = True
-
-				elif event.type == pygame.KEYDOWN and (Music_volume or Volume_of_sounds):
-					if event.key == pygame.K_RETURN or len(input_text) == 3:
-						if Music_volume:
-							Music_volume = False
-
-						elif Volume_of_sounds:
-							Volume_of_sounds = False
-
-						input_text = ""
-					elif event.key == pygame.K_BACKSPACE:
-						input_text = input_text[:-1]
-					elif event.unicode in "0123456789":
-						input_text += event.unicode
-				if event.type == pygame.KEYUP:
+				
+				elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+					release = True
+				
+				elif event.type == pygame.KEYUP:
 					if event.key == pygame.K_LALT:
 						alt_pressed = not alt_pressed
 					if event.key == pygame.K_ESCAPE:
@@ -3386,21 +3372,17 @@ def settings():
 							win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 							screenmode = "FULLSCREEN"
 
-			win.fill((192, 203, 220))
-			pygame.draw.rect(win, (139, 155, 180), (-8, 100, 373, Height), 8)
-			pygame.draw.line(win, (139, 155, 180), (307, 103), (Width, 103), 8)
-			back_button.main()
-			if back_button.get_pressed():
-				Saver.save_objects(path + "Settings/Settings.save", Settings)
-				win_darken(win.copy())
-				menu()
-			show_reset_settings()
-				
-			page_back_button.main()
-			page_next_button.main()
-			page = min(page, 1)
+				elif event.type == pygame.MOUSEWHEEL:
+					bias = max((min(bias + event.y * 100, 0)), max_bias)
+					settings_ui._set_positions(bias, "Game")
 			
-			win.blit(bigTextInfo.render(str(page), True, (139, 155, 180)), ((Width - 415) // 2 + 391, Height - 96))
+			# Очистка экрана
+			win.fill((192, 203, 220))
+			
+			# Обработка UI
+			settings_ui.handle_events(events, mouse_x, mouse_y, release, "Game")
+			settings_ui.draw("Game", win, Width, Height, bias, max_bias)
+			
 			help_button.main(help)
 			display_button.main(display)
 			languages_button.main(Languages)
@@ -3409,46 +3391,24 @@ def settings():
 			statistics_button.main(Statistics)
 			keys_button.main(Keys)
 			win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Game 2.png"), (132, 64)), (10, 642))
-
-			if page == 1:
-				
-				win.blit(bigTextInfo.render(languages("Автоматически брать предметы", "Automatically pick up items", "Элементтерді автоматты түрде алу"), True, (139, 155, 180)), (385, 123))
-				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(languages("Автоматически брать предметы", "Automatically pick up items", "Элементтерді автоматты түрде алу"))[0] + 395, 113, 71, 71), 5)
-				if Settings["Game"][0]:
-					win.blit(bigTextInfo.render(" ✓", True, (139, 155, 180)), (bigTextInfo.size(languages("Автоматически брать предметы", "Automatically pick up items", "Элементтерді автоматты түрде алу"))[0] + 405, 123))
-					if bigTextInfo.size(languages("Автоматически брать предметы", "Automatically pick up items", "Элементтерді автоматты түрде алу"))[0] + 395 <= mouse_x <= bigTextInfo.size(languages("Автоматически брать предметы", "", "Элементтерді автоматты түрде алу"))[0] + 466 and 113 <= mouse_y <= 184 and release:
-						Settings["Game"][0] = False
-				else:
-					win.blit(bigTextInfo.render(" x", True, (139, 155, 180)), (bigTextInfo.size(languages("Автоматически брать предметы", "Automatically pick up items", "Элементтерді автоматты түрде алу"))[0] + 405, 123))
-					if bigTextInfo.size(languages("Автоматически брать предметы", "Automatically pick up items", "Элементтерді автоматты түрде алу"))[0] + 395 <= mouse_x <= bigTextInfo.size(languages("Автоматически брать предметы", "Automatically pick up items", "Элементтерді автоматты түрде алу"))[0] + 466 and 113 <= mouse_y <= 184 and release:
-						Settings["Game"][0] = True
-						
-				win.blit(bigTextInfo.render(languages("Телефонное управление", "Telephone control", "Телефон арқылы басқару"), True, (139, 155, 180)), (385, 209))
-				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(languages("Телефонное управление", "Telephone control", "Телефон арқылы басқару"))[0] + 395, 199, 71, 71), 5)
-				if Settings["Game"][1]:
-					win.blit(bigTextInfo.render(" ✓", True, (139, 155, 180)), (bigTextInfo.size(languages("Телефонное управление", "Telephone control", "Телефон арқылы басқару"))[0] + 405, 209))
-					if bigTextInfo.size(languages("Телефонное управление", "Telephone control", "Телефон арқылы басқару"))[0] + 395 <= mouse_x <= bigTextInfo.size(languages("Телефонное управление", "Telephone control", "Телефон арқылы басқару"))[0] + 466 and 199 <= mouse_y <= 270 and release:
-						Settings["Game"][1] = False
-				else:
-					win.blit(bigTextInfo.render(" x", True, (139, 155, 180)), (bigTextInfo.size(languages("Телефонное управление", "Telephone control", "Телефон арқылы басқару"))[0] + 405, 209))
-					if bigTextInfo.size(languages("Телефонное управление", "Telephone control", "Телефон арқылы басқару"))[0] + 395 <= mouse_x <= bigTextInfo.size(languages("Телефонное управление", "Telephone control", "Телефон арқылы басқару"))[0] + 466 and 199 <= mouse_y <= 270 and release:
-						Settings["Game"][1] = True
-				
+			back_button.main()
+			show_reset_settings()
+			
 			if alt_pressed:
 				draw_key("ESC", 44, 108)
-				draw_key("<-", 425, Height - 168)
-				draw_key("->", Width - 74, Height - 168)
 
+			if back_button.get_pressed():
+				Saver.save_objects(path + "Settings/Settings.save", Settings)
+				win_darken(win.copy())
+				menu()
+				
+			# Анимация и эффекты
 			animate_click(Settings, win, mouse_x, mouse_y)
-
-			win_fill(alpha=100 - Settings["Display"][0])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
+			win_fill(alpha=100 - Settings["Display"][0])
 			
-			if not does_lighten:
-				win_lighten(win.copy())
-				does_lighten = True
-
 			pygame.display.update()
 			clock.tick(FPS)
+	
 	win_darken(win.copy())
 	help()
 
@@ -5152,7 +5112,7 @@ def start_game():
 				elif special_slot_animations["Game menu slot"][1] < FPS / 4:
 					special_slot_animations["Game menu slot"][1] += 1
 
-				if special_slot_animations["Game menu slot"][0] and Settings["Display"][5]: ###
+				if special_slot_animations["Game menu slot"][0] and Settings["Display"][5]:
 					try:win.blit(pygame.transform.scale(Game_menu_slot2, (64 - special_slot_animations["Game menu slot"][2], 64 - special_slot_animations["Game menu slot"][2])), (Width // 2 + cos((2 * pi) / 6) * radius - 32, Height // 2 + sin((2 * pi) / 6) * radius - 32))
 					except: win.blit(Game_menu_slot2, (Width // 2 + cos((2 * pi) / 6) * radius - 32, Height // 2 + sin((2 * pi) / 6) * radius - 32))
 				
@@ -6524,7 +6484,7 @@ def edit_world():
 			win.blit(bigTextInfo.render(" x", True, (139, 155, 180)), (bigTextInfo.size(t("God mode"))[0] + 60, 520))
 			if bigTextInfo.size(t("God mode"))[0] + 60 <= mouse_x <= bigTextInfo.size(t("God mode"))[0] + 131 and 510 <= mouse_y <= 568 and release:
 				player.god_mode = True
-		###		
+		
 		if bigTextInfo.size(t("World seed"))[0] + 100 <= mouse_x <= bigTextInfo.size(t("World seed"))[0] + 900 and 590 <= mouse_y <= 661 and release:
 			seed_input = True
 		
@@ -6534,7 +6494,6 @@ def edit_world():
 			win.blit(bigTextInfo.render(input_text, True, (139, 155, 180)), (bigTextInfo.size(t("World seed"))[0] + 120, 600))
 		else:
 			win.blit(bigTextInfo.render(str(world.chunk_manager.generator.seed), True, (139, 155, 180)), (bigTextInfo.size(t("World seed"))[0] + 120, 600))
-		###
 
 		if create_world:
 			

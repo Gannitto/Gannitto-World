@@ -99,6 +99,20 @@ class SettingsUI:
 					lambda v: self.settings["Sound"].__setitem__(1, min(v, 100)),
 					self.font, unit="%"
 				),
+			],
+		"Game": [
+				ToggleButton(
+					400, 0, "Automatically pick up items",
+					lambda: self.settings["Game"][0],
+					lambda v: self.settings["Game"].__setitem__(0, v),
+					self.font
+				),
+				ToggleButton(
+					400, 0, "Telephone control",
+					lambda: self.settings["Game"][1],
+					lambda v: self.settings["Game"].__setitem__(1, v),
+					self.font
+				),
 			]
 		}
 
