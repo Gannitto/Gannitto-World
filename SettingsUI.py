@@ -19,7 +19,7 @@ class SettingsUI:
 		self.elements = {
 
 			"Display": [
-		
+				
 				InputField(
 					400, 0, "Brightness",
 					lambda: self.settings["Display"][0],
@@ -145,13 +145,13 @@ class SettingsUI:
 			]
 		}
 
-	def _set_positions(self, bias, section, get_max_bias=False):
+	def _set_positions(self, bias, section, get_max_bias=False, start_y=50):
 		
 		y = 0
 		for element in self.elements[section]:
 			y += 80
-			element.y = 50 + bias + y
-			element.rect.y = 50 + bias + y
+			element.y = start_y + bias + y
+			element.rect.y = start_y + bias + y
 
 		if get_max_bias:
 			return y
@@ -194,23 +194,16 @@ class SettingsUI:
 		pygame.draw.rect(win, (192, 203, 220), (0, 0, Width, 103))
 		pygame.draw.rect(win, (139, 155, 180), (-8, 100, 373, Height), 8)
 		pygame.draw.line(win, (139, 155, 180), (307, 103), (Width, 103), 8)
-		
-		# bar_height = max((Height - 103) * ((Height - 103) / (Height - 103 + abs(max_bias))), 20)
-		# max_scroll = abs(max_bias) - 103
-		# scroll_rel = abs(bias) / max_scroll if max_scroll > 0 else 0
-		# bar_y = abs(bias) + scroll_rel * (Height - 103 - bar_height) + 103
-		
-		# pygame.draw.rect(win, (139, 155, 180), (Width - 10, bar_y, 10, bar_height))
 
 		visible_height = Height - 103
 		content_height = visible_height + abs(max_bias)
-		content_y = abs(bias)
 		scrollbar_height = Height - 103
 
-		bar_height = max(scrollbar_height * (visible_height / content_height), 20)
-		max_scroll = content_height - visible_height
-		scroll_rel = abs(content_y) / max_scroll if max_scroll > 0 else 0
-		bar_y = 103 + scroll_rel * (scrollbar_height - bar_height)
-		
-		pygame.draw.rect(win, (139, 155, 180), (Width - 10, bar_y, 10, bar_height))
+		if visible_height > content_height:
+			bar_height = max(scrollbar_height * (visible_height / content_height), 20)
+			max_scroll = content_height - visible_height
+			scroll_rel = abs(bias) / max_scroll if max_scroll > 0 else 0
+			bar_y = 103 + scroll_rel * (scrollbar_height - bar_height)
+			
+			pygame.draw.rect(win, (139, 155, 180), (Width - 10, bar_y, 10, bar_height))
 

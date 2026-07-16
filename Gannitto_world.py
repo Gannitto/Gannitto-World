@@ -3545,7 +3545,7 @@ def change_a_character():
 						changed_character_num = 1
 					if event.key == pygame.K_LEFT and page > 1:
 						page -= 1
-					if event.kty == pygame.K_RIGHT and page < 3:
+					if event.key == pygame.K_RIGHT and page < 3:
 						page += 1
 					if event.key == hot_keys["Change screen"]:
 						if screenmode == "FULLSCREEN":
@@ -6436,11 +6436,6 @@ def edit_world():
 	
 	win.fill((192, 203, 220))
 
-	win.blit(bigTextInfo.render("x", True, (139, 155, 180)), (Width - 50, 15))
-	win.blit(bigTextInfo.render(t("World name"), True, (139, 155, 180)), (50, 50))
-	pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(t("World name"))[0] + 100, 50, 800, 71), 5)
-	win.blit(bigTextInfo.render(world_name, True, (139, 155, 180)), (bigTextInfo.size(t("World name"))[0] + 120, 60))
-
 	if create_world:
 		world.chunk_manager.generator.seed = random.randint(0, 2**31 - 1)
 
@@ -6553,19 +6548,18 @@ def edit_world():
 			win.blit(bigTextInfo.render(" x", True, (139, 155, 180)), (bigTextInfo.size(t("God mode"))[0] + 60, 520))
 			if bigTextInfo.size(t("God mode"))[0] + 60 <= mouse_x <= bigTextInfo.size(t("God mode"))[0] + 131 and 510 <= mouse_y <= 568 and release:
 				player.god_mode = True
-		
-		if bigTextInfo.size(t("World seed"))[0] + 100 <= mouse_x <= bigTextInfo.size(t("World seed"))[0] + 900 and 590 <= mouse_y <= 661 and release:
-			seed_input = True
-		
-		win.blit(bigTextInfo.render(t("World seed"), True, (139, 155, 180)), (50, 600))
-		pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(t("World seed"))[0] + 100, 590, 800, 71), 5)
-		if seed_input:
-			win.blit(bigTextInfo.render(input_text, True, (139, 155, 180)), (bigTextInfo.size(t("World seed"))[0] + 120, 600))
-		else:
-			win.blit(bigTextInfo.render(str(world.chunk_manager.generator.seed), True, (139, 155, 180)), (bigTextInfo.size(t("World seed"))[0] + 120, 600))
 
 		if create_world:
 			
+		
+			if bigTextInfo.size(t("World seed"))[0] + 100 <= mouse_x <= bigTextInfo.size(t("World seed"))[0] + 900 and 590 <= mouse_y <= 661 and release:
+				seed_input = True
+			win.blit(bigTextInfo.render(t("World seed"), True, (139, 155, 180)), (50, 600))
+			pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(t("World seed"))[0] + 100, 590, 800, 71), 5)
+			if seed_input:
+				win.blit(bigTextInfo.render(input_text, True, (139, 155, 180)), (bigTextInfo.size(t("World seed"))[0] + 120, 600))
+			else:
+				win.blit(bigTextInfo.render(str(world.chunk_manager.generator.seed), True, (139, 155, 180)), (bigTextInfo.size(t("World seed"))[0] + 120, 600))
 			win.blit(bigTextInfo.render(t("Create world"), True, (139, 155, 180)), (Width - bigTextInfo.size(t("Create world"))[0] - 50, 150))
 			
 			if Width - bigTextInfo.size(t("Create world"))[0] - 50 < mouse_x < Width - 50 and 150 < mouse_y < 180:
@@ -6576,11 +6570,11 @@ def edit_world():
 					start_game()
 		else:
 			
-			win.blit(bigTextInfo.render(t("Delete world"), True, (139, 155, 180)), (50, 720))
+			win.blit(bigTextInfo.render(t("Delete world"), True, (139, 155, 180)), (50, 660))
 
-			if 50 < mouse_x < 50 + bigTextInfo.size(t("Delete world"))[0] and 720 < mouse_y < 750:
+			if 50 < mouse_x < 50 + bigTextInfo.size(t("Delete world"))[0] and 660 < mouse_y < 690:
 		   
-				win.blit(bigTextInfo.render(t("Delete world"), True, (58, 68, 102)), (50, 720))
+				win.blit(bigTextInfo.render(t("Delete world"), True, (58, 68, 102)), (50, 660))
 			
 				if release:
 				
@@ -6625,10 +6619,10 @@ def edit_world():
 						pygame.display.update()
 						clock.tick(30)
 					
-			win.blit(bigTextInfo.render(t("Copy world"), True, (139, 155, 180)), (50, 660))
+			win.blit(bigTextInfo.render(t("Copy world"), True, (139, 155, 180)), (50, 600))
 
-			if 50 < mouse_x < 50 + bigTextInfo.size(t("Copy world"))[0] and 660 < mouse_y < 690:
-				win.blit(bigTextInfo.render(t("Copy world"), True, (58, 68, 102)), (50, 660))
+			if 50 < mouse_x < 50 + bigTextInfo.size(t("Copy world"))[0] and 600 < mouse_y < 630:
+				win.blit(bigTextInfo.render(t("Copy world"), True, (58, 68, 102)), (50, 600))
 				if release:
 					import shutil
 					shutil.copytree(path + "Worlds/" + world_name, path + "Worlds/" + world_name + t(" - copy"))
