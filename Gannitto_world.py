@@ -841,9 +841,10 @@ class Player:
 
 	def collides_with_walls(self):
 		"""Проверяет, пересекается ли игрок с какой-либо стеной."""
-		# if pygame.key.get_pressed()[pygame.K_o]: return False временная функция чтобы для теста ходить сквозь стены
+		if self.pass_through_walls: # pygame.key.get_pressed()[pygame.K_o]:
+			return False
 		self.rect = pygame.Rect(self.x - 35, self.y + 112, 70, 224)
-
+		
 		for wall in world.visible_walls.values():
 			wall_rect = pygame.Rect(wall.x - 128, wall.y + 128, 256, 256)
 			if self.rect.colliderect(wall_rect):

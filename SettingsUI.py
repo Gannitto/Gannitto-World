@@ -27,6 +27,42 @@ class SettingsUI:
 					self.font, unit="%"
 				),
 				InputField(
+					400, 0, "Brightness",
+					lambda: self.settings["Display"][0],
+					lambda v: self.settings["Display"].__setitem__(0, v),
+					self.font, unit="%"
+				),
+				InputField(
+					400, 0, "Brightness",
+					lambda: self.settings["Display"][0],
+					lambda v: self.settings["Display"].__setitem__(0, v),
+					self.font, unit="%"
+				),
+				InputField(
+					400, 0, "Brightness",
+					lambda: self.settings["Display"][0],
+					lambda v: self.settings["Display"].__setitem__(0, v),
+					self.font, unit="%"
+				),
+				InputField(
+					400, 0, "Brightness",
+					lambda: self.settings["Display"][0],
+					lambda v: self.settings["Display"].__setitem__(0, v),
+					self.font, unit="%"
+				),
+				InputField(
+					400, 0, "Brightness",
+					lambda: self.settings["Display"][0],
+					lambda v: self.settings["Display"].__setitem__(0, v),
+					self.font, unit="%"
+				),
+				InputField(
+					400, 0, "Brightness",
+					lambda: self.settings["Display"][0],
+					lambda v: self.settings["Display"].__setitem__(0, v),
+					self.font, unit="%"
+				),
+				InputField(
 					400, 0, "Inventory transparency",
 					lambda: self.settings["Display"][1],
 					lambda v: self.settings["Display"].__setitem__(1, v),
@@ -199,11 +235,10 @@ class SettingsUI:
 		content_height = visible_height + abs(max_bias)
 		scrollbar_height = Height - 103
 
-		if visible_height > content_height:
-			bar_height = max(scrollbar_height * (visible_height / content_height), 20)
-			max_scroll = content_height - visible_height
-			scroll_rel = abs(bias) / max_scroll if max_scroll > 0 else 0
-			bar_y = 103 + scroll_rel * (scrollbar_height - bar_height)
-			
-			pygame.draw.rect(win, (139, 155, 180), (Width - 10, bar_y, 10, bar_height))
+		bar_height = max(scrollbar_height * (visible_height / content_height), 20)
+		max_scroll = content_height - visible_height
+		scroll_rel = abs(bias) / max_scroll if max_scroll > 0 else 0
+		bar_y = 103 + scroll_rel * (scrollbar_height - bar_height)
+		
+		pygame.draw.rect(win, (139, 155, 180), (Width - 10, bar_y, 10, bar_height))
 

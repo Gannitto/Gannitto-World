@@ -228,17 +228,42 @@ class ChunkManager:
 		for object in biomes_objects[chunk.biome]["Objects"]:
 			if rng.random() <= object[0]:
 				for _ in range(rng.randint(1, int(object[0] * 3) + 1)):
-					X = chunk.x * chunk_size + rng.randint(0, chunk_size - 1)
-					Y = chunk.y * chunk_size + rng.randint(0, chunk_size - 1)
-					objects.append(Object(object_x=X, object_y=Y, **object[1]))
+					for attempt in range(50): # 50 это максимум попыток поставить объект. Впрочем, почти всегда получается с 1 попытки
+
+						X = chunk.x * chunk_size + rng.randint(0, chunk_size - 1)
+						Y = chunk.y * chunk_size + rng.randint(0, chunk_size - 1)
+						temp_object = Object(object_x=X, object_y=Y, **object[1])
+
+						collision = False
+						for object_ in objects:
+							if temp_object.rect.colliderect(object_.rect):
+								collision = True
+								break
+
+						if not collision:
+							objects.append(temp_object)
+							break
 		
 		items = []
 		for item in biomes_objects[chunk.biome]["Items"]:
 			if rng.random() <= item[0]:
 				for _ in range(rng.randint(1, int(item[0] * 3) + 1)):
-					X = chunk.x * chunk_size + rng.randint(0, chunk_size - 1)
-					Y = chunk.y * chunk_size + rng.randint(0, chunk_size - 1)
-					items.append(Object(object_x=X, object_y=Y, **item[1]))
+					for attempt in range(50): # 50 это максимум попыток поставить объект. Впрочем, почти всегда получается с 1 попытки
+
+						X = chunk.x * chunk_size + rng.randint(0, chunk_size - 1)
+						Y = chunk.y * chunk_size + rng.randint(0, chunk_size - 1)
+						temp_item = Object(object_x=X, object_y=Y, **item[1])
+
+						collision = False
+						for object_ in objects:
+							if temp_item.rect.colliderect(object_.rect):
+								collision = True
+								break
+
+						if not collision:
+							items.append(temp_item)
+							break
+
 
 		for structure in biomes_objects[chunk.biome]["Structures"]:
 			if rng.random() <= structure[0]:
