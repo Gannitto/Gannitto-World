@@ -518,7 +518,7 @@ class Object:
 		if rect == ():
 			self.rect = pygame.Rect(self.x - self.w / 2, self.y + self.h / 2, self.w, self.h)
 		else:
-			self.rect = (rect[0] + self.x, rect[1] + self.y, rect[2], rect[3])
+			self.rect = pygame.Rect(rect[0] + self.x, rect[1] + self.y, rect[2], rect[3])
 	
 	def main(self, X, Y):
 
@@ -843,14 +843,14 @@ class Player:
 		"""Проверяет, пересекается ли игрок с какой-либо стеной."""
 		if self.pass_through_walls: # pygame.key.get_pressed()[pygame.K_o]:
 			return False
-		self.rect = pygame.Rect(self.x - 35, self.y + 112, 70, 224)
+		self.rect = pygame.Rect(self.x - 25, self.y + 112, 50, 224)
 		
 		for wall in world.visible_walls.values():
 			wall_rect = pygame.Rect(wall.x - 128, wall.y + 128, 256, 256)
 			if self.rect.colliderect(wall_rect):
 				return True
 		for object in world.visible_objects:
-			if object.object_class == "Object" and object.is_solid and self.rect.colliderect(object.rect):
+			if object.is_solid and self.rect.colliderect(object.rect):
 				return True
 		return False
 	
@@ -859,6 +859,7 @@ class Player:
 		self.is_moving = True
 		
 		# Обновление позиции
+
 		self.x += dx * self.speed
 		if self.collides_with_walls():
 			self.x -= dx * self.speed
@@ -891,7 +892,7 @@ class Player:
 		self.frame_index = 0
 		self.animation_timer = 0
 	
-	def render(self, screen):
+	def render(self, screen, dx, dy):
 		"""Отрисовывает игрока на экране"""
 		
 		screen.blit(self.image, (Width / 2 - 128, Height / 2 - 128))
@@ -899,7 +900,7 @@ class Player:
 		if Settings["Display"][3]:
 			self.rect = pygame.Rect(self.x - 25, self.y + 112, 50, 224)
 			pygame.draw.rect(screen, (0, 255, 0), (Width / 2 - 128, Height / 2 - 128, self.image.get_width(), self.image.get_height()), 2)
-			pygame.draw.rect(win, (0, 0, 0), (self.rect[0] - self.x + Width // 2, self.y - self.rect[1] + Height // 2, self.rect[2], self.rect[3]), 3)
+			pygame.draw.rect(win, (0, 0, 0), (self.rect[0] - self.x + Width // 2 + dx * self.speed, self.y - self.rect[1] + Height // 2 - dy * self.speed, self.rect[2], self.rect[3]), 3)
 
 class BaseEnemy:
 	def __init__(self, x, y, HP, speed, animation_frames):
@@ -967,23 +968,15 @@ class BaseEnemy:
 			if not self._check_collision(self.x, new_y, world):
 				self.y = new_y
 
-class CollisionManager:
-
-	@staticmethod
-	def check_wall_collision(x, y, walls, margin=32):
-		"""Проверяет столкновение с любыми стенами"""
-		for wall in walls.values():
-			if (wall.x - margin < x < wall.x + 256 + margin and
-				wall.y - margin < y < wall.y + 256 + margin):
-				return True
-		return False
-	
-	@staticmethod
-	def check_entity_collision(entity1, entity2, margin=0):
-		"""Проверяет столкновение между двумя сущностями"""
-		return (abs(entity1.x - entity2.x) < margin and abs(entity1.y - entity2.y) < margin)
-
-collision_manager = CollisionManager()
+def check_collision(rect: pygame.Rect, world):
+	"""Проверяет столкновение с твёрдыми объектами"""
+	for wall in world.visible_walls.values():
+		if rect.colliderect(wall.rect):
+			return True
+	for object in world.visible_objects:
+		if object.is_solid and rect.colliderect(object.rect):
+			return True
+	return False
 
 class SlimeEnemy(BaseEnemy):
 	
@@ -1169,10 +1162,8 @@ class SlimeEnemy(BaseEnemy):
 
 	def _check_collision(self, x, y, world):
 		"""Проверка столкновения со стенами"""
-		margin = 32
 		for wall in world.visible_walls.values():
-			if (wall.x - margin < x < wall.x + 256 + margin and
-				wall.y - margin < y < wall.y + 256 + margin):
+			if (wall.x < x < wall.x + 256 and wall.y < y < wall.y + 256):
 				return True
 		return False
 		
@@ -1829,6 +1820,7 @@ class Wall:
 		self.name = "Wall"
 		self.is_door = is_door
 		self.open = False
+		self.rect = pygame.Rect(self.x - 128, self.y + 128, 256, 256)
 
 		if is_door:
 
@@ -4727,7 +4719,7 @@ def start_game():
 		# Отрисовка игрока
 		
 		# win.blit(shadow(Hiro, player.direction + str(player.costum), len_shadow=50), Hiro_rect)
-		player.render(win)
+		player.render(win, dx, dy)
 
 
 		# Анимации Хиро

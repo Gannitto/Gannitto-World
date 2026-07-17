@@ -27,42 +27,6 @@ class SettingsUI:
 					self.font, unit="%"
 				),
 				InputField(
-					400, 0, "Brightness",
-					lambda: self.settings["Display"][0],
-					lambda v: self.settings["Display"].__setitem__(0, v),
-					self.font, unit="%"
-				),
-				InputField(
-					400, 0, "Brightness",
-					lambda: self.settings["Display"][0],
-					lambda v: self.settings["Display"].__setitem__(0, v),
-					self.font, unit="%"
-				),
-				InputField(
-					400, 0, "Brightness",
-					lambda: self.settings["Display"][0],
-					lambda v: self.settings["Display"].__setitem__(0, v),
-					self.font, unit="%"
-				),
-				InputField(
-					400, 0, "Brightness",
-					lambda: self.settings["Display"][0],
-					lambda v: self.settings["Display"].__setitem__(0, v),
-					self.font, unit="%"
-				),
-				InputField(
-					400, 0, "Brightness",
-					lambda: self.settings["Display"][0],
-					lambda v: self.settings["Display"].__setitem__(0, v),
-					self.font, unit="%"
-				),
-				InputField(
-					400, 0, "Brightness",
-					lambda: self.settings["Display"][0],
-					lambda v: self.settings["Display"].__setitem__(0, v),
-					self.font, unit="%"
-				),
-				InputField(
 					400, 0, "Inventory transparency",
 					lambda: self.settings["Display"][1],
 					lambda v: self.settings["Display"].__setitem__(1, v),
