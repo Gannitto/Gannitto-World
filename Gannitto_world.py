@@ -177,28 +177,6 @@ def tp(X: int, Y: int):
 
 # Применение настроек TODO
 
-# Inventory_slot.set_alpha(Settings["Display"][1])
-# Changed_inventory_slot.set_alpha(Settings["Display"][1])
-# Object_inventory_slot.set_alpha(Settings["Display"][1])
-# Tool_inventory_slot.set_alpha(Settings["Display"][1])
-# Split_items1.set_alpha(Settings["Display"][1])
-# Split_items2.set_alpha(Settings["Display"][1])
-# Compact_inventory1.set_alpha(Settings["Display"][1])
-# Compact_inventory2.set_alpha(Settings["Display"][1])
-# Craft_list_slot1.set_alpha(Settings["Display"][1])
-# Craft_list_slot2.set_alpha(Settings["Display"][1])
-# Game_menu_slot1.set_alpha(Settings["Display"][1])
-# Game_menu_slot2.set_alpha(Settings["Display"][1])
-# Menu_slot1.set_alpha(Settings["Display"][1])
-# Menu_slot2.set_alpha(Settings["Display"][1])
-# Multyplayer_slot1.set_alpha(Settings["Display"][1])
-# Multyplayer_slot2.set_alpha(Settings["Display"][1])
-# Close_slot1.set_alpha(Settings["Display"][1])
-# Close_slot2.set_alpha(Settings["Display"][1])
-# Reference_slot1.set_alpha(Settings["Display"][1])
-# Reference_slot2.set_alpha(Settings["Display"][1])
-
-
 # Текстуры
 
 statistics[0] += 1

@@ -1,4 +1,12 @@
 import pygame
+from Globals import path
+
+select_images = {
+		(256, 256): pygame.transform.scale(pygame.image.load(path + "Images/Select 256x256.png"), (256, 256))
+		}
+
+for image in select_images.values():
+	image.set_alpha(50)
 
 def build(
 		build_tuple: tuple,
@@ -30,7 +38,7 @@ def build(
 	
 	from Inventory import inventory
 	changed_slot, player, particles, Width, Height, world = build_tuple
-	from Gannitto_world import Particle, Object
+	from Gannitto_world import Particle, Object, win
 	from Functions import win_fill
 	
 	if inventory.whole_inventory[changed_slot] is not None:
@@ -40,7 +48,10 @@ def build(
 		if changed_slot_name in item_name.split(",") or inventory.whole_inventory[changed_slot].type in item_type.split(","):
 			
 			mouse_x, mouse_y = pygame.mouse.get_pos()
-			win_fill(rect=((player.x + mouse_x - Width // 2) // object_to_build.w * object_to_build.w - player.x + Width // 2, player.y - (player.y - mouse_y + Height // 2) // object_to_build.h * object_to_build.h + Height // 2 - object_to_build.h, object_to_build.w, object_to_build.h))
+			if (object_to_build.w, object_to_build.h) in select_images:
+				win.blit(select_images[(object_to_build.w, object_to_build.h)], ((player.x + mouse_x - Width // 2) // object_to_build.w * object_to_build.w - player.x + Width // 2, player.y - (player.y - mouse_y + Height // 2) // object_to_build.h * object_to_build.h + Height // 2 - object_to_build.h))
+			else:
+				win_fill(rect=((player.x + mouse_x - Width // 2) // object_to_build.w * object_to_build.w - player.x + Width // 2, player.y - (player.y - mouse_y + Height // 2) // object_to_build.h * object_to_build.h + Height // 2 - object_to_build.h, object_to_build.w, object_to_build.h))
 		
 			if pygame.mouse.get_pressed()[0]:
 			
