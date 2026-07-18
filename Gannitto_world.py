@@ -13,7 +13,7 @@ import Ron
 import sys
 from itertools import product
 from Functions import *
-from Build import build
+from Build import build, check_build_objects
 from Chunks import ChunkManager
 from Inventory import inventory
 from Translator import translator
@@ -471,7 +471,8 @@ class Object:
 			  start_time=None,
 			  is_solid=False,
 			  rect=(),
-			  pickable=False):
+			  pickable=False,
+			  breakable=False):
 
 		"""
 		Класс основного объекта игры. Такого, как например дерево.
@@ -515,6 +516,7 @@ class Object:
 		self.scale_x = scale_x
 		self.is_solid = is_solid
 		self.pickable = pickable
+		self.breakable = breakable
 
 		if rect == ():
 			self.rect = pygame.Rect(self.x - self.w / 2, self.y - self.h / 2, self.w, self.h)
@@ -3651,6 +3653,12 @@ multyplayer = False
 hot_keys = Saver.load_objects(path + "Settings/Hot keys.save")
 player = Player()
 dt = 0
+objects_templates = {
+		"Table": Object("Table", 0, 0, "Images/Objects/Table.png", (256, 256), special_flags=1, is_solid=True, breakable=True),
+		"Wall table": Object("Wall table", 0, 0, "Images/Objects/Wall table.png", (256, 256), special_flags=1, is_solid=True, breakable=True),
+		"Furnace": Object("Furnace", 0, 0, "Images/Items/Furnace.png", (256, 256), special_flags=1, is_solid=True, breakable=True),
+		"Punch": Object("Punch", 0, 0, "Images/Objects/Punch 1.png", (256, 256), is_solid=True, breakable=True)
+		}
 
 # Основной цикл игры
 
@@ -4281,9 +4289,7 @@ def start_game():
 
 				# Отображение объектов
 
-				c = []
-
-				for i, object in enumerate(world.visible_objects):
+				for object in world.visible_objects:
 
 					if object.object_class == "Object":
 						object.main(player.x, player.y)
@@ -4518,7 +4524,7 @@ def start_game():
 									else:
 										world.particles.append(Particle(object.x, object.y, pygame.transform.scale(pygame.image.load(path + "Images/Items/Dandelion seed.png"), (32, 32)), random.randint(-30, 30), random.randint(-30, 30), end_time=5))
 
-						if object.name == "Punch":
+						if object.name == "Punch" and False:
 
 							if object.get_left_pressed() and inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name in ("Mushroom", "Red mushroom", "Thread", "Poppy", "Purple tulip", "Orange tulip", "Black tulip", "Red tulip", "Yellow tulip", "Dandelion", "Cotton grass", "Onion"):
 								if object.special_flags < 11:
@@ -5908,13 +5914,8 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 						
 					world.chunk_manager.get_chunk_at((player.x + mouse_x - Width // 2) // 128, (player.y + mouse_y - Height // 2) // 256).objects.append(Portal())
 		build_tuple = (changed_slot, player, world.particles, Width, Height, world)
-		build(build_tuple, Object("Table", 0, 0, "Images/Objects/Table.png", (256, 256), special_flags=1, is_solid=True), "Table")
-		build(build_tuple, Object("Wall table", 0, 0, "Images/Objects/Wall table.png", (256, 256), special_flags=1, is_solid=True), "Wall table")
-		build(build_tuple, Object("Furnace", 0, 0, "Images/Items/Furnace.png", (256, 256), special_flags=1, is_solid=True), "Furnace")
-		build(build_tuple, Object("Punch", 0, 0, "Images/Objects/Punch 1.png", (256, 256), special_flags=1, is_solid=True), "Punch")
-		
+		check_build_objects(objects_templates, build_tuple)
 		build(build_tuple, Object("Farmland", 0, 0, "Images/Objects/Farmland.png", (128, 128), special_flags=1), "Stone hoe", get_item_from_inventory=0, command="pygame.mixer.Sound.play(pygame.mixer.Sound('" + path + "Sounds/Dirt.mp3" + "'))")
-		
 		if inventory.whole_inventory[changed_slot] is None: a = ""
 		else:
 			a = inventory.whole_inventory[changed_slot].name[:-6] if " seeds" in inventory.whole_inventory[changed_slot].name else inventory.whole_inventory[changed_slot].name
@@ -5994,13 +5995,19 @@ if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0]
 
 		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Stone hammer":
 
-			wall_pos = (player.x + mouse_x - Width // 2) // 256 * 256 + 128, (player.y - mouse_y + Height // 2) // 256 * 256 + 128
-			win_fill(rect=(wall_pos[0] - player.x + Width // 2 - 128, player.y - wall_pos[1] + Height // 2 - 128, 256, 256))
+			break_pos = (player.x + mouse_x - Width // 2) // 256 * 256 + 128, (player.y - mouse_y + Height // 2) // 256 * 256 + 128
+			win_fill(rect=(break_pos[0] - player.x + Width // 2 - 128, player.y - break_pos[1] + Height // 2 - 128, 256, 256))
 
 			if click[0]:
-				if wall_pos in world.visible_walls:
-					inventory.increate(world.chunk_manager.get_chunk_at(*wall_pos).walls[wall_pos].wall_type)
-					world.chunk_manager.get_chunk_at(*wall_pos).walls.pop(wall_pos, None)
+				if break_pos in world.visible_walls:
+					inventory.increate(world.chunk_manager.get_chunk_at(*break_pos).walls[break_pos].wall_type)
+					world.chunk_manager.get_chunk_at(*break_pos).walls.pop(break_pos, None)
+
+				for object in world.visible_objects:
+					if object.breakable and (object.x, object.y) == break_pos:
+						inventory.increate(object.name)
+						world.chunk_manager.get_chunk_at(object.x, object.y).objects.remove(object)
+						break
 
 		if mouse_object is not None and Settings["Display"][8]:
 			if screenmode == "FULLSCREEN":

@@ -30,7 +30,7 @@ def build(
 	
 	from Inventory import inventory
 	changed_slot, player, particles, Width, Height, world = build_tuple
-	from Gannitto_world import Particle, Pick_an_item
+	from Gannitto_world import Particle, Object
 	from Functions import win_fill
 	
 	if inventory.whole_inventory[changed_slot] is not None:
@@ -49,11 +49,7 @@ def build(
 					if i < len(world.visible_objects) or object.can_interfere_with_placing:
 
 						if pygame.Rect((player.x + mouse_x - Width // 2) // object_to_build.w * object_to_build.w + object_to_build.w // 2, (player.y - mouse_y + Height // 2) // object_to_build.h * object_to_build.h + object_to_build.h // 2, object_to_build.w, object_to_build.h).colliderect(pygame.Rect(object.x, object.y, object.w, object.h)):
-							if pick_up_items and object.special_flags == "Item":
-								particles.append(Particle(object.x, object.y, object.image, "round(self.calculated_variable[0])", "round(self.calculated_variable[1])", variable_to_calculate="((self.special_flags[0] // 2) / 10 / 10 * self.ticks, (self.special_flags[1] // 2) / 10 / 10 * self.ticks, (-self.special_flags[0] // 2) / 10 / 10 * (self.ticks - 10), (-self.special_flags[1] // 2) / 10 / 10 * (self.ticks - 10))", track_ticks=True, end_x=player.x, end_y=player.y, end_zone=30, end_command="(inventory.increate('" + object.name + "'),pygame.mixer.Sound.play(Pick_an_item))", special_flags=(player.x - object.x, player.y - object.y, (0 - 17) // (0 - 10))))
-								world.chunk_manager.get_chunk_at(object.x, object.y).objects.remove(object)
-								pygame.mixer.Sound.play(Pick_an_item)
-							elif needed_object == object.name:
+							if needed_object == object.name:
 								needed_object = "Object found"
 							else:
 								break
@@ -65,8 +61,14 @@ def build(
 						inventory.whole_inventory[changed_slot].amount -= get_item_from_inventory
 						if inventory.whole_inventory[changed_slot].amount == 0:
 							inventory.whole_inventory[changed_slot] = None
-					
-						object_to_build.x, object_to_build.y = ((player.x + mouse_x - Width // 2) // object_to_build.w * object_to_build.w + object_to_build.w // 2, (player.y - mouse_y + Height // 2) // object_to_build.h * object_to_build.h + object_to_build.h // 2)
+						new_object = Object(object_to_build.name, object_to_build.x, object_to_build.y, object_to_build.image_path, object_to_build.scale_x, object_to_build.image, object_to_build.special_flags, object_to_build.add_path, object_to_build.start_time, object_to_build.is_solid, object_to_build.rect, object_to_build.is_solid, object_to_build.breakable)
+						new_object.x, new_object.y = ((player.x + mouse_x - Width // 2) // object_to_build.w * object_to_build.w + object_to_build.w // 2, (player.y - mouse_y + Height // 2) // object_to_build.h * object_to_build.h + object_to_build.h // 2)
+						new_object.rect = pygame.Rect(new_object.x - new_object.w / 2, new_object.y - new_object.h / 2, new_object.w, new_object.h)
 						if particle_to_build: particles.append(object_to_build)
-						else: world.chunk_manager.get_chunk_at(object_to_build.x, object_to_build.y).objects.append(object_to_build)
+						else: world.chunk_manager.get_chunk_at(new_object.x, new_object.y).objects.append(new_object)
 						eval(command)
+
+def check_build_objects(objects_templates, build_tuple):
+	"""Проверяет все объекты, которые можно построить"""
+	for name, object in objects_templates.items():
+		build(build_tuple, object, name)
