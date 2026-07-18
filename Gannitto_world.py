@@ -506,6 +506,7 @@ class Object:
 				self.image = TextureCache.get(image_path, scale_x)
 		else:
 			self.image = pygame.transform.scale(image, (scale_x[0], scale_x[1]))
+
 		self.image_path = image_path
 		self.w = self.image.get_width()
 		self.h = self.image.get_height()
@@ -516,7 +517,7 @@ class Object:
 		self.pickable = pickable
 
 		if rect == ():
-			self.rect = pygame.Rect(self.x - self.w / 2, self.y + self.h / 2, self.w, self.h)
+			self.rect = pygame.Rect(self.x - self.w / 2, self.y - self.h / 2, self.w, self.h)
 		else:
 			self.rect = pygame.Rect(rect[0] + self.x, rect[1] + self.y, rect[2], rect[3])
 	
@@ -526,7 +527,7 @@ class Object:
 			win.blit(self.image, (self.x - X + Width // 2 - self.w // 2, Y - self.y + Height // 2 - self.h // 2))
 
 		if Settings["Display"][3]:
-			pygame.draw.rect(win, (0, 0, 0), (self.rect[0] - X + Width // 2, Y - self.rect[1] + Height // 2, self.rect[2], self.rect[3]), 3)
+			pygame.draw.rect(win, (0, 0, 0), (self.rect[0] - X + Width // 2, Y - self.rect[1] - self.rect[3] + Height // 2, self.rect[2], self.rect[3]), 3)
 
 	def get_left_pressed(self):
 
@@ -817,7 +818,7 @@ class Player:
 		self.god_mode = False
 		self.pass_through_walls = False # TODO
 		self.is_moving = False
-		self.rect = pygame.Rect(self.x - 35, self.y + 112, 70, 224)
+		self.rect = pygame.Rect(self.x - 25, self.y - 112, 50, 224)
 		
 		# Текущий спрайт
 		self.image = self.get_current_frame()
@@ -841,19 +842,11 @@ class Player:
 
 	def collides_with_walls(self):
 		"""Проверяет, пересекается ли игрок с какой-либо стеной."""
-		if self.pass_through_walls: # pygame.key.get_pressed()[pygame.K_o]:
+		if self.pass_through_walls:
 			return False
-		self.rect = pygame.Rect(self.x - 25, self.y + 112, 50, 224)
-		
-		for wall in world.visible_walls.values():
-			wall_rect = pygame.Rect(wall.x - 128, wall.y + 128, 256, 256)
-			if self.rect.colliderect(wall_rect):
-				return True
-		for object in world.visible_objects:
-			if object.is_solid and self.rect.colliderect(object.rect):
-				return True
-		return False
-	
+		self.rect = pygame.Rect(self.x - 25, self.y - 112, 50, 224)
+		return check_collision(self.rect, world)
+
 	def move(self, dx, dy):
 		"""Двигает игрока и обновляет направление"""
 		self.is_moving = True
@@ -898,9 +891,9 @@ class Player:
 		screen.blit(self.image, (Width / 2 - 128, Height / 2 - 128))
 		
 		if Settings["Display"][3]:
-			self.rect = pygame.Rect(self.x - 25, self.y + 112, 50, 224)
+			self.rect = pygame.Rect(self.x - 25, self.y - 112, 50, 224)
 			pygame.draw.rect(screen, (0, 255, 0), (Width / 2 - 128, Height / 2 - 128, self.image.get_width(), self.image.get_height()), 2)
-			pygame.draw.rect(win, (0, 0, 0), (self.rect[0] - self.x + Width // 2 + dx * self.speed, self.y - self.rect[1] + Height // 2 - dy * self.speed, self.rect[2], self.rect[3]), 3)
+			pygame.draw.rect(win, (0, 0, 0), (self.rect[0] - self.x + Width // 2, self.y - self.rect[1] - self.rect[3] + Height // 2, self.rect[2], self.rect[3]), 3)
 
 class BaseEnemy:
 	def __init__(self, x, y, HP, speed, animation_frames):
@@ -1001,6 +994,7 @@ class SlimeEnemy(BaseEnemy):
 		self.wander_distance = random.uniform(100, self.wander_radius)
 		self.wander_timer = 0
 		self.wander_change_interval = FPS
+		self.rect = pygame.Rect(self.x - 50, self.y - 50, 100, 100)
 
 		# Параметры атаки
 		self.attack_cooldown = 0
@@ -1162,11 +1156,9 @@ class SlimeEnemy(BaseEnemy):
 
 	def _check_collision(self, x, y, world):
 		"""Проверка столкновения со стенами"""
-		for wall in world.visible_walls.values():
-			if (wall.x < x < wall.x + 256 and wall.y < y < wall.y + 256):
-				return True
-		return False
-		
+		self.rect = pygame.Rect(x - 50, y - 50, 100, 100)
+		return check_collision(self.rect, world)
+
 	def draw(self, player, show_hitbox=False):
 		"""Отрисовка слизня"""
 		screen_x = self.x - player.x + Width // 2 - 64
@@ -1197,6 +1189,7 @@ class SpiderEnemy(BaseEnemy):
 
 		self.name = "Spider"
 		self.direction = "Right"
+		self.rect = pygame.Rect(self.x - 50, self.y - 50, 100, 100)
 		
 		super().__init__(
 			x=x, y=y,
@@ -1300,12 +1293,8 @@ class SpiderEnemy(BaseEnemy):
 
 	def _check_collision(self, x, y, world):
 		"""Проверка столкновения со стенами"""
-		margin = 32
-		for wall in world.visible_walls.values():
-			if (wall.x - margin < x < wall.x + 256 + margin and
-				wall.y - margin < y < wall.y + 256 + margin):
-				return True
-		return False
+		self.rect = pygame.Rect(x - 50, y - 50, 100, 100)
+		return check_collision(self.rect)
 		
 	def draw(self, player, show_hitbox=False):
 		"""Отрисовка паука"""
@@ -1820,7 +1809,7 @@ class Wall:
 		self.name = "Wall"
 		self.is_door = is_door
 		self.open = False
-		self.rect = pygame.Rect(self.x - 128, self.y + 128, 256, 256)
+		self.rect = pygame.Rect(self.x - 128, self.y - 128, 256, 256)
 
 		if is_door:
 
@@ -5918,12 +5907,11 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 							pygame.mixer.Sound.play(Pick_an_item)
 						
 					world.chunk_manager.get_chunk_at((player.x + mouse_x - Width // 2) // 128, (player.y + mouse_y - Height // 2) // 256).objects.append(Portal())
-
 		build_tuple = (changed_slot, player, world.particles, Width, Height, world)
-		build(build_tuple, Object("Table", 0, 0, "Images/Objects/Table.png", (256, 256), special_flags=1), "Table")
-		build(build_tuple, Object("Wall table", 0, 0, "Images/Objects/Wall table.png", (256, 256), special_flags=1), "Wall table")
-		build(build_tuple, Object("Furnace", 0, 0, "Images/Items/Furnace.png", (256, 256), special_flags=1), "Furnace")
-		build(build_tuple, Object("Punch", 0, 0, "Images/Objects/Punch 1.png", (256, 256), special_flags=1), "Punch")
+		build(build_tuple, Object("Table", 0, 0, "Images/Objects/Table.png", (256, 256), special_flags=1, is_solid=True), "Table")
+		build(build_tuple, Object("Wall table", 0, 0, "Images/Objects/Wall table.png", (256, 256), special_flags=1, is_solid=True), "Wall table")
+		build(build_tuple, Object("Furnace", 0, 0, "Images/Items/Furnace.png", (256, 256), special_flags=1, is_solid=True), "Furnace")
+		build(build_tuple, Object("Punch", 0, 0, "Images/Objects/Punch 1.png", (256, 256), special_flags=1, is_solid=True), "Punch")
 		
 		build(build_tuple, Object("Farmland", 0, 0, "Images/Objects/Farmland.png", (128, 128), special_flags=1), "Stone hoe", get_item_from_inventory=0, command="pygame.mixer.Sound.play(pygame.mixer.Sound('" + path + "Sounds/Dirt.mp3" + "'))")
 		
