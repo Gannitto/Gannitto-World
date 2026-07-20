@@ -5891,7 +5891,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 							pygame.mixer.Sound.play(Pick_an_item)
 						
 					world.chunk_manager.get_chunk_at((player.x + mouse_x - Width // 2) // 128, (player.y + mouse_y - Height // 2) // 256).objects.append(Portal())
-		build_tuple = (changed_slot, player, world.particles, Width, Height, world)
+		build_tuple = (changed_slot, player, world.particles, Width, Height, world, inventory.whole_inventory)
 		check_build_objects(objects_templates, build_tuple)
 		build(build_tuple, Object("Farmland", 0, 0, "Images/Objects/Farmland.png", (128, 128), special_flags=1), "Stone hoe", get_item_from_inventory=0, command="pygame.mixer.Sound.play(pygame.mixer.Sound('" + path + "Sounds/Dirt.mp3" + "'))")
 		if inventory.whole_inventory[changed_slot] is None: a = ""
@@ -6308,7 +6308,7 @@ if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0]
 
 		if inventory.whole_inventory[inventory.start_cell] is not None and inventory.start_cell > -1 and hold_left:
 
-			item_text = languages(inventory.whole_inventory[inventory.start_cell].info[0], inventory.whole_inventory[inventory.start_cell].info[1], "") + "\n" + languages(inventory.whole_inventory[inventory.start_cell].purpose[0], inventory.whole_inventory[inventory.start_cell].purpose[1], "")
+			item_text = t("Item info " + inventory.whole_inventory[inventory.start_cell].name) + "\n" + t("Item purpose " + inventory.whole_inventory[inventory.start_cell].name)
 			
 			text_height = 40
 

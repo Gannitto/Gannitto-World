@@ -36,16 +36,15 @@ def build(
 	command - Команда, которую надо выполнить, если поставился объект
 	"""
 	
-	from Inventory import inventory
-	changed_slot, player, particles, Width, Height, world = build_tuple
+	changed_slot, player, particles, Width, Height, world, whole_inventory = build_tuple
 	from Gannitto_world import Particle, Object, win
 	from Functions import win_fill
 	
-	if inventory.whole_inventory[changed_slot] is not None:
+	if whole_inventory[changed_slot] is not None:
 
-		changed_slot_name = inventory.whole_inventory[changed_slot].name.replace(remove_part, "") if remove_part in inventory.whole_inventory[changed_slot].name else inventory.whole_inventory[changed_slot].name
+		changed_slot_name = whole_inventory[changed_slot].name.replace(remove_part, "") if remove_part in whole_inventory[changed_slot].name else whole_inventory[changed_slot].name
 
-		if changed_slot_name in item_name.split(",") or inventory.whole_inventory[changed_slot].type in item_type.split(","):
+		if changed_slot_name in item_name.split(",") or whole_inventory[changed_slot].type in item_type.split(","):
 			
 			mouse_x, mouse_y = pygame.mouse.get_pos()
 			if (object_to_build.w, object_to_build.h) in select_images:
@@ -69,9 +68,9 @@ def build(
 				
 					if needed_object in ("Object found", ""):
 					
-						inventory.whole_inventory[changed_slot].amount -= get_item_from_inventory
-						if inventory.whole_inventory[changed_slot].amount == 0:
-							inventory.whole_inventory[changed_slot] = None
+						whole_inventory[changed_slot].amount -= get_item_from_inventory
+						if whole_inventory[changed_slot].amount == 0:
+							whole_inventory[changed_slot] = None
 						new_object = Object(object_to_build.name, object_to_build.x, object_to_build.y, object_to_build.image_path, object_to_build.scale_x, object_to_build.image, object_to_build.special_flags, object_to_build.add_path, object_to_build.start_time, object_to_build.is_solid, object_to_build.rect, object_to_build.is_solid, object_to_build.breakable)
 						new_object.x, new_object.y = ((player.x + mouse_x - Width // 2) // object_to_build.w * object_to_build.w + object_to_build.w // 2, (player.y - mouse_y + Height // 2) // object_to_build.h * object_to_build.h + object_to_build.h // 2)
 						new_object.rect = pygame.Rect(new_object.x - new_object.w / 2, new_object.y - new_object.h / 2, new_object.w, new_object.h)

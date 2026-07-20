@@ -42,7 +42,6 @@ win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 multyplayer_panel = pygame.surface.Surface((500, 250))
 start_time = time.time()
 world_name = None
-from Inventory import inventory
 FPS = Settings["Display"][6]
 page = 1
 Width, Height = pygame.display.get_surface().get_size()

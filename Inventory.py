@@ -1,25 +1,31 @@
 import pygame
 import os
+import json
 from Globals import path
-pygame.init()
+from Translator import translator
 
+pygame.init()
+t = translator.get
 textInfo = pygame.font.Font(None, 20)
-types = ["Just an item", "Weapon", "Food", "Drink", "Mechanism", "Flower", "Seed"]
+types = ["Just an item", "Tool", "Food", "Drink", "Mechanism", "Flower", "Seed", "Build"]
 
 class Resource:
 
 	"""Предмет с определёнными харрактеристиками"""
 
-	def __init__(self, name: str, image_path: str, info: list, purpose: list, type: str, special_info=None, max_stack=99):
+	def __init__(self, name: str="", item_type: str="Just an item", info=["", ""], purpose=["", ""], special_info=None, max_stack=99, image_path=""):
 
 		self.name = name
 		self.info = info
 		self.purpose = purpose
-		self.type = type
+		self.type = item_type
 		self.amount = 0
 		self.settings = []
-		self.image_path = image_path
-		self.image = pygame.transform.scale(pygame.image.load(image_path), (64, 64))
+		if image_path == "":
+			self.image_path = path + "Images/Items/" + name + ".png"
+		else:
+			self.image_path = image_path
+		self.image = pygame.transform.scale(pygame.image.load(self.image_path), (64, 64))
 		self.special_info = special_info
 		self.max_stack = max_stack
 		
@@ -86,696 +92,332 @@ class Inventory:
 
 		self.resources = {
 
-			"Mushroom": Resource("Mushroom", path + "Images/Items/Mushroom.png", [
-				"Просто гриб, ничего больше",
-				"Just a mushroom, nothong more"
-			], [
-				"Можно съесть",
-				"You can eat it"
-			], types[2], 5),
 
+			# "Gun": Resource("Gun", [
+			# 	"Пушка, для которой нужны патроны",
+			# 	"A gun, that needs bullets"
+			# ], [
+			# 	"С её помощью ты можешь стрелять, нажав на пробел",
+			# 	"You can shoot with it by pressing the spase"
+			# ], 1, max_stack=1),
 
-			
-			"Red mushroom": Resource("Red mushroom", path + "Images/Items/Red mushroom.png", [
-				"Просто гриб, ничего больше",
-				"Just a mushroom, nothong more"
-			], [
-				"Можно съесть",
-				"You can eat it"
-			], types[2], 1),
 
 
-			
-			"Jar": Resource("Jar", path + "Images/Items/Jar.png", [
-				"Нету",
-				"None"
-			], [
-				"Нету",
-				"None"
-			], types[0]),
+			# "Grenade": Resource("Grenade", [
+			# 	"Опасная вещь",
+			# 	"Dangerous thing"
+			# ], [
+			# 	"Можно кинуть во врага",
+			# 	"You can throw it at the enemy"
+			# ], 0),
 
 
 
-			"Gun": Resource("Gun", path + "Images/Items/Gun.png", [
-				"Пушка, для которой нужны патроны",
-				"A gun, that needs bullets"
-			], [
-				"С её помощью ты можешь стрелять, нажав на пробел",
-				"You can shoot with it by pressing the spase"
-			], types[1], max_stack=1),
+			# "Almond whater": Resource("Almond whater", [
+			# 	"Вода, вкус которой напомянает миндаль или ваниль",
+			# 	"Water, that tastes like almonds or vanilla"
+			# ], [
+			# 	"Можно выпить",
+			# 	"You can drink it"
+			# ], 3),
 
 
 
-			"Bullet": Resource("Bullet", path + "Images/Items/Bullet.png", [
-				"Это пуля для пушки",
-				"This is a bullet for gun"
-			], [
-				"С её помощью ты можешь стрелять, нажав на пробел (если у вас есть пистолет)",
-				"You can shoot with it by pressing the spase (if you have a gun)"
-			], types[0]),
+			# "Portal gun": Resource("Portal gun", [
+			# 	"С помощью неё, ты можешь создовать порталы для телепортации",
+			# 	"With it, you can create teleportation portals"
+			# ], [
+			# 	"Можно использовать для быстрого передвижения",
+			# 	"Can be used for fast movement"
+			# ], 0, max_stack=1),
 
 
 
-			"Arrow": Resource("Arrow", path + "Images/Items/Arrow.png", [
-				"Простая в создании, наносит урон",
-				"Easy to create and deals damage"
-			], [
-				"С её помощью ты можешь стрелять, нажав на пробел (если у вас есть лук)",
-				"With it, you can shoot by pressing the spacebar (if you have a bow)."
-			], types[0]),
+			# "Vending machine": Resource("Vending machine", [
+			# 	"С помощью него можно обменивать вещи",
+			# 	"With it, you can vend items"
+			# ], [
+			# 	"Удобно использовать в игре по сети",
+			# 	"Easy to use in online play"
+			# ]),
 
 
 
-			"Powder": Resource("Powder", path + "Images/Items/Powder.png", [
-				"Покоритель битв и властелин взрывов",
-				"Conqueror of battles and lord of explosions"
-			], [
-				"Используется для создания оружия",
-				"Used to create weapons"
-			], types[0]),
+			# "Poppy": Resource("Poppy", [
+			# 	"Красивый цветок",
+			# 	"A beautiful flower"
+			# ], [
+			# 	"Можно посадить в горшок",
+			# 	"Can be planted in a pot"
+			# ], 5),
 
 
 
-			"Grenade": Resource("Grenade", path + "Images/Items/Grenade.png", [
-				"Опасная вещь",
-				"Dangerous thing"
-			], [
-				"Можно кинуть во врага",
-				"You can throw it at the enemy"
-			], types[0]),
+			# "Purple tulip": Resource("Purple tulip", [
+			# 	"Красивый цветок",
+			# 	"A beautiful flower"
+			# ], [
+			# 	"Можно посадить в горшок",
+			# 	"Can be planted in a pot"
+			# ], 5),
 
 
 
-			"Almond whater": Resource("Almond whater", path + "Images/Items/Almond whater.png", [
-				"Вода, вкус которой напомянает миндаль или ваниль",
-				"Water, that tastes like almonds or vanilla"
-			], [
-				"Можно выпить",
-				"You can drink it"
-			], types[3]),
+			# "Orange tulip": Resource("Orange tulip", [
+			# 	"Красивый цветок",
+			# 	"A beautiful flower"
+			# ], [
+			# 	"Можно посадить в горшок",
+			# 	"Can be planted in a pot"
+			# ], 5),
 
 
 
-			"Blue slime": Resource("Blue slime", path + "Images/Items/Blue Slime.png", [
-				"Липкий гель синего цвета",
-				"Blue sticky gel"
-			], [
-				"Нету",
-				"None"
-			], types[0]),
+			# "Black tulip": Resource("Black tulip", [
+			# 	"Красивый цветок",
+			# 	"A beautiful flower"
+			# ], [
+			# 	"Можно посадить в горшок",
+			# 	"Can be planted in a pot"
+			# ], 5),
 
 
 
-			"Pink slime": Resource("Pink slime", path + "Images/Items/Pink Slime.png", [
-				"Липкий гель розового цвета",
-				"Pink slicky gel"
-			], [
-				"None",
-				"Нету"
-			], types[0]),
+			# "Red tulip": Resource("Red tulip", [
+			# 	"Красивый цветок",
+			# 	"A beautiful flower"
+			# ], [
+			# 	"Можно посадить в горшок",
+			# 	"Can be planted in a pot"
+			# ], 5),
 
 
 
-			"Stick": Resource("Stick", path + "Images/Items/Stick.png", [
-				"Простой и универсальный предмет",
-				"Simple and versatile item"
-			], [
-				"Может использоваться для создания инструментов",
-				"Can be used to create tools"
-			], types[0]),
+			# "Yellow tulip": Resource("Yellow tulip", [
+			# 	"Красивый цветок",
+			# 	"A beautiful flower"
+			# ], [
+			# 	"Можно посадить в горшок",
+			# 	"Can be planted in a pot"
+			# ], 5),
 
 
 
-			"Iron ingot": Resource("Iron ingot", path + "Images/Items/Iron ingot.png", [
-				"Ты можешь получить его, переплавив железную руду в печке",
-				"You can get it, by smetling iron ore in a furnace"
-			], [
-				"Можно сделать ведро из трёх слитков на столе",
-				"You can make a bucket of three ingots on the table"
-			], types[0]),
+			# "Dandelion": Resource("Dandelion", [
+			# 	"Красивый цветок",
+			# 	"A beautiful flower"
+			# ], [
+			# 	"Можно посадить в горшок",
+			# 	"Can be planted in a pot"
+			# ], 5),
 
 
 
-			"Gold ingot": Resource("Gold ingod", path + "Images/Items/Gold ingot.png", [
-				"Ты можешь получить его, переплавив золотую руду в печке",
-				"You can get it, by smetling gold ore in a furnace"
-			], [
-				"Можно сделать золотое ведро из трёх слитков на столе",
-				"You can make a gold bucket of three ingots on the table"
-			], types[0]),
+			# "Cotton grass": Resource("Cotton grass", [
+			# 	"Красивый цветок",
+			# 	"A beautiful flower"
+			# ], [
+			# 	"Можно посадить в горшок",
+			# 	"Can be planted in a pot"
+			# ], 5),
 
 
 
-			"Bucket": Resource("Bucket", path + "Images/Items/Bucket.png", [
-				"Ведро...",
-				"Bucket..."
-			], [
-				"В него можно набрать воду",
-				"You can put water in it"
-			], types[0]),
+			# "Stone spear": Resource("Stone spear", [
+			# 	"Таким же оружием пользовались древние люди",
+			# 	"Ancient people used the same weapons"
+			# ], [
+			# 	"Можно кидать во врагов",
+			# 	"Can be thrown at enemies"
+			# ], 1),
 
 
 
-			"Water bucket": Resource("Whater bucket", path + "Images/Items/Whater bucket.png", [
-				"Ведро с водой...",
-				"Bucket with water..."
-			], [
-				"Используется для полива растений",
-				"Used for watering plants"
-			], types[0]),
+			# "Brick": Resource("Brick", [
+			# 	"Красный глиняный кирпич",
+			# 	"Red clay brick"
+			# ], [
+			# 	"Из него можно сделать кираичную стену",
+			# 	"You can make a brick wall out of it"
+			# ]),
 
 
 
-			"Gold bucket": Resource("Gold bucket", path + "Images/Items/Gold bucket.png", [
-				"Зачем тебе ЗОЛОТОЕ ведро?!",
-				"Why do you need a GOLD bucket?!"
-			], [
-				"Нету",
-				"None"
-			], types[0]),
+			# "Pot": Resource("Pot", [
+			# 	"Глиняный горшок",
+			# 	"Clay pot"
+			# ], [
+			# 	"Ты можешь посадить в него растение",
+			# 	"You can put a plant in it"
+			# ]),
 
 
 
-			"Thread": Resource("Thread", path + "Images/Items/Thread.png", [
-				"Нету",
-				"None"
-			], [
-				"Нету",
-				"None"
-			], types[0]),
+			# "Wire": Resource("Wire", [
+			# 	"Нету",
+			# 	"None"
+			# ], [
+			# 	"С помощью него можно делать различные механизмы",
+			# 	"With it, you can make various mechanisms"
+			# ]),
 
 
 
-			"Portal gun": Resource("Portal gun", path + "Images/Items/Portal gun.png", [
-				"С помощью неё, ты можешь создовать порталы для телепортации",
-				"With it, you can create teleportation portals"
-			], [
-				"Можно использовать для быстрого передвижения",
-				"Can be used for fast movement"
-			], types[0], max_stack=1),
+			# "Random box": Resource("Random box", [
+			# 	"Нету",
+			# 	"None"
+			# ], [
+			# 	"При получении сигнала с одной стороны, выдаёт его с другой с шансом 50%",
+			# 	"When recieving a signal from one side, gives it to the other with a 50% chance"
+			# ]),
 
 
 
-			"Vending machine": Resource("Vending machine", path + "Images/Items/Vending machine.png", [
-				"С помощью него можно обменивать вещи",
-				"With it, you can vend items"
-			], [
-				"Удобно использовать в игре по сети",
-				"Easy to use in online play"
-			], types[0]),
+			# "Lever": Resource("Lever", [
+			# 	"Нету",
+			# 	"None"
+			# ], [
+			# 	"Нету",
+			# 	"None"
+			# ]),
 
 
 
-			"Stone": Resource("Stone", path + "Images/Items/Stone.png", [
-				"Спокойно лежит на земле",
-				"Lies quietly on the ground"
-			], [
-				"Может использоваться для создания оружия",
-				"Can be used to create weapons"
-			], types[0]),
+			# "Motherboard": Resource("Motherboard", [
+			# 	"Нету",
+			# 	"None"
+			# ], [
+			# 	"Нету",
+			# 	"None"
+			# ]),
 
 
 
-			"Poppy": Resource("Poppy", path + "Images/Items/Poppy.png", [
-				"Красивый цветок",
-				"A beautiful flower"
-			], [
-				"Можно посадить в горшок",
-				"Can be planted in a pot"
-			], types[5]),
+			# "Wrench": Resource("Wrench", [
+			# 	"Какая-то штука",
+			# 	"Some thing"
+			# ], [
+			# 	"С помощью него можно убрать провод", 
+			# 	"With it, you can remove the wire"
+			# ], 3, max_stack=1),
 
 
 
-			"Purple tulip": Resource("Purple tulip", path + "Images/Items/Purple tulip.png", [
-				"Красивый цветок",
-				"A beautiful flower"
-			], [
-				"Можно посадить в горшок",
-				"Can be planted in a pot"
-			], types[5]),
+			# "Stone pickaxe": Resource("Stone pickaxe", [
+			# 	"Понадобится любому шахтёру",
+			# 	"Nny miner needs"
+			# ], [
+			# 	"С помощью неё ты можешь копать руду", 
+			# 	"with it you can dig ore"
+			# ], max_stack=1),
 
 
 
-			"Orange tulip": Resource("Orange tulip", path + "Images/Items/Orange tulip.png", [
-				"Красивый цветок",
-				"A beautiful flower"
-			], [
-				"Можно посадить в горшок",
-				"Can be planted in a pot"
-			], types[5]),
+			# "Stone hammer": Resource("Stone hammer", [
+			# 	"Нету",
+			# 	"None"
+			# ], [
+			# 	"Используется для сноса стен",
+			# 	"Used for demolishing walls"
+			# ], max_stack=1),
 
 
 
-			"Black tulip": Resource("Black tulip", path + "Images/Items/Black tulip.png", [
-				"Красивый цветок",
-				"A beautiful flower"
-			], [
-				"Можно посадить в горшок",
-				"Can be planted in a pot"
-			], types[5]),
+			# "Stone shovel": Resource("Stone shovel", [
+			# 	"Нету",
+			# 	"None"
+			# ], [
+			# 	"Нету",
+			# 	"None"
+			# ], max_stack=1),
 
 
 
-			"Red tulip": Resource("Red tulip", path + "Images/Items/Red tulip.png", [
-				"Красивый цветок",
-				"A beautiful flower"
-			], [
-				"Можно посадить в горшок",
-				"Can be planted in a pot"
-			], types[5]),
+			# "Stone brick": Resource("Stone brick", [
+			# 	"Нету"
+			# 	"None"
+			# ], [
+			# 	"Используется для создания стен", 
+			# 	"Used to create walls"
+			# ]),
 
 
 
-			"Yellow tulip": Resource("Yellow tulip", path + "Images/Items/Yellow tulip.png", [
-				"Красивый цветок",
-				"A beautiful flower"
-			], [
-				"Можно посадить в горшок",
-				"Can be planted in a pot"
-			], types[5]),
+			# "Wooden wall": Resource("Wooden wall", [
+			# 	"Стена, которая может сгореть",
+			# 	"A wall that can burn"
+			# ], [
+			# 	"Можно поставить",
+			# 	"You can put it"
+			# ]),
 
 
 
-			"Dandelion": Resource("Dandelion", path + "Images/Items/Dandelion.png", [
-				"Красивый цветок",
-				"A beautiful flower"
-			], [
-				"Можно посадить в горшок",
-				"Can be planted in a pot"
-			], types[5]),
+			# "Brick wall": Resource("Brick wall", [
+			# 	"Стена, которая не может сгореть",
+			# 	"A wall that can't burn"
+			# ], [
+			# 	"Можно поставить",
+			# 	"You can put it"
+			# ]),
 
 
 
-			"Cotton grass": Resource("Cotton grass", path + "Images/Items/Cotton grass.png", [
-				"Красивый цветок",
-				"A beautiful flower"
-			], [
-				"Можно посадить в горшок",
-				"Can be planted in a pot"
-			], types[5]),
+			# "Stone brick wall": Resource("Stone brick wall", [
+			# 	"Стена, которая не может сгореть",
+			# 	"A wall that can't burn"
+			# ], [
+			# 	"Можно поставить",
+			# 	"You can put it"
+			# ]),
 
 
 
-			"Rope": Resource("Rope", path + "Images/Items/Rope.png", [
-				"Нету",
-				"None"
-			], [
-				"Нету",
-				"None"
-			], types[1]),
+			# "Wooden door": Resource("Wooden door", [
+			# 	"Дверь, которая может сгореть",
+			# 	"A door that can burn"
+			# ], [
+			# 	"Можно поставить",
+			# 	"You can put it"
+			# ]),
 
 
 
-			"Stone spear": Resource("Stone spear", path + "Images/Items/Stone spear.png", [
-				"Таким же оружием пользовались древние люди",
-				"Ancient people used the same weapons"
-			], [
-				"Можно кидать во врагов",
-				"Can be thrown at enemies"
-			], types[1]),
+			# "Beer": Resource("Beer", [
+			# 	"Нету",
+			# 	"None"
+			# ], [
+			# 	"Можно выпить",
+			# 	"You can drink it"
+			# ], 3),
 
 
 
-			"Wooden": Resource("Wooden", path + "Images/Items/Wooden.png", [
-				"Материал, получаемый из деревьев. Является необходимым компонентом для любого строителя",
-				"Material obtained from trees. Is a necessary component for any builder"
-			], [
-				"Она может быть использована для создания мебели, топлива, построек и многих других предметов",
-				"It can be used to create furniture, fuel, buildings and many other items."
-			], types[0]),
+			# "Bow": Resource("Bow", [
+			# 	"Нету",
+			# 	"None"
+			# ], [
+			# 	"Нету",
+			# 	"None"
+			# ], max_stack=1),
 
 
 
-			"Dark wooden": Resource("Dark wooden", path + "Images/Items/Dark wooden.png", [
-				"Материал, получаемый из деревьев. Является необходимым компонентом для любого строителя",
-				"Material obtained from trees. Is a necessary component for any builder"
-			], [
-				"Она может быть использована для создания мебели, топлива, построек и многих других предметов",
-				"It can be used to create furniture, fuel, buildings and many other items."
-			], types[0]),
-
-
-
-			"Birch wooden": Resource("Birch wooden", path + "Images/Items/Birch wooden.png", [
-				"Материал, получаемый из деревьев. Является необходимым компонентом для любого строителя",
-				"Material obtained from trees. Is a necessary component for any builder"
-			], [
-				"Она может быть использована для создания мебели, топлива, построек и многих других предметов",
-				"It can be used to create furniture, fuel, buildings and many other items."
-			], types[0]),
-
-
-
-			"Table": Resource("Table", path + "Images/Items/Table.png", [
-				"Деревянный стол, на котором можно изготавливать предметы",
-				"Wooden table, on which you can craft items"
-			], [
-				"Ты можешь поставить его",
-				"You can put it"
-			], types[0]),
-
-
-
-			"Wall table": Resource("Wall table", path + "Images/Items/Wall table.png", [
-				"Деревянный стол, на котором можно изготавливать стены",
-				"Wooden table, on which you can craft walls"
-			], [
-				"Ты можешь поставить его",
-				"You can put it"
-			], types[0]),
-
-
-
-			"Clay": Resource("Clay", path + "Images/Items/Clay.png", [
-				"Как песок, но очень липкий",
-				"Like sand, but very sticky"
-			], [
-				"Можно переплавить в кирпич",
-				"Can be smelted into brick"
-			], types[0]),
-
-
-
-			"Brick": Resource("Brick", path + "Images/Items/Brick.png", [
-				"Красный глиняный кирпич",
-				"Red clay brick"
-			], [
-				"Из него можно сделать кираичную стену",
-				"You can make a brick wall out of it"
-			], types[0]),
-
-
-
-			"Pot": Resource("Pot", path + "Images/Items/Pot.png", [
-				"Глиняный горшок",
-				"Clay pot"
-			], [
-				"Ты можешь посадить в него растение",
-				"You can put a plant in it"
-			], types[0]),
-
-
-
-			"Wire": Resource("Wire", path + "Images/Items/Wire.png", [
-				"Нету",
-				"None"
-			], [
-				"С помощью него можно делать различные механизмы",
-				"With it, you can make various mechanisms"
-			], types[0]),
-
-
-
-			"Random box": Resource("Random box", path + "Images/Items/Random box.png", [
-				"Нету",
-				"None"
-			], [
-				"При получении сигнала с одной стороны, выдаёт его с другой с шансом 50%",
-				"When recieving a signal from one side, gives it to the other with a 50% chance"
-			], types[0]),
-
-
-
-			"Lever": Resource("Lever", path + "Images/Items/Lever.png", [
-				"Нету",
-				"None"
-			], [
-				"Нету",
-				"None"
-			], types[0]),
-
-
-
-			"Motherboard": Resource("Motherboard", path + "Images/Items/Motherboard.png", [
-				"Нету",
-				"None"
-			], [
-				"Нету",
-				"None"
-			], types[0]),
-
-
-
-			"Wrench": Resource("Wrench", path + "Images/Items/Wrench.png", [
-				"Какая-то штука",
-				"Some thing"
-			], [
-				"С помощью него можно убрать провод", 
-				"With it, you can remove the wire"
-			], types[3], max_stack=1),
-
-
-
-			"Stone pickaxe": Resource("Stone pickaxe", path + "Images/Items/Stone pickaxe.png", [
-				"Понадобится любому шахтёру",
-				"Nny miner needs"
-			], [
-				"С помощью неё ты можешь копать руду", 
-				"with it you can dig ore"
-			], types[0], max_stack=1),
-
-
-
-			"Stone hammer": Resource("Stone hammer", path + "Images/Items/Stone hammer.png", [
-				"Нету",
-				"None"
-			], [
-				"Используется для сноса стен",
-				"Used for demolishing walls"
-			], types[0], max_stack=1),
-
-
-
-			"Stone shovel": Resource("Stone shovel", path + "Images/Items/Stone shovel.png", [
-				"Нету",
-				"None"
-			], [
-				"Нету",
-				"None"
-			], types[0], max_stack=1),
-
-
-
-			"Furnace": Resource("Furnace", path + "Images/Items/Furnace.png", [
-				"Можно поставить",
-				"You can put it"
-			], [
-				"С помощью печи, ты можешь переплавлять руды", 
-				"With a furnace, you can melt down ores"
-			], types[0]),
-
-
-
-			"Stone brick": Resource("Stone brick", path + "Images/Items/Stone brick.png", [
-				"Нету"
-				"None"
-			], [
-				"Используется для создания стен", 
-				"Used to create walls"
-			], types[0]),
-
-
-
-			"Wooden wall": Resource("Wooden wall", path + "Images/Items/Wooden wall.png", [
-				"Стена, которая может сгореть",
-				"A wall that can burn"
-			], [
-				"Можно поставить",
-				"You can put it"
-			], types[0]),
-
-
-
-			"Brick wall": Resource("Brick wall", path + "Images/Items/Brick wall.png", [
-				"Стена, которая не может сгореть",
-				"A wall that can't burn"
-			], [
-				"Можно поставить",
-				"You can put it"
-			], types[0]),
-
-
-
-			"Stone brick wall": Resource("Stone brick wall", path + "Images/Items/Stone brick wall.png", [
-				"Стена, которая не может сгореть",
-				"A wall that can't burn"
-			], [
-				"Можно поставить",
-				"You can put it"
-			], types[0]),
-
-
-
-			"Wooden door": Resource("Wooden door", path + "Images/Items/Wooden door.png", [
-				"Дверь, которая может сгореть",
-				"A door that can burn"
-			], [
-				"Можно поставить",
-				"You can put it"
-			], types[0]),
-
-
-
-			"Iron ore": Resource("Iron ore", path + "Images/Items/Iron ore.png", [
-				"Блестящий и дорогой",
-				"Shiny and expensive"
-			], [
-				"Ты можешь переплавить в железный слиток",
-				"You can smelt it into an iron ingot"
-			], types[0]),
-
-
-
-			"Gold ore": Resource("Gold ore", path + "Images/Items/Gold ore.png", [
-				"Блестящий и дорогой",
-				"Shiny and expensive"
-			], [
-				"Ты можешь переплавить в золотой слиток",
-				"You can smelt it into a gold ingot"
-			], types[0]),
-
-
-
-			"Candy cane": Resource("Candy cane", path + "Images/Items/Candy cane.png", [
-				"Сладкая и липкая",
-				"Sweet and sticky"
-			], [
-				"Можно съесть",
-				"You can eat it"
-			], types[0], 5),
-
-
-
-			"Beer": Resource("Beer", path + "Images/Items/Beer.png", [
-				"Нету",
-				"None"
-			], [
-				"Можно выпить",
-				"You can drink it"
-			], types[0]),
-
-
-
-			"Bow": Resource("Bow", path + "Images/Items/Bow.png", [
-				"Нету",
-				"None"
-			], [
-				"Нету",
-				"None"
-			], types[0], max_stack=1),
-
-
-
-			"Onion": Resource("Onion", path + "Images/Items/Onion.png", [
-				"Горький, больше нечего сказать",
-				"Bitter, nothibg more to say"
-			], [
-				"Можно съесть",
-				"You can eat it"
-			], types[2], 10),
-
-
-
-			"Punch": Resource("Punch", path + "Images/Items/Punch.png", [
-				"Нету",
-				"None"
-			], [
-				"Нету",
-				"None"
-			], types[0]),
-
-
-
-			"Stone hoe": Resource("Stone hoe", path + "Images/Items/Stone hoe.png", [
-				"Древний инструмент земледелия",
-				"Ancient farming tool"
-			], [
-				"Вы можете вскопать грядки с помощью неё",
-				"You can dig up a farmland with it"
-			], types[0], max_stack=1),
-
-
-
-			"Carrot": Resource("Carrot", path + "Images/Items/Carrot.png", [
-				"Вкусная и оранжевая",
-				"Tasty and orange"
-			], [
-				"Можно съесть",
-				"You can eat it"
-			], types[2], 10),
-
-
-
-			"Tomato": Resource("Tomato", path + "Images/Items/Tomato.png", [
-				"Вкусный и красный",
-				"Tasty and red"
-			], [
-				"Можно съесть",
-				"You can eat it"
-			], types[2], 10),
-
-
-			
-			"Cucumber": Resource("Cucumber", path + "Images/Items/Cucumber.png", [
-				"Вкусный и зелёный",
-				"Tasty and green"
-			], [
-				"Можно съесть",
-				"You can eat it"
-			], types[2], 10),
-
-
-			
-			"Corn": Resource("Corn", path + "Images/Items/Corn.png", [
-				"Вкусная и жёлтая",
-				"Tasty and yellow"
-			], [
-				"Можно съесть",
-				"You can eat it"
-			], types[2], 10),
-
-
-			
-			"Wheat": Resource("Wheat", path + "Images/Items/Wheat.png", [
-				"Нету",
-				"None"
-			], [
-				"Нету",
-				"None"
-			], types[0], 10),
-
-
-
-			"Cucumber seeds": Resource("Cucumber seeds", path + "Images/Items/Cucumber seeds.png", [
-				"Семена для сельского хозяйства",
-				"Seeds for agriculture"
-			], [
-				"Используется для выращивания огурцов",
-				"Used to grow cucumbers"
-			], types[6], 10),
-
-
-
-			"Corn seeds": Resource("Corn seeds", path + "Images/Items/Corn seeds.png", [
-				"Семена для сельского хозяйства",
-				"Seeds for agriculture"
-			], [
-				"Используется для выращивания кукурузы",
-				"Used to grow corn"
-			], types[6], 10),
-
-
-
-			"Wheat seeds": Resource("Wheat seeds", path + "Images/Items/Wheat seeds.png", [
-				"Семена для сельского хозяйства",
-				"Seeds for agriculture"
-			], [
-				"Используется для выращивания пшеницы",
-				"Used to grow wheat"
-			], types[6], 10)
+			# "Stone hoe": Resource("Stone hoe", [
+			# 	"Древний инструмент земледелия",
+			# 	"Ancient farming tool"
+			# ], [
+			# 	"Вы можете вскопать грядки с помощью неё",
+			# 	"You can dig up a farmland with it"
+			# ], max_stack=1),
 		}
 
-		
+		if os.path.exists(path + "Items.json"):
+			with open(path + "Items.json", "r", encoding="utf-8") as f:
+				for item_type, items in json.load(f).items():
+					for name, item in items.items():
+						self.resources[name] = Resource(name=name, item_type=item_type, **item)
+						# self.resources[name].type = item_type
 		
 		self.recipes = [
 			
@@ -856,12 +498,12 @@ class Inventory:
 				# Создаем новый предмет
 				new_item = Resource(
 					resource_template.name,
-					resource_template.image_path,
+					resource_template.type,
 					resource_template.info,
 					resource_template.purpose,
-					resource_template.type,
 					resource_template.special_info,
-					resource_template.max_stack
+					resource_template.max_stack,
+					resource_template.image_path
 				)
 				
 				add = min(remaining, new_item.max_stack)
@@ -1072,7 +714,6 @@ class Inventory:
 		return None
 
 inventory = Inventory()
-
 def get_start_items():
 
 	"""Выдаёт в инвентарь начальные предметы"""

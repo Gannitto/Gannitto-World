@@ -1,0 +1,49 @@
+{
+	"Just an item": {
+		"Blue slime":  {},
+		"Pink slime":  {},
+		"Jar":  {},
+		"Stick": {},
+		"Iron ingot": {},
+		"Gold ingot": {},
+		"Iron ore": {},
+		"Gold ore": {},
+		"Thread":  {},
+		"Stone": {},
+		"Wooden": {},
+		"Dark wooden": {},
+		"Birch wooden": {},
+		"Clay": {},
+		"Arrow": {},
+		"Powder": {},
+		"Wheat":  {},
+		"Bucket": {},
+		"Water bucket": {},
+		"Gold bucket": {},
+		"Rope":  {}
+	},
+
+	"Food": {
+		"Mushroom": {"special_info": 5},
+		"Onion": {"special_info": 10},
+		"Carrot": {"special_info": 10},
+		"Tomato": {"special_info": 10},
+		"Cucumber": {"special_info": 10},
+		"Corn": {"special_info": 10},
+		"Candy cane": {}
+	},
+
+	"Build": {
+		"Punch":  {},
+		"Table": {},
+		"Wall table": {},
+		"Furnace": {}
+	},
+
+	"Seed": {
+		"Tomato seeds": {},
+		"Cucumber seeds": {},
+		"Corn seeds": {},
+		"Wheat seeds": {}
+	}
+}
