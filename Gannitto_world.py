@@ -65,10 +65,7 @@ translator.load_language(Settings["Languages"][0])
 t = translator.get
 
 def get_build_number():
-	return int(subprocess.check_output(
-		['git', 'rev-list', '--count', 'HEAD'],
-		text=True
-	).strip())
+	return int(subprocess.check_output(("git", "rev-list", "--count", "HEAD"), text=True).strip())
 
 def text(text: str, text_x: int, text_y: int, color: tuple=text_color, size: int=20, alignment: bool=False, letter_spasing: int=10, surface: pygame.Surface=win, max_width: int=0, max_height: int=0, return_surface: bool=False, spase_between_strings: int=10):
 	
@@ -4534,7 +4531,7 @@ def start_game():
 						try_pick = False
 
 					if try_pick and item.x - player.x + Width // 2 - item.image.get_width() // 2 <= mouse_x <= item.x - player.x + Width // 2 + item.image.get_width() // 2 and player.y - item.y + Height // 2 - item.image.get_height() // 2 <= mouse_y <= player.y - item.y + Height // 2 + item.image.get_height() // 2:
-						mouse_object = t("Click to pick the ") + item.name
+						mouse_object = t("Click to pick the ") + t("Item name " + item.name)
 								
 						if click[0]:
 									
@@ -5562,7 +5559,7 @@ def start_game():
 			if alt_pressed:
 				draw_key(" I ", 42, 344)
 
-			if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name in ("Wrench"):
+			if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Wrench":
 
 				if 900 <= mouse_x <= 964 and 10 <= mouse_y <= 74:
 					win.blit(Changed_inventory_slot, (900, 10))
@@ -5701,7 +5698,7 @@ def start_game():
 						item_settings_open = False
 		
 		if inventory.whole_inventory[changed_slot] is not None:
-			text(inventory.whole_inventory[changed_slot].name, 10, 320 if inventory_open else 80)
+			text(t("Item name " + inventory.whole_inventory[changed_slot].name), 10, 320 if inventory_open else 80)
 
 		if Ron.X - player.x + Width // 2 - 128 <= mouse_x <= Ron.X - player.x + Width // 2 + 128 and player.y - Ron.Y + Height // 2 - 128 <= mouse_y <= player.y - Ron.Y + Height // 2 + 128 and release:
 			Ron.window[0] = True

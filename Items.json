@@ -28,6 +28,7 @@
 
 	"Food": {
 		"Mushroom": {"special_info": 5},
+		"Red mushroom":  {"special_info": 5},
 		"Onion": {"special_info": 10},
 		"Carrot": {"special_info": 10},
 		"Tomato": {"special_info": 10},
