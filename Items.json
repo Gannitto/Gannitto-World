@@ -14,13 +14,16 @@
 		"Dark wooden": {},
 		"Birch wooden": {},
 		"Clay": {},
+		"Brick": {},
+		"Stone brick": {},
 		"Arrow": {},
 		"Powder": {},
 		"Wheat":  {},
 		"Bucket": {},
 		"Water bucket": {},
 		"Gold bucket": {},
-		"Rope":  {}
+		"Rope":  {},
+		"Grenade": {}
 	},
 
 	"Food": {
@@ -33,11 +36,52 @@
 		"Candy cane": {}
 	},
 
+	"Drink": {
+		"Almond water": {},
+		"Beer":  {}
+	},
+
 	"Build": {
 		"Punch":  {},
 		"Table": {},
 		"Wall table": {},
-		"Furnace": {}
+		"Furnace": {},
+		"Vending machine": {},
+		"Pot": {},
+		"Wooden wall": {},
+		"Brick wall": {},
+		"Stone brick wall": {},
+		"Wooden door": {}
+	},
+
+	"Tool": {
+		"Bow": {},
+		"Gun": {},
+		"Stone pickaxe": {},
+		"Stone shovel":  {},
+		"Stone hammer": {},
+		"Stone hoe": {},
+		"Stone spear": {},
+		"Wrench": {},
+		"Portal gun": {}
+	},
+
+	"Mechanism": {
+		"Wire":  {},
+		"Lever":  {},
+		"Random box":  {},
+		"Motherboard":  {}
+	},
+
+	"Flower": {
+		"Poppy": {},
+		"Purple tulip": {},
+		"Orange tulip": {},
+		"Black tulip": {},
+		"Red tulip": {},
+		"Yellow tulip": {},
+		"Dandelion": {},
+		"Cotton grass": {}
 	},
 
 	"Seed": {
