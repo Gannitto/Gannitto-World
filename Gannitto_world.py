@@ -1,4 +1,5 @@
 import pygame
+import subprocess
 from pygame.locals import *
 import pyperclip
 from pathlib import Path
@@ -62,6 +63,12 @@ pygame.init()
 
 translator.load_language(Settings["Languages"][0])
 t = translator.get
+
+def get_build_number():
+	return int(subprocess.check_output(
+		['git', 'rev-list', '--count', 'HEAD'],
+		text=True
+	).strip())
 
 def text(text: str, text_x: int, text_y: int, color: tuple=text_color, size: int=20, alignment: bool=False, letter_spasing: int=10, surface: pygame.Surface=win, max_width: int=0, max_height: int=0, return_surface: bool=False, spase_between_strings: int=10):
 	
@@ -6814,7 +6821,7 @@ def menu():
 	settings_button = Button(Width / 2, Height / 2, pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Settings.png"), (488, 128)), pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Settings 2.png"), (488, 128)), alignment=True, action=settings)
 	change_a_character_button = Button(Width / 2, Height / 2 + 150, pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Change a character.png"), (960, 128)), pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Change a character 2.png"), (960, 128)), alignment=True, action=change_a_character)
 
-	version = open(path + "Version.txt").read()
+	version = f"Version {open(path + 'Version.txt').read()} (Build {str(get_build_number())})"
 	more_menu_open = False
 	mouse_press = False
 	does_lighten = False
@@ -6860,7 +6867,7 @@ def menu():
 			settings_button.main()
 			change_a_character_button.main()
 		
-		text("© Gannitto World " + version + " official version", 5, Height - 30, (255, 255, 255))
+		text(version, 5, Height - 30, (255, 255, 255))
 
 		win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Discord logo.png"), (108, 81)), (Width - 90, Height - 80))
 		if mouse_x > Width - 70 and mouse_y > Height - 80:
