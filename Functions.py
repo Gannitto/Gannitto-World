@@ -78,13 +78,13 @@ def win_fill(fill_colour=(0, 0, 0), alpha: int=90, rect: tuple=(0, 0, Width, Hei
 	alpha - Прозрачность заливки
 	rect - Квадрат заливки, по умолчанию весь экран
 	"""
-	
-	from Globals import win
-	
-	a = pygame.Surface(rect[2:4])
-	a.fill(fill_colour)
-	a.set_alpha(alpha)
-	win.blit(a, rect[0:2])
+	if alpha > 0:
+		from Globals import win
+		
+		a = pygame.Surface(rect[2:4], pygame.SRCALPHA)
+		a.fill(fill_colour)
+		a.set_alpha(alpha)
+		win.blit(a, rect[0:2])
 	
 def win_darken(screen: pygame.Surface):
 	

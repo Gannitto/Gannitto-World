@@ -20,6 +20,7 @@ from Inventory import inventory
 from Translator import translator
 from Cache import TextureCache
 from SettingsUI import SettingsUI
+from GameTime import GameTime
 from Globals import *
 
 pygame.init()
@@ -144,7 +145,7 @@ def save(darken:bool=True, save_world_settings:bool=False):
 		else:
 
 			Saver.save_objects(path + "Worlds/" + world_name + "/Mobs.save", world.mobs)
-			Saver.save_objects(path + "Worlds/" + world_name + "/Info.save", [player.x, player.y, Backrooms.InBackrooms, Backrooms.Level, world.current_cave, player.speed, player.HP, start_time, Ron.X, Ron.Y, Ron.Home, world.chunk_manager.generator.seed])
+			Saver.save_objects(path + "Worlds/" + world_name + "/Info.save", [player.x, player.y, Backrooms.InBackrooms, Backrooms.Level, world.current_cave, player.speed, player.HP, start_time, Ron.X, Ron.Y, Ron.Home, world.chunk_manager.generator.seed, game_time.current_time])
 			Saver.save_objects(path + "Worlds/" + world_name + "/Inventory.save", inventory.whole_inventory)
 			Saver.save_objects(path + "Worlds/" + world_name + "/Resources.save", inventory.resources)
 			Saver.save_objects(path + "Worlds/" + world_name + "/Effects.save", player.effects)
@@ -176,8 +177,6 @@ display_image = lambda X, Y, W, H: (X - player.x + Width // 2 - W // 2, player.y
 def tp(X: int, Y: int):
 	global player
 	player.x, player.y = X, Y
-
-# def set_time(a): global game; game.time += a TODO
 
 # Применение настроек TODO
 
@@ -2257,6 +2256,7 @@ class World:
 								win.blit(biome_texture, (tile_screen_x, tile_screen_y))
 
 world = World()
+game_time = GameTime()
 
 class GameState:
 
@@ -3634,7 +3634,6 @@ multyplayer = False
 
 hot_keys = Saver.load_objects(path + "Settings/Hot keys.save")
 player = Player()
-dt = 0
 objects_templates = {
 		"Table": Object("Table", 0, 0, "Images/Objects/Table.png", (256, 256), special_flags=1, is_solid=True, breakable=True),
 		"Wall table": Object("Wall table", 0, 0, "Images/Objects/Wall table.png", (256, 256), special_flags=1, is_solid=True, breakable=True),
@@ -3646,7 +3645,7 @@ objects_templates = {
 
 def start_game():
 	
-	global win, Hiro_rect, changed_slot, menu_open, multyplayer_menu_open, screenmode, inventory_open, hold_left, backrooms, text_color, bullet_num, craft_items_list, craft_amounts_list, craft_images_list, screenshot_num, mouse_x, mouse_y, item_settings_open, multyplayer_panel, chat_tick, chat, main_chat, craft_list_open, craft_list_page, click, in_motherboard, os, world_name, player_bullets, color, multyplayer_mode, multyplayer, Hiro, animation, start_time, new_particles, inside_files, game, alt_pressed, dt, player, world
+	global win, Hiro_rect, changed_slot, menu_open, multyplayer_menu_open, screenmode, inventory_open, hold_left, backrooms, text_color, bullet_num, craft_items_list, craft_amounts_list, craft_images_list, screenshot_num, mouse_x, mouse_y, item_settings_open, multyplayer_panel, chat_tick, chat, main_chat, craft_list_open, craft_list_page, click, in_motherboard, os, world_name, player_bullets, color, multyplayer_mode, multyplayer, Hiro, animation, start_time, new_particles, inside_files, game, alt_pressed, player, world
 
 	night_playing = False
 	input_text = ""
@@ -3682,7 +3681,7 @@ def start_game():
 	if os.path.exists(path + "Worlds/" + world_name):
 		
 		world.mobs = Saver.load_objects(path + "Worlds/" + world_name + "/Mobs.save")
-		player.x, player.y, Backrooms.InBackrooms, Backrooms.Level, world.current_cave, player.speed, player.HP, start_time, Ron.X, Ron.Y, Ron.Home, world.chunk_manager.generator.seed = Saver.load_objects(path + "Worlds/" + world_name + "/Info.save")
+		player.x, player.y, Backrooms.InBackrooms, Backrooms.Level, world.current_cave, player.speed, player.HP, start_time, Ron.X, Ron.Y, Ron.Home, world.chunk_manager.generator.seed, game_time.current_time = Saver.load_objects(path + "Worlds/" + world_name + "/Info.save")
 		game.difficulty, player.god_mode = Saver.load_objects(path + "Worlds/" + world_name + "/Settings.save")
 		inventory.whole_inventory = Saver.load_objects(path + "Worlds/" + world_name + "/Inventory.save")
 		player.effects = Saver.load_objects(path + "Worlds/" + world_name + "/Effects.save")
@@ -3758,13 +3757,8 @@ def start_game():
 		dx = 0
 		dy = 0
 
-
-		dt = clock.tick(60) / 1000.0
-		game.time = int(time.time() - start_time)
-
-		if game.time > 1200:
-			game.time = 0
-			start_time += 1200
+		dt = clock.tick(FPS) / 1000.0
+		game_time.update(dt)
 
 		for event in pygame.event.get():
 			
@@ -3987,12 +3981,12 @@ def start_game():
 			else:
 				current_biome = None
 			world.render_loaded_chunks()
-			if game.time > 600 and not night_playing:
+			if game_time.day_phase == "Night" and not night_playing:
 				music_channel.stop()
 				music_channel.play(pygame.mixer.Sound(path + "Soundtracks/Night " + str(random.randint(1, 2)) + ".mp3"))
 				night_playing = True
 
-			elif not music_channel.get_busy() or (night_playing and game.time < 600):
+			elif not music_channel.get_busy() or (night_playing and game_time.day_phase != "Night"):
 
 				night_playing = False
 				music_channel.stop()
@@ -4620,13 +4614,14 @@ def start_game():
 
 		if not Backrooms.InBackrooms and world.current_cave is None and (not multyplayer or multyplayer_mode == "My game"):
 
-			if (game.time < 600 and random.randint(1, 5000) == 1) or (game.time > 600 and random.randint(1, 800) == 1):
-				try: world.mobs.append(SlimeEnemy(random.randint(player.x - Width, player.x + Width), random.randint(player.y - Height, player.y + Height)))
-				except:pass
-
-			elif game.time > 600 and random.randint(1, 1000) == 1:
-				try: world.mobs.append(SpiderEnemy(random.randint(player.x - Width, player.x + Width), random.randint(player.y - Height, player.y + Height)))
-				except:pass
+			if game_time.day_phase == "Night":
+				if random.randint(1, 800) == 1:
+					try: world.mobs.append(SpiderEnemy(random.randint(player.x - Width, player.x + Width), random.randint(player.y - Height, player.y + Height)))
+					except:pass
+			else:
+				if random.randint(1, 800) == 1:
+					try: world.mobs.append(SlimeEnemy(random.randint(player.x - Width, player.x + Width), random.randint(player.y - Height, player.y + Height)))
+					except:pass
 
 		for bullet in player_bullets:
 			bullet.main()
@@ -5012,17 +5007,8 @@ def start_game():
 		new_particles.clear()
 
 		# Механика игрового времени
-
-		if 590 < game.time:
-
-			if game.time < 600:
-				win_fill(alpha=150 - (10 - (game.time - 590)) * 10)
-
-			elif game.time < 1190:
-				win_fill(alpha=150)
-
-			else:
-				win_fill(alpha=150 - (game.time - 1190) * 10)
+		day_alpha = (1 - game_time.get_day_night_cycle()) * 200
+		win_fill(alpha=day_alpha)
 
 		# Механика анимации слотов
 		if Settings["Display"][5]:
@@ -6374,7 +6360,6 @@ if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0]
 		win_fill((200, 0, 0), 100 - Settings["Display"][0])
 
 		pygame.display.update()
-		clock.tick(FPS)
 
 
 
