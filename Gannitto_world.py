@@ -66,7 +66,11 @@ translator.load_language(Settings["Languages"][0])
 t = translator.get
 
 def get_build_number():
-	return int(subprocess.check_output(("git", "rev-list", "--count", "HEAD"), text=True).strip())
+	try:
+		build_num = int(subprocess.check_output(("git", "rev-list", "--count", "HEAD"), text=True).strip())
+	except:
+		build_num = "Error"
+	return build_num
 
 def text(text: str, text_x: int, text_y: int, color: tuple=text_color, size: int=20, alignment: bool=False, letter_spasing: int=10, surface: pygame.Surface=win, max_width: int=0, max_height: int=0, return_surface: bool=False, spase_between_strings: int=10):
 	
