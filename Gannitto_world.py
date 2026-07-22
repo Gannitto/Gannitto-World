@@ -187,44 +187,6 @@ statistics[0] += 1
 pygame.display.set_icon(pygame.image.load(path + "Images/Icon.png"))
 pygame.display.set_caption("Gannitto World")
 
-Hiro_down_run_1 = pygame.transform.scale(pygame.image.load(path + "Images/Players/Hiro/Normal/Down/1.png"), (256, 256))
-Hiro_down_run_2 = pygame.transform.scale(pygame.image.load(path + "Images/Players/Hiro/Normal/Down/2.png"), (256, 256))
-Hiro_down_run_3 = pygame.transform.scale(pygame.image.load(path + "Images/Players/Hiro/Normal/Down/3.png"), (256, 256))
-Hiro_down_run_4 = pygame.transform.scale(pygame.image.load(path + "Images/Players/Hiro/Normal/Down/4.png"), (256, 256))
-Hiro_down_run_5 = pygame.transform.scale(pygame.image.load(path + "Images/Players/Hiro/Normal/Down/5.png"), (256, 256))
-Hiro_down_run_6 = pygame.transform.scale(pygame.image.load(path + "Images/Players/Hiro/Normal/Down/6.png"), (256, 256))
-
-Hiro_down_left = pygame.transform.scale(pygame.image.load(path + "Images/Players/Hiro/Normal/Down-left/1.png"), (256, 256))
-Hiro_down_right = pygame.transform.scale(pygame.image.load(path + "Images/Players/Hiro/Normal/Down-right/1.png"), (256, 256))
-
-Hiro_left_run_1 = pygame.transform.scale(pygame.image.load(path + "Images/Players/Hiro/Normal/Left/1.png"), (256, 256))
-Hiro_left_run_2 = pygame.transform.scale(pygame.image.load(path + "Images/Players/Hiro/Normal/Left/2.png"), (256, 256))
-Hiro_left_run_3 = pygame.transform.scale(pygame.image.load(path + "Images/Players/Hiro/Normal/Left/3.png"), (256, 256))
-Hiro_left_run_4 = pygame.transform.scale(pygame.image.load(path + "Images/Players/Hiro/Normal/Left/4.png"), (256, 256))
-Hiro_left_run_5 = pygame.transform.scale(pygame.image.load(path + "Images/Players/Hiro/Normal/Left/5.png"), (256, 256))
-Hiro_left_run_6 = pygame.transform.scale(pygame.image.load(path + "Images/Players/Hiro/Normal/Left/6.png"), (256, 256))
-
-Hiro_right_run_1 = pygame.transform.scale(pygame.image.load(path + "Images/Players/Hiro/Normal/Right/1.png"), (256, 256))
-Hiro_right_run_2 = pygame.transform.scale(pygame.image.load(path + "Images/Players/Hiro/Normal/Right/2.png"), (256, 256))
-Hiro_right_run_3 = pygame.transform.scale(pygame.image.load(path + "Images/Players/Hiro/Normal/Right/3.png"), (256, 256))
-Hiro_right_run_4 = pygame.transform.scale(pygame.image.load(path + "Images/Players/Hiro/Normal/Right/4.png"), (256, 256))
-Hiro_right_run_5 = pygame.transform.scale(pygame.image.load(path + "Images/Players/Hiro/Normal/Right/5.png"), (256, 256))
-Hiro_right_run_6 = pygame.transform.scale(pygame.image.load(path + "Images/Players/Hiro/Normal/Right/6.png"), (256, 256))
-
-Hiro_up_run_1 = pygame.transform.scale(pygame.image.load(path + "Images/Players/Hiro/Normal/Up/1.png"), (256, 256))
-Hiro_up_run_2 = pygame.transform.scale(pygame.image.load(path + "Images/Players/Hiro/Normal/Up/2.png"), (256, 256))
-Hiro_up_run_3 = pygame.transform.scale(pygame.image.load(path + "Images/Players/Hiro/Normal/Up/3.png"), (256, 256))
-Hiro_up_run_4 = pygame.transform.scale(pygame.image.load(path + "Images/Players/Hiro/Normal/Up/4.png"), (256, 256))
-Hiro_up_run_5 = pygame.transform.scale(pygame.image.load(path + "Images/Players/Hiro/Normal/Up/5.png"), (256, 256))
-Hiro_up_run_6 = pygame.transform.scale(pygame.image.load(path + "Images/Players/Hiro/Normal/Up/6.png"), (256, 256))
-
-Hiro_up_left = pygame.transform.scale(pygame.image.load(path + "Images/Players/Hiro/Normal/Up-left/1.png"), (256, 256))
-
-Hiro_up_right_run_1 = pygame.transform.scale(pygame.image.load(path + "Images/Players/Hiro/Normal/Up-right/1.png"), (256, 256))
-
-Hiro = Hiro_down_run_1
-Hiro_rect = Hiro.get_rect(center=(Width / 2, Height / 2))
-
 arrow_down = pygame.transform.scale(pygame.image.load(path + "Images/DOWN.png"), (64, 64))
 arrow_left = pygame.transform.scale(pygame.image.load(path + "Images/LEFT.png"), (64, 64))
 arrow_right = pygame.transform.scale(pygame.image.load(path + "Images/RIGHT.png"), (64, 64))
@@ -788,7 +750,7 @@ class Player:
 		# Анимация
 		self.direction = "Down"
 		self.frame_index = 0
-		self.animation_speed = FPS / 2000  # Скорость анимации (секунды между кадрами)
+		self.animation_speed = 0.05  # Скорость анимации (секунды между кадрами)
 		self.animation_timer = 0
 		self.animations = player_animations.animations
 		self.costum = 0
@@ -871,7 +833,7 @@ class Player:
 	def render(self, screen, dx, dy):
 		"""Отрисовывает игрока на экране"""
 		
-		screen.blit(self.image, (Width / 2 - 128, Height / 2 - 128))
+		screen.blit(shadow(self.image, f"Player {self.direction} {self.frame_index}"), (Width / 2 - 128, Height / 2 - 128))
 		
 		if Settings["Display"][3]:
 			self.rect = pygame.Rect(self.x - 25, self.y - 112, 50, 224)
@@ -3477,14 +3439,14 @@ def change_a_character():
 		
 		characters_list = [
 			Character("Hiro", "123", [
-				Hiro_down_run_1,
-				Hiro_down_left,
-				Hiro_left_run_1,
-				Hiro_up_left,
-				Hiro_up_run_1,
-				Hiro_up_right_run_1,
-				Hiro_right_run_1,
-				Hiro_down_right
+				player.animations["Down"][0],
+				player.animations["Down-left"][0],
+				player.animations["Left"][0],
+				player.animations["Up-left"][0],
+				player.animations["Up"][0],
+				player.animations["Up-right"][0],
+				player.animations["Right"][0],
+				player.animations["Down-right"][0],
 			])
 		]
 
@@ -3645,7 +3607,7 @@ objects_templates = {
 
 def start_game():
 	
-	global win, Hiro_rect, changed_slot, menu_open, multyplayer_menu_open, screenmode, inventory_open, hold_left, backrooms, text_color, bullet_num, craft_items_list, craft_amounts_list, craft_images_list, screenshot_num, mouse_x, mouse_y, item_settings_open, multyplayer_panel, chat_tick, chat, main_chat, craft_list_open, craft_list_page, click, in_motherboard, os, world_name, player_bullets, color, multyplayer_mode, multyplayer, Hiro, animation, start_time, new_particles, inside_files, game, alt_pressed, player, world
+	global win, changed_slot, menu_open, multyplayer_menu_open, screenmode, inventory_open, hold_left, backrooms, text_color, bullet_num, craft_items_list, craft_amounts_list, craft_images_list, screenshot_num, mouse_x, mouse_y, item_settings_open, multyplayer_panel, chat_tick, chat, main_chat, craft_list_open, craft_list_page, click, in_motherboard, os, world_name, player_bullets, color, multyplayer_mode, multyplayer, animation, start_time, new_particles, inside_files, game, alt_pressed, player, world
 
 	night_playing = False
 	input_text = ""
@@ -4690,7 +4652,6 @@ def start_game():
 
 		# Отрисовка игрока
 		
-		# win.blit(shadow(Hiro, player.direction + str(player.costum), len_shadow=50), Hiro_rect)
 		player.render(win, dx, dy)
 
 
@@ -4876,7 +4837,7 @@ def start_game():
 		# Рон
 
 		Ron.walk(player.x, player.y)
-		Ron.show(player.x, player.y)
+		Ron.show(player.x, player.y, win, Width, Height)
 
 		world.visible_items = Ron.check_items(player.x, player.y, world.visible_items, world)
 		world.mobs, player_bullets = Ron.check_mobs(world.mobs, Width, Height, FPS, player_bullets, Bullet, player.x, player.y)

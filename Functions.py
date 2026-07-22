@@ -3,6 +3,8 @@ import sys
 import os
 import pygame
 from itertools import product
+import numpy as np
+from PIL import Image
 from Globals import Width, Height, path
 
 changed_language = "Russian"
@@ -15,60 +17,59 @@ def languages(Russian: str, English: str, Kazach: str) -> str:
 def shadow(
 		surface: pygame.Surface,
 		name: str,
-		len_shadow: int=1,
-		intensity: int=100
+		len_shadow: int = 20,
+		intensity: int = 100,
+		x_bias: int=1,
+		y_bias: int=1
 		) -> pygame.Surface:
-	
-	"""
-	Показывает на изображении его тень.
-	surface - Изображение, на котором нужно показать тень
-	name - Имя изображение, по которому оно сохранится в кеш
-	len_shadow - Длина тени
-	intensity - Интенсивность тени
-	"""
 	
 	from Globals import Settings
 	
-	if Settings["Display"][4]:
-		if not os.path.exists(path + "Cache"):
-			os.mkdir(path + "Cache")
-
-		if os.path.exists(path + "Cache/" + name + ".png"):
-			return pygame.image.load(path + "Cache/" + name + ".png")
-
-		else:
-			
-			new_surface = pygame.Surface((surface.get_width(), surface.get_height()), pygame.SRCALPHA)
-			new_surface.blit(surface, (0, 0))
-			shadow_surface = pygame.Surface((new_surface.get_width(), new_surface.get_height()), pygame.SRCALPHA)
-
-			for _ in range(len_shadow):
-
-				for X, Y in product(range(new_surface.get_width() - 1), range(new_surface.get_height() - 1)):
-
-					try:
-
-						if 0 < new_surface.get_at((X, Y)).a and new_surface.get_at((X + 1, Y + 1)).a < 100:
-							shadow_surface.set_at((X + 1, Y + 1), (0, 0, 150, 1))
-
-					except IndexError:
-
-						temp = new_surface.copy()
-						new_surface.blit(shadow_surface, (0, 0))
-						new_surface = pygame.transform.scale(new_surface, (new_surface.get_width() + 1, new_surface.get_height() + 1))
-						shadow_surface = pygame.Surface((new_surface.get_width(), new_surface.get_height()), pygame.SRCALPHA)
-						shadow_surface.set_at((X + 1, Y + 1), (0, 0, 150, 1))
-
-				new_surface.blit(shadow_surface, (0, 0))
-			
-			shadow_surface.set_alpha(intensity)
-			pygame.image.save(new_surface, path + "Cache/" + name + ".png")
-			
-			return new_surface
-	else:
-
+	if not Settings["Display"][4]:
 		return surface
 	
+	cache_path = path + "Cache/"
+	if not os.path.exists(cache_path):
+		os.mkdir(cache_path)
+	
+	cache_file = cache_path + name + ".png"
+	if os.path.exists(cache_file):
+		return pygame.image.load(cache_file)
+	
+	# Конвертируем pygame surface в PIL Image
+	width, height = surface.get_width(), surface.get_height()
+	
+	# Получаем данные поверхности
+	data = pygame.image.tostring(surface, "RGBA")
+	img = Image.frombytes("RGBA", (width, height), data)
+	
+	# Создаем массив numpy из PIL Image
+	img_array = np.array(img)
+	
+	# Создаем тень
+	shadow_array = np.zeros_like(img_array)
+	
+	# Проверяем границы
+	for y, x in product(range(height - 1), range(width - 1)):
+		if img_array[y, x, 3] > 0 and img_array[y + 1, x + 1, 3] < 100:
+			for bias in range(len_shadow):
+				if not (0 <= x + 1 + bias * x_bias < width and 0 <= y + 1 + bias * y_bias < height) or img_array[y + 1 + bias * y_bias, x + 1 + bias * x_bias, 3] == 255:
+					break
+				shadow_array[y + 1 + bias * y_bias, x + 1 + bias * x_bias] = [0, 0, 10, intensity * (len_shadow - bias) // len_shadow]
+	
+	# Комбинируем
+	result_array = np.where(shadow_array[:, :, 3:4] > 0, shadow_array, img_array)
+	
+	# Конвертируем обратно в PIL Image
+	result_img = Image.fromarray(result_array, "RGBA")
+	
+	# Сохраняем в pygame surface
+	result_data = result_img.tobytes()
+	result_surface = pygame.image.fromstring(result_data, (width, height), "RGBA")
+	
+	pygame.image.save(result_surface, cache_file)
+	return result_surface
+
 def win_fill(fill_colour=(0, 0, 0), alpha: int=90, rect: tuple=(0, 0, Width, Height)):
 
 	"""

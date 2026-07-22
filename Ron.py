@@ -1,6 +1,8 @@
 import pygame
 import os
+from random import randint
 from Globals import path
+from Functions import shadow
 
 X = 0
 Y = 0
@@ -19,16 +21,13 @@ down_images = [
 
 inventory = {"Bow": 0, "Arrow": 0, "Stick": 0, "Iron ingot": 0}
 
-def show(x, y):
-
-	from Gannitto_world  import win, Width, Height
-	from Functions import shadow
+def show(x, y, win, Width, Height):
 
 	match Ron_run:
 
 		case "Down":
 
-			win.blit(shadow(down_images[costum], "Ron Down" + str(costum), len_shadow=50), (X - x + Width // 2 - 128, y - Y + Height // 2 - 128))
+			win.blit(shadow(down_images[costum], "Ron Down" + str(costum)), (X - x + Width // 2 - 128, y - Y + Height // 2 - 128))
 
 def check_animations():
 	...
@@ -97,7 +96,7 @@ def check_items(x, y, items: list, world):
 				else:
 
 					inventory[object.name] += 1
-					world.chunk_manager.get_chunk_at(object.x, object.y).objects.remove(object)
+					world.chunk_manager.get_chunk_at(object.x, object.y).items.remove(object)
 					break
 
 	return items
@@ -105,8 +104,6 @@ def check_items(x, y, items: list, world):
 def check_mobs(mobs: list, Width, Height, FPS, player_bullets: list, Bullet, x, y):
 
 	"""Проверяет мобов вокруг Рона"""
-
-	from random import randint
 	
 	for mob in mobs:
 
