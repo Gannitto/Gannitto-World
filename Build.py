@@ -1,5 +1,6 @@
 import pygame
 from Globals import path
+from Functions import win_fill
 
 select_images = {
 		(256, 256): pygame.transform.scale(pygame.image.load(path + "Images/Select 256x256.png"), (256, 256))
@@ -7,6 +8,13 @@ select_images = {
 
 for image in select_images.values():
 	image.set_alpha(50)
+
+def draw_select_image(win, w, h, Width, Height, player, mouse_x, mouse_y):
+	if (w, h) in select_images:
+		win.blit(select_images[(w, h)], ((player.x + mouse_x - Width // 2) // w * w - player.x + Width // 2, player.y - (player.y - mouse_y + Height // 2) // h * h + Height // 2 - h))
+	else:
+		win_fill(rect=((player.x + mouse_x - Width // 2) // w * w - player.x + Width // 2, player.y - (player.y - mouse_y + Height // 2) // h * h + Height // 2 - h, w, h))
+
 
 def build(
 		build_tuple: tuple,
@@ -36,10 +44,10 @@ def build(
 	command - Команда, которую надо выполнить, если поставился объект
 	"""
 	
-	changed_slot, player, particles, Width, Height, world, whole_inventory = build_tuple
-	from Gannitto_world import Particle, Object, win
-	from Functions import win_fill
-	
+	from Gannitto_world import Particle, Object
+
+	changed_slot, player, particles, Width, Height, world, whole_inventory, win = build_tuple
+
 	if whole_inventory[changed_slot] is not None:
 
 		changed_slot_name = whole_inventory[changed_slot].name.replace(remove_part, "") if remove_part in whole_inventory[changed_slot].name else whole_inventory[changed_slot].name
@@ -47,11 +55,8 @@ def build(
 		if changed_slot_name in item_name.split(",") or whole_inventory[changed_slot].type in item_type.split(","):
 			
 			mouse_x, mouse_y = pygame.mouse.get_pos()
-			if (object_to_build.w, object_to_build.h) in select_images:
-				win.blit(select_images[(object_to_build.w, object_to_build.h)], ((player.x + mouse_x - Width // 2) // object_to_build.w * object_to_build.w - player.x + Width // 2, player.y - (player.y - mouse_y + Height // 2) // object_to_build.h * object_to_build.h + Height // 2 - object_to_build.h))
-			else:
-				win_fill(rect=((player.x + mouse_x - Width // 2) // object_to_build.w * object_to_build.w - player.x + Width // 2, player.y - (player.y - mouse_y + Height // 2) // object_to_build.h * object_to_build.h + Height // 2 - object_to_build.h, object_to_build.w, object_to_build.h))
-		
+			draw_select_image(win, object_to_build.w, object_to_build.h, Width, Height, player, mouse_x, mouse_y)
+
 			if pygame.mouse.get_pressed()[0]:
 			
 				for i, object in enumerate(world.visible_objects + particles):
