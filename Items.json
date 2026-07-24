@@ -56,15 +56,15 @@
 	},
 
 	"Tool": {
-		"Bow": {},
-		"Gun": {},
-		"Stone pickaxe": {},
-		"Stone shovel":  {},
-		"Stone hammer": {},
-		"Stone hoe": {},
-		"Stone spear": {},
-		"Wrench": {},
-		"Portal gun": {}
+		"Bow": {"max_stack": 1},
+		"Gun": {"max_stack": 1},
+		"Stone pickaxe": {"max_stack": 1},
+		"Stone shovel":  {"max_stack": 1},
+		"Stone hammer": {"max_stack": 1},
+		"Stone hoe": {"max_stack": 1},
+		"Stone spear": {"max_stack": 1},
+		"Wrench": {"max_stack": 1},
+		"Portal gun": {"max_stack": 1}
 	},
 
 	"Mechanism": {

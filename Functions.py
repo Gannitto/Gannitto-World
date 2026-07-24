@@ -87,14 +87,16 @@ def win_fill(fill_colour=(0, 0, 0), alpha: int=90, rect: tuple=(0, 0, Width, Hei
 		a.set_alpha(alpha)
 		win.blit(a, rect[0:2])
 	
-def win_darken(screen: pygame.Surface):
+def win_darken(win: pygame.Surface, screen: pygame.Surface=None):
 	
 	"""
 	Затемнить экран. Используется для переходов между окнами
+	win - Экран
 	screen - Изображение экрана
 	"""
-	from Globals import win, clock
-	from Gannitto_world import save
+	if screen is None:
+		screen = win.copy()
+	from Globals import clock
 	tick = 0
 	display_speed = 7
 	dark = 0
@@ -106,9 +108,7 @@ def win_darken(screen: pygame.Surface):
 		dark += display_speed
 
 		for event in pygame.event.get():
-
 			if event.type == pygame.QUIT:
-				save()
 				sys.exit()
 
 		win.blit(screen, (0, 0))
@@ -117,16 +117,17 @@ def win_darken(screen: pygame.Surface):
 		clock.tick(30)
 	
 
-def win_lighten(screen: pygame.Surface, start_dark: int=300):
+def win_lighten(win: pygame.Surface, screen: pygame.Surface=None, start_dark: int=300):
 	
 	"""
 	Осветлить экран. Используется для переходов между окнами
+	win - Экран
 	screen - Изображение экрана
 	start_dark - Значение темноты в начале, если сделать её больше, то задержка будет больше
 	"""
-	
-	from Globals import clock, win
-	from Gannitto_world import save
+	if screen is None:
+		screen = win.copy()
+	from Globals import clock
 
 	dark = start_dark
 	display_speed = 7
@@ -134,9 +135,7 @@ def win_lighten(screen: pygame.Surface, start_dark: int=300):
 	while dark > 1:
 		
 		for event in pygame.event.get():
-
 			if event.type == pygame.QUIT:
-				save()
 				sys.exit()
 		
 		display_speed += 7

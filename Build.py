@@ -44,8 +44,6 @@ def build(
 	command - Команда, которую надо выполнить, если поставился объект
 	"""
 	
-	from Gannitto_world import Particle, Object
-
 	changed_slot, player, particles, Width, Height, world, whole_inventory, win = build_tuple
 
 	if whole_inventory[changed_slot] is not None:
@@ -76,7 +74,7 @@ def build(
 						whole_inventory[changed_slot].amount -= get_item_from_inventory
 						if whole_inventory[changed_slot].amount == 0:
 							whole_inventory[changed_slot] = None
-						new_object = Object(object_to_build.name, object_to_build.x, object_to_build.y, object_to_build.image_path, object_to_build.scale_x, object_to_build.image, object_to_build.special_flags, object_to_build.add_path, object_to_build.start_time, object_to_build.is_solid, object_to_build.rect, object_to_build.is_solid, object_to_build.breakable)
+						new_object = object_to_build.copy()
 						new_object.x, new_object.y = ((player.x + mouse_x - Width // 2) // object_to_build.w * object_to_build.w + object_to_build.w // 2, (player.y - mouse_y + Height // 2) // object_to_build.h * object_to_build.h + object_to_build.h // 2)
 						new_object.rect = pygame.Rect(new_object.x - new_object.w / 2, new_object.y - new_object.h / 2, new_object.w, new_object.h)
 						if particle_to_build: particles.append(object_to_build)

@@ -1,6 +1,3 @@
-import pygame
-import math
-
 class GameTime:
 
 	def __init__(self):
@@ -35,7 +32,7 @@ class GameTime:
 		else:
 			self.day_phase = "day"
 	
-	def get_day_night_cycle(self):
+	def get_brightness(self):
 		"""Возвращает значение от 0 до 1 для плавного перехода день/ночь"""
 		progress = self.current_time / self.day_duration
 		
@@ -62,7 +59,7 @@ class GameTime:
 		minute = int((progress * 24 - hour) * 60)
 		return f"{hour:02d}:{minute:02d}"
 	
-	def set_time_scale(self, scale):
+	def set_time_speed(self, scale):
 		"""Установка скорости времени"""
 		self.time_scale = max(0, scale)
 	
@@ -70,7 +67,7 @@ class GameTime:
 		"""Сброс времени на начало дня"""
 		self.current_time = 0.0
 	
-	def add_time(self, seconds):
+	def skip_time(self, seconds):
 		"""Добавление времени (для пропуска времени)"""
 		self.current_time += seconds
 		if self.current_time >= self.day_duration:

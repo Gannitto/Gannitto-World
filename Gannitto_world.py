@@ -1,18 +1,17 @@
 import pygame
 import subprocess
-from pygame.locals import *
 import pyperclip
 from pathlib import Path
 import time
 import random
-import Saver
 from math import atan2, cos, sin, pi, sqrt, fabs, degrees
-import Backrooms
-import socket
-import os
-import Ron
-import sys
 from itertools import product
+import socket
+import sys
+import os
+import Backrooms
+import Ron
+import Saver
 from Functions import *
 from Build import build, check_build_objects, draw_select_image
 from Chunks import ChunkManager
@@ -21,6 +20,7 @@ from Translator import translator
 from Cache import TextureCache
 from SettingsUI import SettingsUI
 from GameTime import GameTime
+from Commands import command_system
 from Globals import *
 
 pygame.init()
@@ -32,6 +32,7 @@ pygame.init()
 
 Текстуры
 Классы
+Загрузка команд
 Кнопки в меню
 Основной цикл игры
 	Загрузка данных мира
@@ -166,19 +167,9 @@ def save(darken:bool=True, save_world_settings:bool=False):
 			world.chunk_manager.save_all_loaded_chunks()
 				
 	if darken and Settings["Display"][9]:
-		win_darken(win.copy())
+		win_darken(win)
 		
 	if save_world_settings: Saver.save_objects(path + "Worlds/" + world_name + "/Settings.save", [game.difficulty, player.god_mode])
-
-def chat_message(message: str):
-	"""Отправляет сообщение в чат"""
-	global chat_tick
-	chat.append(message)
-	chat_tick = len(message) // 1.5 * FPS
-
-def tp(X: int, Y: int):
-	global player
-	player.x, player.y = X, Y
 
 # Применение настроек TODO
 
@@ -525,7 +516,7 @@ class Player:
 			self.rect = pygame.Rect(self.x - 25, self.y - 112, 50, 224)
 			pygame.draw.rect(screen, (0, 255, 0), (Width / 2 - 128, Height / 2 - 128, self.image.get_width(), self.image.get_height()), 2)
 			pygame.draw.rect(win, (0, 0, 0), (self.rect[0] - self.x + Width // 2, self.y - self.rect[1] - self.rect[3] + Height // 2, self.rect[2], self.rect[3]), 3)
-
+	
 player = Player()
 world_to_screen = lambda X, Y, W, H, player=player: (X - player.x + Width // 2 - W // 2, player.y - Y + Height // 2 - H // 2)
 
@@ -616,6 +607,10 @@ class Object:
 			return True
 		else:
 			return False
+
+	def copy(self):
+		return Object(self.name, self.x, self.y, self.image_path, self.scale_x, self.image, self.special_flags, self.add_path, self.start_time, self.is_solid, self.rect, self.is_solid, self.breakable)
+
 	
 	def __getstate__(self):
 		
@@ -2186,7 +2181,6 @@ class World:
 			self.visible_items.extend(chunk.items)
 			self.visible_walls.update(chunk.walls)
 			self.visible_caves.extend(chunk.caves)
-		
 
 	def render_loaded_chunks(self):
 
@@ -2323,6 +2317,52 @@ class Vending_machine:
 
 settings_ui = SettingsUI(win, Settings, statistics, bigTextInfo, path)
 
+# Загрузка команд
+
+def tp(x, y, player=player):
+	"""Телепортация игрока на указанные координаты"""
+	player.x = x
+	player.y = y
+
+def chat_message(message: str):
+	"""Отправляет сообщение в чат"""
+	global chat_tick
+	chat.append(message)
+	chat_tick = len(message) // 1.5 * FPS
+
+def command_help(command: str=""):
+	if command == "":
+		chat_message("Команды можно использовать, если у вас включён режим бога или вы взломали код вселенной. Для ознакомления со списком команд введите /command_list")
+	elif command in command_system.commands:
+		chat_message(command_system.commands[command][1])
+	else:
+		chat_message("Нет такой команды: " + command)
+
+def command_list():
+	for command in command_system.commands.keys():
+		chat_message(command)
+
+def kukusiki_hack():
+	hack_list = ("рожи дыбильные", "лысый кал", "хитрожопые скоты", "спина и дождь", "маслодонное кино", "помидорный чай", "пьяный хлеб", "флюрография гуся")
+	chat_message("Смори, Ришный Мцэць взломал код вселенной и скинул нам этот шифрованный список:")
+	for i in hack_list:
+		chat_message(i)
+
+command_system.commands = {
+
+		"help": (command_help, "Выдаёт справку\n/help КОМАНДА"),
+		"command_list": (command_list, "Выдаёт список команд\n/command_list"),
+		"kukusiki_hack": (kukusiki_hack, "Раскрывает код вселенной\n/kukusiki_hack"),
+		"tp": (tp, "Телепортация игрока на указанные координаты\n tp X Y"),
+		"give": (inventory.increate, "Выдача предмета в инвентарь\n give ПРЕДМЕТ КОЛИЧЕСТВО=1"),
+		"get_brightness": (game_time.get_brightness, "Получение текущей яркости днейвного цикла\n/get_brightness"),
+		"get_time_of_day": (game_time.get_time_of_day, "Получение текущего времени в 24-часовом формате\n/get_time_of_day"),
+		"set_time_speed": (game_time.set_time_speed, "Изменить скорость времени\n/time_scale МНОЖИТЕЛЬ"),
+		"reset_to_day": (game_time.reset_to_day, "Обнулить время до дня\n/reset_to_day"),
+		"skip_time": (game_time.skip_time, "Перемотать время вперёд\n/skip_time СЕКУНДЫ"),
+		"chat_message": (chat_message, "Вывести сообщение в чат\n/chat_message ТЕКСТ")
+
+		}
 
 # Кнопки в меню
 
@@ -2404,7 +2444,7 @@ def settings():
 
 					if event.key == pygame.K_ESCAPE:
 						Saver.save_objects(path + "Settings/Settings.save", Settings)
-						win_darken(win.copy())
+						win_darken(win)
 						menu()
 
 			win.fill((192, 203, 220))
@@ -2415,7 +2455,7 @@ def settings():
 			
 			if back_button.get_pressed():
 				Saver.save_objects(path + "Settings/Settings.save", Settings)
-				win_darken(win.copy())
+				win_darken(win)
 				menu()
 				
 			page_back_button.main()
@@ -2494,7 +2534,7 @@ def settings():
 			win_fill(alpha=100 - Settings["Display"][0])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
 			
 			if not does_lighten:
-				win_lighten(win.copy())
+				win_lighten(win)
 				does_lighten = True
 
 			pygame.display.update()
@@ -2529,7 +2569,7 @@ def settings():
 						alt_pressed = not alt_pressed
 					if event.key == pygame.K_ESCAPE:
 						Saver.save_objects(path + "Settings/Settings.save", Settings)
-						win_darken(win.copy())
+						win_darken(win)
 						menu()
 					if event.key == hot_keys["Change screen"]:
 						if screenmode == "FULLSCREEN":
@@ -2566,7 +2606,7 @@ def settings():
 
 			if back_button.get_pressed():
 				Saver.save_objects(path + "Settings/Settings.save", Settings)
-				win_darken(win.copy())
+				win_darken(win)
 				menu()
 				
 			# Анимация и эффекты
@@ -2592,7 +2632,7 @@ def settings():
 						alt_pressed = not alt_pressed
 					if event.key == pygame.K_ESCAPE:
 						Saver.save_objects(path + "Settings/Settings.save", Settings)
-						win_darken(win.copy())
+						win_darken(win)
 						menu()
 
 					if event.key == pygame.K_1:
@@ -2633,7 +2673,7 @@ def settings():
 			back_button.main()
 			if back_button.get_pressed():
 				Saver.save_objects(path + "Settings/Settings.save", Settings)
-				win_darken(win.copy())
+				win_darken(win)
 				menu()
 			show_reset_settings()
 			
@@ -2691,7 +2731,7 @@ def settings():
 			win_fill(alpha=100 - Settings["Display"][0])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
 
 			if not does_lighten:
-				win_lighten(win.copy())
+				win_lighten(win)
 				does_lighten = True
 
 			pygame.display.update()
@@ -2734,7 +2774,7 @@ def settings():
 						alt_pressed = not alt_pressed
 					if event.key == pygame.K_ESCAPE:
 						Saver.save_objects(path + "Settings/Settings.save", Settings)
-						win_darken(win.copy())
+						win_darken(win)
 						menu()
 					if event.key == hot_keys["Change screen"]:
 						if screenmode == "FULLSCREEN":
@@ -2755,7 +2795,7 @@ def settings():
 			back_button.main()
 			if back_button.get_pressed():
 				Saver.save_objects(path + "Settings/Settings.save", Settings)
-				win_darken(win.copy())
+				win_darken(win)
 				menu()
 			show_reset_settings()
 				
@@ -2800,7 +2840,7 @@ def settings():
 			win_fill(alpha=100 - Settings["Display"][0])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
 			
 			if not does_lighten:
-				win_lighten(win.copy())
+				win_lighten(win)
 				does_lighten = True
 
 			pygame.display.update()
@@ -2835,7 +2875,7 @@ def settings():
 						alt_pressed = not alt_pressed
 					if event.key == pygame.K_ESCAPE:
 						Saver.save_objects(path + "Settings/Settings.save", Settings)
-						win_darken(win.copy())
+						win_darken(win)
 						menu()
 					if event.key == hot_keys["Change screen"]:
 						if screenmode == "FULLSCREEN":
@@ -2872,7 +2912,7 @@ def settings():
 
 			if back_button.get_pressed():
 				Saver.save_objects(path + "Settings/Settings.save", Settings)
-				win_darken(win.copy())
+				win_darken(win)
 				menu()
 				
 			# Анимация и эффекты
@@ -2912,7 +2952,7 @@ def settings():
 						alt_pressed = not alt_pressed
 					if event.key == pygame.K_ESCAPE:
 						Saver.save_objects(path + "Settings/Settings.save", Settings)
-						win_darken(win.copy())
+						win_darken(win)
 						menu()
 					if event.key == hot_keys["Change screen"]:
 						if screenmode == "FULLSCREEN":
@@ -2974,7 +3014,7 @@ def settings():
 
 			if back_button.get_pressed():
 				Saver.save_objects(path + "Settings/Settings.save", Settings)
-				win_darken(win.copy())
+				win_darken(win)
 				menu()
 				
 			# Анимация и эффекты
@@ -3013,7 +3053,7 @@ def settings():
 						alt_pressed = not alt_pressed
 					if event.key == pygame.K_ESCAPE:
 						Saver.save_objects(path + "Settings/Settings.save", Settings)
-						win_darken(win.copy())
+						win_darken(win)
 						menu()
 					if event.key == hot_keys["Change screen"]:
 						if screenmode == "FULLSCREEN":
@@ -3049,7 +3089,7 @@ def settings():
 
 			if back_button.get_pressed():
 				Saver.save_objects(path + "Settings/Settings.save", Settings)
-				win_darken(win.copy())
+				win_darken(win)
 				menu()
 				
 			# Анимация и эффекты
@@ -3091,7 +3131,7 @@ def settings():
 					else:
 						Saver.save_objects(path + "Settings/Settings.save", Settings)
 						Saver.save_objects(path + "Settings/Hot keys.save", hot_keys)
-						win_darken(win.copy())
+						win_darken(win)
 						menu()
 
 					if event.key == hot_keys["Change screen"]:
@@ -3110,7 +3150,7 @@ def settings():
 				else:
 					Saver.save_objects(path + "Settings/Settings.save", Settings)
 					Saver.save_objects(path + "Settings/Hot keys.save", hot_keys)
-					win_darken(win.copy())
+					win_darken(win)
 					menu()
 				
 			win.fill((192, 203, 220))
@@ -3326,7 +3366,7 @@ def settings():
 			win_fill(alpha=100 - Settings["Display"][0])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
 			
 			if not does_lighten:
-				win_lighten(win.copy())
+				win_lighten(win)
 				does_lighten = True
 
 			pygame.display.update()
@@ -3361,7 +3401,7 @@ def settings():
 						alt_pressed = not alt_pressed
 					if event.key == pygame.K_ESCAPE:
 						Saver.save_objects(path + "Settings/Settings.save", Settings)
-						win_darken(win.copy())
+						win_darken(win)
 						menu()
 					if event.key == hot_keys["Change screen"]:
 						if screenmode == "FULLSCREEN":
@@ -3398,7 +3438,7 @@ def settings():
 
 			if back_button.get_pressed():
 				Saver.save_objects(path + "Settings/Settings.save", Settings)
-				win_darken(win.copy())
+				win_darken(win)
 				menu()
 				
 			# Анимация и эффекты
@@ -3408,7 +3448,7 @@ def settings():
 			pygame.display.update()
 			clock.tick(FPS)
 	
-	win_darken(win.copy())
+	win_darken(win)
 	help()
 
 def change_a_character():
@@ -3425,7 +3465,7 @@ def change_a_character():
 
 	bigTextInfo = pygame.font.Font(path + "Font.ttf", 36)
 	
-	win_darken(win.copy())
+	win_darken(win)
 
 	def characters():
 
@@ -3467,7 +3507,7 @@ def change_a_character():
 					if event.key == pygame.K_LALT:
 						alt_pressed = not alt_pressed
 					if event.key == pygame.K_ESCAPE:
-						win_darken(win.copy())
+						win_darken(win)
 						menu()
 					if event.key == pygame.K_1:
 						changed_character_num = 0
@@ -3502,7 +3542,7 @@ def change_a_character():
 			back_button.main()
 			
 			if back_button.get_pressed():
-				win_darken(win.copy())
+				win_darken(win)
 				menu()
 			win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Character 2.png"), (278, 64)), (10, 120))
 			pets_button.main(pets)
@@ -3533,7 +3573,7 @@ def change_a_character():
 			win_fill(alpha=100 - Settings["Display"][0])
 			
 			if not does_lighten:
-				win_lighten(win.copy())
+				win_lighten(win)
 				does_lighten = True
 
 			pygame.display.update()
@@ -3560,7 +3600,7 @@ def change_a_character():
 							win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 							screenmode = "FULLSCREEN"
 					if event.key == pygame.K_ESCAPE:
-						win_darken(win.copy())
+						win_darken(win)
 						menu()
 
 
@@ -3572,7 +3612,7 @@ def change_a_character():
 			back_button.main()
 
 			if back_button.get_pressed():
-				win_darken(win.copy())
+				win_darken(win)
 				menu()
 
 			character_button.main(characters)
@@ -3584,7 +3624,7 @@ def change_a_character():
 			win_fill(alpha=100 - Settings["Display"][0])
 			
 			if not does_lighten:
-				win_lighten(win.copy())
+				win_lighten(win)
 				does_lighten = True
 			
 			pygame.display.update()
@@ -3657,14 +3697,10 @@ def start_game():
 		save(False, True)
 
 	inside_files = []
-
-	for dirs, folder, files in os.walk(os.path.dirname(path) + "Plugins/"):
+	for dirs, folder, files in os.walk(os.path.dirname(path) + "/Plugins/"):
 		inside_files = files
 		break
-
-	if inside_files == []:
-		print("Ошибка: не найдена папка с плагинами")
-
+	
 	for file in inside_files:
 
 		for i in Saver.load_objects(path + "" + file):
@@ -3706,9 +3742,7 @@ def start_game():
 							eval(i[1])
 						except:
 							pass
-		
-
-
+	qwerty = True
 	while True:
 
 		mouse_x, mouse_y = pygame.mouse.get_pos()
@@ -3735,7 +3769,7 @@ def start_game():
 			elif event.type == pygame.KEYDOWN and chat_input:
 				if event.key == pygame.K_RETURN:
 					chat_input = False
-					if input_text[0:2] == "/ " and player.god_mode:
+					if input_text[0:2] == "/!" and player.god_mode:
 						try:
 							eval(input_text[2:])
 							# команды лучше не использовать, так как из-за eval возникает проблема безопасности
@@ -3743,6 +3777,8 @@ def start_game():
 							chat_message(languages("<<< Команда " + Settings["User"][0] + f" получила ошибку {e}" + ". >>>", "<<< " + Settings["User"][0] + f"'s command got an {e}" + "error. >>>", ""))
 						else:
 							chat_message(languages("<<< Команда " + Settings["User"][0] + " была успешно исполнена. >>>", "<<< " + Settings["User"][0] + "'s command was successfully executed. >>>", ""))
+					elif input_text[0] == "/":
+						chat_message(command_system.execute(input_text))
 					else:
 						chat_message(Settings["User"][0] + ": " + input_text)
 
@@ -3782,7 +3818,7 @@ def start_game():
 						chat_input = True
 					if event.key == pygame.K_SLASH:
 						chat_input = True
-						input_text = "/ "
+						input_text = "/"
 
 					if event.key == pygame.K_ESCAPE:
 	
@@ -3901,10 +3937,10 @@ def start_game():
 
 		inside_files = []
 
-		for dirs, folder, files in os.walk(os.path.dirname(path) + "Plugins/"):
+		for dirs, folder, files in os.walk(os.path.dirname(path) + "/Plugins/"):
 			inside_files = files
 			break
-
+		
 		for file in inside_files:
 			for i in Saver.load_objects(path + "" + file):
 				if i[0] == "Command" and i[2] == "2":
@@ -4086,7 +4122,7 @@ def start_game():
 					aa += 1
 
 			if aa == 4:
-				Backrooms.get_rooms(int(player.x / 2000), int(player.y / 2000))
+				Backrooms.get_rooms(player.x // 2000, player.y // 2000)
 
 			if aa == 3 and keys[pygame.K_n] and random.randint(1, 30) == 30:
 
@@ -4574,7 +4610,7 @@ def start_game():
 								object.y += 30
 							else:
 								object.y -= 30
-
+		
 		if not Backrooms.InBackrooms and world.current_cave is None and (not multyplayer or multyplayer_mode == "My game"):
 
 			if game_time.day_phase == "Night":
@@ -4654,7 +4690,6 @@ def start_game():
 		# Отрисовка игрока
 		
 		player.render(win, dx, dy)
-
 
 		# Анимации Хиро
 
@@ -4969,8 +5004,7 @@ def start_game():
 		new_particles.clear()
 
 		# Механика игрового времени
-		day_alpha = (1 - game_time.get_day_night_cycle()) * 200
-		win_fill(alpha=day_alpha)
+		win_fill(alpha=(1 - game_time.get_brightness()) * 200)
 
 		# Механика анимации слотов
 		if Settings["Display"][5]:
@@ -5264,7 +5298,6 @@ def start_game():
 			
 
 		# Отображение инвентаря
-
 		if inventory_open:
 
 			if 10 < mouse_x < 794 and 10 < mouse_y < 314:
@@ -5827,7 +5860,6 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 					if inventory.whole_inventory[changed_slot].amount == 0:
 						inventory.whole_inventory[changed_slot] = None
 					world.mechanisms.append(Motherboard(None))
-
 		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Portal gun":
 
 			draw_select_image(win, 128, 256, Width, Height, player, mouse_x, mouse_y)
@@ -5971,14 +6003,14 @@ if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0]
 				text(i, 10, Height - a * 30)
 		
 		chat_tick = max(0, chat_tick - 1)
-
+		
 		if multyplayer_menu_open:
 			
 			enable_multiplayer = Button(Width // 2, Height // 2 - 30, bigTextInfo.render(t("Enable multiplayer"), True, (139, 155, 180)), bigTextInfo.render(t("Enable multiplayer"), True, (58, 68, 102)), alignment=True, info=t("Your IP-address - ") + socket.gethostbyname(socket.gethostname()))
 			enter_another_game = Button(Width // 2, Height // 2 + 30, bigTextInfo.render(t("Enter another game"), True, (139, 155, 180)), bigTextInfo.render(t("Enter another game"), True, (58, 68, 102)), alignment=True)
 			
 			pygame.image.save(win, path + "Cache/Win.png")
-			win_darken(win.copy())
+			win_darken(win)
 			a, b = True, None
 			animation_showed = False
 			release = False
@@ -6026,13 +6058,13 @@ if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0]
 					b = 2
 					multyplayer_menu_open = False
 				if not animation_showed:
-					win_lighten(win.copy())
+					win_lighten(win)
 					animation_showed = True
 				pygame.display.update()
 				clock.tick(FPS)
 
-			win_darken(win.copy())
-			win_lighten(pygame.image.load(path + "Cache/Win.png"))
+			win_darken(win)
+			win_lighten(win, pygame.image.load(path + "Cache/Win.png"))
 
 			if b is not None:
 				
@@ -6369,7 +6401,7 @@ def edit_world():
 		for event in pygame.event.get():
 
 			if event.type == pygame.QUIT:
-				win_darken(win.copy())
+				win_darken(win)
 				sys.exit()
 				
 			elif event.type == pygame.MOUSEBUTTONUP:
@@ -6486,7 +6518,7 @@ def edit_world():
 				
 				win.blit(bigTextInfo.render(t("Create world"), True, (58, 68, 102)), (Width - bigTextInfo.size(t("Create world"))[0] - 50, 150))
 				if release:
-					win_darken(win.copy())
+					win_darken(win)
 					start_game()
 		else:
 			
@@ -6508,7 +6540,7 @@ def edit_world():
 					
 						for event in pygame.event.get():
 							if event.type == pygame.QUIT:
-								win_darken(win.copy())
+								win_darken(win)
 								sys.exit()
 							
 						mouse_x, mouse_y = pygame.mouse.get_pos()
@@ -6527,7 +6559,7 @@ def edit_world():
 							import shutil
 							shutil.rmtree(path + "Worlds/" + world_name)
 							del shutil
-							win_darken(win.copy())
+							win_darken(win)
 							worlds()
 						
 						no_button.main()
@@ -6547,7 +6579,7 @@ def edit_world():
 					import shutil
 					shutil.copytree(path + "Worlds/" + world_name, path + "Worlds/" + world_name + t(" - copy"))
 					del shutil
-					win_darken(win.copy())
+					win_darken(win)
 					if create_world:
 						start_game()
 					else:
@@ -6562,7 +6594,7 @@ def edit_world():
 			Saver.save_objects(path + "Worlds/" + world_name + "/Settings.save", [game.difficulty, player.god_mode])
 
 		if not does_lighten:
-			win_lighten(win.copy())
+			win_lighten(win)
 			does_lighten = True
 		
 		pygame.display.update()
@@ -6583,7 +6615,7 @@ def worlds():
 	page = 1
 	input_text = None
 
-	win_darken(win.copy())
+	win_darken(win)
 
 	inside_folders = []	
 	for dirs, folder, files in os.walk(path + "Worlds/"):
@@ -6619,7 +6651,7 @@ def worlds():
 	back_button.main()
 	release = False
 
-	win_lighten(win.copy())
+	win_lighten(win)
 
 	while True:
 
@@ -6631,7 +6663,7 @@ def worlds():
 		for event in pygame.event.get():
 
 			if event.type == pygame.QUIT:
-				win_darken(win.copy())
+				win_darken(win)
 				sys.exit()
 
 			elif event.type == pygame.MOUSEBUTTONUP:
@@ -6648,7 +6680,7 @@ def worlds():
 					get_start_items()
 					Ron.get_start_items()
 					del get_start_items
-					win_darken(win.copy())
+					win_darken(win)
 					edit_world()
 				else:
 					input_text += event.unicode
@@ -6682,7 +6714,7 @@ def worlds():
 			back_button.main()
 			
 			if keys[pygame.K_ESCAPE] or back_button.get_pressed(): 
-				win_darken(win.copy())
+				win_darken(win)
 				menu()
 
 			text(str(page), Width // 2, Height - 60, blue_color, alignment=True)
@@ -6702,7 +6734,7 @@ def worlds():
 							if release:
 								world_name = inside_folders[i]
 								
-								win_darken(win.copy())
+								win_darken(win)
 								edit_world()
 
 						if 50 <= mouse_x <= 50 + textInfo.size(inside_folders[i])[0] and 50 + a * 50 <= mouse_y <= 50 + a * 50 + textInfo.size(inside_folders[i])[1]:
@@ -6730,7 +6762,7 @@ def worlds():
 							if release:
 								world_name = inside_folders[i]
 
-								win_darken(win.copy())
+								win_darken(win)
 								edit_world()
 
 						if 50 <= mouse_x <= 50 + textInfo.size(inside_folders[i])[0] and 50 + a * 50 <= mouse_y <= 50 + a * 50 + textInfo.size(inside_folders[i])[1]:
@@ -6836,7 +6868,6 @@ def menu():
 			else: mouse_press = False
 		else:
 			win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/More.png"), (64, 64)), (Width - 140, Height - 70))
-		
 
 		if more_menu_open:
 			
@@ -6862,8 +6893,9 @@ def menu():
 		win_fill(alpha=100 - Settings["Display"][0])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
 
 		if not does_lighten:
-			win_lighten(win.copy())
+			win_lighten(win)
 			does_lighten = True
+
 
 		pygame.display.update()
 		clock.tick(FPS)
@@ -6895,20 +6927,15 @@ def show_intro():
 		#	win.blit(pygame.transform.scale(video_surf, (Width, Height)), (0, 0))
 		#	pygame.display.flip()
 		#	clock.tick(20)
-			
-		try: menu()
-		except Exception as e:
-			music_channel.stop()
-			pygame.mixer.Sound.stop(Backrooms_lamps)
-			show_error_window(str(e))
-		
-	else:
-		
-		try: menu()
-		except Exception as e:
-			music_channel.stop()
-			pygame.mixer.Sound.stop(Backrooms_lamps)
-			show_error_window(e)
+		pass
+
+	try:
+		menu()
+	except Exception as e:
+		music_channel.stop()
+		pygame.mixer.Sound.stop(Backrooms_lamps)
+		show_error_window(e)
 
 if __name__ == "__main__":
 	show_intro()
+
