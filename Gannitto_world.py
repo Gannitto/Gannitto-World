@@ -176,8 +176,6 @@ def chat_message(message: str):
 	chat.append(message)
 	chat_tick = len(message) // 1.5 * FPS
 
-display_image = lambda X, Y, W, H: (X - player.x + Width // 2 - W // 2, player.y - Y + Height // 2 - H // 2)
-
 def tp(X: int, Y: int):
 	global player
 	player.x, player.y = X, Y
@@ -404,6 +402,133 @@ colors = {
 
 # Классы
 
+class PlayerAnimations:
+
+	def __init__(self):
+		# Ключ: направление, Значение: список кадров
+		self.animations = {}
+		
+		self.load_animations()
+	
+	def load_animations(self):
+		directions = ["Down", "Up", "Left", "Right", "Down-left", "Down-right", "Up-left", "Up-right"]
+		
+		for direction in directions:
+
+			frames = []
+			
+			for frame_num in range(1, 7):
+				path_to_image = f"{path}Images/Players/Hiro/Normal/{direction}/{frame_num}.png"
+				frames.append(pygame.transform.scale(pygame.image.load(path_to_image), (256, 256)))
+			
+			self.animations[direction] = frames
+
+player_animations = PlayerAnimations()
+
+class Player:
+
+	def __init__(self, X=0, Y=0):
+
+		self.x = X
+		self.y = Y
+		self.speed = 50
+		
+		# Анимация
+		self.direction = "Down"
+		self.frame_index = 0
+		self.animation_speed = 0.05  # Скорость анимации (секунды между кадрами)
+		self.animation_timer = 0
+		self.animations = player_animations.animations
+		self.costum = 0
+		
+		# Игровые параметры
+		self.HP = 100
+		self.HP_TICK = 90
+		self.HP_animation_tick = 0
+		self.effects = []
+		self.god_mode = False
+		self.pass_through_walls = False # TODO
+		self.is_moving = False
+		self.rect = pygame.Rect(self.x - 25, self.y - 112, 50, 224)
+		
+		# Текущий спрайт
+		self.image = self.get_current_frame()
+		
+	def get_current_frame(self):
+		"""Возвращает текущий кадр анимации"""
+		frames = self.animations[self.direction]
+		return frames[self.frame_index % len(frames)]
+	
+	def update_animation(self, dt):
+		"""Обновляет анимацию на основе времени"""
+		if self.is_moving:
+			self.animation_timer += dt
+			
+			# Если прошло достаточно времени, кадр меняется
+			if self.animation_timer >= self.animation_speed:
+				self.animation_timer = 0
+				self.frame_index += 1
+		
+		self.image = self.get_current_frame()
+
+	def collides_with_walls(self):
+		"""Проверяет, пересекается ли игрок с какой-либо стеной."""
+		if self.pass_through_walls:
+			return False
+		self.rect = pygame.Rect(self.x - 25, self.y - 112, 50, 224)
+		return check_collision(self.rect, world)
+
+	def move(self, dx, dy):
+		"""Двигает игрока и обновляет направление"""
+		self.is_moving = True
+		
+		# Обновление позиции
+
+		self.x += dx * self.speed
+		if self.collides_with_walls():
+			self.x -= dx * self.speed
+
+		self.y += dy * self.speed
+		if self.collides_with_walls():
+			self.y -= dy * self.speed
+		
+		# Определение направления
+		if dx > 0 and dy == 0:
+			self.direction = "Right"
+		elif dx < 0 and dy == 0:
+			self.direction = "Left"
+		elif dy > 0 and dx == 0:
+			self.direction = "Up"
+		elif dy < 0 and dx == 0:
+			self.direction = "Down"
+		elif dx > 0 and dy > 0:
+			self.direction = "Up-right"
+		elif dx < 0 and dy > 0:
+			self.direction = "Up-left"
+		elif dx > 0 and dy < 0:
+			self.direction = "Down-right"
+		elif dx < 0 and dy < 0:
+			self.direction = "Down-left"
+	
+	def stop(self):
+		"""Останавливает движение"""
+		self.is_moving = False
+		self.frame_index = 0
+		self.animation_timer = 0
+	
+	def render(self, screen, dx, dy):
+		"""Отрисовывает игрока на экране"""
+		
+		screen.blit(shadow(self.image, f"Player {self.direction} {self.frame_index}"), (Width / 2 - 128, Height / 2 - 128))
+		
+		if Settings["Display"][3]:
+			self.rect = pygame.Rect(self.x - 25, self.y - 112, 50, 224)
+			pygame.draw.rect(screen, (0, 255, 0), (Width / 2 - 128, Height / 2 - 128, self.image.get_width(), self.image.get_height()), 2)
+			pygame.draw.rect(win, (0, 0, 0), (self.rect[0] - self.x + Width // 2, self.y - self.rect[1] - self.rect[3] + Height // 2, self.rect[2], self.rect[3]), 3)
+
+player = Player()
+world_to_screen = lambda X, Y, W, H, player=player: (X - player.x + Width // 2 - W // 2, player.y - Y + Height // 2 - H // 2)
+
 class Object:
 
 	def __init__(self,
@@ -470,13 +595,11 @@ class Object:
 		else:
 			self.rect = pygame.Rect(rect[0] + self.x, rect[1] + self.y, rect[2], rect[3])
 	
-	def main(self, X, Y):
-
-		if X - Width // 2 - self.w // 2 <= self.x <= X + Width // 2 + self.w // 2 and Y - Height // 2 <= Y + Height // 2:
-			win.blit(self.image, (self.x - X + Width // 2 - self.w // 2, Y - self.y + Height // 2 - self.h // 2))
-
+	def main(self, player):
+		if player.x - Width // 2 - self.w // 2 <= self.x <= player.x + Width // 2 + self.w // 2 and player.y - Height // 2 <= player.y + Height // 2:
+			win.blit(self.image, world_to_screen(self.x, self.y, self.w, self.h, player))
 		if Settings["Display"][3]:
-			pygame.draw.rect(win, (0, 0, 0), (self.rect[0] - X + Width // 2, Y - self.rect[1] - self.rect[3] + Height // 2, self.rect[2], self.rect[3]), 3)
+			pygame.draw.rect(win, (0, 0, 0), (*world_to_screen(self.rect[0] + self.w // 2, self.rect[1] + self.h // 2, self.rect[2], self.rect[3], player), self.rect[2], self.rect[3]), 3)
 
 	def get_left_pressed(self):
 
@@ -718,131 +841,6 @@ class Particle:
 	#	if click[button] and pygame.Rect(eval(self.display_mode)[0], eval(self.display_mode)[1], self.w, self.h).collidepoint(mouse_x, mouse_y):
 	#		return True
 	#	return False
-
-# Работа с анимациями	
-class PlayerAnimations:
-
-	def __init__(self):
-		# Ключ: направление, Значение: список кадров
-		self.animations = {}
-		
-		self.load_animations()
-	
-	def load_animations(self):
-		directions = ["Down", "Up", "Left", "Right", "Down-left", "Down-right", "Up-left", "Up-right"]
-		
-		for direction in directions:
-
-			frames = []
-			
-			for frame_num in range(1, 7):
-				path_to_image = f"{path}Images/Players/Hiro/Normal/{direction}/{frame_num}.png"
-				frames.append(pygame.transform.scale(pygame.image.load(path_to_image), (256, 256)))
-			
-			self.animations[direction] = frames
-
-player_animations = PlayerAnimations()
-
-class Player:
-
-	def __init__(self, X=0, Y=0):
-
-		self.x = X
-		self.y = Y
-		self.speed = 50
-		
-		# Анимация
-		self.direction = "Down"
-		self.frame_index = 0
-		self.animation_speed = 0.05  # Скорость анимации (секунды между кадрами)
-		self.animation_timer = 0
-		self.animations = player_animations.animations
-		self.costum = 0
-		
-		# Игровые параметры
-		self.HP = 100
-		self.HP_TICK = 90
-		self.HP_animation_tick = 0
-		self.effects = []
-		self.god_mode = False
-		self.pass_through_walls = False # TODO
-		self.is_moving = False
-		self.rect = pygame.Rect(self.x - 25, self.y - 112, 50, 224)
-		
-		# Текущий спрайт
-		self.image = self.get_current_frame()
-		
-	def get_current_frame(self):
-		"""Возвращает текущий кадр анимации"""
-		frames = self.animations[self.direction]
-		return frames[self.frame_index % len(frames)]
-	
-	def update_animation(self, dt):
-		"""Обновляет анимацию на основе времени"""
-		if self.is_moving:
-			self.animation_timer += dt
-			
-			# Если прошло достаточно времени, кадр меняется
-			if self.animation_timer >= self.animation_speed:
-				self.animation_timer = 0
-				self.frame_index += 1
-		
-		self.image = self.get_current_frame()
-
-	def collides_with_walls(self):
-		"""Проверяет, пересекается ли игрок с какой-либо стеной."""
-		if self.pass_through_walls:
-			return False
-		self.rect = pygame.Rect(self.x - 25, self.y - 112, 50, 224)
-		return check_collision(self.rect, world)
-
-	def move(self, dx, dy):
-		"""Двигает игрока и обновляет направление"""
-		self.is_moving = True
-		
-		# Обновление позиции
-
-		self.x += dx * self.speed
-		if self.collides_with_walls():
-			self.x -= dx * self.speed
-
-		self.y += dy * self.speed
-		if self.collides_with_walls():
-			self.y -= dy * self.speed
-		
-		# Определение направления
-		if dx > 0 and dy == 0:
-			self.direction = "Right"
-		elif dx < 0 and dy == 0:
-			self.direction = "Left"
-		elif dy > 0 and dx == 0:
-			self.direction = "Up"
-		elif dy < 0 and dx == 0:
-			self.direction = "Down"
-		elif dx > 0 and dy > 0:
-			self.direction = "Up-right"
-		elif dx < 0 and dy > 0:
-			self.direction = "Up-left"
-		elif dx > 0 and dy < 0:
-			self.direction = "Down-right"
-		elif dx < 0 and dy < 0:
-			self.direction = "Down-left"
-	
-	def stop(self):
-		"""Останавливает движение"""
-		self.is_moving = False
-		self.frame_index = 0
-		self.animation_timer = 0
-	
-	def render(self, screen, dx, dy):
-		"""Отрисовывает игрока на экране"""
-		
-		screen.blit(shadow(self.image, f"Player {self.direction} {self.frame_index}"), (Width / 2 - 128, Height / 2 - 128))
-		
-		if Settings["Display"][3]:
-			self.rect = pygame.Rect(self.x - 25, self.y - 112, 50, 224)
-			pygame.draw.rect(screen, (0, 255, 0), (Width / 2 - 128, Height / 2 - 128, self.image.get_width(), self.image.get_height()), 2)
-			pygame.draw.rect(win, (0, 0, 0), (self.rect[0] - self.x + Width // 2, self.y - self.rect[1] - self.rect[3] + Height // 2, self.rect[2], self.rect[3]), 3)
 
 class BaseEnemy:
 	def __init__(self, x, y, HP, speed, animation_frames):
@@ -1108,7 +1106,7 @@ class SlimeEnemy(BaseEnemy):
 		self.rect = pygame.Rect(x - 50, y - 50, 100, 100)
 		return check_collision(self.rect, world)
 
-	def draw(self, player, show_hitbox=False):
+	def draw(self, player):
 		"""Отрисовка слизня"""
 		screen_x = self.x - player.x + Width // 2 - 64
 		screen_y = player.y - self.y + Height // 2 - 32
@@ -1118,7 +1116,7 @@ class SlimeEnemy(BaseEnemy):
 		
 		win.blit(frame, (screen_x, screen_y))
 		
-		if show_hitbox:
+		if Settings["Display"][3]:
 			pygame.draw.rect(win, (0, 0, 0), (screen_x, screen_y - 8, 128, 128), 3)
 
 	def __getstate__(self):
@@ -1874,8 +1872,9 @@ class Wall:
 
 		if self.is_door and release and self.x + Width // 2 - player.x <= mouse_x <= self.x + Width // 2 - player.x + 256 and player.y - self.y + Height // 2 - 128 <= mouse_y <= player.y - self.y + Height // 2 + 128:
 			self.open = not self.open
-
-		win.blit(self.image, (self.x + Width // 2 - 128 - player.x, player.y - self.y + Height // 2 - 128))
+		win.blit(self.image, world_to_screen(self.x, self.y, 256, 256))
+		if Settings["Display"][3]:
+			pygame.draw.rect(win, (0, 0, 0), world_to_screen(self.x, self.y, 256, 256) + (256, 256), 3)
 		
 	def __getstate__(self):
 		
@@ -2230,7 +2229,6 @@ class GameState:
 
 		self.difficulty = "norm"
 		self.weather = "Clear"
-		self.time = 0
 
 game = GameState()
 
@@ -3599,7 +3597,6 @@ def change_a_character():
 multyplayer = False
 
 hot_keys = Saver.load_objects(path + "Settings/Hot keys.save")
-player = Player()
 objects_templates = {
 		"Table": Object("Table", 0, 0, "Images/Objects/Table.png", (256, 256), special_flags=1, is_solid=True, breakable=True),
 		"Wall table": Object("Wall table", 0, 0, "Images/Objects/Wall table.png", (256, 256), special_flags=1, is_solid=True, breakable=True),
@@ -4151,7 +4148,7 @@ def start_game():
 				for object in world.current_cave.objects:
 
 					i += 1
-					object.main(player.x, player.y)
+					object.main(player)
 
 					if object.__class__ == Object:
 
@@ -4234,7 +4231,7 @@ def start_game():
 				for object in world.visible_objects:
 
 					if object.object_class == "Object":
-						object.main(player.x, player.y)
+						object.main(player)
 
 						if object.x - player.x + Width // 2 - object.image.get_width() // 2 <= mouse_x <= object.x - player.x + Width // 2 + object.image.get_width() // 2 and player.y - object.y + Height // 2 - object.image.get_height() // 2 <= mouse_y <= player.y - object.y + Height // 2 + object.image.get_height() // 2:
 
@@ -4483,7 +4480,7 @@ def start_game():
 
 				# Отображение предметов
 				for item in world.visible_items:
-					item.main(player.x, player.y)
+					item.main(player)
 					try_pick = True
 					if item.pickable and Settings["Game"][0] and player.x - 150 < item.x < player.x + 150 and player.y - 150 < item.y < player.y + 150:
 						world.particles.append(Particle(item.x, item.y, item.image, lambda particle: round(particle.calculated_variable[0]), lambda particle: round(particle.calculated_variable[1]), variable_to_calculate="((self.special_flags[0] // 2) / 10 * self.ticks, (self.special_flags[1] // 2) / 10 * self.ticks, (-self.special_flags[0] // 2) / 10 * (self.ticks - 10), (-self.special_flags[1] // 2) / 10 * (self.ticks - 10))", track_ticks=True, end_x=player.x, end_y=player.y, end_zone=30, end_command="(inventory.increate('" + item.name + "'),pygame.mixer.Sound.play(Pick_an_item))", special_flags=(player.x - item.x, player.y - item.y, (0 - 17) // (0 - 10))))
@@ -5857,9 +5854,9 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 			a = inventory.whole_inventory[changed_slot].name[:-6] if " seeds" in inventory.whole_inventory[changed_slot].name else inventory.whole_inventory[changed_slot].name
 		
 		try: build(build_tuple, Particle(0, 0, pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + a + " 1.png"), (128, 128)), can_interfere_with_placing=True, end_time=random.randint(1, 3),
-					end_command="world.particles.append(Particle(particle.x, particle.y, pygame.transform.scale(pygame.image.load(path + 'Images/Objects/' + particle.special_flags[0] + ' 2.png'), (128, 128)), can_interfere_with_placing=True, end_time=random.randint(5, 10), save_particle=True, tick_command=particle.special_flags[1], tick_command_locals={'a': 0, 'b': 0}, tick_command_globals={'display_image': display_image, 'win_fill': win_fill, 'random': random}, tick_command_globals_in_the_end=('inventory', 'changed_slot'), end_command=particle.special_flags[3], end_command_globals={'random': random}, special_flags=particle.special_flags))", end_command_globals={"world.particles": world.particles, "Particle": Particle, "random": random, "display_image": display_image, "win_fill": win_fill}, save_particle=True, special_flags=[a, """
+					end_command="world.particles.append(Particle(particle.x, particle.y, pygame.transform.scale(pygame.image.load(path + 'Images/Objects/' + particle.special_flags[0] + ' 2.png'), (128, 128)), can_interfere_with_placing=True, end_time=random.randint(5, 10), save_particle=True, tick_command=particle.special_flags[1], tick_command_locals={'a': 0, 'b': 0}, tick_command_globals={'world_to_screen': world_to_screen, 'win_fill': win_fill, 'random': random}, tick_command_globals_in_the_end=('inventory', 'changed_slot'), end_command=particle.special_flags[3], end_command_globals={'random': random}, special_flags=particle.special_flags))", end_command_globals={"world.particles": world.particles, "Particle": Particle, "random": random, "world_to_screen": world_to_screen, "win_fill": win_fill}, save_particle=True, special_flags=[a, """
 if self.special_flags[2]:
-	a, b = display_image(self.x, self.y, 128, 128)
+	a, b = world_to_screen(self.x, self.y, 128, 128)
 	win_fill((255, 255, 255), 30, (a, b, 128, 128))
 	if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Water bucket" and pygame.Rect(a, b, 128, 128).collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0]:
 		inventory.whole_inventory[changed_slot].amount -= 1

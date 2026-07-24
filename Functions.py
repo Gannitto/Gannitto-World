@@ -235,4 +235,3 @@ def animate_click(Settings, win, mouse_x, mouse_y):
 		except TypeError:
 			pass
 
-
