@@ -5,7 +5,7 @@ import pygame
 from itertools import product
 import numpy as np
 from PIL import Image
-from Globals import Width, Height, path
+from Globals import Width, Height, path, win
 
 changed_language = "Russian"
 def languages(Russian: str, English: str, Kazach: str) -> str:
@@ -70,7 +70,11 @@ def shadow(
 	pygame.image.save(result_surface, cache_file)
 	return result_surface
 
-def win_fill(fill_colour=(0, 0, 0), alpha: int=90, rect: tuple=(0, 0, Width, Height)):
+default_fill_surface = pygame.Surface((Width, Height), pygame.SRCALPHA)
+default_fill_surface.fill((0, 0, 0))
+default_fill_surface.set_alpha(90)
+
+def win_fill(fill_color=(0, 0, 0), alpha: int=90, rect: tuple=(0, 0, Width, Height)):
 
 	"""
 	Заливка экрана, которая может работать с альфа каналом
@@ -79,13 +83,15 @@ def win_fill(fill_colour=(0, 0, 0), alpha: int=90, rect: tuple=(0, 0, Width, Hei
 	alpha - Прозрачность заливки
 	rect - Квадрат заливки, по умолчанию весь экран
 	"""
+
 	if alpha > 0:
-		from Globals import win
-		
-		a = pygame.Surface(rect[2:4], pygame.SRCALPHA)
-		a.fill(fill_colour)
-		a.set_alpha(alpha)
-		win.blit(a, rect[0:2])
+		if fill_color == (0, 0, 0) and alpha == 90 and rect == (0, 0, Width, Height):
+			win.blit(default_fill_surface, (0, 0))
+		else:
+			temp_surface = pygame.Surface(rect[2:4], pygame.SRCALPHA)
+			temp_surface.fill(fill_color)
+			temp_surface.set_alpha(alpha)
+			win.blit(temp_surface, rect[0:2])
 	
 def win_darken(win: pygame.Surface, screen: pygame.Surface=None):
 	

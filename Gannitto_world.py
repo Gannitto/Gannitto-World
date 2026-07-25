@@ -454,8 +454,9 @@ class Player:
 		self.frame_index = 0
 		self.animation_speed = 0.05  # Скорость анимации (секунды между кадрами)
 		self.animation_timer = 0
+		self.move_timer = 0
 		self.costum = 0
-		directions = ["Down", "Up", "Left", "Right", "Down-left", "Down-right", "Up-left", "Up-right"]
+		directions = ("Down", "Up", "Left", "Right", "Down-left", "Down-right", "Up-left", "Up-right")
 		self.animations = {}
 		
 		for direction in directions:
@@ -503,19 +504,20 @@ class Player:
 		self.rect = pygame.Rect(self.x - 25, self.y - 112, 50, 224)
 		return check_collision(self.rect, world)
 
-	def move(self, dx, dy):
+	def move(self, dx, dy, dt):
 		"""Двигает игрока и обновляет направление"""
+
 		self.is_moving = True
-		
+
 		# Обновление позиции
 
-		self.x += dx * self.speed
+		self.x += dx * self.speed / FPS * 30
 		if self.collides_with_walls():
-			self.x -= dx * self.speed
+			self.x -= dx * self.speed / FPS * 30
 
-		self.y += dy * self.speed
+		self.y += dy * self.speed / FPS * 30
 		if self.collides_with_walls():
-			self.y -= dy * self.speed
+			self.y -= dy * self.speed / FPS * 30
 		
 		# Определение направления
 		if dx > 0 and dy == 0:
@@ -540,6 +542,7 @@ class Player:
 		self.is_moving = False
 		self.frame_index = 0
 		self.animation_timer = 0
+		self.move_timer = 0
 	
 	def render(self, screen, dx, dy):
 		"""Отрисовывает игрока на экране"""
@@ -2339,6 +2342,30 @@ command_system.commands = {
 
 		}
 
+# def show_bar(times):
+# 	import matplotlib.pyplot as plt
+# 	categories = range(len(times))
+# 	values = []
+# 	for i in times:
+# 		values.append(sum(i) / len(i))
+
+# 	plt.bar(categories, values, color="orange")
+# 	plt.title("Время на обработку")
+# 	plt.xlabel('Часть кода')
+# 	plt.ylabel('Время')
+# 	plt.show()
+# 	plt.savefig("aboba.png")
+
+# time_values = []
+# time_index = 0
+
+# def add_time(t):
+# 	global time_index
+# 	if len(time_values) <= time_index:
+# 		time_values.append([])
+# 	time_values[time_index].append(t)
+# 	time_index += 1
+
 # Кнопки в меню
 
 def settings():
@@ -2513,11 +2540,11 @@ def settings():
 				does_lighten = True
 
 			pygame.display.update()
-			clock.tick(FPS)
+			clock.tick(MAX_FPS)
 
 	def display():
 
-		global win, screenmode, Settings, alt_pressed, FPS
+		global win, screenmode, Settings, alt_pressed, MAX_FPS
 
 		bias = 0
 		max_bias = -settings_ui._set_positions(bias, "Display", True) + 900
@@ -2589,7 +2616,7 @@ def settings():
 			win_fill(alpha=100 - Settings["Display"][0])
 			
 			pygame.display.update()
-			clock.tick(FPS)
+			clock.tick(MAX_FPS)
 
 	def Languages():
 
@@ -2710,7 +2737,7 @@ def settings():
 				does_lighten = True
 
 			pygame.display.update()
-			clock.tick(FPS)
+			clock.tick(MAX_FPS)
 
 	def User_old():
 
@@ -2819,11 +2846,11 @@ def settings():
 				does_lighten = True
 
 			pygame.display.update()
-			clock.tick(FPS)
+			clock.tick(MAX_FPS)
 
 	def User():
 
-		global win, screenmode, Settings, alt_pressed, FPS
+		global win, screenmode, Settings, alt_pressed, MAX_FPS
 
 		bias = 0
 		max_bias = -settings_ui._set_positions(bias, "User", True) + 900
@@ -2895,12 +2922,12 @@ def settings():
 			win_fill(alpha=100 - Settings["Display"][0])
 			
 			pygame.display.update()
-			clock.tick(FPS)
+			clock.tick(MAX_FPS)
 
 
 	def Sound():
 
-		global win, screenmode, Settings, alt_pressed, FPS
+		global win, screenmode, Settings, alt_pressed, MAX_FPS
 
 		bias = 0
 		max_bias = -settings_ui._set_positions(bias, "Sound", True) + 900
@@ -2997,11 +3024,11 @@ def settings():
 			win_fill(alpha=100 - Settings["Display"][0])
 			
 			pygame.display.update()
-			clock.tick(FPS)
+			clock.tick(MAX_FPS)
 
 	def Statistics():
 
-		global win, screenmode, Settings, alt_pressed, FPS
+		global win, screenmode, Settings, alt_pressed, MAX_FPS
 
 		bias = 0
 		max_bias = -settings_ui._set_positions(bias, "Statistics", True) + 900
@@ -3072,7 +3099,7 @@ def settings():
 			win_fill(alpha=100 - Settings["Display"][0])
 			
 			pygame.display.update()
-			clock.tick(FPS)
+			clock.tick(MAX_FPS)
 
 	def Keys():
 
@@ -3345,11 +3372,11 @@ def settings():
 				does_lighten = True
 
 			pygame.display.update()
-			clock.tick(FPS)
+			clock.tick(MAX_FPS)
 
 	def Game():
 
-		global win, screenmode, Settings, alt_pressed, FPS
+		global win, screenmode, Settings, alt_pressed, MAX_FPS
 
 		bias = 0
 		max_bias = -settings_ui._set_positions(bias, "Game", True) + 900
@@ -3421,7 +3448,7 @@ def settings():
 			win_fill(alpha=100 - Settings["Display"][0])
 			
 			pygame.display.update()
-			clock.tick(FPS)
+			clock.tick(MAX_FPS)
 	
 	win_darken(win)
 	help()
@@ -3552,7 +3579,7 @@ def change_a_character():
 				does_lighten = True
 
 			pygame.display.update()
-			clock.tick(FPS)
+			clock.tick(MAX_FPS)
 	
 	def pets():
 
@@ -3603,7 +3630,7 @@ def change_a_character():
 				does_lighten = True
 			
 			pygame.display.update()
-			clock.tick(FPS)
+			clock.tick(MAX_FPS)
 
 	characters()
 
@@ -3623,7 +3650,7 @@ objects_templates = {
 
 def start_game():
 	
-	global win, changed_slot, menu_open, multyplayer_menu_open, screenmode, inventory_open, hold_left, backrooms, text_color, bullet_num, craft_items_list, craft_amounts_list, craft_images_list, screenshot_num, mouse_x, mouse_y, item_settings_open, multyplayer_panel, chat_tick, chat, main_chat, craft_list_open, craft_list_page, click, in_motherboard, os, world_name, player_bullets, color, multyplayer_mode, multyplayer, animation, start_time, new_particles, inside_files, game, alt_pressed, player, world
+	global win, changed_slot, menu_open, multyplayer_menu_open, screenmode, inventory_open, hold_left, backrooms, text_color, bullet_num, craft_items_list, craft_amounts_list, craft_images_list, screenshot_num, mouse_x, mouse_y, item_settings_open, multyplayer_panel, chat_tick, chat, main_chat, craft_list_open, craft_list_page, click, in_motherboard, os, world_name, player_bullets, color, multyplayer_mode, multyplayer, animation, start_time, new_particles, inside_files, game, alt_pressed, player, world, FPS, MAX_FPS
 
 	night_playing = False
 	input_text = ""
@@ -3717,7 +3744,7 @@ def start_game():
 							eval(i[1])
 						except:
 							pass
-	qwerty = True
+	
 	while True:
 
 		mouse_x, mouse_y = pygame.mouse.get_pos()
@@ -3729,7 +3756,8 @@ def start_game():
 		dx = 0
 		dy = 0
 
-		dt = clock.tick(FPS) / 1000.0
+		FPS = clock.get_fps()
+		dt = clock.tick(MAX_FPS) / 1000.0
 		game_time.update(dt)
 
 		for event in pygame.event.get():
@@ -3942,7 +3970,7 @@ def start_game():
 
 		# Если есть движение - двигаем игрока
 		if dx != 0 or dy != 0:
-			player.move(dx, dy)
+			player.move(dx, dy, dt)
 		else:
 			player.stop()
 		
@@ -4610,10 +4638,9 @@ def start_game():
 		for wall in world.visible_walls.values():
 			wall.main(release)
 		
-		if len(world.mobs) != 0 and not Backrooms.InBackrooms and world.current_cave is None:
+		if not Backrooms.InBackrooms and world.current_cave is None:
 
 			# Отображение мобов
-
 			for mob in world.mobs:
 
 				mob.update(player, world)
@@ -4621,10 +4648,10 @@ def start_game():
 
 				if player_bullets != []:
 
-					for ii in player_bullets:
+					if mob.name == "Slime": mob_rect = pygame.Rect((mob.x, mob.y, 128, 128))
+					else: mob_rect = pygame.Rect((mob.x, mob.y - 128, 256, 256))
 
-						if mob.name == "Slime": mob_rect = pygame.Rect((mob.x, mob.y, 128, 128))
-						else: mob_rect = pygame.Rect((mob.x, mob.y - 128, 256, 256))
+					for ii in player_bullets:
 
 						if mob_rect.collidepoint((ii.x, ii.y)):
 
@@ -4942,7 +4969,7 @@ def start_game():
 			
 			for _ in range(3):
 				win.fill((200, 255, 200))
-				clock.tick(FPS)
+				clock.tick(MAX_FPS)
 				pygame.display.update()
 			time.sleep(0.1)
 
@@ -5238,7 +5265,7 @@ def start_game():
 				text(t("Reference"), Width // 2 + cos((2 * pi * 5) / 6) * radius, Height // 2 + sin((2 * pi * 5) / 6) * radius + 40, alignment=True)
 
 				pygame.display.update()
-				clock.tick(FPS)
+				clock.tick(MAX_FPS)
 
 		if Settings["Game"][1]:
 
@@ -5734,7 +5761,7 @@ def start_game():
 Y {player.y // 50}
 Ron X {Ron.X // 50}
 Ron Y {Ron.Y // 50}
-FPS {clock.get_fps()}""" + (f"""
+FPS {FPS}""" + (f"""
 You are in backrooms lol
 Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if inventory_open else 300)
 		
@@ -6011,7 +6038,7 @@ if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0]
 					win_lighten(win)
 					animation_showed = True
 				pygame.display.update()
-				clock.tick(FPS)
+				clock.tick(MAX_FPS)
 
 			win_darken(win)
 			win_lighten(win, pygame.image.load(path + "Cache/Win.png"))
@@ -6037,7 +6064,7 @@ if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0]
 							a = False
 
 						pygame.display.update()
-						clock.tick(FPS)
+						clock.tick(MAX_FPS)
 
 					save(False)
 
@@ -6082,7 +6109,7 @@ if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0]
 						win.blit(textInfo.render(input_text, True, (139, 155, 180)), ((Width - textInfo.size(input_text)[0]) // 2, Height // 2))
 
 						pygame.display.update()
-						clock.tick(FPS)
+						clock.tick(MAX_FPS)
 
 					save(False)
 
@@ -6123,7 +6150,7 @@ if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0]
 								break
 							
 							pygame.display.update()
-							clock.tick(FPS)
+							clock.tick(MAX_FPS)
 				
 		if multyplayer:
 			
@@ -6274,7 +6301,7 @@ if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0]
 	
 			for _ in range(3):
 				win.fill((200, 255, 200))
-				clock.tick(FPS)
+				clock.tick(MAX_FPS)
 				pygame.display.update()
 			time.sleep(0.1)
 			
@@ -6836,7 +6863,7 @@ def menu():
 
 
 		pygame.display.update()
-		clock.tick(FPS)
+		clock.tick(MAX_FPS)
 
 
 
