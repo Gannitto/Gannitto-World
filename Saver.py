@@ -42,10 +42,8 @@ def load_chunk(chunk_x, chunk_y, save_directory):
 	
 	if not os.path.exists(filepath):
 		return None
-	
 	with open(filepath, "rb") as file:
 		chunk_data = pickle.load(file)
-	
 	from Chunks import Chunk
 	chunk = Chunk(chunk_data["x"], chunk_data["y"])
 	chunk.biome = chunk_data["biome"]

@@ -47,7 +47,7 @@ biomes_objects = {
 					"image_path": "Images/Objects/Cactus.png",
 					"scale_x": (256, 256),
 					"is_solid": True,
-					"rect": (-80, 116, 160, 232)
+					"rect": (-80, 0, 160, 232)
 					}),
 				(0.5, {
 					"name": "Pile of sand",
@@ -196,17 +196,17 @@ class Chunk:
 
 class ChunkManager:
 
-	def __init__(self):
+	def __init__(self, Object):
 		self.chunks = {}
 		self.loaded_chunks = set()
 		self.view_distance = 1
 		self.generator = NoiseGenerator()
 		self.save_directory = ""
+		self.Object = Object # Класс объекта передаётся как аргумент чтобы избежать циклического импорта
 		
 	def generate_chunk(self, chunk: Chunk):
 
 		"""Генерация чанка"""
-		from Gannitto_world import Object
 		bounds = chunk.get_world_bounds()
 	
 		value = self.generator.get_biome_at(chunk.x, chunk.y)
@@ -232,7 +232,7 @@ class ChunkManager:
 
 						X = chunk.x * chunk_size + rng.randint(0, chunk_size - 1)
 						Y = chunk.y * chunk_size + rng.randint(0, chunk_size - 1)
-						temp_object = Object(object_x=X, object_y=Y, **object[1])
+						temp_object = self.Object(object_x=X, object_y=Y, **object[1])
 
 						collision = False
 						for object_ in objects:
@@ -252,7 +252,7 @@ class ChunkManager:
 
 						X = chunk.x * chunk_size + rng.randint(0, chunk_size - 1)
 						Y = chunk.y * chunk_size + rng.randint(0, chunk_size - 1)
-						temp_item = Object(object_x=X, object_y=Y, **item[1])
+						temp_item = self.Object(object_x=X, object_y=Y, **item[1])
 
 						collision = False
 						for object_ in objects:
@@ -279,7 +279,7 @@ class ChunkManager:
 								case "Random":
 									X = structure_x + rng.randint(-object["Region"][0] // 2, object["Region"][0] // 2)
 									Y = structure_y + rng.randint(-object["Region"][1] // 2, object["Region"][1] // 2)
-							objects.append(Object(object_x=X, object_y=Y, **object["Template"]))
+							objects.append(self.Object(object_x=X, object_y=Y, **object["Template"]))
 
 					for item in structure[1]["Items"]:
 						for _ in range(rng.randint(item["Count"][0], item["Count"][1])):
@@ -290,7 +290,7 @@ class ChunkManager:
 								case "Random":
 									X = structure_x + rng.randint(-item["Region"][0] // 2, item["Region"][0] // 2)
 									Y = structure_y + rng.randint(-item["Region"][1] // 2, item["Region"][1] // 2)
-							items.append(Object(object_x=X, object_y=Y, **item["Template"]))
+							items.append(self.Object(object_x=X, object_y=Y, **item["Template"]))
 
 		chunk.objects = objects
 		chunk.items = items

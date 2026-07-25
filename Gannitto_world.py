@@ -441,29 +441,6 @@ colors = {
 
 # Классы
 
-class PlayerAnimations:
-
-	def __init__(self):
-		# Ключ: направление, Значение: список кадров
-		self.animations = {}
-		
-		self.load_animations()
-	
-	def load_animations(self):
-		directions = ["Down", "Up", "Left", "Right", "Down-left", "Down-right", "Up-left", "Up-right"]
-		
-		for direction in directions:
-
-			frames = []
-			
-			for frame_num in range(1, 7):
-				path_to_image = f"{path}Images/Players/Hiro/Normal/{direction}/{frame_num}.png"
-				frames.append(pygame.transform.scale(pygame.image.load(path_to_image), (256, 256)))
-			
-			self.animations[direction] = frames
-
-player_animations = PlayerAnimations()
-
 class Player:
 
 	def __init__(self, X=0, Y=0):
@@ -477,9 +454,18 @@ class Player:
 		self.frame_index = 0
 		self.animation_speed = 0.05  # Скорость анимации (секунды между кадрами)
 		self.animation_timer = 0
-		self.animations = player_animations.animations
 		self.costum = 0
+		directions = ["Down", "Up", "Left", "Right", "Down-left", "Down-right", "Up-left", "Up-right"]
+		self.animations = {}
 		
+		for direction in directions:
+
+			frames = []
+			for frame_num in range(1, 7):
+				path_to_image = f"{path}Images/Players/Hiro/Normal/{direction}/{frame_num}.png"
+				frames.append(pygame.transform.scale(pygame.image.load(path_to_image), (256, 256)))	
+			self.animations[direction] = frames
+
 		# Игровые параметры
 		self.HP = 100
 		self.HP_TICK = 90
@@ -682,19 +668,12 @@ class Particle:
 				 start_y: int=0,
 				 image: pygame.Surface=no_file_texture.copy(),
 				 x_bias=0, y_bias=0,
-				 x_bias_condition=None, y_bias_condition=None,
-				 else_x_bias: str="0", else_y_bias: str="0",
 				 rotate: int=None,
-				 display_mode=lambda X, Y, w, h: (X - player.x + Width // 2 - w // 2, player.y - Y + Height // 2 - h // 2),
-				 tick_command: str="",
-				 tick_command_locals: dict={},
-				 tick_command_globals: dict={},
-				 tick_command_globals_in_the_end: tuple=(),
-				 can_go_through_walls: bool=True,
+				 display_mode=world_to_screen,
+				 tick_command=None,
 				 increased_transparency: int=0,
 				 twisting_in_width: int=0, twisting_in_height: int=0,
 				 remove_particle_after_twisting: bool=True,
-				 variable_to_calculate: str="0",
 				 track_ticks: bool=False,
 				 del_self_condition=None,
 				 can_interfere_with_placing: bool=False,
@@ -703,10 +682,7 @@ class Particle:
 				 start_time: float|None=None,
 				 end_x: int=None, end_y: int=None,
 				 end_zone: int=0, end_time: float=None,
-				 end_command: str="...",
-				 end_command_locals: dict={},
-				 end_command_globals: dict={},
-				 end_command_globals_in_the_end: tuple=(),
+				 end_command=None,
 				 special_flags: list=[]):
 
 		"""
@@ -718,22 +694,13 @@ class Particle:
 		image - Изображение частицы, по умолчанию иконка файла без текстуры
 		x_bias - Смещение по оси X
 		y_bias - Смещение по оси Y
-		x_bias_condition - Условие для смещения по оси X
-		y_bias_condition - Условие для смещения по оси Y
-		else_x_bias - Смещение по оси x, если условие для смещения не выполнено
-		else_y_bias - Смещение по оси y, если условие для смещения не выполнено
 		rotate - Поворот частцы на каждом тике
 		display_mode - Режим отображения частицы
 		tick_command - Код, который будет срабатывать при каждом тике часлицы
-		tick_command_locals - Локальные переменные для tick_command
-		tick_command_globals - Глобальные переменные для tick_command
-		tick_command_globals_in_the_end - Глобальные переменные для tick_command, которые надо получить только в самом конце (пример: если выдать инвентарь в начале, то до срабатывания tick_command он может поменяться)
-		can_go_through_walls - Может ли частица проходить сквозь стены
 		increased_transparency - Число, на которое будет уменьшаться прозрачность частицы, если нужно
 		twisting_in_width - Сжимает изображение цастицы по длине
 		twisting_in_height - Сжимает изображение частицы по ширине
 		remove_particle_after_twisting - Удалить частицу после после полного скручивания
-		variable_to_calculate - Переменная, которая будет расчитываться на каждом тике
 		track_ticks - Слитать ли каждый тик в переменную ticks после создания частицы
 		del_self_condition - Условие, при котором удалится частица
 		can_interfere_with_placing - Может ли частица мешать ставить объекты
@@ -745,9 +712,6 @@ class Particle:
 		end_zone - Если нужно, чтобы частица пропадала, когда она находится не именно на end_x и/или end_y, а на определённом растоянии или ближе, то можно использовать end_zone. За это расстояние этот аргумент и отвечает.
 		end_time - Время, после которого частица пропадает
 		end_command - Команда, которая будет срабатывать после удаления частицы
-		end_command_locals - Локальные переменные для end_command
-		end_command_globals - Глобальные переменные для end_command
-		end_command_globals_in_the_end - Глобальные переменные для end_command, которые надо получить только в самом конце (пример: если выдать инвентарь в начале, то до срабатывания end_command он может поменяться)
 		special_flags - Специальные флаги частицы, с помощью которых можно реализовать её механики
 		"""
 
@@ -761,25 +725,12 @@ class Particle:
 		self.h = self.image.get_height()
 		self.x_bias = x_bias
 		self.y_bias = y_bias
-		self.x_bias_condition = x_bias_condition
-		self.y_bias_condition = y_bias_condition
-		self.else_x_bias = else_x_bias
-		self.else_y_bias = else_y_bias
 		self.rotate = rotate
 		self.display_mode = display_mode
 		
 		self.tick_command = tick_command
-		self.tick_command_locals = tick_command_locals
-		self.tick_command_globals = tick_command_globals
-		self.tick_command_globals["self"] = self
-		self.tick_command_globals["Particle"] = Particle
-		self.tick_command_globals["particles"] = world.particles
-		self.tick_command_globals["pygame"] = pygame
-		self.tick_command_globals["path"] = path
-		self.tick_command_globals_in_the_end = tick_command_globals_in_the_end
 
 		self.special_flags = special_flags
-		self.can_go_through_walls = can_go_through_walls
 		self.increased_transparency = increased_transparency
 		self.can_interfere_with_placing = can_interfere_with_placing
 		
@@ -787,7 +738,6 @@ class Particle:
 		self.twisting_in_height = twisting_in_height
 		self.remove_particle_after_twisting = remove_particle_after_twisting
 
-		self.variable_to_calculate = variable_to_calculate
 		self.calculated_variable = 0
 		
 		self.track_ticks = track_ticks
@@ -803,9 +753,6 @@ class Particle:
 		self.end_zone = end_zone
 		self.end_time = end_time
 		self.end_command = end_command
-		self.end_command_locals = end_command_locals
-		self.end_command_globals = end_command_globals
-		self.end_command_globals_in_the_end = end_command_globals_in_the_end
 
 		self.start_time = time.time()
 
@@ -824,46 +771,24 @@ class Particle:
 	
 	def main(self):
 		
-		if self.tick_command.__class__ == str:
-			for i in self.tick_command_globals_in_the_end: self.tick_command_globals[i] = eval(i)
-			exec(self.tick_command, self.tick_command_globals, self.tick_command_locals)
-		else:
+		if self.tick_command is not None:
 			self.tick_command(self)
 
 		if self.track_ticks: self.ticks += 1
-		self.calculated_variable = eval(self.variable_to_calculate)
 		if self.increased_transparency != 0:
 			self.image.set_alpha(self.image.get_alpha() - self.increased_transparency)
 		
-		try:
-			self.image = pygame.transform.scale(self.image, (self.image.get_width() - self.twisting_in_width, self.image.get_height() - self.twisting_in_height))
-		except:
-			if self.remove_particle_after_twisting:
-				eval(self.end_command)
-				world.particles.remove(self)
-
-		if self.can_go_through_walls:
-			
-			if self.x_bias_condition is None or self.x_bias_condition(self):
-				self.x += self.x_bias if self.x_bias.__class__ in (int, float) else self.x_bias(self)
-			else:
-				self.else_x_bias()
-			
-			if self.y_bias_condition is None or self.y_bias_condition(self):
-				self.y += self.y_bias if self.y_bias.__class__ in (int, float) else self.y_bias(self)
-			else:
-				self.else_y_bias()
-
-		else:
-
-			for i in world.visible_walls.values():
-				if i.x - 300 < player.x < i.x + 300 and i.y - 300 < player.y < i.y + 300:
-					a = False
-			
-			if self.x_bias_condition is None or self.x_bias_condition(self) and a:
-				self.x += self.x_bias if self.x_bias.__class__ in (int, float) else self.x_bias(self)
-			if self.y_bias_condition is None or self.y_bias_condition(self) and a:
-				self.y += self.y_bias if self.y_bias.__class__ in (int, float) else self.y_bias(self)
+		if self.twisting_in_width or self.twisting_in_height:
+			try:
+				self.image = pygame.transform.scale(self.image, (self.image.get_width() - self.twisting_in_width, self.image.get_height() - self.twisting_in_height))
+			except:
+				if self.remove_particle_after_twisting:
+					if self.end_command is not None: self.end_command(self)
+					world.particles.remove(self)
+		if self.x_bias:
+			self.x += self.x_bias if self.x_bias.__class__ in (int, float) else self.x_bias(self)
+		if self.y_bias:
+			self.y += self.y_bias if self.y_bias.__class__ in (int, float) else self.y_bias(self)
 
 		if self.rotate is not None:
 			i = self.image.get_rect()
@@ -873,7 +798,7 @@ class Particle:
 			self.image = j.subsurface(ii).copy()
 			
 		if (self.end_x is not None and self.end_y is None and self.end_x - self.end_zone <= self.x <= self.end_x + self.end_zone) or (self.end_y is not None and self.end_x is None and self.end_y - self.end_zone <= self.y <= self.end_y + self.end_zone) or (self.end_x is not None and self.end_y is not None and self.end_x - self.end_zone <= self.x <= self.end_x + self.end_zone and self.end_y - self.end_zone <= self.y <= self.end_y + self.end_zone):
-			eval(self.end_command)
+			if self.end_command is not None: self.end_command(self)
 			world.particles.remove(self)
 
 		win.blit(self.image, (self.display_mode(self.x, self.y, self.w, self.h)))
@@ -881,11 +806,6 @@ class Particle:
 		if Settings["Display"][3]:
 			pygame.draw.rect(win, (0, 0, 0), (self.display_mode(self.x, self.y, self.w, self.h)[0], self.display_mode(self.x, self.y, self.w, self.h)[1], self.w, self.h), 3)
 	
-	# def get_pressed(self, button=0, del_self=False) -> bool:
-	#	if click[button] and pygame.Rect(eval(self.display_mode)[0], eval(self.display_mode)[1], self.w, self.h).collidepoint(mouse_x, mouse_y):
-	#		return True
-	#	return False
-
 class BaseEnemy:
 	def __init__(self, x, y, HP, speed, animation_frames):
 		self.x = x
@@ -952,13 +872,14 @@ class BaseEnemy:
 			if not self._check_collision(self.x, new_y, world):
 				self.y = new_y
 
-def check_collision(rect: pygame.Rect, world):
+def check_collision(rect: pygame.Rect, world, only_solid=True, check_walls=True):
 	"""Проверяет столкновение с твёрдыми объектами"""
-	for wall in world.visible_walls.values():
-		if rect.colliderect(wall.rect):
-			return True
+	if check_walls:
+		for wall in world.visible_walls.values():
+			if rect.colliderect(wall.rect):
+				return True
 	for object in world.visible_objects:
-		if object.is_solid and rect.colliderect(object.rect):
+		if (not only_solid or object.is_solid) and rect.colliderect(object.rect):
 			return True
 	return False
 
@@ -1245,7 +1166,7 @@ class SpiderEnemy(BaseEnemy):
 			dist = sqrt(dx**2 + dy**2)
 			move_x = dx / dist * FPS * 1.5
 			move_y = dy / dist * FPS * 1.5
-			world.particles.append(Particle(self.x, self.y, pygame.transform.rotate(web_texture, -degrees(atan2(-move_y, move_x))), move_x, move_y, del_self_condition="pygame.Rect(particle.x - 32, particle.y + 32, 64, 64).colliderect(pygame.Rect(player.x - 100, player.y + 100, 200, 200))", end_command="", end_time=FPS*3)) # TODO наложить эффект замедления
+			world.particles.append(Particle(self.x, self.y, pygame.transform.rotate(web_texture, -degrees(atan2(-move_y, move_x))), move_x, move_y, del_self_condition=lambda particle: (pygame.Rect(particle.x - 32, particle.y + 32, 64, 64).colliderect(pygame.Rect(player.x - 100, player.y + 100, 200, 200))), end_time=FPS*3)) # TODO наложить эффект замедления
 			self.state = "Attacking"
 
 	def _handle_go_towards_player(self, player, world):
@@ -2203,7 +2124,7 @@ class World:
 
 	def __init__(self):
 
-		self.chunk_manager = ChunkManager()
+		self.chunk_manager = ChunkManager(Object)
 		self.current_cave = None
 
 		self.visible_objects = []
@@ -2218,7 +2139,6 @@ class World:
 	def update(self):
 
 		self.chunk_manager.update_visible_chunks(player.x, player.y)
-		
 		# Сборка объектов из загруженных чанков
 		self.visible_objects.clear()
 		self.visible_items.clear()
@@ -3874,9 +3794,6 @@ def start_game():
 					if event.key == pygame.K_SLASH:
 						chat_input = True
 						input_text = "/"
-					if event.key == pygame.K_o:
-						world.chunk_manager.get_chunk_at(player.x, player.y).caves.clear()
-						world.chunk_manager.get_chunk_at(player.x, player.y).caves.append(Cave(player.x, player.y, 8192, 8192))
 
 					if event.key == pygame.K_ESCAPE:
 	
@@ -3946,30 +3863,36 @@ def start_game():
 								
 								case "Down":
 									x_bias_ = 0
-									y_bias_ = lambda particle: -particle.calculated_variable[0]
+									y_bias_ = lambda particle: -(30 - particle.ticks * 2.5)
 								case "Up":
 									x_bias_ = 0
-									y_bias_ = lambda particle: particle.calculated_variable[0]
+									y_bias_ = lambda particle: (30 - particle.ticks * 2.5)
 								case "Left":
-									x_bias_ = lambda particle: -particle.calculated_variable[0]
-									y_bias_ = lambda particle: particle.calculated_variable[1]
+									x_bias_ = lambda particle: -(30 - particle.ticks * 2.5)
+									y_bias_ = lambda particle: (15 - particle.ticks * 4)
 								case "Right":
-									x_bias_ = lambda particle: particle.calculated_variable[0]
-									y_bias_ = lambda particle: particle.calculated_variable[1]
+									x_bias_ = lambda particle: (30 - particle.ticks * 2.5)
+									y_bias_ = lambda particle: (15 - particle.ticks * 4)
 								case "Up-right":
-									x_bias_ = lambda particle: particle.calculated_variable[0]
-									y_bias_ = lambda particle: particle.calculated_variable[0]
+									x_bias_ = lambda particle: (30 - particle.ticks * 2.5)
+									y_bias_ = lambda particle: (30 - particle.ticks * 2.5)
 								case "Up-left":
-									x_bias_ = lambda particle: -particle.calculated_variable[0]
-									y_bias_ = lambda particle: particle.calculated_variable[0]
+									x_bias_ = lambda particle: -(30 - particle.ticks * 2.5)
+									y_bias_ = lambda particle: (30 - particle.ticks * 2.5)
 								case "Down-right":
-									x_bias_ = lambda particle: particle.calculated_variable[0]
-									y_bias_ = lambda particle: -particle.calculated_variable[0]
+									x_bias_ = lambda particle: (30 - particle.ticks * 2.5)
+									y_bias_ = lambda particle: -(30 - particle.ticks * 2.5)
 								case "Down-left":
-									x_bias_ = lambda particle: -particle.calculated_variable[0]
-									y_bias_ = lambda particle: -particle.calculated_variable[0]
+									x_bias_ = lambda particle: -(30 - particle.ticks * 2.5)
+									y_bias_ = lambda particle: -(30 - particle.ticks * 2.5)
 
-							world.particles.append(Particle(player.x, player.y, pygame.transform.scale(pygame.image.load(path + "Images/Items/" + inventory.whole_inventory[changed_slot].name + ".png"), (64, 64)), x_bias_, y_bias_, variable_to_calculate="(30 - self.ticks * 2.5, 15 - self.ticks * 4)", track_ticks=True, end_time=0.5, end_command="world.chunk_manager.get_chunk_at(particle.x, particle.y).items.append(Object(particle.special_flags, particle.x, particle.y, 'Images/Items/' + particle.special_flags + '.png', special_flags='Item', pickable=True))", end_command_globals_in_the_end=("world", "Object"), special_flags=inventory.whole_inventory[changed_slot].name))
+							world.particles.append(Particle(player.x, player.y,
+									   inventory.whole_inventory[changed_slot].image,
+									   x_bias_, y_bias_,
+									   track_ticks=True,
+									   end_time=0.5,
+									   end_command=lambda particle: (world.chunk_manager.get_chunk_at(particle.x, particle.y).items.append(Object(particle.special_flags, particle.x, particle.y, "Images/Items/" + particle.special_flags + ".png", pickable=True))),
+									   special_flags=inventory.whole_inventory[changed_slot].name))
 							
 							del x_bias_
 							del y_bias_
@@ -4350,7 +4273,7 @@ def start_game():
 
 								if object.special_flags < 1:
 
-									world.particles.append(Particle(object.x, object.y, object.image, y_bias=-40, twisting_in_height=80))
+									world.particles.append(Particle(object.x, object.y, object.image, y_bias=-50, twisting_in_height=60))
 									world.chunk_manager.get_chunk_at(object.x, object.y).objects.remove(object)
 
 									statistics[2] += 1
@@ -4382,8 +4305,9 @@ def start_game():
 								object.image.set_alpha(object.image.get_alpha() - 1)
 								object.image = pygame.transform.scale(object.image, (256, 256))
 
-								if object.special_flags <= 0:
+								if object.special_flags < 1:
 
+									world.particles.append(Particle(object.x, object.y, object.image, y_bias=-50, twisting_in_height=60))
 									world.chunk_manager.get_chunk_at(object.x, object.y).objects.remove(object)
 
 									statistics[2] += 1
@@ -4415,8 +4339,9 @@ def start_game():
 								object.image.set_alpha(object.image.get_alpha() - 1)
 								object.image = pygame.transform.scale(object.image, (256, 256))
 
-								if object.special_flags <= 0:
+								if object.special_flags < 1:
 
+									world.particles.append(Particle(object.x, object.y, object.image, y_bias=-50, twisting_in_height=60))
 									world.chunk_manager.get_chunk_at(object.x, object.y).objects.remove(object)
 
 									statistics[2] += 1
@@ -4554,7 +4479,7 @@ def start_game():
 								for _ in range(5):
 
 									if random.randint(1, 5) == 1:
-										world.particles.append(Particle(object.x, object.y, pygame.transform.scale(pygame.image.load(path + "Images/Items/Dandelion seed.png"), (32, 32)), random.randint(-30, 30), random.randint(-30, 30), end_time=5, end_command="world.chunk_manager.get_chunk_at(particle.x, particle.y).items.append(Object('Dandelion', particle.x, particle.y, 'Images/Objects/Dandelion 1.png', special_flags='Item'))"))
+										world.particles.append(Particle(object.x, object.y, pygame.transform.scale(pygame.image.load(path + "Images/Items/Dandelion seed.png"), (32, 32)), random.randint(-30, 30), random.randint(-30, 30), end_time=5, end_command=lambda particle: (world.chunk_manager.get_chunk_at(particle.x, particle.y).items.append(Object("Dandelion", particle.x, particle.y, "Images/Objects/Dandelion 1.png")))))
 									else:
 										world.particles.append(Particle(object.x, object.y, pygame.transform.scale(pygame.image.load(path + "Images/Items/Dandelion seed.png"), (32, 32)), random.randint(-30, 30), random.randint(-30, 30), end_time=5))
 
@@ -4578,16 +4503,15 @@ def start_game():
 					item.main(player)
 					try_pick = True
 					if item.pickable and Settings["Game"][0] and player.x - 150 < item.x < player.x + 150 and player.y - 150 < item.y < player.y + 150:
-						world.particles.append(Particle(item.x, item.y, item.image, lambda particle: round(particle.calculated_variable[0]), lambda particle: round(particle.calculated_variable[1]), variable_to_calculate="(((player.x - self.x) // 2) / 10 * 5, ((player.y - self.y) // 2) / 10 * 5, (-(player.y - self.y) // 2) / 10 * (5 - 10), (-(player.x - self.x) // 2) / 10 * (5 - 10))", track_ticks=True, del_self_condition=lambda particle: abs(particle.x - player.x) < 30 and abs(particle.y - player.y) < 30, end_command=lambda: (inventory.increate(item.name), pygame.mixer.Sound.play(Pick_an_item))))
+						world.particles.append(Particle(item.x, item.y, item.image, lambda particle: round(((player.x - particle.x) // 2) / 10 * 5), lambda particle: round(((player.y - particle.y) // 2) / 10 * 5), track_ticks=True, del_self_condition=lambda particle: abs(particle.x - player.x) < 30 and abs(particle.y - player.y) < 30, end_command=lambda particle: (inventory.increate(item.name), pygame.mixer.Sound.play(Pick_an_item))))
 						world.chunk_manager.get_chunk_at(item.x, item.y).items.remove(item)
 						try_pick = False
 
 					if try_pick and item.x - player.x + Width // 2 - item.image.get_width() // 2 <= mouse_x <= item.x - player.x + Width // 2 + item.image.get_width() // 2 and player.y - item.y + Height // 2 - item.image.get_height() // 2 <= mouse_y <= player.y - item.y + Height // 2 + item.image.get_height() // 2:
 						mouse_object = t("Click to pick the ") + t("Item name " + item.name)
-								
+						
 						if click[0]:
-							
-							world.particles.append(Particle(item.x, item.y, item.image, lambda particle: round(particle.calculated_variable[0]), lambda particle: round(particle.calculated_variable[1]), variable_to_calculate="(((player.x - self.x) // 2) / 10 * 5, ((player.y - self.y) // 2) / 10 * 5, (-(player.y - self.y) // 2) / 10 * (5 - 10), (-(player.x - self.x) // 2) / 10 * (5 - 10))", track_ticks=True, del_self_condition=lambda particle: abs(particle.x - player.x) < 30 and abs(particle.y - player.y) < 30, end_command=lambda: (inventory.increate(item.name), pygame.mixer.Sound.play(Pick_an_item))))
+							world.particles.append(Particle(item.x, item.y, item.image, lambda particle: round(((player.x - particle.x) // 2) / 10 * 5), lambda particle: round(((player.y - particle.y) // 2) / 10 * 5), track_ticks=True, del_self_condition=lambda particle: abs(particle.x - player.x) < 30 and abs(particle.y - player.y) < 30, end_command=lambda particle: (inventory.increate(particle.special_flags), pygame.mixer.Sound.play(Pick_an_item)), special_flags=item.name))
 									
 							world.chunk_manager.get_chunk_at(item.x, item.y).items.remove(item)
 
@@ -5040,19 +4964,9 @@ def start_game():
 
 			particle.main()
 			
-			if (particle.end_time is not None and time.time() - particle.start_time >= particle.end_time) or (particle.del_self_condition is not None and ((particle.del_self_condition.__class__ == str and eval(particle.del_self_condition)) or (particle.del_self_condition.__class__ != str and particle.del_self_condition(particle)))):
-				
-				if particle.end_command.__class__ == str:
-					particle.end_command_globals["particle"] = particle
-					particle.end_command_globals["Particle"] = Particle
-					particle.end_command_globals["particles"] = world.particles
-					particle.end_command_globals["pygame"] = pygame
-					particle.end_command_globals["path"] = path
-					
-					for i in particle.end_command_globals_in_the_end: particle.end_command_globals[i] = eval(i)
-					exec(particle.end_command, particle.end_command_globals, particle.end_command_globals)
-				else:
-					particle.end_command()
+			if (particle.end_time is not None and time.time() - particle.start_time >= particle.end_time) or (particle.del_self_condition is not None and particle.del_self_condition(particle)):
+				if particle.end_command is not None:
+					particle.end_command(particle)
 
 				world.particles.remove(particle)
 
@@ -5926,16 +5840,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 			if click[0]:
 
 				a = 0
-				for object in world.visible_objects:
-					if pygame.Rect((player.x + mouse_x - Width // 2) // 256 * 256 + 128, (player.y - mouse_y + Height // 2) // 256 * 256 + 128, 256, 256).colliderect(pygame.Rect(object.x, object.y, object.w, object.h)):
-						break
-				else: 
-					for object in world.visible_items:
-						if pygame.Rect((player.x + mouse_x - Width // 2) // 256 * 256 + 128, (player.y - mouse_y + Height // 2) // 256 * 256 + 128, 256, 256).colliderect(pygame.Rect(object.x, object.y, object.w, object.h)):
-							world.particles.append(Particle(object.x, object.y, item.image, lambda particle: round(particle.calculated_variable[0]), lambda particle: round(particle.calculated_variable[1]), variable_to_calculate="((self.special_flags[0] // 2) / 10 * self.ticks, (self.special_flags[1] // 2) / 10 * self.ticks, (-self.special_flags[0] // 2) / 10 * (self.ticks - 10), (-self.special_flags[1] // 2) / 10 * (self.ticks - 10))", track_ticks=True, end_x=player.x, end_y=player.y, end_zone=30, end_command="(inventory.increate('" + item.name + "'),pygame.mixer.Sound.play(Pick_an_item))", special_flags=(player.x - item.x, player.y - item.y, (0 - 17) // (0 - 10))))
-							world.chunk_manager.get_chunk_at(object.x, object.y).objects.remove(object)
-							pygame.mixer.Sound.play(Pick_an_item)
-						
+				if not check_collision(pygame.Rect((player.x + mouse_x - Width // 2) // 256 * 256 + 128, (player.y - mouse_y + Height // 2) // 256 * 256 + 128, 256, 256), world, False):
 					world.chunk_manager.get_chunk_at((player.x + mouse_x - Width // 2) // 128, (player.y + mouse_y - Height // 2) // 256).objects.append(Portal())
 		build_tuple = (changed_slot, player, world.particles, Width, Height, world, inventory.whole_inventory, win)
 		check_build_objects(objects_templates, build_tuple)
@@ -5980,42 +5885,28 @@ if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0]
 			wall_pos = (player.x + mouse_x - Width // 2) // 256 * 256 + 128, (player.y - mouse_y + Height // 2) // 256 * 256 + 128
 			draw_select_image(win, 256, 256, Width, Height, player, mouse_x, mouse_y)
 
-			if click[0]:
-
-				if wall_pos not in world.visible_walls:
-					# TODO сделать подбирание предметов при пересечении
-					for object in world.visible_objects:
-						if pygame.Rect((player.x + mouse_x - Width // 2) // 256 * 256 + 128, (player.y - mouse_y + Height // 2) // 256 * 256 + 128, 256, 256).colliderect(pygame.Rect(object.x, object.y, object.w, object.h)):
-							break
-					
-					else:
-						world.chunk_manager.get_chunk_at(*wall_pos).walls[wall_pos] = Wall(inventory.whole_inventory[changed_slot].name, wall_pos[0], wall_pos[1])
-						for wall in (((wall_pos[0] - 256, wall_pos[1]), (wall_pos[0] + 256, wall_pos[1]), (wall_pos[0], wall_pos[1] - 256), (wall_pos[0], wall_pos[1] + 256))):
-							if wall in world.visible_walls:
-								world.visible_walls[wall].update_neigboors()
-						inventory.whole_inventory[changed_slot].amount -= 1
-						if inventory.whole_inventory[changed_slot].amount == 0:
-							inventory.whole_inventory[changed_slot] = None
+			if click[0] and wall_pos not in world.visible_walls and not check_collision(pygame.Rect(wall_pos[0], wall_pos[1], 256, 256), world, False, False):
+				world.chunk_manager.get_chunk_at(*wall_pos).walls[wall_pos] = Wall(inventory.whole_inventory[changed_slot].name, wall_pos[0], wall_pos[1])
+				for wall in (((wall_pos[0] - 256, wall_pos[1]), (wall_pos[0] + 256, wall_pos[1]), (wall_pos[0], wall_pos[1] - 256), (wall_pos[0], wall_pos[1] + 256))):
+					if wall in world.visible_walls:
+						world.visible_walls[wall].update_neigboors()
+				inventory.whole_inventory[changed_slot].amount -= 1
+				if inventory.whole_inventory[changed_slot].amount == 0:
+					inventory.whole_inventory[changed_slot] = None
 
 		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Wooden door":
 
 			wall_pos = (player.x + mouse_x - Width // 2) // 256 * 256 + 128, (player.y - mouse_y + Height // 2) // 256 * 256 + 128
 			draw_select_image(win, 256, 256, Width, Height, player, mouse_x, mouse_y)
 
-			if click[0]:
-				if wall_pos not in world.visible_walls:
-					for object in world.visible_objects:
-						if pygame.Rect((player.x + mouse_x - Width // 2) // 256 * 256 + 128, (player.y - mouse_y + Height // 2) // 256 * 256 + 128, 256, 256).colliderect(pygame.Rect(object.x, object.y, object.w, object.h)):
-							break
-					
-					else:
-						world.chunk_manager.get_chunk_at(*wall_pos).walls[wall_pos] = Wall(inventory.whole_inventory[changed_slot].name, wall_pos[0], wall_pos[1], True)
-						for wall in (((wall_pos[0] - 256, wall_pos[1]), (wall_pos[0] + 256, wall_pos[1]), (wall_pos[0], wall_pos[1] - 256), (wall_pos[0], wall_pos[1] + 256))):
-							if wall in world.visible_walls:
-								world.visible_walls[wall].update_neigboors()
-						inventory.whole_inventory[changed_slot].amount -= 1
-						if inventory.whole_inventory[changed_slot].amount == 0:
-							inventory.whole_inventory[changed_slot] = None
+			if click[0] and wall_pos not in world.visible_walls and check_collision(pygame.Rect(wall_pos[0], wall_pos[1], 256, 256), world, False, False):
+				world.chunk_manager.get_chunk_at(*wall_pos).walls[wall_pos] = Wall(inventory.whole_inventory[changed_slot].name, wall_pos[0], wall_pos[1], True)
+				for wall in (((wall_pos[0] - 256, wall_pos[1]), (wall_pos[0] + 256, wall_pos[1]), (wall_pos[0], wall_pos[1] - 256), (wall_pos[0], wall_pos[1] + 256))):
+					if wall in world.visible_walls:
+						world.visible_walls[wall].update_neigboors()
+				inventory.whole_inventory[changed_slot].amount -= 1
+				if inventory.whole_inventory[changed_slot].amount == 0:
+					inventory.whole_inventory[changed_slot] = None
 
 		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Stone hammer":
 
