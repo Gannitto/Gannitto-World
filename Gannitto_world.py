@@ -4,6 +4,7 @@ import pyperclip
 from pathlib import Path
 import time
 import random
+import numpy as np
 from math import atan2, cos, sin, pi, sqrt, fabs, degrees
 from itertools import product
 import socket
@@ -73,7 +74,20 @@ def get_build_number():
 		build_num = "Error"
 	return build_num
 
-def text(text: str, text_x: int, text_y: int, color: tuple=text_color, size: int=20, alignment: bool=False, letter_spasing: int=10, surface: pygame.Surface=win, max_width: int=0, max_height: int=0, return_surface: bool=False, spase_between_strings: int=10):
+def text(
+		text: str,
+		text_x: int,
+		text_y: int,
+		color: tuple=text_color,
+		size: int=20,
+		alignment: bool=False,
+		letter_spasing: int=10,
+		surface: pygame.Surface=win,
+		max_width: int=0,
+		max_height: int=0,
+		return_surface: bool=False,
+		spase_between_strings: int=10
+		):
 	
 	"""
 	Выводит текст на экран
@@ -127,6 +141,40 @@ def text(text: str, text_x: int, text_y: int, color: tuple=text_color, size: int
 		Y += word_height + spase_between_strings
 
 	return all_text_surface
+
+def get_text_height(
+		text: str,
+		size: int=20,
+		letter_spasing: int=10,
+		max_width: int=0,
+		spase_between_strings: int=10
+		) -> int:
+	
+	"""
+	Возвращает ширину текста
+	Аргументы:
+	text - Сам текст
+	size - Размер шрифта
+	letter_spasing - Размер пробела
+	max_width - Максимальная длина текста
+	space_between_strings - Расстояние между строками
+	"""
+	
+	text = text.replace("\t\t", "")
+	tempTextInfo = pygame.font.Font(path + "Font.ttf", size)
+	text_height = 0
+
+	for line in (word.split(" ") for word in text.splitlines()):
+		TextX = 0
+		text_height += size - 2 + spase_between_strings
+		for word in line:
+			word_width = tempTextInfo.size(word)[0]
+			if TextX + word_width >= Width // 3:
+				TextX = 0
+				text_height += size - 2 + spase_between_strings
+			TextX += word_width + 10
+
+	return text_height
 
 def save(darken:bool=True, save_world_settings:bool=False):
 
@@ -519,6 +567,7 @@ class Player:
 	
 player = Player()
 world_to_screen = lambda X, Y, W, H, player=player: (X - player.x + Width // 2 - W // 2, player.y - Y + Height // 2 - H // 2)
+world_rect_to_screen = lambda X, Y, W, H, player=player: (X - player.x + Width // 2 - W // 2, player.y - Y + Height // 2 - H // 2, W, H)
 
 class Object:
 
@@ -2230,8 +2279,6 @@ class Cave:
 
 	def __init__(self, cave_x, cave_y, w, h):
 
-		self.object_class = "Cave"
-
 		self.x = cave_x
 		self.y = cave_y
 		self.w = 128
@@ -2240,19 +2287,21 @@ class Cave:
 		self.own_height = h
 		self.image = pygame.transform.scale(pygame.image.load(path + "Images/Objects/Cave.png"), (128, 128))
 		self.objects = []
-		self.name = "Cave"
+		self.seed = (int(self.x) * 888888 + int(self.y) * 425269) ^ 0x9e3779b9
+		self.noise = world.chunk_manager.generator.get_cave_noise(self.seed)
 		self.generate()
 
 	def generate(self):
 
-		for _ in range(self.own_width // 100 + random.randint(-10, 10)):
-			self.objects.append(Object("Stone", random.randint(self.own_width // 2 * -1, self.own_width // 2), random.randint(self.own_height // 2 * -1, self.own_height // 2), "Images/Items/Stone.png"))
+		# for _ in range(self.own_width // 100 + random.randint(-10, 10)):
+		# 	self.objects.append(Object("Stone", random.randint(self.own_width // 2 * -1, self.own_width // 2), random.randint(self.own_height // 2 * -1, self.own_height // 2), "Images/Items/Stone.png"))
 			
-		for _ in range(self.own_width // 300 + random.randint(-10, 10)):
-			self.objects.append(Object("Iron ore", random.randint(self.own_width // 2 * -1, self.own_width // 2), random.randint(self.own_height // 2 * -1, self.own_height // 2), "Images/Objects/Iron ore.png", (256, 256), special_flags=100, is_solid=True))
+		# for _ in range(self.own_width // 300 + random.randint(-10, 10)):
+		# 	self.objects.append(Object("Iron ore", random.randint(self.own_width // 2 * -1, self.own_width // 2), random.randint(self.own_height // 2 * -1, self.own_height // 2), "Images/Objects/Iron ore.png", (256, 256), special_flags=100, is_solid=True))
 
-		for _ in range(self.own_width // 300 + random.randint(-10, 10)):
-			self.objects.append(Object("Gold ore", random.randint(self.own_width // 2 * -1, self.own_width // 2), random.randint(self.own_height // 2 * -1, self.own_height // 2), "Images/Objects/Gold ore.png", (256, 256), special_flags=100, is_solid=True))
+		# for _ in range(self.own_width // 300 + random.randint(-10, 10)):
+		# 	self.objects.append(Object("Gold ore", random.randint(self.own_width // 2 * -1, self.own_width // 2), random.randint(self.own_height // 2 * -1, self.own_height // 2), "Images/Objects/Gold ore.png", (256, 256), special_flags=100, is_solid=True))
+		self.cave_map = world.chunk_manager.generator.generate_cave(self.noise, self.own_width, self.own_height)
 
 	def main(self):
 
@@ -2267,6 +2316,12 @@ class Cave:
 			return self
 		else:
 			return None
+
+	def render(self):
+		for Y in range(self.own_height // 64):
+			for X in range(self.own_width // 64):
+				if self.cave_map[Y][X]:
+					pygame.draw.rect(win, (50, 50, 50), world_rect_to_screen(X * 64 - self.own_width // 2, Y * 64 - self.own_height // 2, 64, 64))
 		
 	def __getstate__(self):
 		
@@ -3819,6 +3874,9 @@ def start_game():
 					if event.key == pygame.K_SLASH:
 						chat_input = True
 						input_text = "/"
+					if event.key == pygame.K_o:
+						world.chunk_manager.get_chunk_at(player.x, player.y).caves.clear()
+						world.chunk_manager.get_chunk_at(player.x, player.y).caves.append(Cave(player.x, player.y, 8192, 8192))
 
 					if event.key == pygame.K_ESCAPE:
 	
@@ -3840,6 +3898,7 @@ def start_game():
 							world.chunk_manager.chunks = {}
 							world.mobs = []
 							player.effects = []
+							particles = []
 							chat = []
 							main_chat = []
 							chat_tick = 0
@@ -4153,8 +4212,7 @@ def start_game():
 
 			a = None
 
-
-			if world.current_cave is not None and -64 <= player.x <= 64 and -64 <= player.y <= 64 and click[0]:
+			if world.current_cave is not None and -64 <= player.x <= 64 and -64 <= player.y <= 64 and release:
 
 				player.x = world.current_cave.x
 				player.y = world.current_cave.y - 128
@@ -4177,6 +4235,7 @@ def start_game():
 				win.fill((50, 50, 50))
 				
 				pygame.draw.rect(win, (100, 100, 100), (world.current_cave.own_width // 2 * -1 - player.x + Width // 2, player.y - world.current_cave.own_height // 2 + Height // 2, world.current_cave.own_width, world.current_cave.own_height))
+				world.current_cave.render()
 				win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Objects/Cave.png"), (128, 128)), (0 - player.x + Width // 2 - world.current_cave.w // 2, player.y - 0 + Height // 2 - world.current_cave.h // 2))
 
 				i = -1
@@ -5003,7 +5062,8 @@ def start_game():
 		new_particles.clear()
 
 		# Механика игрового времени
-		win_fill(alpha=(1 - game_time.get_brightness()) * 200)
+		if world.current_cave is None:
+			win_fill(alpha=(1 - game_time.get_brightness()) * 200)
 
 		# Механика анимации слотов
 		if Settings["Display"][5]:
@@ -5985,21 +6045,21 @@ if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0]
 
 		text(input_text, 20, Height - 40)
 		
-		if chat_tick == 0 and len(chat) != 0:
-			main_chat.append(chat[0])
-			chat.remove(chat[0])
-			try:
-				chat_tick = len(chat[0]) // 1.5 * FPS
-			except: pass
-		else:
+		if len(chat) != 0:
+
+			if chat_tick == 0:
+				main_chat.append(chat[0])
+				chat.remove(chat[0])
+				try:
+					chat_tick = len(chat[0]) // 1.5 * FPS
+				except: pass
 			
-			a = 2
-			b = chat.copy()
-			b.reverse()
-			
-			for i in b:
-				a += 1
-				text(i, 10, Height - a * 30)
+			reversed_chat = chat.copy()
+			reversed_chat.reverse()
+			message_y = 80
+			for message in reversed_chat:
+				message_y += get_text_height(message)
+				text(message, 10, Height - message_y)
 		
 		chat_tick = max(0, chat_tick - 1)
 		
@@ -6296,19 +6356,7 @@ if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0]
 
 			item_text = t("Item info " + inventory.whole_inventory[inventory.start_cell].name) + "\n" + t("Item purpose " + inventory.whole_inventory[inventory.start_cell].name)
 			
-			text_height = 40
-
-			tempTextInfo = pygame.font.Font(path + "Font.ttf", 20)
-			for line in (item_word.split(" ") for item_word in item_text.splitlines()):
-				TextX = 0
-				text_height += 28
-				for word in line:
-					word_width = tempTextInfo.size(word)[0]
-					if TextX + word_width >= Width // 3:
-						TextX = 0
-						text_height += 28
-					TextX += word_width + 10
-			
+			text_height = get_text_height(item_text) + 40
 			if inventory.whole_inventory[inventory.start_cell].type == "Food":
 				text_height += 84
 			

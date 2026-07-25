@@ -1,6 +1,7 @@
 import random
 from dataclasses import dataclass
 from typing import Tuple, Dict
+import numpy as np
 import vnoise
 import math
 
@@ -19,7 +20,7 @@ class NoiseGenerator:
 		# Отдельные генераторы с разным сидом вместо параметра base
 		self.height_noise = vnoise.Noise(seed=self.seed)
 		self.detail_noise = vnoise.Noise(seed=self.seed + 1000)
-
+		
 		self.biome_grid = {}
 		
 	def get_height(self, x: float, y: float) -> float:
@@ -80,6 +81,29 @@ class NoiseGenerator:
 			persistence=0.4,
 			lacunarity=3.0
 		)
+
+	def get_cave_noise(self, seed: int):
+		return vnoise.Noise(seed=seed)
+
+	def generate_cave(self, noise, width, height):
+
+		cave_map = np.zeros((height // 64, width // 64), dtype=bool)
+		for y in range(height // 64):
+			for x in range(width // 64):
+				# Нормализованные координаты
+				# Генерация шума
+				value = noise.noise2(
+					x * 100.0 / 4096,
+					y * 100.0 / 4096,
+					octaves=4,
+					lacunarity=2.0,
+				)
+				
+				# Применение порога
+				cave_map[y][x] = value > 0
+
+		return cave_map
+
 
 generator = NoiseGenerator()
 
