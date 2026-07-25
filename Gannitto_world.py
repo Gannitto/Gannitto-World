@@ -4519,7 +4519,7 @@ def start_game():
 					item.main(player)
 					try_pick = True
 					if item.pickable and Settings["Game"][0] and player.x - 150 < item.x < player.x + 150 and player.y - 150 < item.y < player.y + 150:
-						world.particles.append(Particle(item.x, item.y, item.image, lambda particle: round(particle.calculated_variable[0]), lambda particle: round(particle.calculated_variable[1]), variable_to_calculate="((self.special_flags[0] // 2) / 10 * self.ticks, (self.special_flags[1] // 2) / 10 * self.ticks, (-self.special_flags[0] // 2) / 10 * (self.ticks - 10), (-self.special_flags[1] // 2) / 10 * (self.ticks - 10))", track_ticks=True, end_x=player.x, end_y=player.y, end_zone=30, end_command="(inventory.increate('" + item.name + "'),pygame.mixer.Sound.play(Pick_an_item))", special_flags=(player.x - item.x, player.y - item.y, (0 - 17) // (0 - 10))))
+						world.particles.append(Particle(item.x, item.y, item.image, lambda particle: round(particle.calculated_variable[0]), lambda particle: round(particle.calculated_variable[1]), variable_to_calculate="(((player.x - self.x) // 2) / 10 * 5, ((player.y - self.y) // 2) / 10 * 5, (-(player.y - self.y) // 2) / 10 * (5 - 10), (-(player.x - self.x) // 2) / 10 * (5 - 10))", track_ticks=True, del_self_condition=lambda particle: abs(particle.x - player.x) < 30 and abs(particle.y - player.y) < 30, end_command=lambda: (inventory.increate(item.name), pygame.mixer.Sound.play(Pick_an_item))))
 						world.chunk_manager.get_chunk_at(item.x, item.y).items.remove(item)
 						try_pick = False
 
@@ -4527,9 +4527,8 @@ def start_game():
 						mouse_object = t("Click to pick the ") + t("Item name " + item.name)
 								
 						if click[0]:
-									
-							# , "fabs(player.x - self.x) > fabs(self.special_flags[0] / 2)", "fabs(player.y - self.y) > fabs(self.special_flags[1] / 2)", "round(self.calculated_variable[2])", "round(self.calculated_variable[3])"
-							world.particles.append(Particle(item.x, item.y, item.image, lambda particle: round(particle.calculated_variable[0]), lambda particle: round(particle.calculated_variable[1]), variable_to_calculate="((self.special_flags[0] // 2) / 10 * self.ticks, (self.special_flags[1] // 2) / 10 * self.ticks, (-self.special_flags[0] // 2) / 10 * (self.ticks - 10), (-self.special_flags[1] // 2) / 10 * (self.ticks - 10))", track_ticks=True, end_x=player.x, end_y=player.y, end_zone=30, end_command="(inventory.increate('" + item.name + "'),pygame.mixer.Sound.play(Pick_an_item))", special_flags=(player.x - item.x, player.y - item.y, (0 - 17) // (0 - 10))))
+							
+							world.particles.append(Particle(item.x, item.y, item.image, lambda particle: round(particle.calculated_variable[0]), lambda particle: round(particle.calculated_variable[1]), variable_to_calculate="(((player.x - self.x) // 2) / 10 * 5, ((player.y - self.y) // 2) / 10 * 5, (-(player.y - self.y) // 2) / 10 * (5 - 10), (-(player.x - self.x) // 2) / 10 * (5 - 10))", track_ticks=True, del_self_condition=lambda particle: abs(particle.x - player.x) < 30 and abs(particle.y - player.y) < 30, end_command=lambda: (inventory.increate(item.name), pygame.mixer.Sound.play(Pick_an_item))))
 									
 							world.chunk_manager.get_chunk_at(item.x, item.y).items.remove(item)
 
@@ -4994,7 +4993,7 @@ def start_game():
 					for i in particle.end_command_globals_in_the_end: particle.end_command_globals[i] = eval(i)
 					exec(particle.end_command, particle.end_command_globals, particle.end_command_globals)
 				else:
-					pass # TODO сделать нормальные конечные команды частиц
+					particle.end_command()
 
 				world.particles.remove(particle)
 
