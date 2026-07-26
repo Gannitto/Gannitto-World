@@ -5901,8 +5901,7 @@ if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0]
 """]),
 			 "Carrot,Onion,Tomato", "Seed", particle_to_build=True, needed_object="Farmland", remove_part=" seeds")
 		
-		except FileNotFoundError: pass
-		except AttributeError: pass
+		except: pass
 		#world.particles.append(Particle(particle.x, particle.y, pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + particle.special_flags[0] + " 2.png"), (128, 128)), end_time=random.randint(1, 3), save_particle=True, tick_command=particle.special_flags[1], end_command=particle.special_flags[3]))
 		
 		#world.particles.append(Particle(particle.x, particle.y, path + "Images/Objects/" + particle.special_flags[0] + " 3.png"))
@@ -5944,6 +5943,9 @@ if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0]
 				if break_pos in world.visible_walls:
 					inventory.increate(world.chunk_manager.get_chunk_at(*break_pos).walls[break_pos].wall_type)
 					world.chunk_manager.get_chunk_at(*break_pos).walls.pop(break_pos, None)
+					for wall in ((wall_pos[0] - 256, wall_pos[1]), (wall_pos[0] + 256, wall_pos[1]), (wall_pos[0], wall_pos[1] - 256), (wall_pos[0], wall_pos[1] + 256)):
+						if wall in world.chunk_manager.get_chunk_at(*wall).walls:
+							world.chunk_manager.get_chunk_at(*wall).walls[wall].update_neigboors()
 
 				for object in world.visible_objects:
 					if object.breakable and (object.x, object.y) == break_pos:
