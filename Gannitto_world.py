@@ -44,7 +44,7 @@ pygame.init()
 	Механика использования еды и некоторых предметов через пробел
 	Отрисовка погоды
 	Отображение частиц
-	Механика игрового времени
+	Механика освещения
 	Механика анимации слотов
 	Меню на клавише TAB
 	Отображение инвентаря
@@ -2127,7 +2127,7 @@ class World:
 
 	def __init__(self):
 
-		self.chunk_manager = ChunkManager(Object)
+		self.chunk_manager = ChunkManager(Object, world_rect_to_screen)
 		self.current_cave = None
 
 		self.visible_objects = []
@@ -3860,6 +3860,10 @@ def start_game():
 					if event.key == pygame.K_8: changed_slot = 7
 					if event.key == pygame.K_9: changed_slot = 8
 					if event.key == pygame.K_0: changed_slot = 9
+					if event.key == pygame.K_o and False:
+						world.chunk_manager.chunks[(0, 0)].shadow_map.update({(0, 0): 0, (1, 0): 1, (2, 0): 2, (3, 0): 3, (4, 0): 4, (5, 0): 5, (6, 0): 6, (7, 0): 7, (8, 0): 8, (9, 0): 9, (10, 0): 10, (11, 0): 11, (12, 0): 12, (13, 0): 13, (14, 0): 14, (15, 0): 15})
+						world.chunk_manager.chunks[(0, 0)].light_map.update({(0, 1): 0, (1, 1): 1, (2, 1): 2, (3, 1): 3, (4, 1): 4, (5, 1): 5, (6, 1): 6, (7, 1): 7, (8, 1): 8, (9, 1): 9, (10, 1): 10, (11, 1): 11, (12, 1): 12, (13, 1): 13, (14, 1): 14, (15, 1): 15})
+
 
 					if event.key == hot_keys["Help"]:
 						music_channel.stop()
@@ -5002,9 +5006,19 @@ def start_game():
 
 		new_particles.clear()
 
-		# Механика игрового времени
+		# Механика освещения
+
+		# 1 слой - естественный свет
+		current_brightness = game_time.get_brightness()
+		light_level = (1 - current_brightness) * 200
 		if world.current_cave is None:
-			win_fill(alpha=(1 - game_time.get_brightness()) * 200)
+			apply_shadow(light_level)
+		else:
+			win_fill()
+
+		# 2 слой - тени
+		# 3 слой - искусственное освещение
+		world.chunk_manager.show_light_and_dark(light_level, player)
 
 		# Механика анимации слотов
 		if Settings["Display"][5]:

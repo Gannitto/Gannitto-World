@@ -2,8 +2,9 @@ import Saver
 import sys
 import os
 import pygame
-from itertools import product
+import pygame.surfarray as surfarray
 import numpy as np
+from itertools import product
 from PIL import Image
 from Globals import Width, Height, path, win
 
@@ -92,7 +93,40 @@ def win_fill(fill_color=(0, 0, 0), alpha: int=90, rect: tuple=(0, 0, Width, Heig
 			temp_surface.fill(fill_color)
 			temp_surface.set_alpha(alpha)
 			win.blit(temp_surface, rect[0:2])
-	
+
+def apply_shadow(alpha: int):
+
+	"""
+	Функция для наложения естественной тени
+	alpha - Прозрачность заливки
+	"""
+
+	temp_surface = pygame.Surface((Width, Height), pygame.SRCALPHA)
+	temp_surface.fill((0, 0, 0))
+	temp_surface.set_alpha(alpha)
+	win.blit(temp_surface, (0, 0))
+
+def reverse_fill_area(rect=(0, 0, Width, Height), fill_color=(0, 0, 0), alpha=90):
+    """
+    Восстанавливает исходные цвета на области экрана с помощью numpy
+    """
+    x, y, w, h = rect
+    a = alpha / 255.0
+    
+    if a >= 1.0:
+        return
+    
+    area = win.subsurface(rect)
+    pixels = surfarray.array3d(area)  # (h, w, 3) - RGB
+    r_fill, g_fill, b_fill = fill_color
+    multiplier = 1 - a
+    
+    pixels[:, :, 0] = np.clip((pixels[:, :, 0] - r_fill * a) / multiplier, 0, 255).astype(np.uint8)
+    pixels[:, :, 1] = np.clip((pixels[:, :, 1] - g_fill * a) / multiplier, 0, 255).astype(np.uint8)
+    pixels[:, :, 2] = np.clip((pixels[:, :, 2] - b_fill * a) / multiplier, 0, 255).astype(np.uint8)
+    
+    surfarray.blit_array(area, pixels)
+
 def win_darken(win: pygame.Surface, screen: pygame.Surface=None):
 	
 	"""

@@ -1,6 +1,7 @@
 from NoiseGenerator import NoiseGenerator
 from itertools import product
 import random
+from Functions import win_fill, reverse_fill_area
 from Saver import save_chunk, load_chunk, chunk_exists
 
 chunk_size = 2048
@@ -181,6 +182,9 @@ class Chunk:
 		self.particles = []
 		self.walls = {}
 		self.caves = []
+		self.shadow_map = {}
+		self.light_map = {}
+		self.final_light_map = {}
 		self.biome = None
 		self.is_loaded = False
 		self.is_generated = False
@@ -194,20 +198,32 @@ class Chunk:
 			"y2": (self.y + 1) * chunk_size
 		}
 
+	def update_light(self):
+		self.final_light_map = {}
+		for pos, shadow in self.shadow_map.values():
+			self.final_light_map[pos] = shadow
+		for pos, light in self.light_map.values():
+			if pos in self.final_light_map:
+				self.final_light_map[pos] = min(self.final_light_map[pos] + light, 16)
+			else:
+				self.final_light_map[pos] = light
+
+
 class ChunkManager:
 
-	def __init__(self, Object):
+	def __init__(self, Object, world_rect_to_screen):
 		self.chunks = {}
 		self.loaded_chunks = set()
 		self.view_distance = 1
 		self.generator = NoiseGenerator()
 		self.save_directory = ""
 		self.Object = Object # Класс объекта передаётся как аргумент чтобы избежать циклического импорта
+		self.world_rect_to_screen = world_rect_to_screen
 		
 	def generate_chunk(self, chunk: Chunk):
 
 		"""Генерация чанка"""
-		bounds = chunk.get_world_bounds()
+		# bounds = chunk.get_world_bounds()
 	
 		value = self.generator.get_biome_at(chunk.x, chunk.y)
 		index = int(value * len(biomes))
@@ -263,7 +279,6 @@ class ChunkManager:
 						if not collision:
 							items.append(temp_item)
 							break
-
 
 		for structure in biomes_objects[chunk.biome]["Structures"]:
 			if rng.random() <= structure[0]:
@@ -353,16 +368,14 @@ class ChunkManager:
 				if new_chunk is None:
 					new_chunk = Chunk(chunk_x, chunk_y)
 				self.chunks[chunk_key] = new_chunk
-				new_chunk.is_loaded = True
+				self.chunks[chunk_key].is_loaded = True
 			
 			# Если чанк существует, но не сгенерирован, то он генерируется
 			chunk = self.chunks[chunk_key]
 			if not chunk.is_generated:
 				self.generate_chunk(chunk)
 				chunk.is_loaded = True
-		
-		self.loaded_chunks = new_visible_chunks.copy()
-		
+
 		# Выгрузка чанков, которые больше не видны
 		chunks_to_unload = []
 		for chunk_key, chunk in self.chunks.items():
@@ -371,8 +384,20 @@ class ChunkManager:
 		
 		for chunk_key in chunks_to_unload:
 			self._unload_chunk(chunk_key)
-		
 		self.loaded_chunks = new_visible_chunks.copy()
+
+	def show_light_and_dark(self, light_level, player):
+		"""Отображает тени и освещение"""
+		for chunk_pos in self.loaded_chunks:
+			chunk = self.chunks[chunk_pos]
+			shadow_map = chunk.shadow_map
+			light_map = chunk.light_map
+			for pos, shadow in shadow_map.items():
+				win_fill(alpha=256 - shadow * 16 - light_level, rect=self.world_rect_to_screen(chunk.x * chunk_size + pos[0] * 64, chunk.y * chunk_size + pos[1] * 64, 64, 64))
+			for pos, light in light_map.items():
+				try:
+					reverse_fill_area(alpha=max(light_level - 256 + light * 16, 0), rect=self.world_rect_to_screen(chunk.x * chunk_size + pos[0] * 64, chunk.y * chunk_size + pos[1] * 64, 64, 64))
+				except: pass
 
 	def save_all_loaded_chunks(self):
 		"""Сохраняет все загруженные в данный момент чанки"""
@@ -394,3 +419,4 @@ class ChunkManager:
 		"""Удаляет сохраненный файл чанка (для перегенерации)"""
 		from Saver import delete_chunk
 		return delete_chunk(chunk_x, chunk_y, self.save_directory)
+
