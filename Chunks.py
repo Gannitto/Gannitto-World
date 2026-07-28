@@ -184,7 +184,6 @@ class Chunk:
 		self.caves = []
 		self.shadow_map = {}
 		self.light_map = {}
-		self.final_light_map = {}
 		self.biome = None
 		self.is_loaded = False
 		self.is_generated = False
@@ -197,17 +196,6 @@ class Chunk:
 			"x2": (self.x + 1) * chunk_size,
 			"y2": (self.y + 1) * chunk_size
 		}
-
-	def update_light(self):
-		self.final_light_map = {}
-		for pos, shadow in self.shadow_map.values():
-			self.final_light_map[pos] = shadow
-		for pos, light in self.light_map.values():
-			if pos in self.final_light_map:
-				self.final_light_map[pos] = min(self.final_light_map[pos] + light, 16)
-			else:
-				self.final_light_map[pos] = light
-
 
 class ChunkManager:
 

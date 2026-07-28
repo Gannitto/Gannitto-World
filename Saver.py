@@ -30,7 +30,6 @@ def save_chunk(chunk, save_directory):
 		"caves": chunk.caves,
 		"shadow_map": chunk.shadow_map,
 		"light_map": chunk.light_map,
-		"final_light_map": chunk.final_light_map,
 		"is_generated": chunk.is_generated,
 		"is_loaded": False,
 	}
@@ -57,7 +56,6 @@ def load_chunk(chunk_x, chunk_y, save_directory):
 	chunk.caves = chunk_data["caves"]
 	chunk.shadow_map = chunk_data["shadow_map"]
 	chunk.light_map = chunk_data["light_map"]
-	chunk.final_light_map = chunk_data["final_light_map"]
 	chunk.is_generated = chunk_data["is_generated"]
 	chunk.is_loaded = False
 	
