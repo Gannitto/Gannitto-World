@@ -6,7 +6,7 @@ import pygame.surfarray as surfarray
 import numpy as np
 from itertools import product
 from PIL import Image
-from Globals import Width, Height, path, win
+from Globals import Width, Height, path, win, clock, Settings, bigTextInfo
 
 changed_language = "Russian"
 def languages(Russian: str, English: str, Kazach: str) -> str:
@@ -23,8 +23,6 @@ def shadow(
 		x_bias: int=1,
 		y_bias: int=1
 		) -> pygame.Surface:
-	
-	from Globals import Settings
 	
 	if not Settings["Display"][4]:
 		return surface
@@ -106,26 +104,36 @@ def apply_shadow(alpha: int):
 	temp_surface.set_alpha(alpha)
 	win.blit(temp_surface, (0, 0))
 
-def reverse_fill_area(rect=(0, 0, Width, Height), fill_color=(0, 0, 0), alpha=90):
-    """
-    Восстанавливает исходные цвета на области экрана с помощью numpy
-    """
-    x, y, w, h = rect
-    a = alpha / 255.0
-    
-    if a >= 1.0:
-        return
-    
-    area = win.subsurface(rect)
-    pixels = surfarray.array3d(area)  # (h, w, 3) - RGB
-    r_fill, g_fill, b_fill = fill_color
-    multiplier = 1 - a
-    
-    pixels[:, :, 0] = np.clip((pixels[:, :, 0] - r_fill * a) / multiplier, 0, 255).astype(np.uint8)
-    pixels[:, :, 1] = np.clip((pixels[:, :, 1] - g_fill * a) / multiplier, 0, 255).astype(np.uint8)
-    pixels[:, :, 2] = np.clip((pixels[:, :, 2] - b_fill * a) / multiplier, 0, 255).astype(np.uint8)
-    
-    surfarray.blit_array(area, pixels)
+def reverse_fill_area(rect, fill_color=(0, 0, 0), alpha=90):
+
+	"""
+	Создаёт освещение на области экрана с помощью numpy и pygame.surfarray
+	"""
+
+	x, y, w, h = rect
+	a = alpha / 255.0
+	
+	if a >= 1.0:
+		return
+	
+	# Подповерхность
+	area = win.subsurface(rect)
+	mult = 1.0 - a
+	
+	pixels = pygame.surfarray.array3d(area).astype(np.float32)
+	
+	if fill_color[0] == fill_color[1] == fill_color[2]:
+		# Серый - 1 канал
+		pixels = (pixels - fill_color[0] * a) / mult
+	else:
+		# Цветной - 3 канала
+		fill_array = np.array(fill_color, dtype=np.float32)
+		pixels = (pixels - fill_array * a) / mult
+		
+	final_pixels = np.clip(pixels, 0, 255).astype(np.uint8)
+	
+	del pixels
+	pygame.surfarray.blit_array(area, final_pixels)
 
 def win_darken(win: pygame.Surface, screen: pygame.Surface=None):
 	
@@ -136,7 +144,6 @@ def win_darken(win: pygame.Surface, screen: pygame.Surface=None):
 	"""
 	if screen is None:
 		screen = win.copy()
-	from Globals import clock
 	tick = 0
 	display_speed = 7
 	dark = 0
@@ -167,7 +174,6 @@ def win_lighten(win: pygame.Surface, screen: pygame.Surface=None, start_dark: in
 	"""
 	if screen is None:
 		screen = win.copy()
-	from Globals import clock
 
 	dark = start_dark
 	display_speed = 7
@@ -194,7 +200,6 @@ def draw_key(key: str, X: int, Y: int):
 	X - x клавиши
 	Y - y клавиши
 	"""
-	from Globals import win, bigTextInfo
 	pygame.draw.rect(win, (192, 203, 220), (X - bigTextInfo.size(key)[0] / 2, Y, bigTextInfo.size(key)[0] + 10, 45))
 	pygame.draw.rect(win, (139, 155, 180), (X - bigTextInfo.size(key)[0] / 2, Y, bigTextInfo.size(key)[0] + 10, 45), 3)
 	win.blit(bigTextInfo.render(key, True, (139, 155, 180)), (X - bigTextInfo.size(key)[0] / 2 + 5, Y + 5))

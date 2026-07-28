@@ -383,10 +383,12 @@ class ChunkManager:
 			for pos, shadow in shadow_map.items():
 				win_fill(alpha=256 - shadow * 16 - light_level, rect=self.world_rect_to_screen(chunk.x * chunk_size + pos[0] * 64, chunk.y * chunk_size + pos[1] * 64, 64, 64))
 			for pos, light in light_map.items():
-				try:
-					reverse_fill_area(alpha=max(light_level - 256 + light * 16, 0), rect=self.world_rect_to_screen(chunk.x * chunk_size + pos[0] * 64, chunk.y * chunk_size + pos[1] * 64, 64, 64))
-				except: pass
-
+					light_at_pos = light_level - 256 + light * 16
+					if light_at_pos > 0:
+						try:
+							reverse_fill_area(alpha=light_at_pos, rect=self.world_rect_to_screen(chunk.x * chunk_size + pos[0] * 64, chunk.y * chunk_size + pos[1] * 64, 64, 64))
+						except:
+							pass
 	def save_all_loaded_chunks(self):
 		"""Сохраняет все загруженные в данный момент чанки"""
 		for chunk_key, chunk in self.chunks.items():
