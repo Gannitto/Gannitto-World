@@ -1,124 +1,101 @@
 import pygame
 import os
 from random import randint
-from Globals import path
+from Globals import path, FPS, Width, Height, win
 from Functions import shadow
 
-X = 0
-Y = 0
-Home = [0, 0]
-Ron_run = "Down"
-costum = 0
-changed_slot = 0
-animation = [None, 0]
-window = [False, 0]
+class Ron:
 
-down_images = [
+	def __init__(self, world_to_screen):
+		self.x = 0
+		self.y = 0
+		self.home = (0, 0)
+		self.direction = "Down"
+		self.costum = 0
+		self.window = [False, 0]
+		self.images = {"Down": pygame.transform.scale(pygame.image.load(path + "Images/Players/Ron/Normal/Down/1.png"), (256, 256))}
+		self.inventory = {"Bow": 0, "Arrow": 0, "Stick": 0, "Iron ingot": 0}
+		self.speed = 50
+		self.world_to_screen = world_to_screen
 
-	pygame.transform.scale(pygame.image.load(path + "Images/Players/Ron/Normal/Down/1.png"), (256, 256))
+	def show(self):
+		win.blit(shadow(self.images[self.direction], "Ron " + self.direction), self.world_to_screen(self.x, self.y, 256, 256))
 
-	]
+	def walk(self, x: int, y: int):
 
-inventory = {"Bow": 0, "Arrow": 0, "Stick": 0, "Iron ingot": 0}
+		if self.home is None:
 
-def show(x, y, win, Width, Height):
+			if not (-256 < self.x - x < 256):
+				if self.x < x:
+					self.x += self.speed / FPS * 30
+				elif x < self.x:
+					self.x -= self.speed / FPS * 30
+			
+			if not (-256 < self.y - y < 256):
+				if self.y < y:
+					self.y += self.speed / FPS * 30
+				elif y < self.y:
+					self.y -= self.speed / FPS * 30
 
-	match Ron_run:
+		else:
 
-		case "Down":
+			if not (-256 < self.x - self.home[0] < 256):
+				if self.x < self.home[0]:
+					self.x += self.speed / FPS * 30
+				elif self.home[0] < self.x:
+					self.x -= self.speed / FPS * 30
+			
+			if not (-256 < self.y - self.home[1] < 256):
+				if self.y < self.home[1]:
+					self.y += self.speed / FPS * 30
+				elif self.home[1] < self.y:
+					self.y -= self.speed / FPS * 30
 
-			win.blit(shadow(down_images[costum], "Ron Down" + str(costum)), (X - x + Width // 2 - 128, y - Y + Height // 2 - 128))
+	def check_items(self, x, y, world):
 
-def check_animations():
-	...
+		"""Проверяет лежащие предметы вокруг Рона"""
 
-def show_animations():
-	...
+		if self.home is None:
 
-def walk(x: int, y: int):
-	
-	global X, Y
+			for item in world.visible_items:
 
-	if Home is None:
-
-		if not (-256 < X - x < 256):
-			if X < x:
-				X += 50
-			elif x < X:
-				X -= 50
-		
-		if not (-256 < Y - y < 256):
-			if Y < y:
-				Y += 50
-			elif y < Y:
-				Y -= 50
-
-	else:
-
-		if not (-256 < X - Home[0] < 256):
-			if X < Home[0]:
-				X += 30
-			elif Home[0] < X:
-				X -= 30
-		
-		if not (-256 < Y - Home[1] < 256):
-			if Y < Home[1]:
-				Y += 30
-			elif Home[1] < Y:
-				Y -= 30
-
-def check_items(x, y, items: list, world):
-
-	"""Проверяет лежащие предметы вокруг Рона"""
-
-	global inventory, X, Y
-
-	if Home is None:
-
-		for object in items:
-
-			if x - 256 <= object.x <= x + 256 and y - 256 <= object.y <= y + 256 and object.object_class == "Object" and object.special_flags == "Item" and object.name in ["Arrow", "Stick", "Iron ingot"]:
-				
-				if not (-32 < X - object.x < 32) and not (-32 < Y - object.y < 32):
+				if x - 256 <= item.x <= x + 256 and y - 256 <= item.y <= y + 256 and item.name in ["Arrow", "Stick", "Iron ingot"]:
 					
-					if X < object.x:
-						X += 30
-					elif object.x < X:
-						X -= 30
+					if not (-32 < self.x - item.x < 32) and not (-32 < self.y - item.y < 32):
+						
+						if self.x < item.x:
+							self.x += 30
+						elif item.x < self.x:
+							self.x -= 30
 
-					if Y < object.y:
-						Y += 30
-					elif object.y < Y:
-						Y -= 30
+						if self.y < item.y:
+							self.y += 30
+						elif item.y < self.y:
+							self.y -= 30
 
-					break
+						break
 
-				else:
+					else:
 
-					inventory[object.name] += 1
-					world.chunk_manager.get_chunk_at(object.x, object.y).items.remove(object)
-					break
+						self.inventory[item.name] += 1
+						world.chunk_manager.get_chunk_at(item.x, item.y).items.remove(item)
+						break
 
-	return items
+	def check_mobs(self, world, Projectile, x, y):
 
-def check_mobs(mobs: list, Width, Height, FPS, player_bullets: list, Bullet, x, y):
+		"""Проверяет мобов вокруг Рона"""
+		
+		for mob in world.mobs:
 
-	"""Проверяет мобов вокруг Рона"""
-	
-	for mob in mobs:
+			if self.inventory["Arrow"] > 0 and self.x - Width // 2 <= mob.x <= self.x + Width // 2 and self.y - Height // 2 <= mob.y <= self.y + Height // 2 and mob.name == "Slime" and randint(1, FPS / 2) == 1:
 
-		if inventory["Arrow"] > 0 and X - Width // 2 <= mob.x <= X + Width // 2 and Y - Height // 2 <= mob.y <= Y + Height // 2 and mob.mob_class == "SlimeEnemy" and randint(1, FPS / 2) == 1:
+				world.projectiles.append(Projectile(self.x, self.y, mob.x - x + Width // 2 - 64, y - mob.y + Height // 2 - 32, "Arrow"))
+				break
 
-			player_bullets.append(Bullet(X, Y, mob.x - x + Width // 2 - 64, y - mob.y + Height // 2 - 32, "Arrow"))
+	def get_start_items(self):
 
-			break
+		"""Выдаёт Рону в инвентарь начальные предметы"""
 
-	return mobs, player_bullets
+		self.inventory["Bow"] = 1
+		self.inventory["Arrow"] = 99
 
-
-def get_start_items():
-
-	"""Выдаёт Рону в инвентарь начальные предметы"""
-
-	inventory["Bow"] = 1
-	inventory["Arrow"] = 99

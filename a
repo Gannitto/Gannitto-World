@@ -1,0 +1,19 @@
+(-1, -1) <Chunks.Chunk object at 0x7fdf34065400>
+(-1, 0) <Chunks.Chunk object at 0x7fdf34146990>
+(-1, 1) <Chunks.Chunk object at 0x7fdf34146ad0>
+(0, -1) <Chunks.Chunk object at 0x7fdf341c9ba0>
+(0, 0) <Chunks.Chunk object at 0x7fdf341c9cd0>
+(0, 1) <Chunks.Chunk object at 0x7fdf341baf90>
+(1, -1) <Chunks.Chunk object at 0x7fdf341bfac0>
+(1, 0) <Chunks.Chunk object at 0x7fdf341bfbd0>
+(1, 1) <Chunks.Chunk object at 0x7fdf341a9f50>
+
+(0, 1) <Chunks.Chunk object at 0x7fdf341baf90>
+(-1, -1) <Chunks.Chunk object at 0x7fdf34065400>
+(0, 0) <Chunks.Chunk object at 0x7fdf341c9cd0>
+(-1, 1) <Chunks.Chunk object at 0x7fdf34146ad0>
+(1, 1) <Chunks.Chunk object at 0x7fdf341a9f50>
+(1, -1) <Chunks.Chunk object at 0x7fdf341bfac0>
+(-1, 0) <Chunks.Chunk object at 0x7fdf34146990>
+(1, 0) <Chunks.Chunk object at 0x7fdf341bfbd0>
+(0, -1) <Chunks.Chunk object at 0x7fdf341c9ba0>

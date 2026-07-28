@@ -11,7 +11,7 @@ import socket
 import sys
 import os
 import Backrooms
-import Ron
+from Ron import Ron
 import Saver
 from Functions import *
 from Build import build, check_build_objects, draw_select_image
@@ -198,19 +198,19 @@ def save(darken:bool=True, save_world_settings:bool=False):
 		else:
 
 			Saver.save_objects(path + "Worlds/" + world_name + "/Mobs.save", world.mobs)
-			Saver.save_objects(path + "Worlds/" + world_name + "/Info.save", [player.x, player.y, Backrooms.InBackrooms, Backrooms.Level, world.current_cave, player.speed, player.HP, start_time, Ron.X, Ron.Y, Ron.Home, world.chunk_manager.generator.seed, game_time.current_time])
+			Saver.save_objects(path + "Worlds/" + world_name + "/Info.save", [player.x, player.y, Backrooms.InBackrooms, Backrooms.Level, world.current_cave, player.speed, player.HP, start_time, ron.x, ron.y, ron.home, world.chunk_manager.generator.seed, game_time.current_time])
 			Saver.save_objects(path + "Worlds/" + world_name + "/Inventory.save", inventory.whole_inventory)
 			Saver.save_objects(path + "Worlds/" + world_name + "/Resources.save", inventory.resources)
 			Saver.save_objects(path + "Worlds/" + world_name + "/Effects.save", player.effects)
 
-			new_particles = world.particles.copy()
+			new_particles = []
 			particle_count = 1
 			for particle in new_particles:
 				if particle.save_particle:
 					pygame.image.save(particle.image, path + "Worlds/" + world_name +"/Images/Particle " + str(particle_count) + ".png")
 					particle.image_path = path + "Worlds/Images/Particle " + str(particle_count) + ".png"
 					particle_count += 1
-				else: new_particles.remove(particle)
+					new_particles.append(particle)
 			Saver.save_objects(path + "Worlds/" + world_name + "/Particles.save", new_particles)
 			world.chunk_manager.save_all_loaded_chunks()
 				
@@ -557,6 +557,7 @@ class Player:
 player = Player()
 world_to_screen = lambda X, Y, W, H, player=player: (X - player.x + Width // 2 - W // 2, player.y - Y + Height // 2 - H // 2)
 world_rect_to_screen = lambda X, Y, W, H, player=player: (X - player.x + Width // 2 - W // 2, player.y - Y + Height // 2 - H // 2, W, H)
+ron = Ron(world_to_screen)
 
 class Object:
 
@@ -886,7 +887,17 @@ def check_collision(rect: pygame.Rect, world, only_solid=True, check_walls=True)
 			return True
 	return False
 
-class SlimeEnemy(BaseEnemy):
+def check_projectiles_collision(rect: pygame.Rect, remove_projectile=True):
+
+	for projectile in world.projectiles:
+		if rect.collidepoint((projectile.x, projectile.y)):
+			if remove_projectile:
+				world.projectiles.remove(projectile)
+			return True
+	return False
+
+
+class Slime(BaseEnemy):
 	
 	def __init__(self, x, y):
 
@@ -1077,7 +1088,7 @@ class SlimeEnemy(BaseEnemy):
 	def draw(self, player):
 		"""Отрисовка слизня"""
 		screen_x = self.x - player.x + Width // 2 - 64
-		screen_y = player.y - self.y + Height // 2 - 32
+		screen_y = player.y - self.y + Height // 2 - 64
 		
 		frame_index = (self.animation_count - self.animation_count % 5) // 5
 		frame = self.animation_frames[frame_index]
@@ -1098,7 +1109,7 @@ class SlimeEnemy(BaseEnemy):
 		self.__dict__.update(state)
 		self.animation_frames = SLIME_TYPES[self.slime_type]
 
-class SpiderEnemy(BaseEnemy):
+class Spider(BaseEnemy):
 	
 	def __init__(self, x, y):
 
@@ -1322,12 +1333,12 @@ class ButterflyEnemy:
 		if Settings["Display"][3]:
 			pygame.draw.rect(win, (0, 0, 0), (self.x - player.x + Width // 2 - 32, player.y - self.y + Height // 2 - 32, 64, 64), 3)
 
-class Bullet:
+class Projectile:
 
-	def __init__(self, bullet_x: int, bullet_y: int, mouse_x, mouse_y, type: str):
+	def __init__(self, X: int, Y: int, mouse_x, mouse_y, type: str):
 		
 		"""
-		Пуля или любой другой патрон, которым стреляет игрок.
+		Снаряд, который непрерывно летит в заданном направлении.
 		bullet_x - Координата x
 		bullet_y - Координата y
 		mouse_x - x мыши
@@ -1335,8 +1346,8 @@ class Bullet:
 		type - Тип патрона, например стрела
 		"""
 
-		self.x = bullet_x
-		self.y = bullet_y
+		self.x = X
+		self.y = Y
 
 		self.angle = atan2(Height / 2 - mouse_y, Width / 2 - mouse_x)
 		self.x_vel = cos(self.angle) * 100
@@ -1347,17 +1358,17 @@ class Bullet:
 
 	def main(self):
 
-		"""Показывает пулю"""
+		"""Показывает снаряд"""
 
 		self.x -= int(self.x_vel)
 		self.y += int(self.y_vel)
 		
-		win.blit(self.image, (self.x - player.x + Width // 2 - 32, player.y - self.y + Height // 2 - 32))
+		win.blit(self.image, world_to_screen(self.x, self.y, 64, 64))
 
 		if Settings["Display"][3]:
 			pygame.draw.rect(win, (0, 0, 0), (self.x - player.x + Width // 2 - 32, player.y - self.y + Height // 2 - 32, 64, 64), 3)
 		if time.time() >= self.end_time:
-			player_bullets.remove(self)
+			world.projectiles.remove(self)
 
 class Button:
 
@@ -2138,6 +2149,7 @@ class World:
 		self.mobs = []
 		self.particles = []
 		self.mechanisms = []
+		self.projectiles = []
 		
 	def update(self):
 
@@ -3650,7 +3662,7 @@ objects_templates = {
 
 def start_game():
 	
-	global win, changed_slot, menu_open, multyplayer_menu_open, screenmode, inventory_open, hold_left, backrooms, text_color, bullet_num, craft_items_list, craft_amounts_list, craft_images_list, screenshot_num, mouse_x, mouse_y, item_settings_open, multyplayer_panel, chat_tick, chat, main_chat, craft_list_open, craft_list_page, click, in_motherboard, os, world_name, player_bullets, color, multyplayer_mode, multyplayer, animation, start_time, new_particles, inside_files, game, alt_pressed, player, world, FPS, MAX_FPS
+	global win, changed_slot, menu_open, multyplayer_menu_open, screenmode, inventory_open, hold_left, backrooms, text_color, bullet_num, craft_items_list, craft_amounts_list, craft_images_list, screenshot_num, mouse_x, mouse_y, item_settings_open, multyplayer_panel, chat_tick, chat, main_chat, craft_list_open, craft_list_page, click, in_motherboard, os, world_name, color, multyplayer_mode, multyplayer, animation, start_time, new_particles, inside_files, game, alt_pressed, player, world, FPS, MAX_FPS
 
 	night_playing = False
 	input_text = ""
@@ -3686,7 +3698,7 @@ def start_game():
 	if os.path.exists(path + "Worlds/" + world_name):
 		
 		world.mobs = Saver.load_objects(path + "Worlds/" + world_name + "/Mobs.save")
-		player.x, player.y, Backrooms.InBackrooms, Backrooms.Level, world.current_cave, player.speed, player.HP, start_time, Ron.X, Ron.Y, Ron.Home, world.chunk_manager.generator.seed, game_time.current_time = Saver.load_objects(path + "Worlds/" + world_name + "/Info.save")
+		player.x, player.y, Backrooms.InBackrooms, Backrooms.Level, world.current_cave, player.speed, player.HP, start_time, ron.x, ron.y, ron.home, world.chunk_manager.generator.seed, game_time.current_time = Saver.load_objects(path + "Worlds/" + world_name + "/Info.save")
 		game.difficulty, player.god_mode = Saver.load_objects(path + "Worlds/" + world_name + "/Settings.save")
 		inventory.whole_inventory = Saver.load_objects(path + "Worlds/" + world_name + "/Inventory.save")
 		player.effects = Saver.load_objects(path + "Worlds/" + world_name + "/Effects.save")
@@ -3795,7 +3807,7 @@ def start_game():
 				elif len(input_text) <= 500:
 					input_text += event.unicode
 			
-			elif event.type == pygame.MOUSEWHEEL and not any((item_settings_open, Ron.window[0], in_motherboard, craft_list_open)):
+			elif event.type == pygame.MOUSEWHEEL and not any((item_settings_open, ron.window[0], in_motherboard, craft_list_open)):
 				
 				changed_slot += event.y
 				if changed_slot > 9: changed_slot = 0
@@ -3814,7 +3826,7 @@ def start_game():
 					if event.key == hot_keys["Multyplayer menu"]:
 						multyplayer_menu_open = True
 					if event.key == hot_keys["Set Ron home"]:
-						Ron.Home = [player.x, player.y]
+						ron.home = [player.x, player.y]
 					if event.key == hot_keys["Menu"]:
 						menu_open = not menu_open
 					if event.key == pygame.K_c:
@@ -3827,8 +3839,8 @@ def start_game():
 	
 						if item_settings_open:
 							item_settings_open = False
-						elif Ron.window[0]:
-							Ron.window[0] = False
+						elif ron.window[0]:
+							ron.window[0] = False
 						elif in_motherboard is not None:
 							in_motherboard = None
 						elif craft_list_open:
@@ -3860,9 +3872,10 @@ def start_game():
 					if event.key == pygame.K_8: changed_slot = 7
 					if event.key == pygame.K_9: changed_slot = 8
 					if event.key == pygame.K_0: changed_slot = 9
-					if event.key == pygame.K_o and False:
-						world.chunk_manager.chunks[(0, 0)].shadow_map.update({(0, 0): 0, (1, 0): 1, (2, 0): 2, (3, 0): 3, (4, 0): 4, (5, 0): 5, (6, 0): 6, (7, 0): 7, (8, 0): 8, (9, 0): 9, (10, 0): 10, (11, 0): 11, (12, 0): 12, (13, 0): 13, (14, 0): 14, (15, 0): 15})
-						world.chunk_manager.chunks[(0, 0)].light_map.update({(0, 1): 0, (1, 1): 1, (2, 1): 2, (3, 1): 3, (4, 1): 4, (5, 1): 5, (6, 1): 6, (7, 1): 7, (8, 1): 8, (9, 1): 9, (10, 1): 10, (11, 1): 11, (12, 1): 12, (13, 1): 13, (14, 1): 14, (15, 1): 15})
+					if event.key == pygame.K_o:
+						pass
+						# world.chunk_manager.chunks[(0, 0)].shadow_map.update({(0, 0): 0, (1, 0): 1, (2, 0): 2, (3, 0): 3, (4, 0): 4, (5, 0): 5, (6, 0): 6, (7, 0): 7, (8, 0): 8, (9, 0): 9, (10, 0): 10, (11, 0): 11, (12, 0): 12, (13, 0): 13, (14, 0): 14, (15, 0): 15})
+						# world.chunk_manager.chunks[(0, 0)].light_map.update({(0, 1): 0, (1, 1): 1, (2, 1): 2, (3, 1): 3, (4, 1): 4, (5, 1): 5, (6, 1): 6, (7, 1): 7, (8, 1): 8, (9, 1): 9, (10, 1): 10, (11, 1): 11, (12, 1): 12, (13, 1): 13, (14, 1): 14, (15, 1): 15})
 
 
 					if event.key == hot_keys["Help"]:
@@ -3983,7 +3996,7 @@ def start_game():
 
 		win.fill((0, 0, 0))
 
-		if Width // 2 - 100 <= mouse_x <= Width // 2 + 100 and Height // 2 - 100 <= mouse_y <= Height // 2 + 100 and not any((item_settings_open, Ron.window[0], in_motherboard, craft_list_open)):
+		if Width // 2 - 100 <= mouse_x <= Width // 2 + 100 and Height // 2 - 100 <= mouse_y <= Height // 2 + 100 and not any((item_settings_open, ron.window[0], in_motherboard, craft_list_open)):
 			mouse_object = t("It's you")
 
 		if not Backrooms.InBackrooms:
@@ -4629,14 +4642,14 @@ def start_game():
 
 			if game_time.day_phase == "Night":
 				if random.randint(1, 800) == 1:
-					try: world.mobs.append(SpiderEnemy(random.randint(player.x - Width, player.x + Width), random.randint(player.y - Height, player.y + Height)))
+					try: world.mobs.append(Spider(random.randint(player.x - Width, player.x + Width), random.randint(player.y - Height, player.y + Height)))
 					except:pass
 			else:
 				if random.randint(1, 800) == 1:
-					try: world.mobs.append(SlimeEnemy(random.randint(player.x - Width, player.x + Width), random.randint(player.y - Height, player.y + Height)))
+					try: world.mobs.append(Slime(random.randint(player.x - Width, player.x + Width), random.randint(player.y - Height, player.y + Height)))
 					except:pass
 
-		for bullet in player_bullets:
+		for bullet in world.projectiles:
 			bullet.main()
 
 		for wall in world.visible_walls.values():
@@ -4650,49 +4663,40 @@ def start_game():
 				mob.update(player, world)
 				mob.draw(player)
 
-				if player_bullets != []:
+				if world.projectiles != []:
 
-					if mob.name == "Slime": mob_rect = pygame.Rect((mob.x, mob.y, 128, 128))
+					if mob.name == "Slime": mob_rect = pygame.Rect((mob.x, mob.y - 64, 128, 128))
 					else: mob_rect = pygame.Rect((mob.x, mob.y - 128, 256, 256))
 
-					for ii in player_bullets:
+					if check_projectiles_collision(mob_rect):
 
-						if mob_rect.collidepoint((ii.x, ii.y)):
+						mob.HP -= 15
 
-							mob.HP -= 15
+						if mob.name == "Slime":
+							temp = mob.animation_frames[(mob.animation_count - mob.animation_count % 5) // 5].copy().convert_alpha()
+						if mob.name == "Spider":
+							temp = mob.animation_images[mob.direction].copy().convert_alpha()
 
-							if mob.name == "Slime":
-								temp = mob.animation_frames[(mob.animation_count - mob.animation_count % 5) // 5].copy().convert_alpha()
-							if mob.name == "Spider":
-								temp = mob.animation_images[mob.direction].copy().convert_alpha()
+						for a, b in product(range(128 if mob.name == "Slime" else 256), range(128 if mob.name == "Slime" else 256)):
+							if temp.get_at((a, b)).a != 0:
+								temp.set_at((a, b), (200, 0, 0, 80))
 
-							for a, b in product(range(128 if mob.name == "Slime" else 256), range(128 if mob.name == "Slime" else 256)):
-								if temp.get_at((a, b)).a != 0:
-									temp.set_at((a, b), (200, 0, 0, 80))
+						world.particles.append(Particle(mob.x + random.randint(-64, 64), mob.y + random.randint(-64, 64), text("-15", 0, 0, (180, 10, 10), max_width=44, max_height=50, return_surface=True), y_bias=3, increased_transparency=30, end_time=0.5))
 
-							world.particles.append(Particle(mob.x + random.randint(-64, 64), mob.y + random.randint(-64, 64), text("-15", 0, 0, (180, 10, 10), max_width=44, max_height=50, return_surface=True), y_bias=3, increased_transparency=30, end_time=0.5))
+						if mob.name == "Slime":
+							win.blit(temp, (mob.x - player.x + Width // 2 - 64, player.y - mob.y + Height // 2 - 64))
+						else:
+							win.blit(temp, (mob.x - player.x + Width // 2 - 128, player.y - mob.y + Height // 2 - 128))
 
-							if mob.name == "Slime":
-								win.blit(temp, (mob.x - player.x + Width // 2 - 64, player.y - mob.y + Height // 2 - 64))
-							else:
-								win.blit(temp, (mob.x - player.x + Width // 2 - 128, player.y - mob.y + Height // 2 - 128))
-
-							win.blit(text(str(mob.HP), 0, 0, (180, 10, 10), return_surface=True), (mob.x + 58 - player.x + Width // 2 - 64, player.y - mob.y + Height // 2 - 32))
-
-							player_bullets.remove(ii)
-							break
+						win.blit(text(str(mob.HP), 0, 0, (180, 10, 10), return_surface=True), (mob.x + 58 - player.x + Width // 2 - 64, player.y - mob.y + Height // 2 - 32))
 
 				if mob.HP < 1:
 
 					if mob.name == "Slime":
 
 						for _ in range(random.randint(1, 3)):
-							if mob.slime_type == 1:
-								rand_x, rand_y = mob.x + random.randint(-30, 30), mob.y + random.randint(-30, 30)
-								world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Blue slime", rand_x, rand_y, "Images/Items/Blue Slime.png", pickable=True))
-							else:
-								rand_x, rand_y = mob.x + random.randint(-30, 30), mob.y + random.randint(-30, 30)
-								world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Pink slime", rand_x, rand_y, "Images/Items/Pink Slime.png", pickable=True))
+							rand_x, rand_y = mob.x + random.randint(-30, 30), mob.y + random.randint(-30, 30)
+							world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Blue slime" if mob.slime_type == 1 else "Pink slime", rand_x, rand_y, f"Images/Items/{'Blue' if mob.slime_type == 1 else 'Pink'} slime.png", pickable=True))
 						world.mobs.remove(mob)
 
 					elif mob.name == "Spider":
@@ -4885,11 +4889,11 @@ def start_game():
 
 		# Рон
 
-		Ron.walk(player.x, player.y)
-		Ron.show(player.x, player.y, win, Width, Height)
+		ron.walk(player.x, player.y)
+		ron.show()
 
-		world.visible_items = Ron.check_items(player.x, player.y, world.visible_items, world)
-		world.mobs, player_bullets = Ron.check_mobs(world.mobs, Width, Height, FPS, player_bullets, Bullet, player.x, player.y)
+		ron.check_items(player.x, player.y, world)
+		ron.check_mobs(world, Projectile, player.x, player.y)
 
 		# Механика использования еды и некоторых предметов через пробел
 
@@ -4916,7 +4920,7 @@ def start_game():
 								inventory.whole_inventory[i].amount -= 1
 							else:
 								inventory.whole_inventory[i] = None
-							player_bullets.append(Bullet(player.x, player.y, mouse_x, mouse_y, "Bullet"))
+							world.projectiles.append(Projectile(player.x, player.y, mouse_x, mouse_y, "Bullet"))
 							bullet_num += 1
 							break
 					else:
@@ -4933,7 +4937,7 @@ def start_game():
 								inventory.whole_inventory[i].amount -= 1
 							else:
 								inventory.whole_inventory[i] = None
-							player_bullets.append(Bullet(player.x, player.y, mouse_x, mouse_y, "Arrow"))
+							world.projectiles.append(Projectile(player.x, player.y, mouse_x, mouse_y, "Arrow"))
 							bullet_num += 1
 							break
 					else:
@@ -4984,7 +4988,6 @@ def start_game():
 		match game.weather:
 			
 			case "Rain":
-
 				offset = random.randint(-10, 10)
 				for _ in range(15):
 					world.particles.append(Particle(random.randint(1, Width), -50, pygame.transform.scale(pygame.image.load(path + "Images/Objects/Drop.png"), (64, 64)),  x_bias=random.randint(-5, 5) + offset, y_bias=random.randint(30, 40), display_mode=lambda X, Y, w, h: (X, Y), end_y=Height, end_zone=30))
@@ -5695,10 +5698,10 @@ def start_game():
 		if inventory.whole_inventory[changed_slot] is not None:
 			text(t("Item name " + inventory.whole_inventory[changed_slot].name), 10, 320 if inventory_open else 80)
 
-		if Ron.X - player.x + Width // 2 - 128 <= mouse_x <= Ron.X - player.x + Width // 2 + 128 and player.y - Ron.Y + Height // 2 - 128 <= mouse_y <= player.y - Ron.Y + Height // 2 + 128 and release:
-			Ron.window[0] = True
+		if ron.x - player.x + Width // 2 - 128 <= mouse_x <= ron.x - player.x + Width // 2 + 128 and player.y - ron.y + Height // 2 - 128 <= mouse_y <= player.y - ron.y + Height // 2 + 128 and release:
+			ron.window[0] = True
 
-		if Ron.window[0]:
+		if ron.window[0]:
 			
 			win_fill()
 
@@ -5712,10 +5715,10 @@ def start_game():
 				win.blit(bigTextInfo.render(t("Set a home point"), True, (0, 100, 0)), (200, 150))
 				
 				if release:
-					Ron.Home = [player.x, player.y]
+					ron.home = [player.x, player.y]
 
-			if Ron.Home is not None:
-				win.blit(bigTextInfo.render(t("Current home point: ") + str(Ron.Home[0] // 50) + "; " + str(Ron.Home[1] // 50), True, (0, 150, 0)), (200, 200))
+			if ron.home is not None:
+				win.blit(bigTextInfo.render(t("Current home point: ") + str(ron.home[0] // 50) + "; " + str(ron.home[1] // 50), True, (0, 150, 0)), (200, 200))
 
 			win.blit(bigTextInfo.render(t("Call"), True, (0, 150, 0)), (200, 250))
 			
@@ -5723,7 +5726,7 @@ def start_game():
 				
 				win.blit(bigTextInfo.render(t("Call"), True, (0, 100, 0)), (200, 250))
 				if release:
-					Ron.Home = None
+					ron.home = None
 					
 			win.blit(bigTextInfo.render("x", True, (0, 150, 0)), (Width - 160, 130))
 			
@@ -5733,7 +5736,7 @@ def start_game():
 			if Width - 160 <= mouse_x <= Width - 130 and 130 <= mouse_y <= 160:
 				win.blit(bigTextInfo.render("x", True, (0, 100, 0)), (Width - 160, 130))
 				if release:
-					Ron.window[0] = False
+					ron.window[0] = False
 					
 		if in_motherboard is not None:
 
@@ -5773,8 +5776,8 @@ def start_game():
 
 			text(f"""X {player.x // 50}
 Y {player.y // 50}
-Ron X {Ron.X // 50}
-Ron Y {Ron.Y // 50}
+Ron X {ron.x // 50}
+Ron Y {ron.y // 50}
 FPS {FPS}""" + (f"""
 You are in backrooms lol
 Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if inventory_open else 300)
@@ -6139,7 +6142,7 @@ if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0]
 						world_name = "ᴥᴥᴥ░▒▓█╬█▓▒░ᴥᴥᴥ_Multiplayer_ᴥᴥᴥ░▒▓█╬█▓▒░ᴥᴥᴥ"
 						world.mobs = []
 						world.mechanisms = []
-						player_bullets = []
+						world.projectiles = []
 						player.effects = []
 						#player.x, player.y, player.speed
 						
@@ -6193,9 +6196,9 @@ if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0]
 
 				for mob in world.mobs:
 					if mob.name == "Slime":
-						new_mobs += "SlimeEnemy" + "!" + str(mob.x) + "!" + str(mob.y) + "!" + str(mob.rand_mob) + "!" + str(mob.HP) + "!" + str(mob.animation_count) + "!" + str(mob.attak) + "!" + str(mob.reset_offset) + "!" + str(mob.offset_x) + "!" + str(mob.offset_y) + "!" + str(mob.speed) + "#"
+						new_mobs += "Slime" + "!" + str(mob.x) + "!" + str(mob.y) + "!" + str(mob.rand_mob) + "!" + str(mob.HP) + "!" + str(mob.animation_count) + "!" + str(mob.attak) + "!" + str(mob.reset_offset) + "!" + str(mob.offset_x) + "!" + str(mob.offset_y) + "!" + str(mob.speed) + "#"
 
-				message = str(Ron.X) + ", " + str(Ron.Y) + ", " + str(Ron.Home) + ", " + str(start_time) + ", " + new_rects + ", " + new_objects + "|" + str(player.x) + ", " + str(player.y) + ", " + player.direction + ", " + str(player.costum) + "|"
+				message = str(ron.x) + ", " + str(ron.y) + ", " + str(ron.home) + ", " + str(start_time) + ", " + new_rects + ", " + new_objects + "|" + str(player.x) + ", " + str(player.y) + ", " + player.direction + ", " + str(player.costum) + "|"
 				
 				for player in Multyplayer.players:
 
@@ -6258,7 +6261,7 @@ if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0]
 					data = data.decode()
 					data = data.split("|")
 					
-					Ron.X, Ron.Y, Ron.Home, start_time = int(data[0].split(", ")[0]), int(data[0].split(", ")[1]), eval(data[0].split(", ")[2]), float(data[0].split(", ")[3])
+					ron.x, ron.y, ron.home, start_time = int(data[0].split(", ")[0]), int(data[0].split(", ")[1]), eval(data[0].split(", ")[2]), float(data[0].split(", ")[3])
 					
 					
 					world.visible_objects = []
@@ -6657,10 +6660,8 @@ def worlds():
 					input_text = input_text[:-1]
 				elif event.key == pygame.K_RETURN:
 					world_name = input_text
-					from Inventory import get_start_items
-					get_start_items()
-					Ron.get_start_items()
-					del get_start_items
+					inventory.get_start_items()
+					ron.get_start_items()
 					win_darken(win)
 					edit_world()
 				else:

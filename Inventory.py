@@ -392,12 +392,13 @@ class Inventory:
 				return result
 		return None
 
+	def get_start_items(self):
+
+		"""Выдаёт в инвентарь начальные предметы"""
+
+		self.whole_inventory = [None] * 30
+		self.increate("Bow", 1)
+		self.increate("Arrow", 99)
+
 inventory = Inventory()
-def get_start_items():
-
-	"""Выдаёт в инвентарь начальные предметы"""
-
-	inventory.whole_inventory = [None] * 30
-	inventory.increate("Bow", 1)
-	inventory.increate("Arrow", 99)
 	
