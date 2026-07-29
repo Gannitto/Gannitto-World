@@ -197,9 +197,9 @@ def save(darken:bool=True, save_world_settings:bool=False):
 				another_players.append(...)
 				
 		else:
-
+			
 			Saver.save_objects(path + "Worlds/" + world_name + "/Mobs.save", world.mobs)
-			Saver.save_objects(path + "Worlds/" + world_name + "/Info.save", [player.x, player.y, Backrooms.InBackrooms, Backrooms.Level, world.current_cave, player.speed, player.HP, start_time, ron.x, ron.y, ron.home, world.chunk_manager.generator.seed, game_time.current_time])
+			Saver.save_objects(path + "Worlds/" + world_name + "/Info.save", [player.x, player.y, Backrooms.InBackrooms, Backrooms.Level, world.current_cave, player.speed, player.HP, start_time, ron.x, ron.y, ron.home, ron.inventory, world.chunk_manager.generator.seed, game_time.current_time])
 			Saver.save_objects(path + "Worlds/" + world_name + "/Inventory.save", inventory.whole_inventory)
 			Saver.save_objects(path + "Worlds/" + world_name + "/Resources.save", inventory.resources)
 			Saver.save_objects(path + "Worlds/" + world_name + "/Effects.save", player.effects)
@@ -558,7 +558,6 @@ class Player:
 player = Player()
 world_to_screen = lambda X, Y, W, H, player=player: (X - player.x + Width // 2 - W // 2, player.y - Y + Height // 2 - H // 2)
 world_rect_to_screen = lambda X, Y, W, H, player=player: (X - player.x + Width // 2 - W // 2, player.y - Y + Height // 2 - H // 2, W, H)
-ron = Ron(world_to_screen)
 
 class Object:
 
@@ -2201,6 +2200,7 @@ class World:
 
 world = World()
 game_time = GameTime()
+ron = Ron(world_to_screen, Projectile, player)
 
 class GameState:
 
@@ -3686,7 +3686,7 @@ def start_game():
 	if os.path.exists(path + "Worlds/" + world_name):
 		
 		world.mobs = Saver.load_objects(path + "Worlds/" + world_name + "/Mobs.save")
-		player.x, player.y, Backrooms.InBackrooms, Backrooms.Level, world.current_cave, player.speed, player.HP, start_time, ron.x, ron.y, ron.home, world.chunk_manager.generator.seed, game_time.current_time = Saver.load_objects(path + "Worlds/" + world_name + "/Info.save")
+		player.x, player.y, Backrooms.InBackrooms, Backrooms.Level, world.current_cave, player.speed, player.HP, start_time, ron.x, ron.y, ron.home, ron.inventory, world.chunk_manager.generator.seed, game_time.current_time = Saver.load_objects(path + "Worlds/" + world_name + "/Info.save")
 		game.difficulty, player.god_mode = Saver.load_objects(path + "Worlds/" + world_name + "/Settings.save")
 		inventory.whole_inventory = Saver.load_objects(path + "Worlds/" + world_name + "/Inventory.save")
 		player.effects = Saver.load_objects(path + "Worlds/" + world_name + "/Effects.save")
@@ -3756,7 +3756,7 @@ def start_game():
 		dx = 0
 		dy = 0
 
-		FPS = clock.get_fps()
+		FPS = int(clock.get_fps())
 		dt = clock.tick(MAX_FPS) / 1000.0
 		game_time.update(dt)
 
@@ -3861,7 +3861,8 @@ def start_game():
 					if event.key == pygame.K_9: changed_slot = 8
 					if event.key == pygame.K_0: changed_slot = 9
 					if event.key == pygame.K_o and False:
-						create_light_circle(world.chunk_manager, player.x, player.y, 15, 15)
+						world.mobs.append(Slime(player.x, player.y))
+						# create_light_circle(world.chunk_manager, player.x, player.y, 15, 15)
 						# world.chunk_manager.chunks[(0, 0)].shadow_map.update({(0, 0): 0, (1, 0): 1, (2, 0): 2, (3, 0): 3, (4, 0): 4, (5, 0): 5, (6, 0): 6, (7, 0): 7, (8, 0): 8, (9, 0): 9, (10, 0): 10, (11, 0): 11, (12, 0): 12, (13, 0): 13, (14, 0): 14, (15, 0): 15})
 						# world.chunk_manager.chunks[(0, 0)].light_map.update({(0, 1): 0, (1, 1): 1, (2, 1): 2, (3, 1): 3, (4, 1): 4, (5, 1): 5, (6, 1): 6, (7, 1): 7, (8, 1): 8, (9, 1): 9, (10, 1): 10, (11, 1): 11, (12, 1): 12, (13, 1): 13, (14, 1): 14, (15, 1): 15})
 
@@ -4877,11 +4878,7 @@ def start_game():
 
 		# Рон
 
-		ron.walk(player.x, player.y)
-		ron.show()
-
-		ron.check_items(player.x, player.y, world)
-		ron.check_mobs(world, Projectile, player.x, player.y)
+		ron.update(world)
 
 		# Механика использования еды и некоторых предметов через пробел
 
