@@ -77,14 +77,8 @@ except FileNotFoundError:
 	statistics = [0, 0, 0]   # Заходы в игру, срублено деревьев
 
 # После изменения hot_keys'ов, надо обязательно изменить их и во вкладке keys в настройках
-	
-try:
-	
-	hot_keys = Saver.load_objects(path + "Settings/Hot keys.save")
-	
-except FileNotFoundError:
-	
-	hot_keys = {
+
+default_hot_keys = {
 	
 		"Multyplayer menu": pygame.K_m,
 		"TAB menu": pygame.K_TAB,
@@ -95,9 +89,27 @@ except FileNotFoundError:
 		"Throw away the item": pygame.K_e,
 		"Use item": pygame.K_SPACE,
 		"Inventory": pygame.K_i,
-		"Set Ron home": pygame.K_HOME
-	
+		"Set Ron home": pygame.K_HOME,
+		"Open chat": pygame.K_c,
+		"Execute command": pygame.K_SLASH,
+		"Noclip in backrooms": pygame.K_n,
+		"Show keys": pygame.K_LALT,
+		"Close": pygame.K_ESCAPE,
+		"Plugin manager": pygame.K_p,
+		"Move left": pygame.K_a,
+		"Move right": pygame.K_d,
+		"Move down": pygame.K_s,
+		"Move up": pygame.K_w,
+		
 		}
+
+try:
+	
+	hot_keys = Saver.load_objects(path + "Settings/Hot keys.save")
+	
+except FileNotFoundError:
+	
+	hot_keys = default_hot_keys
 
 	Saver.save_objects(path + "Settings/Hot keys.save", hot_keys)
 

@@ -2445,7 +2445,7 @@ def settings():
 					save()
 					sys.exit()
 				if event.type == pygame.KEYUP:
-					if event.key == pygame.K_LALT:
+					if event.key == hot_keys["Show keys"]:
 						alt_pressed = not alt_pressed
 
 				if event.type == pygame.KEYUP:
@@ -2457,7 +2457,7 @@ def settings():
 							win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 							screenmode = "FULLSCREEN"
 
-					if event.key == pygame.K_ESCAPE:
+					if event.key == hot_keys["Close"]:
 						Saver.save_objects(path + "Settings/Settings.save", Settings)
 						win_darken(win)
 						menu()
@@ -2580,9 +2580,9 @@ def settings():
 					release = True
 				
 				elif event.type == pygame.KEYUP:
-					if event.key == pygame.K_LALT:
+					if event.key == hot_keys["Show keys"]:
 						alt_pressed = not alt_pressed
-					if event.key == pygame.K_ESCAPE:
+					if event.key == hot_keys["Close"]:
 						Saver.save_objects(path + "Settings/Settings.save", Settings)
 						win_darken(win)
 						menu()
@@ -2643,9 +2643,9 @@ def settings():
 					save()
 					sys.exit()
 				if event.type == pygame.KEYUP:
-					if event.key == pygame.K_LALT:
+					if event.key == hot_keys["Show keys"]:
 						alt_pressed = not alt_pressed
-					if event.key == pygame.K_ESCAPE:
+					if event.key == hot_keys["Close"]:
 						Saver.save_objects(path + "Settings/Settings.save", Settings)
 						win_darken(win)
 						menu()
@@ -2658,7 +2658,7 @@ def settings():
 								element.label_width = element.font.size(t(element.label))[0] + 10
 								element.rect = pygame.Rect(element.x + element.label_width, element.y, element.width, element.height)
 
-					if event.key == pygame.K_1:
+					if event.key == pygame.K_2:
 						Settings["Languages"][0] = "Russian"
 						translator.load_language("Russian")
 						for element_list in settings_ui.elements.values():
@@ -2666,7 +2666,7 @@ def settings():
 								element.label_width = element.font.size(t(element.label))[0] + 10
 								element.rect = pygame.Rect(element.x + element.label_width, element.y, element.width, element.height)
 
-					if event.key == pygame.K_1:
+					if event.key == pygame.K_3:
 						Settings["Languages"][0] = "Kazach"
 						translator.load_language("Karach")
 						for element_list in settings_ui.elements.values():
@@ -2785,9 +2785,9 @@ def settings():
 					elif Nick or event.unicode in "0123456789":
 						input_text += event.unicode
 				if event.type == pygame.KEYUP:
-					if event.key == pygame.K_LALT:
+					if event.key == hot_keys["Show keys"]:
 						alt_pressed = not alt_pressed
-					if event.key == pygame.K_ESCAPE:
+					if event.key == hot_keys["Close"]:
 						Saver.save_objects(path + "Settings/Settings.save", Settings)
 						win_darken(win)
 						menu()
@@ -2886,9 +2886,9 @@ def settings():
 					release = True
 				
 				elif event.type == pygame.KEYUP:
-					if event.key == pygame.K_LALT:
+					if event.key == hot_keys["Show keys"]:
 						alt_pressed = not alt_pressed
-					if event.key == pygame.K_ESCAPE:
+					if event.key == hot_keys["Close"]:
 						Saver.save_objects(path + "Settings/Settings.save", Settings)
 						win_darken(win)
 						menu()
@@ -2963,9 +2963,9 @@ def settings():
 					release = True
 				
 				elif event.type == pygame.KEYUP:
-					if event.key == pygame.K_LALT:
+					if event.key == hot_keys["Show keys"]:
 						alt_pressed = not alt_pressed
-					if event.key == pygame.K_ESCAPE:
+					if event.key == hot_keys["Close"]:
 						Saver.save_objects(path + "Settings/Settings.save", Settings)
 						win_darken(win)
 						menu()
@@ -3064,9 +3064,9 @@ def settings():
 					release = True
 				
 				elif event.type == pygame.KEYUP:
-					if event.key == pygame.K_LALT:
+					if event.key == hot_keys["Show keys"]:
 						alt_pressed = not alt_pressed
-					if event.key == pygame.K_ESCAPE:
+					if event.key == hot_keys["Close"]:
 						Saver.save_objects(path + "Settings/Settings.save", Settings)
 						win_darken(win)
 						menu()
@@ -3138,9 +3138,9 @@ def settings():
 					save()
 					sys.exit()
 				if event.type == pygame.KEYUP:
-					if event.key == pygame.K_LALT:
+					if event.key == hot_keys["Show keys"]:
 						alt_pressed = not alt_pressed
-					if event.key == pygame.K_ESCAPE:
+					if event.key == hot_keys["Close"]:
 						if looked_key is not None:
 							looked_key = None
 					else:
@@ -3329,20 +3329,7 @@ def settings():
 			if Width - 30 - textInfo.size(t("Reset key settings"))[0] < mouse_x < Width - 30 and 420 < mouse_y < 450:
 				win.blit(textInfo.render(t("Reset key settings"), True, (58, 68, 102)), (Width - 30 - textInfo.size(t("Reset key settings"))[0], 420))
 				if click[0]:
-					hot_keys = {
-	
-						"Multyplayer menu": pygame.K_m,
-						"TAB menu": pygame.K_TAB,
-						"Help": pygame.K_F1,
-						"Menu": pygame.K_F2,
-						"Screenshot": pygame.K_F3,
-						"Change screen": pygame.K_F11,
-						"Throw away the item": pygame.K_e,
-						"Use item": pygame.K_SPACE,
-						"Inventory": pygame.K_i,
-						"Set Ron home": pygame.K_HOME
-	
-						}
+					hot_keys = default_fill_surface
 			else:
 				win.blit(textInfo.render(t("Reset key settings"), True, (139, 155, 180)), (Width - 30 - textInfo.size(t("Reset key settings"))[0], 420))
 
@@ -3412,9 +3399,9 @@ def settings():
 					release = True
 				
 				elif event.type == pygame.KEYUP:
-					if event.key == pygame.K_LALT:
+					if event.key == hot_keys["Show keys"]:
 						alt_pressed = not alt_pressed
-					if event.key == pygame.K_ESCAPE:
+					if event.key == hot_keys["Close"]:
 						Saver.save_objects(path + "Settings/Settings.save", Settings)
 						win_darken(win)
 						menu()
@@ -3519,9 +3506,9 @@ def change_a_character():
 					save()
 					sys.exit()
 				if event.type == pygame.KEYUP:
-					if event.key == pygame.K_LALT:
+					if event.key == hot_keys["Show keys"]:
 						alt_pressed = not alt_pressed
-					if event.key == pygame.K_ESCAPE:
+					if event.key == hot_keys["Close"]:
 						win_darken(win)
 						menu()
 					if event.key == pygame.K_1:
@@ -3614,7 +3601,7 @@ def change_a_character():
 						else:
 							win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 							screenmode = "FULLSCREEN"
-					if event.key == pygame.K_ESCAPE:
+					if event.key == hot_keys["Close"]:
 						win_darken(win)
 						menu()
 
@@ -3816,11 +3803,11 @@ def start_game():
 
 			if event.type == pygame.KEYUP:
 				if chat_input:
-					if event.key == pygame.K_ESCAPE:
+					if event.key == hot_keys["Close"]:
 						input_text = ""
 						chat_input = False
 				else:
-					if event.key == pygame.K_LALT:
+					if event.key == hot_keys["Show keys"]:
 						alt_pressed = not alt_pressed
 					if event.key == hot_keys["Use item"]:
 						use_item_pressed = True
@@ -3830,13 +3817,13 @@ def start_game():
 						ron.home = [player.x, player.y]
 					if event.key == hot_keys["Menu"]:
 						menu_open = not menu_open
-					if event.key == pygame.K_c:
+					if event.key == hot_keys["Open chat"]:
 						chat_input = True
-					if event.key == pygame.K_SLASH:
+					if event.key == hot_keys["Execute command"]:
 						chat_input = True
 						input_text = "/"
 
-					if event.key == pygame.K_ESCAPE:
+					if event.key == hot_keys["Close"]:
 	
 						if item_settings_open:
 							item_settings_open = False
@@ -3981,10 +3968,10 @@ def start_game():
 
 		if not chat_input:
 
-			if keys[pygame.K_a]: dx = -1 + (keys[pygame.K_w] or keys[pygame.K_s]) * 0.3
-			if keys[pygame.K_d]: dx = 1 - (keys[pygame.K_w] or keys[pygame.K_s]) * 0.3
-			if keys[pygame.K_s]: dy = -1 + (keys[pygame.K_a] or keys[pygame.K_d]) * 0.3
-			if keys[pygame.K_w]: dy = 1 - (keys[pygame.K_a] or keys[pygame.K_d]) * 0.3
+			if keys[hot_keys["Move left"]]: dx = -1 + (keys[hot_keys["Move up"]] or keys[hot_keys["Move down"]]) * 0.3
+			if keys[hot_keys["Move right"]]: dx = 1 - (keys[hot_keys["Move up"]] or keys[hot_keys["Move down"]]) * 0.3
+			if keys[hot_keys["Move down"]]: dy = -1 + (keys[hot_keys["Move left"]] or keys[hot_keys["Move right"]]) * 0.3
+			if keys[hot_keys["Move up"]]: dy = 1 - (keys[hot_keys["Move left"]] or keys[hot_keys["Move right"]]) * 0.3
 
 		# Если есть движение - двигаем игрока
 		if dx != 0 or dy != 0:
@@ -4032,7 +4019,7 @@ def start_game():
 					case "Taiga":
 						music_channel.queue(pygame.mixer.Sound(path + "Soundtracks/Taiga " + str(random.randint(1, 1)) + ".mp3"))
 						
-			elif not chat_input and any((keys[pygame.K_a], keys[pygame.K_d], keys[pygame.K_w], keys[pygame.K_s], Settings["Game"][1] and any((left_b.get_pressed(), up_b.get_pressed(), down_b.get_pressed(), right_b.get_pressed())))) and random.randint(1, 10) == 1:
+			elif not chat_input and any((keys[hot_keys["Move left"]], keys[hot_keys["Move right"]], keys[hot_keys["Move up"]], keys[hot_keys["Move down"]], Settings["Game"][1] and any((left_b.get_pressed(), up_b.get_pressed(), down_b.get_pressed(), right_b.get_pressed())))) and random.randint(1, 10) == 1:
 
 				if world.current_cave is not None:
 					pygame.mixer.Sound.play(random.choice((Cave_walking1, Cave_walking2, Cave_walking3)), maxtime=1000)
@@ -4152,7 +4139,7 @@ def start_game():
 			if aa == 4:
 				Backrooms.get_rooms(player.x // 2000, player.y // 2000)
 
-			if aa == 3 and keys[pygame.K_n] and random.randint(1, 30) == 30:
+			if aa == 3 and keys[hot_keys["Noclip in backrooms"]] and random.randint(1, 30) == 30:
 
 				if Backrooms.Level == 0:
 					pygame.mixer.Sound.stop(Backrooms_lamps)
@@ -4971,7 +4958,7 @@ def start_game():
 				
 		
 
-		if keys[hot_keys["Screenshot"]] and keys[pygame.K_LALT]:
+		if keys[hot_keys["Screenshot"]] and keys[hot_keys["Show keys"]]:
 			
 			pygame.image.save(win, str(Path.home()) + "/Your Screenshot " + time.asctime().replace(":", " ") + ".png")
 			chat_message(t("Game: Your screenshot is in ") + str(Path.home()) + "/Your Screenshot " + time.asctime().replace(":", " ") + ".png")
@@ -5093,7 +5080,7 @@ def start_game():
 						release = True
 
 					if event.type == pygame.KEYUP:
-						if event.key == pygame.K_ESCAPE:
+						if event.key == hot_keys["Close"]:
 							b = True
 							display_speed = 7
 
@@ -6028,7 +6015,7 @@ if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0]
 						if event.button == 1:
 							release = True
 
-					elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+					elif event.type == pygame.KEYDOWN and event.key == hot_keys["Close"]:
 						multyplayer_menu_open = False						
 
 				win.fill((192, 203, 220))
@@ -6315,7 +6302,7 @@ if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0]
 			
 			win.blit(inventory.whole_inventory[inventory.start_cell].image, (mouse_x - 32, mouse_y - 32))
 		
-		if keys[hot_keys["Screenshot"]] and not keys[pygame.K_LALT]:
+		if keys[hot_keys["Screenshot"]] and not keys[hot_keys["Show keys"]]:
 			
 			pygame.image.save(win, str(Path.home()) + "/Your Screenshot " + str(time.asctime().replace(":", " ")) + ".png")
 	
@@ -6325,7 +6312,7 @@ if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0]
 				pygame.display.update()
 			time.sleep(0.1)
 			
-		if keys[pygame.K_p] and not chat_input:
+		if keys[hot_keys["Plugin manager"]] and not chat_input:
 			
 			win = pygame.display.set_mode((0, 0), pygame.RESIZABLE)
 
@@ -6412,9 +6399,9 @@ def edit_world():
 			
 			if event.type == pygame.KEYUP:
 				
-				if event.key == pygame.K_ESCAPE and not create_world: Saver.save_objects(path + "Worlds/" + world_name + "/Settings.save", [game.difficulty, player.god_mode]); worlds()
+				if event.key == hot_keys["Close"] and not create_world: Saver.save_objects(path + "Worlds/" + world_name + "/Settings.save", [game.difficulty, player.god_mode]); worlds()
 				
-				if event.key == pygame.K_LALT:
+				if event.key == hot_keys["Show keys"]:
 					alt_pressed = not alt_pressed
 		
 		if bigTextInfo.size(t("World name"))[0] + 100 <= mouse_x <= bigTextInfo.size(t("World name"))[0] + 900 and 50 <= mouse_y <= 121 and release:
@@ -6548,7 +6535,7 @@ def edit_world():
 							worlds()
 						
 						no_button.main()
-						if no_button.get_pressed() or keys[pygame.K_ESCAPE]:
+						if no_button.get_pressed() or keys[hot_keys["Close"]]:
 							break
 					
 						win_fill(alpha=100 - Settings["Display"][0])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
@@ -6668,7 +6655,7 @@ def worlds():
 				else:
 					input_text += event.unicode
 			if event.type == pygame.KEYUP:
-				if event.key == pygame.K_LALT:
+				if event.key == hot_keys["Show keys"]:
 					alt_pressed = not alt_pressed
 
 
@@ -6696,7 +6683,7 @@ def worlds():
 
 			back_button.main()
 			
-			if keys[pygame.K_ESCAPE] or back_button.get_pressed(): 
+			if keys[hot_keys["Close"]] or back_button.get_pressed():
 				win_darken(win)
 				menu()
 
@@ -6800,7 +6787,7 @@ def menu():
 			elif event.type == pygame.KEYUP:
 				if event.key == pygame.K_RETURN:
 					worlds()
-				if event.key == pygame.K_ESCAPE:
+				if event.key == hot_keys["Close"]:
 					more_menu_open = False
 				if event.key == hot_keys["Change screen"]:
 					if screenmode == "FULLSCREEN":
