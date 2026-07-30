@@ -3650,7 +3650,7 @@ objects_templates = {
 
 def start_game():
 	
-	global win, changed_slot, menu_open, multyplayer_menu_open, screenmode, inventory_open, hold_left, backrooms, text_color, bullet_num, craft_items_list, craft_amounts_list, craft_images_list, screenshot_num, mouse_x, mouse_y, item_settings_open, multyplayer_panel, chat_tick, chat, main_chat, craft_list_open, craft_list_page, click, in_motherboard, os, world_name, color, multyplayer_mode, multyplayer, animation, start_time, new_particles, inside_files, game, alt_pressed, player, world, FPS, MAX_FPS
+	global win, changed_slot, menu_open, multyplayer_menu_open, screenmode, inventory_open, hold_left, backrooms, text_color, bullet_num, craft_items_list, craft_amounts_list, craft_images_list, screenshot_num, mouse_x, mouse_y, item_settings_open, multyplayer_panel, chat_tick, chat, main_chat, craft_list_open, craft_list_page, click, in_motherboard, os, world_name, color, multyplayer_mode, multyplayer, animation, start_time, new_particles, inside_files, game, alt_pressed, player, world, FPS, MAX_FPS, screen_rect
 
 	night_playing = False
 	input_text = ""
@@ -3755,6 +3755,7 @@ def start_game():
 		use_item_pressed = False
 		dx = 0
 		dy = 0
+		screen_rect = pygame.Rect((player.x - Width / 2, player.y + Height / 2, Width, Height))
 
 		FPS = int(clock.get_fps())
 		dt = clock.tick(MAX_FPS) / 1000.0
@@ -3860,9 +3861,8 @@ def start_game():
 					if event.key == pygame.K_8: changed_slot = 7
 					if event.key == pygame.K_9: changed_slot = 8
 					if event.key == pygame.K_0: changed_slot = 9
-					if event.key == pygame.K_o and False:
-						world.mobs.append(Slime(player.x, player.y))
-						# create_light_circle(world.chunk_manager, player.x, player.y, 15, 15)
+					if event.key == pygame.K_o:
+						create_light_circle(world.chunk_manager, player.x, player.y, 10, 15)
 						# world.chunk_manager.chunks[(0, 0)].shadow_map.update({(0, 0): 0, (1, 0): 1, (2, 0): 2, (3, 0): 3, (4, 0): 4, (5, 0): 5, (6, 0): 6, (7, 0): 7, (8, 0): 8, (9, 0): 9, (10, 0): 10, (11, 0): 11, (12, 0): 12, (13, 0): 13, (14, 0): 14, (15, 0): 15})
 						# world.chunk_manager.chunks[(0, 0)].light_map.update({(0, 1): 0, (1, 1): 1, (2, 1): 2, (3, 1): 3, (4, 1): 4, (5, 1): 5, (6, 1): 6, (7, 1): 7, (8, 1): 8, (9, 1): 9, (10, 1): 10, (11, 1): 11, (12, 1): 12, (13, 1): 13, (14, 1): 14, (15, 1): 15})
 
@@ -5000,13 +5000,13 @@ def start_game():
 		current_brightness = game_time.get_brightness()
 		light_level = (1 - current_brightness) * 200
 		if world.current_cave is None:
-			apply_shadow(light_level)
+			shadow_surface = get_shadow(light_level)
 		else:
 			win_fill()
 
 		# 2 слой - тени
 		# 3 слой - искусственное освещение
-		world.chunk_manager.show_light_and_dark(light_level, player)
+		world.chunk_manager.show_light_and_dark(light_level, player, shadow_surface)
 
 		# Механика анимации слотов
 		if Settings["Display"][5]:

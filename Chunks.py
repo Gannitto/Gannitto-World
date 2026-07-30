@@ -1,8 +1,10 @@
-from NoiseGenerator import NoiseGenerator
-from itertools import product
+import pygame
 import random
+from itertools import product
+from NoiseGenerator import NoiseGenerator
 from Functions import win_fill, reverse_fill_area
 from Saver import save_chunk, load_chunk, chunk_exists
+from Globals import win, Width, Height
 
 chunk_size = 2048
 tile_size = 256
@@ -207,6 +209,10 @@ class ChunkManager:
 		self.save_directory = ""
 		self.Object = Object # Класс объекта передаётся как аргумент чтобы избежать циклического импорта
 		self.world_rect_to_screen = world_rect_to_screen
+		self.light_surfaces = {}
+		for light_level in range(16):
+			self.light_surfaces[light_level] = pygame.Surface((64, 64), pygame.SRCALPHA)
+			self.light_surfaces[light_level].fill((255, 255, 255, 255 - light_level * 16)) #TODO сделать разные уровни освещения
 		
 	def generate_chunk(self, chunk: Chunk):
 
@@ -374,8 +380,10 @@ class ChunkManager:
 			self._unload_chunk(chunk_key)
 		self.loaded_chunks = new_visible_chunks.copy()
 
-	def show_light_and_dark(self, light_level, player):
+	def show_light_and_dark(self, light_level, player, shadow_surface):
+
 		"""Отображает тени и освещение"""
+
 		for chunk_pos in self.loaded_chunks:
 			chunk = self.chunks[chunk_pos]
 			shadow_map = chunk.shadow_map
@@ -383,12 +391,16 @@ class ChunkManager:
 			for pos, shadow in shadow_map.items():
 				win_fill(alpha=256 - shadow * 16 - light_level, rect=self.world_rect_to_screen(chunk.x * chunk_size + pos[0] * 64, chunk.y * chunk_size + pos[1] * 64, 64, 64))
 			for pos, light in light_map.items():
-					light_at_pos = light_level - 256 + light * 16
-					if light_at_pos > 0:
-						try:
-							reverse_fill_area(alpha=light_at_pos, rect=self.world_rect_to_screen(chunk.x * chunk_size + pos[0] * 64, chunk.y * chunk_size + pos[1] * 64, 64, 64))
-						except:
-							pass
+				light_pos = self.world_rect_to_screen(chunk.x * chunk_size + pos[0] * 64, chunk.y * chunk_size + pos[1] * 64, 64, 64)
+				if 255 - light * 16 > 0 and -64 < light_pos[0] < Width and -64 < light_pos[1] < Height:
+					shadow_surface.blit(self.light_surfaces[light], light_pos, special_flags=pygame.BLEND_RGBA_MULT)
+					# try:
+						# reverse_fill_area(alpha=light_at_pos, rect=self.world_rect_to_screen(chunk.x * chunk_size + pos[0] * 64, chunk.y * chunk_size + pos[1] * 64, 64, 64))
+					# except:
+						# pass
+
+		win.blit(shadow_surface, (0, 0))
+
 	def save_all_loaded_chunks(self):
 		"""Сохраняет все загруженные в данный момент чанки"""
 		for chunk_key, chunk in self.chunks.items():

@@ -92,7 +92,7 @@ def win_fill(fill_color=(0, 0, 0), alpha: int=90, rect: tuple=(0, 0, Width, Heig
 			temp_surface.set_alpha(alpha)
 			win.blit(temp_surface, rect[0:2])
 
-def apply_shadow(alpha: int):
+def get_shadow(alpha: int):
 
 	"""
 	Функция для наложения естественной тени
@@ -102,7 +102,7 @@ def apply_shadow(alpha: int):
 	temp_surface = pygame.Surface((Width, Height), pygame.SRCALPHA)
 	temp_surface.fill((0, 0, 0))
 	temp_surface.set_alpha(alpha)
-	win.blit(temp_surface, (0, 0))
+	return temp_surface
 
 def reverse_fill_area(rect, fill_color=(0, 0, 0), alpha=90):
 
