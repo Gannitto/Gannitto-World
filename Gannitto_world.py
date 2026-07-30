@@ -3861,7 +3861,7 @@ def start_game():
 					if event.key == pygame.K_8: changed_slot = 7
 					if event.key == pygame.K_9: changed_slot = 8
 					if event.key == pygame.K_0: changed_slot = 9
-					if event.key == pygame.K_o:
+					if event.key == pygame.K_o and False:
 						create_light_circle(world.chunk_manager, player.x, player.y, 10, 15)
 						# world.chunk_manager.chunks[(0, 0)].shadow_map.update({(0, 0): 0, (1, 0): 1, (2, 0): 2, (3, 0): 3, (4, 0): 4, (5, 0): 5, (6, 0): 6, (7, 0): 7, (8, 0): 8, (9, 0): 9, (10, 0): 10, (11, 0): 11, (12, 0): 12, (13, 0): 13, (14, 0): 14, (15, 0): 15})
 						# world.chunk_manager.chunks[(0, 0)].light_map.update({(0, 1): 0, (1, 1): 1, (2, 1): 2, (3, 1): 3, (4, 1): 4, (5, 1): 5, (6, 1): 6, (7, 1): 7, (8, 1): 8, (9, 1): 9, (10, 1): 10, (11, 1): 11, (12, 1): 12, (13, 1): 13, (14, 1): 14, (15, 1): 15})
@@ -4167,8 +4167,6 @@ def start_game():
 		
 		if not Backrooms.InBackrooms:
 
-			a = None
-
 			if world.current_cave is not None and -64 <= player.x <= 64 and -64 <= player.y <= 64 and release:
 
 				player.x = world.current_cave.x
@@ -4195,11 +4193,8 @@ def start_game():
 				world.current_cave.render()
 				win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Objects/Cave.png"), (128, 128)), (0 - player.x + Width // 2 - world.current_cave.w // 2, player.y - 0 + Height // 2 - world.current_cave.h // 2))
 
-				i = -1
-
 				for object in world.current_cave.objects:
 
-					i += 1
 					object.main(player)
 
 					if object.__class__ == Object:
@@ -4231,7 +4226,7 @@ def start_game():
 									pygame.mixer.Sound.play(random.choice((Stone_breaking1, Stone_breaking2)))
 
 								if object.special_flags == -1:
-									del world.current_cave.objects[i]
+									world.current_cave.objects.remove(object)
 									for i in range(random.randint(1, 3)):
 										world.current_cave.objects.append(Object("Iron ore", random.randint(object.x - 128, object.x + 128), random.randint(object.y - 128, object.y + 128), "Images/Items/Iron ore.png", special_flags="Item"))
 									break
@@ -4260,7 +4255,7 @@ def start_game():
 									pygame.mixer.Sound.play(random.choice((Stone_breaking1, Stone_breaking2)))
 
 								if object.special_flags == -1:
-									del world.current_cave.objects[i]
+									world.current_cave.objects.remove(object)
 									for _ in range(random.randint(1, 3)):
 										world.current_cave.objects.append(Object("Gold ore", random.randint(object.x - 128, object.x + 128), random.randint(object.y - 128, object.y + 128), "Images/Items/Gold ore.png", special_flags="Item"))
 									break
@@ -4551,12 +4546,8 @@ def start_game():
 
 		elif len(Backrooms.objects) != 1:
 
-			c = []
-			i = -1
-
 			for object in backrooms_objects:
 
-				i += 1
 				object.main()
 
 				if click[0] and object.x - player.x + Width // 2 - object.w // 2 <= mouse_x <= object.x - player.x + Width // 2 + object.w // 2 and player.y - object.y + Height // 2 - object.h // 2 <= mouse_y <= player.y - object.y + Height // 2 + object.h // 2:
@@ -4887,7 +4878,6 @@ def start_game():
 
 		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name in ("Gun", "Bow") and Settings["Game"][1]:
 			win.blit(Inventory_slot, (Width - 370, Height - 74))
-
 			win.blit(inventory.whole_inventory[changed_slot].image, (Width - 370, Height - 74))
 		
 		if (inventory.whole_inventory[changed_slot] is not None and (use_item_pressed or (click[0] and Settings["Game"][1]))) and not chat_input:
@@ -4896,15 +4886,12 @@ def start_game():
 
 				case "Gun":
 
-					i = -1
-
-					for slot in inventory.whole_inventory:
-						i += 1
+					for item_index, slot in enumerate(inventory.whole_inventory):
 						if slot is not None and slot.name == "Bullet":
-							if inventory.whole_inventory[i].amount > 1:
-								inventory.whole_inventory[i].amount -= 1
+							if inventory.whole_inventory[item_index].amount > 1:
+								inventory.whole_inventory[item_index].amount -= 1
 							else:
-								inventory.whole_inventory[i] = None
+								inventory.whole_inventory[item_index] = None
 							world.projectiles.append(Projectile(player.x, player.y, mouse_x, mouse_y, "Bullet"))
 							bullet_num += 1
 							break
@@ -4913,15 +4900,12 @@ def start_game():
 
 				case "Bow":
 
-					i = -1
-
-					for slot in inventory.whole_inventory:
-						i += 1
+					for item_index, slot in enumerate(inventory.whole_inventory):
 						if slot is not None and slot.name == "Arrow":
-							if inventory.whole_inventory[i].amount > 1:
-								inventory.whole_inventory[i].amount -= 1
+							if inventory.whole_inventory[item_index].amount > 1:
+								inventory.whole_inventory[item_index].amount -= 1
 							else:
-								inventory.whole_inventory[i] = None
+								inventory.whole_inventory[item_index] = None
 							world.projectiles.append(Projectile(player.x, player.y, mouse_x, mouse_y, "Arrow"))
 							bullet_num += 1
 							break
@@ -4997,12 +4981,12 @@ def start_game():
 		# Механика освещения
 
 		# 1 слой - естественный свет
-		current_brightness = game_time.get_brightness()
-		light_level = (1 - current_brightness) * 200
 		if world.current_cave is None:
-			shadow_surface = get_shadow(light_level)
+			current_brightness = game_time.get_brightness()
+			light_level = (1 - current_brightness) * 200
 		else:
-			win_fill()
+			light_level = 180
+		shadow_surface = get_shadow(light_level)
 
 		# 2 слой - тени
 		# 3 слой - искусственное освещение
@@ -5012,23 +4996,23 @@ def start_game():
 		if Settings["Display"][5]:
 			for yy, xx in product(range(0, 3), range(0, 10)):
 				
-					cell_x = 10 + xx * 80
-					cell_y = 10 + yy * 80
-				
-					if cell_x <= mouse_x <= cell_x + 64 and cell_y <= mouse_y <= cell_y + 64:
-						if slot_animations[yy * 10 + xx][0]:
-							if slot_animations[yy * 10 + xx][1] < FPS / 6:
-								slot_animations[yy * 10 + xx][1] += 1
-								slot_animations[yy * 10 + xx][2] -= 3
-								slot_animations[yy * 10 + xx][2] = abs(slot_animations[yy * 10 + xx][2])
-						else:
-							slot_animations[yy * 10 + xx] = [True, 0, 10]
-						
-					elif slot_animations[yy * 10 + xx][0]:
-						slot_animations[yy * 10 + xx][0] = False
-						slot_animations[yy * 10 + xx][1] = 0
-					elif slot_animations[yy * 10 + xx][1] < FPS / 4:
-						slot_animations[yy * 10 + xx][1] += 1	
+				cell_x = 10 + xx * 80
+				cell_y = 10 + yy * 80
+			
+				if cell_x <= mouse_x <= cell_x + 64 and cell_y <= mouse_y <= cell_y + 64:
+					if slot_animations[yy * 10 + xx][0]:
+						if slot_animations[yy * 10 + xx][1] < FPS / 6:
+							slot_animations[yy * 10 + xx][1] += 1
+							slot_animations[yy * 10 + xx][2] -= 3
+							slot_animations[yy * 10 + xx][2] = abs(slot_animations[yy * 10 + xx][2])
+					else:
+						slot_animations[yy * 10 + xx] = [True, 0, 10]
+					
+				elif slot_animations[yy * 10 + xx][0]:
+					slot_animations[yy * 10 + xx][0] = False
+					slot_animations[yy * 10 + xx][1] = 0
+				elif slot_animations[yy * 10 + xx][1] < FPS / 4:
+					slot_animations[yy * 10 + xx][1] += 1	
 
 		# Меню на клавише TAB
 
@@ -5305,25 +5289,25 @@ def start_game():
 			if 10 < mouse_x < 794 and 10 < mouse_y < 314:
 				mouse_object = t("Inventory (I)")
 
-			a = 10
-			b = 10
+			slot_x = 10
+			slot_y = 10
 
-			for i in range (30):
+			for slot in range(30):
 				
-				if i == changed_slot: win.blit(Changed_inventory_slot, (a, b))
+				if slot == changed_slot: win.blit(Changed_inventory_slot, (slot_x, slot_y))
 				else:
 					
-					if slot_animations[i][0]:
-						try:win.blit(pygame.transform.scale(Inventory_slot, (64 - slot_animations[i][2], 64 - slot_animations[i][2])), (a, b))
-						except: win.blit(pygame.transform.scale(Inventory_slot, (64, 64)), (a, b))
+					if slot_animations[slot][0]:
+						try:win.blit(pygame.transform.scale(Inventory_slot, (64 - slot_animations[slot][2], 64 - slot_animations[slot][2])), (slot_x, slot_y))
+						except: win.blit(pygame.transform.scale(Inventory_slot, (64, 64)), (slot_x, slot_y))
 
 					else:
-						win.blit(pygame.transform.scale(Inventory_slot, (64, 64)), (a, b))
+						win.blit(pygame.transform.scale(Inventory_slot, (64, 64)), (slot_x, slot_y))
 						
-				if a == 730:
-					a = -70
-					b += 80
-				a += 80
+				slot_x += 80
+				if slot_x == 810:
+					slot_x = 10
+					slot_y += 80
 			
 			win.blit(Object_inventory_slot, (10, 250))
 			win.blit(Tool_inventory_slot, (90, 250))
@@ -5471,15 +5455,13 @@ def start_game():
 						
 				else:
 
-					a = -1
 					b = ""
 
 					for i in ((craft_list_page - 1) * 5 - 1, (craft_list_page - 1) * 5 - 1 + len(inventory.recipes) % 5):
 						b += str(i) + " "
 
-					for i in ((craft_list_page - 1) * 5 - 1, (craft_list_page - 1) * 5 - 1 + len(inventory.recipes) % 5):
+					for craft_y, i in enumerate(((craft_list_page - 1) * 5 - 1, (craft_list_page - 1) * 5 - 1 + len(inventory.recipes) % 5)):
 
-						a += 1
 						aa = -1
 
 						for ii in inventory.recipes[i].ingredients:
@@ -5489,27 +5471,27 @@ def start_game():
 							
 							else:
 								aa += 1
-								win.blit(Inventory_slot, (130 + aa * 80, 130 + a * 80))
-								win.blit(inventory.resources[ii].image, (130 + aa * 80, 130 + a * 80))
-								win.blit(textInfo.render(str(inventory.recipes[i].ingredients_amounts[aa]), True, (0, 150, 0)), (140 + aa * 80, 172 + a * 80))
+								win.blit(Inventory_slot, (130 + aa * 80, 130 + craft_y * 80))
+								win.blit(inventory.resources[ii].image, (130 + aa * 80, 130 + craft_y * 80))
+								win.blit(textInfo.render(str(inventory.recipes[i].ingredients_amounts[aa]), True, (0, 150, 0)), (140 + aa * 80, 172 + craft_y * 80))
 
 						aa += 1
 
 						if inventory.recipes[i].need_object is not None:
-							win.blit(Changed_inventory_slot, (150 + aa * 80, 130 + a * 80))
-							win.blit(inventory.resources[inventory.recipes[i].need_object].image, (200 + aa * 80, 130 + a * 80))
+							win.blit(Changed_inventory_slot, (150 + aa * 80, 130 + craft_y * 80))
+							win.blit(inventory.resources[inventory.recipes[i].need_object].image, (200 + aa * 80, 130 + craft_y * 80))
 
 						aa += 1
 
 						if inventory.recipes[i].need_tool is not None:
-							win.blit(Changed_inventory_slot, (150 + aa * 80, 130 + a * 80))
-							win.blit(inventory.resources[inventory.recipes[i].need_tool].image, (200 + aa * 80, 130 + a * 80))
+							win.blit(Changed_inventory_slot, (150 + aa * 80, 130 + craft_y * 80))
+							win.blit(inventory.resources[inventory.recipes[i].need_tool].image, (200 + aa * 80, 130 + craft_y * 80))
 
 						aa += 1
 
-						win.blit(Changed_inventory_slot, (150 + aa * 80, 130 + a * 80))
-						win.blit(inventory.resources[inventory.recipes[i].result].image, (200 + aa * 80, 130 + a * 80))
-						win.blit(textInfo.render(str(inventory.recipes[i].result_amount), True, (0, 150, 0)), (210 + aa * 80, 172 + a * 80))
+						win.blit(Changed_inventory_slot, (150 + aa * 80, 130 + craft_y * 80))
+						win.blit(inventory.resources[inventory.recipes[i].result].image, (200 + aa * 80, 130 + craft_y * 80))
+						win.blit(textInfo.render(str(inventory.recipes[i].result_amount), True, (0, 150, 0)), (210 + aa * 80, 172 + craft_y * 80))
 						
 			else:
 				
@@ -5554,13 +5536,10 @@ def start_game():
 			if 10 < mouse_x < 794 and 10 < mouse_y < 74:
 				mouse_object = t("Inventory (I)")
 
-			a = -70
+			for slot_x in range(10):
 
-			for i in range (10):
-
-				a += 80
-				if i == changed_slot: win.blit(Changed_inventory_slot, (a, 10))
-				else: win.blit(Inventory_slot, (a, 10))
+				if slot_x == changed_slot: win.blit(Changed_inventory_slot, (slot_x * 80 -70, 10))
+				else: win.blit(Inventory_slot, (slot_x * 80 - 70, 10))
 
 			inventory.draw_panel()
 			
@@ -5571,11 +5550,8 @@ def start_game():
 
 		if not player.god_mode:
 			
-			a = Width - 10
-			
-			for _ in range(player.HP // 10):
-				a -= 40
-				win.blit(Heart, (a, 40))
+			for heart_x in range(player.HP // 10):
+				win.blit(Heart, (Width - 50 - heart_x * 40, 10))
 
 			if Width - 10 - player.HP // 10 * 40 < mouse_x < Width - 10 and 40 < mouse_y < 104:
 				mouse_object = t("Health bar")
@@ -5600,20 +5576,12 @@ def start_game():
 			x = 0
 			y = 0
 
+		for effect_y, effect in enumerate(player.effects):
 
-			
-		a = 100
-		b = []
-		c = -1
+			win.blit(textInfo.render(effect[0], True, text_color, (0, 0, 0, 0.5)), (Width - 30 - textInfo.size(effect[0])[0], effect_y * 60 + 100))
+			win.blit(textInfo.render(str(int(effect[1])), True, text_color, (0, 0, 0, 0.5)), (Width - 30 - textInfo.size(str(int(effect[1])))[0], effect_y * 60 + 130))
 
-		for i in player.effects:
-
-			c += 1
-			a += 60
-			win.blit(textInfo.render(i[0], True, text_color, (0, 0, 0, 0.5)), (Width - 30 - textInfo.size(i[0])[0], a))
-			win.blit(textInfo.render(str(int(i[1])), True, text_color, (0, 0, 0, 0.5)), (Width - 30 - textInfo.size(str(int(i[1])))[0], a + 30))
-
-			match i[0]:
+			match effect[0]:
 				case "Drunk":
 					d = pygame.Surface((Width, Height))
 					d.fill((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)))
@@ -5625,15 +5593,9 @@ def start_game():
 						
 					win.blit(win, (random.randint(-10, 10), random.randint(-10, 10)))
 
-
-			i[1] -= 0.03
-			if i[1] <= 0:
-				b.append(c)
-
-		a = -1
-		for i in b:
-			a += 1
-			del player.effects[i - a]
+			effect[1] -= 0.03
+			if effect[1] <= 0:
+				player.effects.remove(effect)
 		
 		if item_settings_open:
 
