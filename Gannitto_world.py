@@ -566,7 +566,7 @@ class Object:
 			  object_x: int,
 			  object_y: int,
 			  image_path: str,
-			  scale_x: list = (64, 64),
+			  scale_x: tuple[int, int] = (64, 64),
 			  image = None,
 			  special_flags: str = None,
 			  add_path=True,
@@ -574,7 +574,10 @@ class Object:
 			  is_solid=False,
 			  rect=(),
 			  pickable=False,
-			  breakable=False):
+			  breakable=False,
+			  max_break=1,
+			  breakable_by_hammer=False,
+			  drop_items=()):
 
 		"""
 		Класс основного объекта игры. Такого, как например дерево.
@@ -619,6 +622,10 @@ class Object:
 		self.is_solid = is_solid
 		self.pickable = pickable
 		self.breakable = breakable
+		self.max_break = max_break
+		self.breaked = max_break
+		self.breakable_by_hammer = breakable_by_hammer
+		self.drop_items = drop_items
 
 		if rect == ():
 			self.rect = pygame.Rect(self.x - self.w / 2, self.y - self.h / 2, self.w, self.h)
@@ -648,7 +655,7 @@ class Object:
 			return False
 
 	def copy(self):
-		return Object(self.name, self.x, self.y, self.image_path, self.scale_x, self.image, self.special_flags, self.add_path, self.start_time, self.is_solid, self.rect, self.is_solid, self.breakable)
+		return Object(self.name, self.x, self.y, self.image_path, self.scale_x, self.image, self.special_flags, self.add_path, self.start_time, self.is_solid, self.rect, self.is_solid, self.breakable, self.max_break, self.breakable_by_hammer, self.drop_items)
 
 	
 	def __getstate__(self):
@@ -3640,10 +3647,10 @@ multyplayer = False
 
 hot_keys = Saver.load_objects(path + "Settings/Hot keys.save")
 objects_templates = {
-		"Table": Object("Table", 0, 0, "Images/Objects/Table.png", (256, 256), special_flags=1, is_solid=True, breakable=True),
-		"Wall table": Object("Wall table", 0, 0, "Images/Objects/Wall table.png", (256, 256), special_flags=1, is_solid=True, breakable=True),
-		"Furnace": Object("Furnace", 0, 0, "Images/Items/Furnace.png", (256, 256), special_flags=1, is_solid=True, breakable=True),
-		"Punch": Object("Punch", 0, 0, "Images/Objects/Punch 1.png", (256, 256), is_solid=True, breakable=True)
+		"Table": Object("Table", 0, 0, "Images/Objects/Table.png", (256, 256), is_solid=True, breakable_by_hammer=True),
+		"Wall table": Object("Wall table", 0, 0, "Images/Objects/Wall table.png", (256, 256), special_flags=1, is_solid=True, breakable_by_hammer=True),
+		"Furnace": Object("Furnace", 0, 0, "Images/Items/Furnace.png", (256, 256), special_flags=1, is_solid=True, breakable_by_hammer=True),
+		"Punch": Object("Punch", 0, 0, "Images/Objects/Punch 1.png", (256, 256), is_solid=True, breakable_by_hammer=True)
 		}
 
 # Основной цикл игры
@@ -4282,107 +4289,42 @@ def start_game():
 
 						if object.x - player.x + Width // 2 - object.image.get_width() // 2 <= mouse_x <= object.x - player.x + Width // 2 + object.image.get_width() // 2 and player.y - object.y + Height // 2 - object.image.get_height() // 2 <= mouse_y <= player.y - object.y + Height // 2 + object.image.get_height() // 2:
 
-							if object.name == "Tree" and click[0]:
+							# if object.name == "Tree" and click[0]:
 								
-								object.special_flags -= 1
-								object.image = pygame.transform.scale(object.image, (32, 32)).convert_alpha()
-								for _ in range(random.randint(20, 25)):
-									a = random.randint(0, 31)
-									b = random.randint(0, 31)
-									if object.image.get_at((a, b)).a != 0:
-										c = random.randint(10, 20)
-										c = pygame.Surface((a, a))
-										c.fill(object.image.get_at((a, b)))
-										object.image.set_at((a, b), (0, 0, 0, 99))
-										if random.randint(1, 5) == 1:
-											c = c.convert_alpha()
-											world.particles.append(Particle(object.x + (a - 16) * 8, object.y + (b - 16) * 8, c, 5, -16, end_time=0.5))
-								object.image.set_alpha(object.image.get_alpha() - 1)
-								object.image = pygame.transform.scale(object.image, (256, 256))
+							# 	object.special_flags -= 1
+							# 	object.image = crack_surface(world, Particle, object, object.special_flags // 100, 8)
 
-								if object.special_flags < 1:
+							# 	if object.special_flags < 1:
+
+							# 		world.particles.append(Particle(object.x, object.y, object.image, y_bias=-50, twisting_in_height=60))
+							# 		world.chunk_manager.get_chunk_at(object.x, object.y).objects.remove(object)
+
+							# 		statistics[2] += 1
+
+							# 		for _ in range(random.randint(2, 5)):
+							# 			rand_x, rand_y = object.x + random.randint(-128, 128), object.y + random.randint(-128, 128)
+							# 			world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Wooden", rand_x, rand_y, "Images/Items/Wooden.png", pickable=True))
+							
+							# 		for _ in range(random.randint(1, 3)):
+							# 			rand_x, rand_y = object.x + random.randint(-128, 128), object.y + random.randint(-128, 128)
+							# 			world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Stick", rand_x, rand_y, "Images/Items/Stick.png", pickable=True))
+							# 		break
+							
+							if object.breakable and click[0]:
+								object.breaked -= 1
+								object.image = crack_surface(world, Particle, object, (object.max_break - object.breaked) // object.max_break, 8)
+
+								if object.breaked < 1:
 
 									world.particles.append(Particle(object.x, object.y, object.image, y_bias=-50, twisting_in_height=60))
 									world.chunk_manager.get_chunk_at(object.x, object.y).objects.remove(object)
 
 									statistics[2] += 1
+									for item_name, min_amount, max_amount in object.drop_items:
+										for _ in range(random.randint(min_amount, max_amount)):
+											rand_x, rand_y = object.x + random.randint(-object.w // 2, object.w // 2), object.y + random.randint(-object.h // 2, object.h // 2)
+											world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object(item_name, rand_x, rand_y, f"Images/Items/{item_name}.png", pickable=True))
 
-									for _ in range(random.randint(2, 5)):
-										rand_x, rand_y = object.x + random.randint(-128, 128), object.y + random.randint(-128, 128)
-										world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Wooden", rand_x, rand_y, "Images/Items/Wooden.png", pickable=True))
-							
-									for _ in range(random.randint(1, 3)):
-										rand_x, rand_y = object.x + random.randint(-128, 128), object.y + random.randint(-128, 128)
-										world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Stick", rand_x, rand_y, "Images/Items/Stick.png", pickable=True))
-									break
-						
-							if object.name == "Dark tree" and click[0]:
-
-								object.special_flags -= 1
-								object.image = pygame.transform.scale(object.image, (32, 32)).convert_alpha()
-								for _ in range(random.randint(20, 25)):
-									a = random.randint(0, 31)
-									b = random.randint(0, 31)
-									if object.image.get_at((a, b)).a != 0:
-										c = random.randint(10, 20)
-										c = pygame.Surface((a, a))
-										c.fill(object.image.get_at((a, b)))
-										object.image.set_at((a, b), (0, 0, 0, 99))
-										if random.randint(1, 5) == 1:
-											c = c.convert_alpha()
-											world.particles.append(Particle(object.x + (a - 16) * 8, object.y + (b - 16) * 8, c, 5, -16, end_time=0.5))
-								object.image.set_alpha(object.image.get_alpha() - 1)
-								object.image = pygame.transform.scale(object.image, (256, 256))
-
-								if object.special_flags < 1:
-
-									world.particles.append(Particle(object.x, object.y, object.image, y_bias=-50, twisting_in_height=60))
-									world.chunk_manager.get_chunk_at(object.x, object.y).objects.remove(object)
-
-									statistics[2] += 1
-
-									for _ in range(random.randint(2, 5)):
-										rand_x, rand_y = object.x + random.randint(-128, 128), object.y + random.randint(-128, 128)
-										world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Dark wooden", rand_x, rand_y, "Images/Items/Dark wooden.png", pickable=True))
-							
-									for _ in range(random.randint(1, 3)):
-										rand_x, rand_y = object.x + random.randint(-128, 128), object.y + random.randint(-128, 128)
-										world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Stick", rand_x, rand_y, "Images/Items/Stick.png", pickable=True))
-									break
-						
-							if object.name == "Birch" and click[0]:
-
-								object.special_flags -= 1
-								object.image = pygame.transform.scale(object.image, (32, 32)).convert_alpha()
-								for _ in range(random.randint(20, 25)):
-									a = random.randint(0, 31)
-									b = random.randint(0, 31)
-									if object.image.get_at((a, b)).a != 0:
-										c = random.randint(10, 20)
-										c = pygame.Surface((a, a))
-										c.fill(object.image.get_at((a, b)))
-										object.image.set_at((a, b), (0, 0, 0, 99))
-										if random.randint(1, 5) == 1:
-											c = c.convert_alpha()
-											world.particles.append(Particle(object.x + (a - 16) * 8, object.y + (b - 16) * 8, c, 5, -16, end_time=0.5))
-								object.image.set_alpha(object.image.get_alpha() - 1)
-								object.image = pygame.transform.scale(object.image, (256, 256))
-
-								if object.special_flags < 1:
-
-									world.particles.append(Particle(object.x, object.y, object.image, y_bias=-50, twisting_in_height=60))
-									world.chunk_manager.get_chunk_at(object.x, object.y).objects.remove(object)
-
-									statistics[2] += 1
-
-									for _ in range(random.randint(2, 5)):
-										rand_x, rand_y = object.x + random.randint(-128, 128), object.y + random.randint(-128, 128)
-										world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Birch wooden", rand_x, rand_y, "Images/Items/Birch wooden.png", pickable=True))
-							
-									for _ in range(random.randint(1, 3)):
-										rand_x, rand_y = object.x + random.randint(-128, 128), object.y + random.randint(-128, 128)
-										world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Stick", rand_x, rand_y, "Images/Items/Stick.png", pickable=True))
-									break
 
 							if object.name == "Pond":
 
@@ -4424,15 +4366,7 @@ def start_game():
 									if object.x - 300 < i.x < object.x + 300 and object.y - 300 < i.y < object.y + 300 and i.name in ("Tree", "Dark tree", "Birch"):
 
 										i.special_flags -= 30
-										i.image = pygame.transform.scale(i.image, (32, 32))
-
-										for _ in range(random.randint(20, 25)):
-											a = random.randint(0, 31)
-											b = random.randint(0, 31)
-											if i.image.get_at((a, b)).a != 0:
-												i.image.set_at((a, b), (0, 0, 0, 99))
-										i.image.set_alpha(i.image.get_alpha() - 1)
-										i.image = pygame.transform.scale(i.image, (256, 256))
+										object.image = crack_surface(world, Particle, object, object.special_flags // 100, 8)
 										if i.special_flags == -1:
 											world.chunk_manager.get_chunk_at(i.x, i.y).objects.remove(i)
 
@@ -5537,9 +5471,8 @@ def start_game():
 				mouse_object = t("Inventory (I)")
 
 			for slot_x in range(10):
-
-				if slot_x == changed_slot: win.blit(Changed_inventory_slot, (slot_x * 80 -70, 10))
-				else: win.blit(Inventory_slot, (slot_x * 80 - 70, 10))
+				if slot_x == changed_slot: win.blit(Changed_inventory_slot, (slot_x * 80 + 10, 10))
+				else: win.blit(Inventory_slot, (slot_x * 80 + 10, 10))
 
 			inventory.draw_panel()
 			
@@ -5906,14 +5839,16 @@ if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0]
 			if click[0]:
 				if break_pos in world.visible_walls:
 					inventory.increate(world.chunk_manager.get_chunk_at(*break_pos).walls[break_pos].wall_type)
+					world.particles.append(Particle(break_pos[0], break_pos[1], world.visible_walls[break_pos].image, y_bias=-50, twisting_in_height=60))
 					world.chunk_manager.get_chunk_at(*break_pos).walls.pop(break_pos, None)
 					for wall in ((wall_pos[0] - 256, wall_pos[1]), (wall_pos[0] + 256, wall_pos[1]), (wall_pos[0], wall_pos[1] - 256), (wall_pos[0], wall_pos[1] + 256)):
 						if wall in world.chunk_manager.get_chunk_at(*wall).walls:
 							world.chunk_manager.get_chunk_at(*wall).walls[wall].update_neigboors()
 
 				for object in world.visible_objects:
-					if object.breakable and (object.x, object.y) == break_pos:
+					if object.breakable_by_hammer and (object.x, object.y) == break_pos:
 						inventory.increate(object.name)
+						world.particles.append(Particle(object.x, object.y, object.image, y_bias=-50, twisting_in_height=60))
 						world.chunk_manager.get_chunk_at(object.x, object.y).objects.remove(object)
 						break
 

@@ -68,15 +68,25 @@ biomes_objects = {
 					"name": "Tree",
 					"image_path": "Images/Objects/Tree.png",
 					"scale_x": (256, 256),
-					"special_flags": 100,
-					"is_solid": True}),
+					"is_solid": True,
+					"breakable": True,
+					"max_break": 100,
+					"drop_items": (
+						("Wooden", 2, 5),
+						("Stick", 1, 3)
+						)}),
 				(2, {
 					"name": "Birch",
 					"image_path": "Images/Objects/Birch.png",
 					"scale_x": (256, 256),
 					"special_flags": 100,
-					"is_solid": True
-					}),
+					"is_solid": True,
+					"breakable": True,
+					"max_break": 100,
+					"drop_items": (
+						("Birch wooden", 2, 5),
+						("Stick", 1, 3)
+						)}),
 				(0.5, {
 					"name": "Bush",
 					"image_path": "Images/Objects/Bush.png",
@@ -137,7 +147,13 @@ biomes_objects = {
 					"image_path": "Images/Objects/Dark tree.png",
 					"scale_x": (256, 256),
 					"special_flags": 100,
-					"is_solid": True}),),
+					"is_solid": True,
+					"breakable": True,
+					"max_break": 100,
+					"drop_items": (
+						("Dark wooden", 2, 5),
+						("Stick", 1, 3)
+						)}),),
 			"Items": (
 				(0.5, {
 					"name": "Cotton grass",
@@ -389,15 +405,15 @@ class ChunkManager:
 			shadow_map = chunk.shadow_map
 			light_map = chunk.light_map
 			for pos, shadow in shadow_map.items():
-				win_fill(alpha=256 - shadow * 16 - light_level, rect=self.world_rect_to_screen(chunk.x * chunk_size + pos[0] * 64, chunk.y * chunk_size + pos[1] * 64, 64, 64))
+				if pos in light_map:
+					light = light_map[pos]
+				else:
+					light = 0
+				win_fill(alpha=256 - shadow * 16 - light_level - light * 16, rect=self.world_rect_to_screen(chunk.x * chunk_size + pos[0] * 64, chunk.y * chunk_size + pos[1] * 64, 64, 64))
 			for pos, light in light_map.items():
 				light_pos = self.world_rect_to_screen(chunk.x * chunk_size + pos[0] * 64, chunk.y * chunk_size + pos[1] * 64, 64, 64)
 				if 255 - light * 16 > 0 and -64 < light_pos[0] < Width and -64 < light_pos[1] < Height:
 					shadow_surface.blit(self.light_surfaces[light], light_pos, special_flags=pygame.BLEND_RGBA_MULT)
-					# try:
-						# reverse_fill_area(alpha=light_at_pos, rect=self.world_rect_to_screen(chunk.x * chunk_size + pos[0] * 64, chunk.y * chunk_size + pos[1] * 64, 64, 64))
-					# except:
-						# pass
 
 		win.blit(shadow_surface, (0, 0))
 
