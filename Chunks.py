@@ -358,7 +358,7 @@ class ChunkManager:
 				del self.chunks[chunk_key]
 
 	def update_visible_chunks(self, player_x, player_y):
-
+		
 		"""Обновление видимых чанков вокруг игрока"""
 
 		center_chunk_x = int(player_x // chunk_size)
@@ -399,7 +399,6 @@ class ChunkManager:
 	def show_light_and_dark(self, light_level, player, shadow_surface):
 
 		"""Отображает тени и освещение"""
-
 		for chunk_pos in self.loaded_chunks:
 			chunk = self.chunks[chunk_pos]
 			shadow_map = chunk.shadow_map

@@ -3,3 +3,5 @@ Worlds/*
 __pycache__/
 Cache/*
 !Cache/.gitkeep
+Settings/*
+!Settings/.gitkeep

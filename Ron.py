@@ -1,7 +1,7 @@
 import pygame
 import os
 from random import randint
-from Globals import path, FPS, Width, Height, win
+from Globals import path, Width, Height, win
 from Functions import shadow
 
 class Ron:
@@ -27,14 +27,14 @@ class Ron:
 	def show(self):
 		win.blit(shadow(self.images[self.direction], "Ron " + self.direction), self.world_to_screen(self.x, self.y, 256, 256))
 
-	def move_towards_player(self):
+	def move_towards_player(self, dt):
 		"""Обобщенный метод движения к цели"""
 		dx = self.player.x - self.x
 		dy = self.player.y - self.y
 		distance = (dx**2 + dy**2)**0.5
 		
 		if distance > self.PLAYER_RADIUS:
-			step = self.speed / FPS * 30
+			step = self.speed / dt * 30
 			if abs(dx) > self.PLAYER_RADIUS:
 				self.x += step if dx > 0 else -step
 			if abs(dy) > self.PLAYER_RADIUS:
@@ -42,14 +42,14 @@ class Ron:
 			return True
 		return False
 
-	def move_towards_item(self, target_x, target_y):
+	def move_towards_item(self, target_x, target_y, dt):
 		"""Обобщенный метод движения к цели"""
 		dx = target_x - self.x
 		dy = target_y - self.y
 		distance = (dx**2 + dy**2)**0.5
 		
 		if distance > self.PICKUP_RADIUS:
-			step = self.speed / FPS * 30
+			step = self.speed / dt * 30
 			if abs(dx) > self.PICKUP_RADIUS:
 				self.x += step if dx > 0 else -step
 			if abs(dy) > self.PICKUP_RADIUS:
@@ -57,7 +57,7 @@ class Ron:
 			return True
 		return False
 
-	def check_items(self, world):
+	def check_items(self, world, dt):
 		"""Проверяет и подбирает предметы вокруг Рона"""
 		target = self.home if self.home is not None else None
 
@@ -81,7 +81,7 @@ class Ron:
 					dy_to_player = self.player.y - item.y
 					distance_to_player = (dx_to_player**2 + dy_to_player**2)**0.5
 				if self.home or distance_to_player <= self.PLAYER_RADIUS:
-					self.move_towards_item(item.x, item.y)
+					self.move_towards_item(item.x, item.y, dt)
 					return True
 		
 		return False
@@ -93,11 +93,11 @@ class Ron:
 		if chunk and item in chunk.items:
 			chunk.items.remove(item)
 	
-	def check_mobs(self, world):
+	def check_mobs(self, world, dt):
 		"""Проверяет мобов и атакует при возможности"""
 		if self.inventory["Arrow"] <= 0:
 			return
-		if randint(1, FPS) != 1:  # Шанс атаки
+		if randint(1, int(dt * 10000)) != 1:  # Шанс атаки
 			return
 		
 		for mob in world.mobs:
@@ -108,12 +108,12 @@ class Ron:
 				world.projectiles.append(self.Projectile(self.x, self.y, mob.x - self.x + Width // 2 - 64, self.y - mob.y + Height // 2 - 32, "Arrow"))
 				return
 	
-	def update(self, world):
+	def update(self, world, dt):
 	
 		if self.home is None:
-			self.move_towards_player()
-		self.check_items(world)
-		self.check_mobs(world)
+			self.move_towards_player(dt)
+		self.check_items(world, dt)
+		self.check_mobs(world, dt)
 		self.show()
 
 	def get_start_items(self):

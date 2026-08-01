@@ -36,8 +36,8 @@ pygame.init()
 Классы
 Загрузка команд
 Кнопки в меню
+Загрузка данных мира
 Основной цикл игры
-	Загрузка данных мира
 	Отображение объектов
 	Отображение мобов
 	Анимация игрока
@@ -514,13 +514,13 @@ class Player:
 
 		# Обновление позиции
 
-		self.x += dx * self.speed / FPS * 30
+		self.x += dx * self.speed * dt * 30
 		if self.collides_with_walls():
-			self.x -= dx * self.speed / FPS * 30
+			self.x -= dx * self.speed * dt * 30
 
-		self.y += dy * self.speed / FPS * 30
+		self.y += dy * self.speed * dt * 30
 		if self.collides_with_walls():
-			self.y -= dy * self.speed / FPS * 30
+			self.y -= dy * self.speed * dt * 30
 		
 		# Определение направления
 		if dx > 0 and dy == 0:
@@ -2232,7 +2232,6 @@ class World:
 		self.projectiles = []
 		
 	def update(self):
-
 		self.chunk_manager.update_visible_chunks(player.x, player.y)
 		# Сборка объектов из загруженных чанков
 		self.visible_objects.clear()
@@ -2288,6 +2287,8 @@ class GameState:
 
 		self.difficulty = "norm"
 		self.weather = "Clear"
+		self.shadow_surface = pygame.Surface((Width, Height), pygame.SRCALPHA)
+		self.shadow_surface.fill((0, 0, 0, 90))
 
 game = GameState()
 
@@ -2458,6 +2459,9 @@ command_system.commands = {
 # 		time_values.append([])
 # 	time_values[time_index].append(t)
 # 	time_index += 1
+# def reset_time():
+# 	global time_index
+# 	time_index = 0
 
 # Кнопки в меню
 
@@ -3730,7 +3734,7 @@ objects_templates = {
 
 def start_game():
 	
-	global win, changed_slot, menu_open, multyplayer_menu_open, screenmode, inventory_open, hold_left, backrooms, text_color, bullet_num, craft_items_list, craft_amounts_list, craft_images_list, screenshot_num, mouse_x, mouse_y, item_settings_open, multyplayer_panel, chat_tick, chat, main_chat, craft_list_open, craft_list_page, click, in_motherboard, os, world_name, color, multyplayer_mode, multyplayer, animation, start_time, new_particles, inside_files, game, alt_pressed, player, world, FPS, MAX_FPS, screen_rect
+	global win, changed_slot, menu_open, multyplayer_menu_open, screenmode, inventory_open, hold_left, backrooms, text_color, bullet_num, craft_items_list, craft_amounts_list, craft_images_list, screenshot_num, mouse_x, mouse_y, item_settings_open, multyplayer_panel, chat_tick, chat, main_chat, craft_list_open, craft_list_page, click, in_motherboard, os, world_name, color, multyplayer_mode, multyplayer, animation, start_time, new_particles, inside_files, game, alt_pressed, player, world, FPS, MAX_FPS, screen_rect, time_index
 
 	night_playing = False
 	input_text = ""
@@ -3841,7 +3845,6 @@ def start_game():
 		FPS = int(clock.get_fps())
 		dt = clock.tick(MAX_FPS) / 1000.0
 		game_time.update(dt)
-
 		for event in pygame.event.get():
 			
 			if event.type == pygame.QUIT:
@@ -3942,7 +3945,7 @@ def start_game():
 					if event.key == pygame.K_8: changed_slot = 7
 					if event.key == pygame.K_9: changed_slot = 8
 					if event.key == pygame.K_0: changed_slot = 9
-					if event.key == pygame.K_o and False:
+					if event.key == pygame.K_o:
 						create_light_circle(world.chunk_manager, player.x, player.y, 10, 15)
 						# world.chunk_manager.chunks[(0, 0)].shadow_map.update({(0, 0): 0, (1, 0): 1, (2, 0): 2, (3, 0): 3, (4, 0): 4, (5, 0): 5, (6, 0): 6, (7, 0): 7, (8, 0): 8, (9, 0): 9, (10, 0): 10, (11, 0): 11, (12, 0): 12, (13, 0): 13, (14, 0): 14, (15, 0): 15})
 						# world.chunk_manager.chunks[(0, 0)].light_map.update({(0, 1): 0, (1, 1): 1, (2, 1): 2, (3, 1): 3, (4, 1): 4, (5, 1): 5, (6, 1): 6, (7, 1): 7, (8, 1): 8, (9, 1): 9, (10, 1): 10, (11, 1): 11, (12, 1): 12, (13, 1): 13, (14, 1): 14, (15, 1): 15})
@@ -4254,7 +4257,7 @@ def start_game():
 				player.y = world.current_cave.y - 128
 
 				world.current_cave = None
-
+			
 			if world.current_cave is None:
 
 				for cave in world.visible_caves:
@@ -4351,8 +4354,9 @@ def start_game():
 									inventory.whole_inventory[changed_slot] = None
 				
 			else:
+
 				# Обновление мира
-				world.update()
+				world.update() #TODO оптимизировать
 
 				# Отображение объектов
 
@@ -4492,8 +4496,8 @@ def start_game():
 					try: world.mobs.append(Slime(random.randint(player.x - Width, player.x + Width), random.randint(player.y - Height, player.y + Height)))
 					except:pass
 
-		for bullet in world.projectiles:
-			bullet.main()
+		for projectile in world.projectiles:
+			projectile.main()
 
 		for wall in world.visible_walls.values():
 			wall.main(release)
@@ -4732,7 +4736,7 @@ def start_game():
 
 		# Рон
 
-		ron.update(world)
+		ron.update(world, dt)
 
 		# Механика использования еды и некоторых предметов через пробел
 
@@ -4849,11 +4853,13 @@ def start_game():
 			light_level = (1 - current_brightness) * 200
 		else:
 			light_level = 180
-		shadow_surface = get_shadow(light_level)
 
+		game.shadow_surface = pygame.Surface((Width, Height), pygame.SRCALPHA)
+		game.shadow_surface.fill((0, 0, 0, light_level))
 		# 2 слой - тени
 		# 3 слой - искусственное освещение
-		world.chunk_manager.show_light_and_dark(light_level, player, shadow_surface)
+		world.chunk_manager.show_light_and_dark(light_level, player, game.shadow_surface) #TODO оптимизировать
+		# win.blit(game.shadow_surface, (0, 0))
 
 		# Механика анимации слотов
 		if Settings["Display"][5]:
@@ -4864,7 +4870,7 @@ def start_game():
 			
 				if cell_x <= mouse_x <= cell_x + 64 and cell_y <= mouse_y <= cell_y + 64:
 					if slot_animations[yy * 10 + xx][0]:
-						if slot_animations[yy * 10 + xx][1] < FPS / 6:
+						if slot_animations[yy * 10 + xx][1] < dt * 150:
 							slot_animations[yy * 10 + xx][1] += 1
 							slot_animations[yy * 10 + xx][2] -= 3
 							slot_animations[yy * 10 + xx][2] = abs(slot_animations[yy * 10 + xx][2])
@@ -4874,7 +4880,7 @@ def start_game():
 				elif slot_animations[yy * 10 + xx][0]:
 					slot_animations[yy * 10 + xx][0] = False
 					slot_animations[yy * 10 + xx][1] = 0
-				elif slot_animations[yy * 10 + xx][1] < FPS / 4:
+				elif slot_animations[yy * 10 + xx][1] < dt * 250:
 					slot_animations[yy * 10 + xx][1] += 1	
 
 		# Меню на клавише TAB
@@ -5143,8 +5149,6 @@ def start_game():
 
 			if player.HP_animation_tick == 21:
 				player.HP_animation_tick = 0
-			
-			
 
 		# Отображение инвентаря
 		if inventory_open:
