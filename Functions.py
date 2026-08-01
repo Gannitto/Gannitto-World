@@ -1,13 +1,14 @@
 import Saver
 import sys
 import os
+import time
 import pygame
 import random
 import pygame.surfarray as surfarray
 import numpy as np
 from itertools import product
 from PIL import Image
-from Globals import Width, Height, path, win, clock, Settings, bigTextInfo
+from Globals import MAX_FPS, Width, Height, path, win, clock, Settings, bigTextInfo
 
 changed_language = "Russian"
 def languages(Russian: str, English: str, Kazach: str) -> str:
@@ -124,62 +125,63 @@ def reverse_fill_area(rect, fill_color=(0, 0, 0), alpha=90):
 	del pixels
 	pygame.surfarray.blit_array(area, final_pixels)
 
-def win_darken(win: pygame.Surface, screen: pygame.Surface=None):
-	
+def win_darken(win: pygame.Surface, screen: pygame.Surface=None, duration: float=0.3):
 	"""
 	Затемнить экран. Используется для переходов между окнами
 	win - Экран
 	screen - Изображение экрана
+	duration - Длительность перехода в секундах
 	"""
 	if screen is None:
 		screen = win.copy()
-	tick = 0
-	display_speed = 7
-	dark = 0
 	
-	while tick < 12:
+	start_time = time.time()
+	total_alpha = 300  # Максимальная темнота
+	current_alpha = 0
+	
+	while current_alpha < total_alpha:
+		elapsed = time.time() - start_time
+		progress = min(elapsed / duration, 1.0)
 		
-		tick += 1
-		display_speed += 7
-		dark += display_speed
-
+		current_alpha = int(total_alpha * progress)
+		
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
 				sys.exit()
-
+		
 		win.blit(screen, (0, 0))
-		win_fill(alpha=dark)
+		win_fill(alpha=current_alpha)
 		pygame.display.update()
-		clock.tick(30)
-	
+		clock.tick(60)
 
-def win_lighten(win: pygame.Surface, screen: pygame.Surface=None, start_dark: int=300):
-	
+def win_lighten(win: pygame.Surface, screen: pygame.Surface=None, duration: float=0.3):
 	"""
 	Осветлить экран. Используется для переходов между окнами
 	win - Экран
 	screen - Изображение экрана
-	start_dark - Значение темноты в начале, если сделать её больше, то задержка будет больше
+	duration - Длительность перехода в секундах
 	"""
 	if screen is None:
 		screen = win.copy()
-
-	dark = start_dark
-	display_speed = 7
-
-	while dark > 1:
+	
+	start_time = time.time()
+	total_alpha = 300  # Максимальная темнота
+	current_alpha = total_alpha
+	
+	while current_alpha > 1:
+		elapsed = time.time() - start_time
+		progress = min(elapsed / duration, 1.0)
+		
+		current_alpha = int(total_alpha * (1 - progress))
 		
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
 				sys.exit()
 		
-		display_speed += 7
-		dark -= display_speed
 		win.blit(screen, (0, 0))
-		win_fill(alpha=dark)
-		
+		win_fill(alpha=max(current_alpha, 0))
 		pygame.display.update()
-		clock.tick(30)
+		clock.tick(60)
 
 def draw_key(key: str, X: int, Y: int):
 	
@@ -302,3 +304,6 @@ def crack_surface(world, Particle, object, damage_level, scale=1):
 	del pixels
 	
 	return result
+
+def destroy_object(image, x, y, world, Particle):
+	world.particles.append(Particle(x, y, image, y_bias=-image.get_height() / 4, twisting_in_height=image.get_height() / 16, increased_transparency=20))

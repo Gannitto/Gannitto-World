@@ -361,7 +361,7 @@ Butterfly1_3 = pygame.image.load(path + "Images/Objects/Butterfly 1 3.png")
 Butterfly1_3 = pygame.transform.scale(Butterfly1_3, (32, 32))
 
 web_texture = pygame.transform.scale(pygame.image.load(path + "Images/Objects/Piece of web.png"), (128, 128))
-explosion_texture = pygame.transform.scale(pygame.image.load(path + "Images/Objects/Explosion.png"), (128, 128)).convert_alpha()
+explosion_texture = pygame.transform.scale(pygame.image.load(path + "Images/Objects/Explosion.png"), (128, 128))
 
 Bacteria_walk_left = (
 
@@ -644,7 +644,7 @@ class Object:
 
 			if self.breaked < 1:
 
-				world.particles.append(Particle(self.x, self.y, self.image, y_bias=-50, twisting_in_height=60))
+				destroy_object(self.image, self.x, self.y, world, Particle)
 				world.chunk_manager.get_chunk_at(self.x, self.y).objects.remove(self)
 
 				statistics[2] += 1
@@ -764,7 +764,7 @@ class Particle:
 		self.special_flags = special_flags
 		self.increased_transparency = increased_transparency
 		if self.increased_transparency > 0:
-			self.image.convert_alpha()
+			self.image = self.image.convert_alpha()
 		self.can_interfere_with_placing = can_interfere_with_placing
 		
 		self.twisting_in_width = twisting_in_width
@@ -802,26 +802,31 @@ class Particle:
 		self.__dict__.update(state)
 		self.image = pygame.transform.scale(pygame.image.load(self.image_path), (self.w, self.h))
 	
-	def main(self):
+	def main(self, dt):
 		
 		if self.tick_command is not None:
 			self.tick_command(self)
 
 		if self.track_ticks: self.ticks += 1
 		if self.increased_transparency != 0:
-			self.image.set_alpha(self.image.get_alpha() - self.increased_transparency)
+			self.image.set_alpha(self.image.get_alpha() - self.increased_transparency * dt * 25)
 		
 		if self.twisting_in_width or self.twisting_in_height:
 			try:
-				self.image = pygame.transform.scale(self.image, (self.image.get_width() - self.twisting_in_width, self.image.get_height() - self.twisting_in_height))
+				self.image = pygame.transform.scale(
+						self.image,
+						(self.image.get_width() - self.twisting_in_width * dt * 100,
+						self.image.get_height() - self.twisting_in_height * dt * 100)
+						)
 			except:
 				if self.remove_particle_after_twisting:
 					if self.end_command is not None: self.end_command(self)
 					world.particles.remove(self)
+					return
 		if self.x_bias:
-			self.x += self.x_bias if self.x_bias.__class__ in (int, float) else self.x_bias(self)
+			self.x += dt * 25 * self.x_bias if self.x_bias.__class__ in (int, float) else self.x_bias(self)
 		if self.y_bias:
-			self.y += self.y_bias if self.y_bias.__class__ in (int, float) else self.y_bias(self)
+			self.y += dt * 25 * self.y_bias if self.y_bias.__class__ in (int, float) else self.y_bias(self)
 
 		if self.rotate is not None:
 			i = self.image.get_rect()
@@ -3961,12 +3966,10 @@ def start_game():
 					if event.key == hot_keys["Inventory"]:
 						inventory_open = not inventory_open
 						if not inventory_open:
-							i = -1
 							if craft_items_list != [None] * 7:
-								i += 1
-								for item in craft_items_list:
+								for item_index, item in enumerate(craft_items_list):
 									if item is not None:
-										inventory.increate(item, craft_amounts_list[i])
+										inventory.increate(item, craft_amounts_list[item_index])
 							craft_items_list = [None] * 7
 							craft_amounts_list = [None] * 7
 							craft_images_list = [None] * 7
@@ -4832,7 +4835,7 @@ def start_game():
 
 		for particle in world.particles:
 
-			particle.main()
+			particle.main(dt)
 			
 			if (particle.end_time is not None and time.time() - particle.start_time >= particle.end_time) or (particle.del_self_condition is not None and particle.del_self_condition(particle)):
 				if particle.end_command is not None:
@@ -4850,12 +4853,14 @@ def start_game():
 		# 1 слой - естественный свет
 		if world.current_cave is None:
 			current_brightness = game_time.get_brightness()
-			light_level = (1 - current_brightness) * 200
+			light_level = max((1 - current_brightness) * 200, 0)
 		else:
 			light_level = 180
 
 		game.shadow_surface = pygame.Surface((Width, Height), pygame.SRCALPHA)
-		game.shadow_surface.fill((0, 0, 0, light_level))
+		try:
+			game.shadow_surface.fill((0, 0, 0, light_level))
+		except:pass
 		# 2 слой - тени
 		# 3 слой - искусственное освещение
 		world.chunk_manager.show_light_and_dark(light_level, player, game.shadow_surface) #TODO оптимизировать
@@ -5422,25 +5427,25 @@ def start_game():
 			if Width - 10 - player.HP // 10 * 40 < mouse_x < Width - 10 and 40 < mouse_y < 104:
 				mouse_object = t("Health bar")
 
-		player.HP_TICK += 1
-		if player.HP_TICK == 300:
-			player.HP_TICK = 0
-			if player.HP < 100:
-				player.HP += 10
+			player.HP_TICK += 1
+			if player.HP_TICK == 300:
+				player.HP_TICK = 0
+				if player.HP < 100:
+					player.HP += 10
 
-		if player.HP > 100:
-			player.HP = 100
+			if player.HP > 100:
+				player.HP = 100
 
-		if player.HP < 1:
-			for item in inventory.whole_inventory:
-				if item is not None:
-					for _ in range(item.amount):
-						rand_x, rand_y = player.x + random.randint(-300, 300), player.y + random.randint(-300, 300)
-						world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object(item.name, rand_x, rand_y, item.image_path, add_path=False, pickable=True))
-			inventory.whole_inventory = [None] * 30
-			player.HP = 100
-			x = 0
-			y = 0
+			if player.HP < 1:
+				for item in inventory.whole_inventory:
+					if item is not None:
+						for _ in range(item.amount):
+							rand_x, rand_y = player.x + random.randint(-300, 300), player.y + random.randint(-300, 300)
+							world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object(item.name, rand_x, rand_y, item.image_path, add_path=False, pickable=True))
+				inventory.whole_inventory = [None] * 30
+				player.HP = 100
+				player.x = 0
+				player.y = 0
 
 		for effect_y, effect in enumerate(player.effects):
 
@@ -5459,7 +5464,7 @@ def start_game():
 						
 					win.blit(win, (random.randint(-10, 10), random.randint(-10, 10)))
 
-			effect[1] -= 0.03
+			effect[1] -= dt
 			if effect[1] <= 0:
 				player.effects.remove(effect)
 		
@@ -5772,16 +5777,16 @@ if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0]
 			if click[0]:
 				if break_pos in world.visible_walls:
 					inventory.increate(world.chunk_manager.get_chunk_at(*break_pos).walls[break_pos].wall_type)
-					world.particles.append(Particle(break_pos[0], break_pos[1], world.visible_walls[break_pos].image, y_bias=-50, twisting_in_height=60))
+					destroy_object(world.visible_walls[break_pos].image, world.visible_walls[break_pos].x, world.visible_walls[break_pos].y, world, Particle)
 					world.chunk_manager.get_chunk_at(*break_pos).walls.pop(break_pos, None)
-					for wall in ((wall_pos[0] - 256, wall_pos[1]), (wall_pos[0] + 256, wall_pos[1]), (wall_pos[0], wall_pos[1] - 256), (wall_pos[0], wall_pos[1] + 256)):
+					for wall in ((break_pos[0] - 256, break_pos[1]), (break_pos[0] + 256, break_pos[1]), (break_pos[0], break_pos[1] - 256), (break_pos[0], break_pos[1] + 256)):
 						if wall in world.chunk_manager.get_chunk_at(*wall).walls:
 							world.chunk_manager.get_chunk_at(*wall).walls[wall].update_neigboors()
 
 				for object in world.visible_objects:
 					if object.breakable_by_hammer and (object.x, object.y) == break_pos:
 						inventory.increate(object.name)
-						world.particles.append(Particle(object.x, object.y, object.image, y_bias=-50, twisting_in_height=60))
+						destroy_object(object.image, object.x, object.y, world, Particle)
 						world.chunk_manager.get_chunk_at(object.x, object.y).objects.remove(object)
 						break
 
