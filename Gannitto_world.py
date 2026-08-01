@@ -5,7 +5,7 @@ from pathlib import Path
 import time
 import random
 import numpy as np
-from math import atan2, cos, sin, pi, sqrt, fabs, degrees
+import math
 from itertools import product
 import socket
 import sys
@@ -361,6 +361,7 @@ Butterfly1_3 = pygame.image.load(path + "Images/Objects/Butterfly 1 3.png")
 Butterfly1_3 = pygame.transform.scale(Butterfly1_3, (32, 32))
 
 web_texture = pygame.transform.scale(pygame.image.load(path + "Images/Objects/Piece of web.png"), (128, 128))
+explosion_texture = pygame.transform.scale(pygame.image.load(path + "Images/Objects/Explosion.png"), (128, 128)).convert_alpha()
 
 Bacteria_walk_left = (
 
@@ -477,6 +478,7 @@ class Player:
 		self.pass_through_walls = False # TODO
 		self.is_moving = False
 		self.rect = pygame.Rect(self.x - 25, self.y - 112, 50, 224)
+		self.breaking_object = None
 		
 		# Текущий спрайт
 		self.image = self.get_current_frame()
@@ -633,6 +635,24 @@ class Object:
 			self.rect = pygame.Rect(rect[0] + self.x, rect[1] + self.y, rect[2], rect[3])
 	
 	def main(self, player):
+
+		if player.breaking_object == None and self.breakable and self.get_left_pressed():
+
+			player.breaking_object = self
+			self.breaked -= 1
+			self.image = crack_surface(world, Particle, self, (self.max_break - self.breaked) // self.max_break, 8)
+
+			if self.breaked < 1:
+
+				world.particles.append(Particle(self.x, self.y, self.image, y_bias=-50, twisting_in_height=60))
+				world.chunk_manager.get_chunk_at(self.x, self.y).objects.remove(self)
+
+				statistics[2] += 1
+				for item_name, min_amount, max_amount in self.drop_items:
+					for _ in range(random.randint(min_amount, max_amount)):
+						rand_x, rand_y = self.x + random.randint(-self.w // 2, self.w // 2), self.y + random.randint(-self.h // 2, self.h // 2)
+						world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object(item_name, rand_x, rand_y, f"Images/Items/{item_name}.png", pickable=True))
+
 		if player.x - Width // 2 - self.w // 2 <= self.x <= player.x + Width // 2 + self.w // 2 and player.y - Height // 2 <= player.y + Height // 2:
 			win.blit(self.image, world_to_screen(self.x, self.y, self.w, self.h, player))
 		if Settings["Display"][3]:
@@ -743,6 +763,8 @@ class Particle:
 
 		self.special_flags = special_flags
 		self.increased_transparency = increased_transparency
+		if self.increased_transparency > 0:
+			self.image.convert_alpha()
 		self.can_interfere_with_placing = can_interfere_with_placing
 		
 		self.twisting_in_width = twisting_in_width
@@ -866,7 +888,7 @@ class BaseEnemy:
 		"""Движение к игроку с проверкой стен"""
 		dx = player.x - self.x
 		dy = player.y - self.y
-		distance = sqrt(dx**2 + dy**2)
+		distance = math.sqrt(dx**2 + dy**2)
 		
 		if distance > 0:
 			# Нормализуем вектор движения
@@ -923,7 +945,7 @@ class Slime(BaseEnemy):
 		self.state = "Wander"
 
 		self.wander_radius = 1000
-		self.wander_angle = random.uniform(0, 2 * pi)
+		self.wander_angle = random.uniform(0, 2 * math.pi)
 		self.wander_distance = random.uniform(100, self.wander_radius)
 		self.wander_timer = 0
 		self.wander_change_interval = FPS
@@ -966,7 +988,7 @@ class Slime(BaseEnemy):
 
 		"""Блуждание вокруг игрока"""
 
-		distance = sqrt((player.x - self.x) ** 2 + (player.y - self.y) ** 2)
+		distance = math.sqrt((player.x - self.x) ** 2 + (player.y - self.y) ** 2)
 		if (distance < self.detection_range and 
 			self.attack_cooldown == 0 and
 			random.random() < 0.02):  # 2% шанс начать атаку
@@ -982,17 +1004,17 @@ class Slime(BaseEnemy):
 		# Меняем направление через определенные интервалы
 		if self.wander_timer >= self.wander_change_interval:
 			self.wander_timer = 0
-			self.wander_angle += random.uniform(-pi/4, pi/4)
+			self.wander_angle += random.uniform(-math.pi/4, math.pi/4)
 			self.wander_distance = random.uniform(150, self.wander_radius)
 			
 		# Целевая точка для блуждания
-		target_x = player.x + cos(self.wander_angle) * self.wander_distance
-		target_y = player.y + sin(self.wander_angle) * self.wander_distance
+		target_x = player.x + math.cos(self.wander_angle) * self.wander_distance
+		target_y = player.y + math.sin(self.wander_angle) * self.wander_distance
 		
 		# Движение к целевой точке
 		dx = target_x - self.x
 		dy = target_y - self.y
-		dist = sqrt(dx**2 + dy**2)
+		dist = math.sqrt(dx**2 + dy**2)
 		
 		if dist > 10:  # Если не достигли цели
 			move_x = dx / dist * self.speed
@@ -1027,7 +1049,7 @@ class Slime(BaseEnemy):
 		# Движение к цели
 		dx = self.target_x - self.x
 		dy = self.target_y - self.y
-		dist = sqrt(dx**2 + dy**2)
+		dist = math.sqrt(dx**2 + dy**2)
 		
 		if dist > 5:
 			# Движение к цели
@@ -1041,7 +1063,7 @@ class Slime(BaseEnemy):
 				self.y += move_y
 				
 			# Эффект прыжка - немного подпрыгиваем вверх
-			jump_height = sin((1 - dist / (sqrt((self.x - self.target_x)**2 + (self.y - self.target_y)**2))) * pi) * 20
+			jump_height = math.sin((1 - dist / (math.sqrt((self.x - self.target_x)**2 + (self.y - self.target_y)**2))) * math.pi) * 20
 			self._jump_offset = -jump_height
 			
 			# Наносим урон, если достигли игрока
@@ -1062,7 +1084,7 @@ class Slime(BaseEnemy):
 		# Движение обратно к начальной позиции
 		dx = self.start_x - self.x
 		dy = self.start_y - self.y
-		dist = sqrt(dx**2 + dy**2)
+		dist = math.sqrt(dx**2 + dy**2)
 		
 		if dist > 10:
 			move_x = dx / dist * self.retreat_speed
@@ -1163,7 +1185,7 @@ class Spider(BaseEnemy):
 		self.attack_cooldown = max(0, self.attack_cooldown - 1)
 		self.shoot_cooldown = max(0, self.shoot_cooldown - 1)
 
-		distance = sqrt((player.x - self.x) ** 2 + (player.y - self.y) ** 2)
+		distance = math.sqrt((player.x - self.x) ** 2 + (player.y - self.y) ** 2)
 
 		match self.state:
 			case "Attacking": self.state = "Going towards player"
@@ -1184,17 +1206,17 @@ class Spider(BaseEnemy):
 			self.shoot_cooldown = self.shoot_charge_time
 			dx = player.x - self.x
 			dy = player.y - self.y
-			dist = sqrt(dx**2 + dy**2)
+			dist = math.sqrt(dx**2 + dy**2)
 			move_x = dx / dist * FPS * 1.5
 			move_y = dy / dist * FPS * 1.5
-			world.particles.append(Particle(self.x, self.y, pygame.transform.rotate(web_texture, -degrees(atan2(-move_y, move_x))), move_x, move_y, del_self_condition=lambda particle: (pygame.Rect(particle.x - 32, particle.y + 32, 64, 64).colliderect(pygame.Rect(player.x - 100, player.y + 100, 200, 200))), end_time=FPS*3)) # TODO наложить эффект замедления
+			world.particles.append(Particle(self.x, self.y, pygame.transform.rotate(web_texture, -math.degrees(math.atan2(-move_y, move_x))), move_x, move_y, del_self_condition=lambda particle: (pygame.Rect(particle.x - 32, particle.y + 32, 64, 64).colliderect(pygame.Rect(player.x - 100, player.y + 100, 200, 200))), end_time=FPS*3)) # TODO наложить эффект замедления
 			self.state = "Attacking"
 
 	def _handle_go_towards_player(self, player, world):
 		
 		dx = player.x - self.x
 		dy = player.y - self.y
-		dist = sqrt(dx**2 + dy**2)
+		dist = math.sqrt(dx**2 + dy**2)
 
 		if dist <= self.detection_range:
 			if dist > 100:
@@ -1345,9 +1367,9 @@ class Projectile:
 	def __init__(self, X: int, Y: int, mouse_x, mouse_y, type: str):
 		
 		"""
-		Снаряд, который непрерывно летит в заданном направлении.
-		bullet_x - Координата x
-		bullet_y - Координата y
+		Снаряд, который непрерывно летит в заданном направлении
+		X - Координата x
+		Y - Координата y
 		mouse_x - x мыши
 		mouse_y - y мыши
 		type - Тип патрона, например стрела
@@ -1356,11 +1378,11 @@ class Projectile:
 		self.x = X
 		self.y = Y
 
-		self.angle = atan2(Height / 2 - mouse_y, Width / 2 - mouse_x)
-		self.x_vel = cos(self.angle) * 100
-		self.y_vel = sin(self.angle) * 100
+		self.angle = math.atan2(Height / 2 - mouse_y, Width / 2 - mouse_x)
+		self.x_vel = math.cos(self.angle) * 100
+		self.y_vel = math.sin(self.angle) * 100
 		self.image = pygame.transform.rotate(pygame.transform.scale(pygame.image.load(path + "Images/Items/" + type + ".png"),
-																	(64, 64)), atan2(mouse_x - Width / 2, mouse_y - Height / 2) * 180 / pi + 180)
+																	(64, 64)), math.atan2(mouse_x - Width / 2, mouse_y - Height / 2) * 180 / math.pi + 180)
 		self.end_time = int(time.time()) + 3
 
 	def main(self):
@@ -1373,8 +1395,59 @@ class Projectile:
 		win.blit(self.image, world_to_screen(self.x, self.y, 64, 64))
 
 		if Settings["Display"][3]:
-			pygame.draw.rect(win, (0, 0, 0), (self.x - player.x + Width // 2 - 32, player.y - self.y + Height // 2 - 32, 64, 64), 3)
+			pygame.draw.rect(win, (0, 0, 0), world_rect_to_screen(self.x, self.y, 64, 64), 3)
 		if time.time() >= self.end_time:
+			world.projectiles.remove(self)
+
+class ExplodingProjectile:
+
+	def __init__(self, X: int, Y: int, mouse_x: int, mouse_y: int, type: str, target_pos: tuple):
+		
+		"""
+		Снаряд, который летит до заданной точки и потом взрывается
+		X - Координата x
+		Y - Координата y
+		mouse_x - x мыши
+		mouse_y - y мыши
+		type - Тип патрона, например граната
+		"""
+
+		self.x = X
+		self.y = Y
+		self.start_x = X
+		self.start_y = Y
+
+		self.angle = math.atan2(Height / 2 - mouse_y, Width / 2 - mouse_x)
+		self.x_vel = math.cos(self.angle) * 50
+		self.y_vel = math.sin(self.angle) * 50
+		self.image = pygame.transform.rotate(pygame.transform.scale(pygame.image.load(path + "Images/Items/" + type + ".png"),
+																	(64, 64)), math.atan2(mouse_x - Width / 2, mouse_y - Height / 2) * 180 / math.pi + 180)
+		self.dist_x = abs(target_pos[0] - self.x)
+		self.dist_y = abs(target_pos[1] - self.y)
+
+	def main(self):
+
+		"""Показывает снаряд"""
+
+		self.x -= int(self.x_vel)
+		self.y += int(self.y_vel)
+		
+		rect = self.image.get_rect()
+		rect_rotated = pygame.transform.rotate(self.image, -10)
+		rect_copy = rect.copy()
+		rect_copy.center = rect_rotated.get_rect().center
+		self.image = rect_rotated.subsurface(rect_copy).copy()
+
+		win.blit(self.image, world_to_screen(self.x, self.y, 64, 64))
+
+		if Settings["Display"][3]:
+			pygame.draw.rect(win, (0, 0, 0), world_rect_to_screen(self.x, self.y, 64, 64), 3)
+		if abs(self.x - self.start_x) > self.dist_x or abs(self.y - self.start_y) > self.dist_y:
+			radius = 20
+			for _ in range(150):
+				angle = random.uniform(0, 2 * math.pi)
+				radius -= 0.1
+				world.particles.append(Particle(self.x, self.y, explosion_texture.copy(), x_bias=radius * math.cos(angle), y_bias=radius * math.sin(angle), increased_transparency=30, end_time=0.3))
 			world.projectiles.remove(self)
 
 class Button:
@@ -3763,6 +3836,7 @@ def start_game():
 		dx = 0
 		dy = 0
 		screen_rect = pygame.Rect((player.x - Width / 2, player.y + Height / 2, Width, Height))
+		player.breaking_object = None
 
 		FPS = int(clock.get_fps())
 		dt = clock.tick(MAX_FPS) / 1000.0
@@ -4284,182 +4358,70 @@ def start_game():
 
 				for object in world.visible_objects:
 
-					if object.object_class == "Object":
-						object.main(player)
+					object.main(player)
 
-						if object.x - player.x + Width // 2 - object.image.get_width() // 2 <= mouse_x <= object.x - player.x + Width // 2 + object.image.get_width() // 2 and player.y - object.y + Height // 2 - object.image.get_height() // 2 <= mouse_y <= player.y - object.y + Height // 2 + object.image.get_height() // 2:
+					if object.get_left_pressed():
 
-							# if object.name == "Tree" and click[0]:
-								
-							# 	object.special_flags -= 1
-							# 	object.image = crack_surface(world, Particle, object, object.special_flags // 100, 8)
+						if object.name == "Pond":
 
-							# 	if object.special_flags < 1:
+							if object.special_flags[0] == 0:
+								...
+							elif inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Bucket":
 
-							# 		world.particles.append(Particle(object.x, object.y, object.image, y_bias=-50, twisting_in_height=60))
-							# 		world.chunk_manager.get_chunk_at(object.x, object.y).objects.remove(object)
+								if inventory.whole_inventory[changed_slot].amount > 1:
+									inventory.whole_inventory[changed_slot].amount -= 1
+								else:
+									inventory.whole_inventory[changed_slot] = None
 
-							# 		statistics[2] += 1
+								inventory.increate("Water bucket")
+								object.special_flags[0] -= 1
+								time.sleep(0.15)
+			
+							if object.special_flags[1] != 0 and inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Stone shovel" and object.get_left_pressed() and random.randint(1, 30) == 1:
+								rand_x, rand_y = object.x +random.randint(-128, 128), object.y + random.randint(-128, 128)
+								world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Clay", rand_x, rand_y, "Images/Items/Clay.png", pickable=True))
+								object.special_flags[1] -= 1
 
-							# 		for _ in range(random.randint(2, 5)):
-							# 			rand_x, rand_y = object.x + random.randint(-128, 128), object.y + random.randint(-128, 128)
-							# 			world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Wooden", rand_x, rand_y, "Images/Items/Wooden.png", pickable=True))
-							
-							# 		for _ in range(random.randint(1, 3)):
-							# 			rand_x, rand_y = object.x + random.randint(-128, 128), object.y + random.randint(-128, 128)
-							# 			world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Stick", rand_x, rand_y, "Images/Items/Stick.png", pickable=True))
-							# 		break
-							
-							if object.breakable and click[0]:
-								object.breaked -= 1
-								object.image = crack_surface(world, Particle, object, (object.max_break - object.breaked) // object.max_break, 8)
-
-								if object.breaked < 1:
-
-									world.particles.append(Particle(object.x, object.y, object.image, y_bias=-50, twisting_in_height=60))
-									world.chunk_manager.get_chunk_at(object.x, object.y).objects.remove(object)
-
-									statistics[2] += 1
-									for item_name, min_amount, max_amount in object.drop_items:
-										for _ in range(random.randint(min_amount, max_amount)):
-											rand_x, rand_y = object.x + random.randint(-object.w // 2, object.w // 2), object.y + random.randint(-object.h // 2, object.h // 2)
-											world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object(item_name, rand_x, rand_y, f"Images/Items/{item_name}.png", pickable=True))
-
-
-							if object.name == "Pond":
-
-								if object.special_flags[0] == 0:
-									...
-								elif inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Bucket" and object.get_left_pressed():
-
-									if inventory.whole_inventory[changed_slot].amount > 1:
-										inventory.whole_inventory[changed_slot].amount -= 1
-									else:
-										inventory.whole_inventory[changed_slot] = None
-
-									inventory.increate("Water bucket")
-									object.special_flags[0] -= 1
-									time.sleep(0.15)
-				
-								if object.special_flags[1] != 0 and inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Stone shovel" and object.get_left_pressed() and random.randint(1, 30) == 1:
-									rand_x, rand_y = object.x +random.randint(-128, 128), object.y + random.randint(-128, 128)
-									world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Clay", rand_x, rand_y, "Images/Items/Clay.png", pickable=True))
-									object.special_flags[1] -= 1
-
-							mouse_object = object.name
+						mouse_object = object.name
 
 						if object.name == "Pot":
 
-							if object.get_right_pressed() and inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].type == "Flower":
+							if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].type == "Flower":
 								world.chunk_manager.get_chunk_at(object.x, object.y + 36).items.append(Object(inventory.whole_inventory[changed_slot].name, object.x, object.y + 36, 64, 64, inventory.whole_inventory[changed_slot].image))
 								inventory.whole_inventory[changed_slot].amount -= 1
 								inventory.resources[inventory.whole_inventory[changed_slot].name].amount -= 1
 								if inventory.whole_inventory[changed_slot].amount == 0:
 									inventory.whole_inventory[changed_slot] = None
 
-						if object.name == "Grenade":
+					if object.name == "Dandelion" and time.time() - object.start_time > 1200:
 
-							if object.x - 60 < object.special_flags[0] < object.x + 60 and object.y - 60 < object.special_flags[1] < object.y + 60:
-							
-								for i in world.visible_objects:
+						object.start_time = time.time()
+						
+						try:
+							object.image_path = path + "Images/Objects/Dandelion " + str(int(object.image_path[-5]) + 1) + ".png"
+							object.image = pygame.transform.scale(pygame.image.load(object.image_path), (64, 64))
+						except:
+							world.chunk_manager.get_chunk_at(object.x, object.y).objects.remove(object)
 
-									if object.x - 300 < i.x < object.x + 300 and object.y - 300 < i.y < object.y + 300 and i.name in ("Tree", "Dark tree", "Birch"):
+						if object.image_path[-5] == "5":
 
-										i.special_flags -= 30
-										object.image = crack_surface(world, Particle, object, object.special_flags // 100, 8)
-										if i.special_flags == -1:
-											world.chunk_manager.get_chunk_at(i.x, i.y).objects.remove(i)
+							for _ in range(5):
 
-
-											if i.name in ("Dark tree", "Birch"):
-												for i in range(random.randint(2, 5)):
-													rand_x, rand_y = random.randint(i.x - 128, i.x + 128), random.randint(i.y - 128, i.y + 128)
-													world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object(i.name + " wooden", rand_x, rand_y, "Images/Items/" + i.name + " wooden.png", pickable=True))
-								
-												for i in range(random.randint(1, 3)):
-													rand_x, rand_y = random.randint(i.x - 128, i.x + 128), random.randint(i.y - 128, i.y + 128)
-													world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Stick", rand_x, rand_y, "Images/Items/Stick.png", pickable=True))
-											else:
-												for i in range(random.randint(2, 5)):
-													rand_x, rand_y = random.randint(i.x - 128, i.x + 128), random.randint(i.y - 128, i.y + 128)
-													world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Wooden", rand_x, rand_y, "Images/Items/Wooden.png", pickable=True))
-								
-												for i in range(random.randint(1, 3)):
-													rand_x, rand_y = random.randint(i.x - 128, i.x + 128), random.randint(i.y - 128, i.y + 128)
-													world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Stick", rand_x, rand_y, "Images/Items/Stick.png", pickable=True))
-
-								for mob in world.mobs:
-									if mob.attak is None:
-										if object.x - 300 < mob.x < object.x + 300 and object.y - 300 < mob.y < object.y + 300:
-											mob.HP = 0
-									elif object.x - 300 < mob.attak[0] < object.x + 300 and object.y - 300 < mob.attak[1] < object.y + 300:
-										mob.HP = 0
-								
-								radius = 20
-
-								for _ in range(150):
-									
-									angle = random.uniform(0, 2 * pi)
-									radius -= 0.1
-									world.particles.append(Particle(object.x, object.y, pygame.transform.scale(pygame.image.load(path + "Images/Objects/Explosion.png"), (100, 100)), x_bias=radius * cos(angle), y_bias=radius * sin(angle), increased_transparency=30, end_time=0.3))
-
-								world.chunk_manager.get_chunk_at(object.x, object.y).objects.remove(object)
-
-							if not object.x - 60 < object.special_flags[0] < object.x + 60:
-								if object.x < object.special_flags[0]:
-									object.x += 30
-									i = object.image.get_rect()
-									j = pygame.transform.rotate(object.image, -10)
-									ii = i.copy()
-									ii.center = j.get_rect().center
-									object.image = j.subsurface(ii).copy()
+								if random.randint(1, 5) == 1:
+									world.particles.append(Particle(object.x, object.y, pygame.transform.scale(pygame.image.load(path + "Images/Items/Dandelion seed.png"), (32, 32)), random.randint(-30, 30), random.randint(-30, 30), end_time=5, end_command=lambda particle: (world.chunk_manager.get_chunk_at(particle.x, particle.y).items.append(Object("Dandelion", particle.x, particle.y, "Images/Objects/Dandelion 1.png")))))
 								else:
-									object.x -= 30
-									i = object.image.get_rect()
-									j = pygame.transform.rotate(object.image, 10)
-									ii = i.copy()
-									ii.center = j.get_rect().center
-									object.image = j.subsurface(ii).copy()
+									world.particles.append(Particle(object.x, object.y, pygame.transform.scale(pygame.image.load(path + "Images/Items/Dandelion seed.png"), (32, 32)), random.randint(-30, 30), random.randint(-30, 30), end_time=5))
 
-							if not object.y - 60 < object.special_flags[1] < object.y + 60:
-								if object.y < object.special_flags[1]:
-									object.y += 30
-								else:
-									object.y -= 30
+					if object.name == "Punch" and False:
 
-						if object.name == "Dandelion" and time.time() - object.start_time > 1200:
-
-							object.start_time = time.time()
-							
-							try:
-								object.image_path = path + "Images/Objects/Dandelion " + str(int(object.image_path[-5]) + 1) + ".png"
-								object.image = pygame.transform.scale(pygame.image.load(object.image_path), (64, 64))
-							except:
-								world.chunk_manager.get_chunk_at(object.x, object.y).objects.remove(object)
-
-							if object.image_path[-5] == "5":
-
-								for _ in range(5):
-
-									if random.randint(1, 5) == 1:
-										world.particles.append(Particle(object.x, object.y, pygame.transform.scale(pygame.image.load(path + "Images/Items/Dandelion seed.png"), (32, 32)), random.randint(-30, 30), random.randint(-30, 30), end_time=5, end_command=lambda particle: (world.chunk_manager.get_chunk_at(particle.x, particle.y).items.append(Object("Dandelion", particle.x, particle.y, "Images/Objects/Dandelion 1.png")))))
-									else:
-										world.particles.append(Particle(object.x, object.y, pygame.transform.scale(pygame.image.load(path + "Images/Items/Dandelion seed.png"), (32, 32)), random.randint(-30, 30), random.randint(-30, 30), end_time=5))
-
-						if object.name == "Punch" and False:
-
-							if object.get_left_pressed() and inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name in ("Mushroom", "Red mushroom", "Thread", "Poppy", "Purple tulip", "Orange tulip", "Black tulip", "Red tulip", "Yellow tulip", "Dandelion", "Cotton grass", "Onion"):
-								if object.special_flags < 11:
-									object.special_flags += 1
-									if object.special_flags > 6:
-										object.image = pygame.image.load(path + "Images/Objects/Punch " + str(object.special_flags - 5) + ".png")
-								else:
-									object.special_flags = 1
-									world.chunk_manager.get_chunk_at(object.x, object.y).items.append(Object("Punch", object.x, object.y, "Images/Items/Powder.png"))
-
-					else:
-
-						object.main()
+						if object.get_left_pressed() and inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name in ("Mushroom", "Red mushroom", "Thread", "Poppy", "Purple tulip", "Orange tulip", "Black tulip", "Red tulip", "Yellow tulip", "Dandelion", "Cotton grass", "Onion"):
+							if object.special_flags < 11:
+								object.special_flags += 1
+								if object.special_flags > 6:
+									object.image = pygame.image.load(path + "Images/Objects/Punch " + str(object.special_flags - 5) + ".png")
+							else:
+								object.special_flags = 1
+								world.chunk_manager.get_chunk_at(object.x, object.y).items.append(Object("Punch", object.x, object.y, "Images/Items/Powder.png"))
 
 				# Отображение предметов
 				for item in world.visible_items:
@@ -4496,39 +4458,6 @@ def start_game():
 							inventory.resources[inventory.whole_inventory[changed_slot].name].amount -= 1
 							if inventory.whole_inventory[changed_slot].amount == 0:
 								inventory.whole_inventory[changed_slot] = None
-
-					if object.name == "Grenade":
-
-						if object.x - 60 < object.special_flags[0] < object.x + 60 and object.y - 60 < object.special_flags[1] < object.y + 60:
-							
-							for i in world.visible_objects:
-
-								if object.x - 300 < i.x < object.x + 300 and object.y - 300 < i.y < object.y + 300 and i.name in ("Tree", "Dark tree", "Birch"):
-
-									i.special_flags -= 30
-									i.image = pygame.transform.scale(i.image, (32, 32))
-
-									for _ in range(random.randint(20, 25)):
-										a = random.randint(0, 31)
-										b = random.randint(0, 31)
-										if i.image.get_at((a, b)).a != 0:
-											i.image.set_at((a, b), (0, 0, 0, 99))
-									i.image.set_alpha(i.image.get_alpha() - 1)
-									i.image = pygame.transform.scale(i.image, (256, 256))
-									if i.special_flags == -1:
-										world.chunk_manager.get_chunk_at(object.x, object.y).objects.remove(object)
-
-							for mob in world.mobs:
-								if mob.attak is None:
-									if object.x - 300 < mob.x < object.x + 300 and object.y - 300 < mob.y < object.y + 300:
-										mob.HP = 0
-								elif object.x - 300 < mob.attak[0] < object.x + 300 and object.y - 300 < mob.attak[1] < object.y + 300:
-									mob.HP = 0
-
-							pygame.draw.circle(win, (200, 0, 0, 0.3), (object.x - player.x + Width // 2 - 32, player.y - object.y + Height // 2 - 32), 150)
-							world.chunk_manager.get_chunk_at(object.x, object.y).objects.remove(object)
-
-							break
 
 						if not object.x - 60 < object.special_flags[0] < object.x + 60:
 							if object.x < object.special_flags[0]:
@@ -4856,14 +4785,14 @@ def start_game():
 
 				case "Grenade":
 
-					current_chunk.objects.append(Object("Grenade", player.x, player.y, "Images/Items/Grenade.png", special_flags=(player.x + mouse_x - Width // 2, player.y - mouse_y + Height // 2)))
+					world.projectiles.append(ExplodingProjectile(player.x, player.y, mouse_x, mouse_y, "Grenade", (player.x + mouse_x - Width // 2, player.y - mouse_y + Height // 2)))
 
 					if inventory.whole_inventory[changed_slot].amount > 1:
 						inventory.whole_inventory[changed_slot].amount -= 1
 					else:
 						inventory.whole_inventory[changed_slot] = None
 						
-			if inventory.whole_inventory[changed_slot].type == "Food":
+			if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].type == "Food":
 				
 				player.HP += inventory.whole_inventory[changed_slot].special_info
 				if inventory.whole_inventory[changed_slot].amount > 1:
@@ -5034,7 +4963,7 @@ def start_game():
 				
 
 
-				if Width // 2 + cos((2 * pi) / 6) * radius - 32 < mouse_x < Width // 2 + cos((2 * pi) / 6) * radius + 32 and Height // 2 + sin((2 * pi) / 6) * radius - 32 < mouse_y < Height // 2 + sin((2 * pi) / 6) * radius + 32:
+				if Width // 2 + math.cos((2 * math.pi) / 6) * radius - 32 < mouse_x < Width // 2 + math.cos((2 * math.pi) / 6) * radius + 32 and Height // 2 + math.sin((2 * math.pi) / 6) * radius - 32 < mouse_y < Height // 2 + math.sin((2 * math.pi) / 6) * radius + 32:
 					if special_slot_animations["Game menu slot"][0]:
 						if special_slot_animations["Game menu slot"][1] < FPS / 6:
 							special_slot_animations["Game menu slot"][1] += 1
@@ -5054,17 +4983,17 @@ def start_game():
 					special_slot_animations["Game menu slot"][1] += 1
 
 				if special_slot_animations["Game menu slot"][0] and Settings["Display"][5]:
-					try:win.blit(pygame.transform.scale(Game_menu_slot2, (64 - special_slot_animations["Game menu slot"][2], 64 - special_slot_animations["Game menu slot"][2])), (Width // 2 + cos((2 * pi) / 6) * radius - 32, Height // 2 + sin((2 * pi) / 6) * radius - 32))
-					except: win.blit(Game_menu_slot2, (Width // 2 + cos((2 * pi) / 6) * radius - 32, Height // 2 + sin((2 * pi) / 6) * radius - 32))
+					try:win.blit(pygame.transform.scale(Game_menu_slot2, (64 - special_slot_animations["Game menu slot"][2], 64 - special_slot_animations["Game menu slot"][2])), (Width // 2 + math.cos((2 * math.pi) / 6) * radius - 32, Height // 2 + math.sin((2 * math.pi) / 6) * radius - 32))
+					except: win.blit(Game_menu_slot2, (Width // 2 + math.cos((2 * math.pi) / 6) * radius - 32, Height // 2 + math.sin((2 * math.pi) / 6) * radius - 32))
 				
 				else:
-					win.blit(Game_menu_slot1, (Width // 2 + cos((2 * pi) / 6) * radius - 32, Height // 2 + sin((2 * pi) / 6) * radius - 32))
+					win.blit(Game_menu_slot1, (Width // 2 + math.cos((2 * math.pi) / 6) * radius - 32, Height // 2 + math.sin((2 * math.pi) / 6) * radius - 32))
 
-				text(t("Game menu"), Width // 2 + cos((2 * pi) / 6) * radius, Height // 2 + sin((2 * pi) / 6) * radius + 40, alignment=True)
+				text(t("Game menu"), Width // 2 + math.cos((2 * math.pi) / 6) * radius, Height // 2 + math.sin((2 * math.pi) / 6) * radius + 40, alignment=True)
 				
 
 				
-				if Width // 2 + cos((2 * pi * 2) / 6) * radius - 32 < mouse_x < Width // 2 + cos((2 * pi * 2) / 6) * radius + 32 and Height // 2 + sin((2 * pi * 2) / 6) * radius - 32 < mouse_y < Height // 2 + sin((2 * pi * 2) / 6) * radius + 32:
+				if Width // 2 + math.cos((2 * math.pi * 2) / 6) * radius - 32 < mouse_x < Width // 2 + math.cos((2 * math.pi * 2) / 6) * radius + 32 and Height // 2 + math.sin((2 * math.pi * 2) / 6) * radius - 32 < mouse_y < Height // 2 + math.sin((2 * math.pi * 2) / 6) * radius + 32:
 					if special_slot_animations["Menu slot"][0]:
 						if special_slot_animations["Menu slot"][1] < FPS / 6:
 							special_slot_animations["Menu slot"][1] += 1
@@ -5085,17 +5014,17 @@ def start_game():
 					special_slot_animations["Menu slot"][1] += 1   
 
 				if special_slot_animations["Menu slot"][0] and Settings["Display"][5]:
-					try:win.blit(pygame.transform.scale(Menu_slot2, (64 - special_slot_animations["Menu slot"][2], 64 - special_slot_animations["Menu slot"][2])), (Width // 2 + cos((2 * pi * 2) / 6) * radius - 32, Height // 2 + sin((2 * pi) / 6) * radius - 32))
-					except: win.blit(Menu_slot2, (Width // 2 + cos((2 * pi * 2) / 6) * radius - 32, Height // 2 + sin((2 * pi * 2) / 6) * radius - 32))
+					try:win.blit(pygame.transform.scale(Menu_slot2, (64 - special_slot_animations["Menu slot"][2], 64 - special_slot_animations["Menu slot"][2])), (Width // 2 + math.cos((2 * math.pi * 2) / 6) * radius - 32, Height // 2 + math.sin((2 * math.pi) / 6) * radius - 32))
+					except: win.blit(Menu_slot2, (Width // 2 + math.cos((2 * math.pi * 2) / 6) * radius - 32, Height // 2 + math.sin((2 * math.pi * 2) / 6) * radius - 32))
 				
 				else:
-					win.blit(Menu_slot1, (Width // 2 + cos((2 * pi * 2) / 6) * radius - 32, Height // 2 + sin((2 * pi * 2) / 6) * radius - 32))
+					win.blit(Menu_slot1, (Width // 2 + math.cos((2 * math.pi * 2) / 6) * radius - 32, Height // 2 + math.sin((2 * math.pi * 2) / 6) * radius - 32))
 
-				text(t("Extra info menu"), Width // 2 + cos((2 * pi * 2) / 6) * radius, Height // 2 + sin((2 * pi * 2) / 6) * radius + 40, alignment=True)
+				text(t("Extra info menu"), Width // 2 + math.cos((2 * math.pi * 2) / 6) * radius, Height // 2 + math.sin((2 * math.pi * 2) / 6) * radius + 40, alignment=True)
 				
 
 
-				if Width // 2 + cos((2 * pi * 3) / 6) * radius - 32 < mouse_x < Width // 2 + cos((2 * pi * 3) / 6) * radius + 32 and Height // 2 + sin((2 * pi * 3) / 6) * radius - 32 < mouse_y < Height // 2 + sin((2 * pi * 3) / 6) * radius + 32:
+				if Width // 2 + math.cos((2 * math.pi * 3) / 6) * radius - 32 < mouse_x < Width // 2 + math.cos((2 * math.pi * 3) / 6) * radius + 32 and Height // 2 + math.sin((2 * math.pi * 3) / 6) * radius - 32 < mouse_y < Height // 2 + math.sin((2 * math.pi * 3) / 6) * radius + 32:
 					if special_slot_animations["Multyplayer slot"][0]:
 						if special_slot_animations["Multyplayer slot"][1] < FPS / 6:
 							special_slot_animations["Multyplayer slot"][1] += 1
@@ -5116,17 +5045,17 @@ def start_game():
 					special_slot_animations["Multyplayer slot"][1] += 1   
 
 				if special_slot_animations["Multyplayer slot"][0] and Settings["Display"][5]:
-					try:win.blit(pygame.transform.scale(Multyplayer_slot2, (64 - special_slot_animations["Multyplayer slot"][2], 64 - special_slot_animations["Multyplayer slot"][2])), (Width // 2 + cos((2 * pi * 3) / 6) * radius - 32, Height // 2 + sin((2 * pi * 3) / 6) * radius - 32))
-					except: win.blit(Multyplayer_slot2, (Width // 2 + cos((2 * pi * 3) / 6) * radius - 32, Height // 2 + sin((2 * pi * 3) / 6) * radius - 32))
+					try:win.blit(pygame.transform.scale(Multyplayer_slot2, (64 - special_slot_animations["Multyplayer slot"][2], 64 - special_slot_animations["Multyplayer slot"][2])), (Width // 2 + math.cos((2 * math.pi * 3) / 6) * radius - 32, Height // 2 + math.sin((2 * math.pi * 3) / 6) * radius - 32))
+					except: win.blit(Multyplayer_slot2, (Width // 2 + math.cos((2 * math.pi * 3) / 6) * radius - 32, Height // 2 + math.sin((2 * math.pi * 3) / 6) * radius - 32))
 				
 				else:
-					win.blit(Multyplayer_slot1, (Width // 2 + cos((2 * pi * 3) / 6) * radius - 32, Height // 2 + sin((2 * pi * 3) / 6) * radius - 32))
+					win.blit(Multyplayer_slot1, (Width // 2 + math.cos((2 * math.pi * 3) / 6) * radius - 32, Height // 2 + math.sin((2 * math.pi * 3) / 6) * radius - 32))
 
-				text(t("Multiplayer menu"), Width // 2 + cos((2 * pi * 3) / 6) * radius, Height // 2 + sin((2 * pi * 3) / 6) * radius + 40, alignment=True)
+				text(t("Multiplayer menu"), Width // 2 + math.cos((2 * math.pi * 3) / 6) * radius, Height // 2 + math.sin((2 * math.pi * 3) / 6) * radius + 40, alignment=True)
 				
 
 				
-				if Width // 2 + cos((2 * pi * 4) / 6) * radius - 32 < mouse_x < Width // 2 + cos((2 * pi * 4) / 6) * radius + 32 and Height // 2 + sin((2 * pi * 4) / 6) * radius - 32 < mouse_y < Height // 2 + sin((2 * pi * 4) / 6) * radius + 32:
+				if Width // 2 + math.cos((2 * math.pi * 4) / 6) * radius - 32 < mouse_x < Width // 2 + math.cos((2 * math.pi * 4) / 6) * radius + 32 and Height // 2 + math.sin((2 * math.pi * 4) / 6) * radius - 32 < mouse_y < Height // 2 + math.sin((2 * math.pi * 4) / 6) * radius + 32:
 					if special_slot_animations["Close slot"][0]:
 						if special_slot_animations["Close slot"][1] < FPS / 6:
 							special_slot_animations["Close slot"][1] += 1
@@ -5146,17 +5075,17 @@ def start_game():
 					special_slot_animations["Close slot"][1] += 1	
 
 				if special_slot_animations["Close slot"][0] and Settings["Display"][5]:
-					try:win.blit(pygame.transform.scale(Close_slot2, (64 - special_slot_animations["Close slot"][2], 64 - special_slot_animations["Close slot"][2])), (Width // 2 + cos((2 * pi * 4) / 6) * radius - 32, Height // 2 + sin((2 * pi * 4) / 6) * radius - 32))
-					except: win.blit(Close_slot2, (Width // 2 + cos((2 * pi * 4) / 6) * radius - 32, Height // 2 + sin((2 * pi * 4) / 6) * radius - 32))
+					try:win.blit(pygame.transform.scale(Close_slot2, (64 - special_slot_animations["Close slot"][2], 64 - special_slot_animations["Close slot"][2])), (Width // 2 + math.cos((2 * math.pi * 4) / 6) * radius - 32, Height // 2 + math.sin((2 * math.pi * 4) / 6) * radius - 32))
+					except: win.blit(Close_slot2, (Width // 2 + math.cos((2 * math.pi * 4) / 6) * radius - 32, Height // 2 + math.sin((2 * math.pi * 4) / 6) * radius - 32))
 				
 				else:
-					win.blit(Close_slot1, (Width // 2 + cos((2 * pi * 4) / 6) * radius - 32, Height // 2 + sin((2 * pi * 4) / 6) * radius - 32))
+					win.blit(Close_slot1, (Width // 2 + math.cos((2 * math.pi * 4) / 6) * radius - 32, Height // 2 + math.sin((2 * math.pi * 4) / 6) * radius - 32))
 
-				text(t("Close"), Width // 2 + cos((2 * pi * 4) / 6) * radius, Height // 2 + sin((2 * pi * 4) / 6) * radius + 40, alignment=True)
+				text(t("Close"), Width // 2 + math.cos((2 * math.pi * 4) / 6) * radius, Height // 2 + math.sin((2 * math.pi * 4) / 6) * radius + 40, alignment=True)
 
 
 
-				if Width // 2 + cos((2 * pi * 5) / 6) * radius - 32 < mouse_x < Width // 2 + cos((2 * pi * 5) / 6) * radius + 32 and Height // 2 + sin((2 * pi * 5) / 6) * radius - 32 < mouse_y < Height // 2 + sin((2 * pi * 5) / 6) * radius + 32:
+				if Width // 2 + math.cos((2 * math.pi * 5) / 6) * radius - 32 < mouse_x < Width // 2 + math.cos((2 * math.pi * 5) / 6) * radius + 32 and Height // 2 + math.sin((2 * math.pi * 5) / 6) * radius - 32 < mouse_y < Height // 2 + math.sin((2 * math.pi * 5) / 6) * radius + 32:
 					if special_slot_animations["Reference slot"][0]:
 						if special_slot_animations["Reference slot"][1] < FPS / 6:
 							special_slot_animations["Reference slot"][1] += 1
@@ -5176,13 +5105,13 @@ def start_game():
 					special_slot_animations["Reference slot"][1] += 1	
 
 				if special_slot_animations["Reference slot"][0] and Settings["Display"][5]:
-					try:win.blit(pygame.transform.scale(Reference_slot2, (64 - special_slot_animations["Reference slot"][2], 64 - special_slot_animations["Reference slot"][2])), (Width // 2 + cos((2 * pi * 5) / 6) * radius - 32, Height // 2 + sin((2 * pi * 4) / 6) * radius - 32))
-					except: win.blit(Reference_slot2, (Width // 2 + cos((2 * pi * 5) / 6) * radius - 32, Height // 2 + sin((2 * pi * 5) / 6) * radius - 32))
+					try:win.blit(pygame.transform.scale(Reference_slot2, (64 - special_slot_animations["Reference slot"][2], 64 - special_slot_animations["Reference slot"][2])), (Width // 2 + math.cos((2 * math.pi * 5) / 6) * radius - 32, Height // 2 + math.sin((2 * math.pi * 4) / 6) * radius - 32))
+					except: win.blit(Reference_slot2, (Width // 2 + math.cos((2 * math.pi * 5) / 6) * radius - 32, Height // 2 + math.sin((2 * math.pi * 5) / 6) * radius - 32))
 				
 				else:
-					win.blit(Reference_slot1, (Width // 2 + cos((2 * pi * 5) / 6) * radius - 32, Height // 2 + sin((2 * pi * 5) / 6) * radius - 32))
+					win.blit(Reference_slot1, (Width // 2 + math.cos((2 * math.pi * 5) / 6) * radius - 32, Height // 2 + math.sin((2 * math.pi * 5) / 6) * radius - 32))
 
-				text(t("Reference"), Width // 2 + cos((2 * pi * 5) / 6) * radius, Height // 2 + sin((2 * pi * 5) / 6) * radius + 40, alignment=True)
+				text(t("Reference"), Width // 2 + math.cos((2 * math.pi * 5) / 6) * radius, Height // 2 + math.sin((2 * math.pi * 5) / 6) * radius + 40, alignment=True)
 
 				pygame.display.update()
 				clock.tick(MAX_FPS)

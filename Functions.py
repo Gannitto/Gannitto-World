@@ -305,7 +305,7 @@ def crack_surface(world, Particle, object, damage_level, scale=1):
 		for _ in range(length):
 			if 0 <= x < w and 0 <= y < h:
 				r, g, b, _ = result.get_at((x * scale, y * scale))
-				dark = int(60 + 120 * damage_level)
+				dark = int(40 + 120 * damage_level)
 				pixels[x * scale : (x + 1) * scale, y * scale : (y + 1) * scale] = (max(0, r-dark), max(0, g-dark), max(0, b-dark))
 			
 			x += random.choice([-1, 0, 1])
