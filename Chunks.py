@@ -21,7 +21,7 @@ structures = {
 					"Template": {
 						"name": "Pond",
 						"image_path": "Images/Objects/Pond.png",
-						"scale_x": (512, 512),
+						"scale": (512, 512),
 						"special_flags": [100, 20]
 						}
 				},
@@ -32,7 +32,7 @@ structures = {
 					"Template": {
 						"name": "Reed",
 						"image_path": "Images/Objects/Reed.png",
-						"scale_x": (256, 256)
+						"scale": (256, 256)
 						}
 				}
 			   ),
@@ -48,14 +48,14 @@ biomes_objects = {
 				(1, {
 					"name": "Cactus",
 					"image_path": "Images/Objects/Cactus.png",
-					"scale_x": (256, 256),
+					"scale": (256, 256),
 					"is_solid": True,
 					"rect": (-80, 0, 160, 232)
 					}),
 				(0.5, {
 					"name": "Pile of sand",
 					"image_path": "Images/Objects/Pile of sand.png",
-					"scale_x": (256, 256),
+					"scale": (256, 256),
 					})),
 			"Items": (),
 			"Structures": ()},
@@ -67,10 +67,10 @@ biomes_objects = {
 				(2, {
 					"name": "Tree",
 					"image_path": "Images/Objects/Tree.png",
-					"scale_x": (256, 256),
+					"scale": (256, 256),
 					"is_solid": True,
 					"breakable": True,
-					"max_break": 100,
+					"max_break": 500,
 					"drop_items": (
 						("Wooden", 2, 5),
 						("Stick", 1, 3)
@@ -78,11 +78,11 @@ biomes_objects = {
 				(2, {
 					"name": "Birch",
 					"image_path": "Images/Objects/Birch.png",
-					"scale_x": (256, 256),
+					"scale": (256, 256),
 					"special_flags": 100,
 					"is_solid": True,
 					"breakable": True,
-					"max_break": 100,
+					"max_break": 500,
 					"drop_items": (
 						("Birch wooden", 2, 5),
 						("Stick", 1, 3)
@@ -90,7 +90,7 @@ biomes_objects = {
 				(0.5, {
 					"name": "Bush",
 					"image_path": "Images/Objects/Bush.png",
-					"scale_x": (128, 128),
+					"scale": (128, 128),
 					"is_solid": True
 				})),
 			"Items": (
@@ -145,11 +145,11 @@ biomes_objects = {
 				(2, {
 					"name": "Dark tree",
 					"image_path": "Images/Objects/Dark tree.png",
-					"scale_x": (256, 256),
+					"scale": (256, 256),
 					"special_flags": 100,
 					"is_solid": True,
 					"breakable": True,
-					"max_break": 100,
+					"max_break": 500,
 					"drop_items": (
 						("Dark wooden", 2, 5),
 						("Stick", 1, 3)
@@ -174,14 +174,14 @@ biomes_objects = {
 				(2, {
 					"name": "Spruce",
 					"image_path": "Images/Objects/Spruce.png",
-					"scale_x": (512, 512),
+					"scale": (512, 512),
 					"special_flags": 100,
 					"is_solid": True
 					}),
 				(0.5, {
 					"name": "Dark bush",
 					"image_path": "Images/Objects/Dark bush.png",
-					"scale_x": (128, 128),
+					"scale": (128, 128),
 					"is_solid": True
 				})),
 			"Items": (),

@@ -280,7 +280,7 @@ def crack_surface(world, Particle, object, damage_level, scale=1):
 	temp_surface = pygame.Surface((scale, scale))
 
 	# Количество трещин зависит от damage
-	crack_count = int(3 + 45 * damage_level)
+	crack_count = int(3 + 30 * damage_level)
 	
 	for _ in range(crack_count):
 

@@ -568,7 +568,7 @@ class Object:
 			  object_x: int,
 			  object_y: int,
 			  image_path: str,
-			  scale_x: tuple[int, int] = (64, 64),
+			  scale: tuple[int, int] = (64, 64),
 			  image = None,
 			  special_flags: str = None,
 			  add_path=True,
@@ -588,12 +588,17 @@ class Object:
 		object_x - X объекта
 		object_y - Y объекта
 		image_path - Путь к изображению объекта
-		scale_x - На сколько нужно изменить размер изображения объекта
+		scale - На сколько нужно изменить размер изображения объекта
 		image - Изображение объекта
 		special_flags - Специальные флаги объекта
 		add_path - Добавлять ли путь до папки игры к путю до изображения
 		start_time - Время, когда был создан объект
 		rect - Хитбокс объекта
+		pickable - Можно ли подобрать объект
+		breakable - Можно ли сломать объект
+		max_break - Сколько нужно ударов чтобы сломать
+		breakable_by_hammer - Можно ли моментально сломать объект молотом
+		drop_items - Предметы, которые дропаются из объекта (название, мин количество, макс количество)
 		"""
 
 		self.object_class = "Object"
@@ -609,18 +614,18 @@ class Object:
 
 		if image is None:
 			if add_path:
-				self.image = TextureCache.get(path + image_path, scale_x)
+				self.image = TextureCache.get(path + image_path, scale)
 			else:
-				self.image = TextureCache.get(image_path, scale_x)
+				self.image = TextureCache.get(image_path, scale)
 		else:
-			self.image = pygame.transform.scale(image, (scale_x[0], scale_x[1]))
+			self.image = pygame.transform.scale(image, (scale[0], scale[1]))
 
 		self.image_path = image_path
 		self.w = self.image.get_width()
 		self.h = self.image.get_height()
 		self.special_flags = special_flags
 		self.add_path = add_path
-		self.scale_x = scale_x
+		self.scale = scale
 		self.is_solid = is_solid
 		self.pickable = pickable
 		self.breakable = breakable
@@ -634,12 +639,12 @@ class Object:
 		else:
 			self.rect = pygame.Rect(rect[0] + self.x, rect[1] + self.y, rect[2], rect[3])
 	
-	def main(self, player):
+	def main(self, dt):
 
 		if player.breaking_object == None and self.breakable and self.get_left_pressed():
 
 			player.breaking_object = self
-			self.breaked -= 1
+			self.breaked -= dt * 100
 			self.image = crack_surface(world, Particle, self, (self.max_break - self.breaked) // self.max_break, 8)
 
 			if self.breaked < 1:
@@ -675,7 +680,7 @@ class Object:
 			return False
 
 	def copy(self):
-		return Object(self.name, self.x, self.y, self.image_path, self.scale_x, self.image, self.special_flags, self.add_path, self.start_time, self.is_solid, self.rect, self.is_solid, self.breakable, self.max_break, self.breakable_by_hammer, self.drop_items)
+		return Object(self.name, self.x, self.y, self.image_path, self.scale, self.image, self.special_flags, self.add_path, self.start_time, self.is_solid, self.rect, self.is_solid, self.breakable, self.max_break, self.breakable_by_hammer, self.drop_items)
 
 	
 	def __getstate__(self):
@@ -688,9 +693,9 @@ class Object:
 		
 		self.__dict__.update(state)
 		if self.add_path:
-			self.image = TextureCache.get(path + self.image_path, self.scale_x)
+			self.image = TextureCache.get(path + self.image_path, self.scale)
 		else:
-			self.image = TextureCache.get(self.image_path, self.scale_x)
+			self.image = TextureCache.get(self.image_path, self.scale)
 
 class Particle:
 
@@ -4365,7 +4370,7 @@ def start_game():
 
 				for object in world.visible_objects:
 
-					object.main(player)
+					object.main(dt)
 
 					if object.get_left_pressed():
 
