@@ -834,11 +834,11 @@ class Particle:
 			self.y += dt * 25 * self.y_bias if self.y_bias.__class__ in (int, float) else self.y_bias(self)
 
 		if self.rotate is not None:
-			i = self.image.get_rect()
-			j = pygame.transform.rotate(self.image, self.rotate)
-			ii = i.copy()
-			ii.center = j.get_rect().center
-			self.image = j.subsurface(ii).copy()
+			image_rect = self.image.get_rect()
+			rotated_image = pygame.transform.rotate(self.image, self.rotate)
+			rect_copy = image_rect.copy()
+			rect_copy.center = rotated_image.get_rect().center
+			self.image = rotated_image.subsurface(rect_copy).copy()
 			
 		if (self.end_x is not None and self.end_y is None and self.end_x - self.end_zone <= self.x <= self.end_x + self.end_zone) or (self.end_y is not None and self.end_x is None and self.end_y - self.end_zone <= self.y <= self.end_y + self.end_zone) or (self.end_x is not None and self.end_y is not None and self.end_x - self.end_zone <= self.x <= self.end_x + self.end_zone and self.end_y - self.end_zone <= self.y <= self.end_y + self.end_zone):
 			if self.end_command is not None: self.end_command(self)
@@ -3216,9 +3216,45 @@ def settings():
 		
 		changed_key = ""
 		looked_key = None
+		key_values = ({
+			"esc": pygame.K_ESCAPE,
+			"f1": pygame.K_F1,
+			"f2": pygame.K_F2,
+			"f3": pygame.K_F3,
+			"f4": pygame.K_F4,
+			"f4": pygame.K_F5,
+			"f5": pygame.K_F5,
+			"f6": pygame.K_F6,
+			"f7": pygame.K_F7,
+			"f8": pygame.K_F8,
+			"f9": pygame.K_F9,
+			"f10": pygame.K_F10,
+			"f11": pygame.K_F11,
+			"f12": pygame.K_F12,
+			"prt sc": pygame.K_PRINTSCREEN,
+			"Off": pygame.K_o,
+			"Delete": pygame.K_DELETE
+			},
+			{
+			"`": pygame.KSCAN_APOSTROPHE,
+			"1": pygame.K_1,
+			"2": pygame.K_2,
+			"3": pygame.K_3,
+			"4": pygame.K_4,
+			"5": pygame.K_5,
+			"6": pygame.K_6,
+			"7": pygame.K_7,
+			"8": pygame.K_8,
+			"9": pygame.K_9,
+			"0": pygame.K_0,
+			"-": pygame.K_MINUS,
+			"=": pygame.K_EQUALS,
+			"← Backspace": pygame.K_BACKSPACE,
+			"Home": pygame.K_HOME
+			})
 		
 		chek_keys = lambda key: key in (v for v in hot_keys.values()) # Эта lambda-функция выясняет, является ли данная клавиша одной из горячих клавиш игры
-		chek_blocked_keys = lambda key: key in ("ESC", "PRT SC", "OFF", "W", "A", "S", "D", "WIN", "<", "<>", ">")
+		chek_blocked_keys = lambda key: key in ("esc", "prt sc", "win")
 
 		while True:
 
@@ -3237,11 +3273,11 @@ def settings():
 					if event.key == hot_keys["Close"]:
 						if looked_key is not None:
 							looked_key = None
-					else:
-						Saver.save_objects(path + "Settings/Settings.save", Settings)
-						Saver.save_objects(path + "Settings/Hot keys.save", hot_keys)
-						win_darken(win)
-						menu()
+						else:
+							Saver.save_objects(path + "Settings/Settings.save", Settings)
+							Saver.save_objects(path + "Settings/Hot keys.save", hot_keys)
+							win_darken(win)
+							menu()
 
 					if event.key == hot_keys["Change screen"]:
 						if screenmode == "FULLSCREEN":
@@ -3279,32 +3315,33 @@ def settings():
 			littleTextInfo = pygame.font.Font(path + "Font.ttf", 8)
 			key_color = (139, 155, 180)
 
-			for i, j in enumerate(["ESC", "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12", "PRT.SC.", "OFF", "DEL"]):
+			for key_x, key in enumerate(key_values[0].keys()):
 				
-				if chek_keys(j): key_color = (58, 68, 102)
+				if chek_keys(key): key_color = (58, 68, 102)
 				else: key_color = (139, 155, 180)
-				if chek_blocked_keys(j): key_color = (255, 255, 255)
-				if 385 + i * 50 < mouse_x < 430 + i * 50 and 130 < mouse_y < 180: changed_key = j
+				if chek_blocked_keys(key): key_color = (255, 255, 255)
+				if 385 + key_x * 50 < mouse_x < 430 + key_x * 50 and 130 < mouse_y < 180: changed_key = key
 				
-				pygame.draw.rect(win, key_color, (385 + i * 50, 123, 40, 40), 3)
-				win.blit(littleTextInfo.render(j, True, key_color), (390 + i * 50, 130))
+				pygame.draw.rect(win, key_color, (385 + key_x * 50, 123, 40, 40), 3)
+				win.blit(littleTextInfo.render(key, True, key_color), (390 + key_x * 50, 130))
+			
+			for key_x, key in enumerate(key_values[1].keys()):
 				
-			for i, j in enumerate(["`", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "=", "Backspase", "", "Home"]):
-				
-				if chek_keys(j): key_color = (58, 68, 102)
+				if chek_keys(key): key_color = (58, 68, 102)
 				else: key_color = (139, 155, 180)
 				
-				match i:
+				match key_x:
 					case 13:
-						if 385 + i * 50 < mouse_x < 475 + i * 50 and 173 < mouse_y < 213: changed_key = j
-						pygame.draw.rect(win, key_color, (385 + i * 50, 173, 90, 40), 3)
+						if 385 + key_x * 50 < mouse_x < 475 + key_x * 50 and 173 < mouse_y < 213: changed_key = key
+						pygame.draw.rect(win, key_color, (385 + key_x * 50, 173, 90, 40), 3)
 					case 14:
-						pass
+						if 435 + key_x * 50 < mouse_x < 480 + key_x * 50 and 173 < mouse_y < 213: changed_key = key
+						pygame.draw.rect(win, key_color, (435 + key_x * 50, 173, 40, 40), 3)
 					case _:
-						if 385 + i * 50 < mouse_x < 430 + i * 50 and 173 < mouse_y < 213: changed_key = j
-						pygame.draw.rect(win, key_color, (385 + i * 50, 173, 40, 40), 3)
+						if 385 + key_x * 50 < mouse_x < 430 + key_x * 50 and 173 < mouse_y < 213: changed_key = key
+						pygame.draw.rect(win, key_color, (385 + key_x * 50, 173, 40, 40), 3)
 						
-				win.blit(littleTextInfo.render(j, True, key_color), (390 + i * 50, 180))
+				win.blit(littleTextInfo.render(key, True, key_color), (390 + key_x * 50 + 50 * (key_x == 14), 180))
 			
 			if chek_keys("TAB"): key_color = (58, 68, 102)
 			else: key_color = (139, 155, 180)
@@ -3312,25 +3349,25 @@ def settings():
 			pygame.draw.rect(win, key_color, (385, 223, 60, 40), 3)
 			win.blit(littleTextInfo.render("TAB", True, key_color), (390, 230))
 			
-			for i, j in enumerate(["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "[", "]", "\\", "PG UP"]):
+			for key_x, key in enumerate(["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "[", "]", "\\", "PG UP"]):
 				
-				if chek_keys(j): key_color = (58, 68, 102)
+				if chek_keys(key): key_color = (58, 68, 102)
 				else: key_color = (139, 155, 180)
-				if chek_blocked_keys(j): key_color = (255, 255, 255)
+				if chek_blocked_keys(key): key_color = (255, 255, 255)
 				
-				match i:
+				match key_x:
 					case 12:
-						if 455 + i * 50 < mouse_x < 525 + i * 50 and 223 < mouse_y < 263: changed_key = j
-						pygame.draw.rect(win, key_color, (455 + i * 50, 223, 70, 40), 3)
-						win.blit(littleTextInfo.render("\\", True, key_color), (460 + i * 50, 230))
+						if 455 + key_x * 50 < mouse_x < 525 + key_x * 50 and 223 < mouse_y < 263: changed_key = key
+						pygame.draw.rect(win, key_color, (455 + key_x * 50, 223, 70, 40), 3)
+						win.blit(littleTextInfo.render("\\", True, key_color), (460 + key_x * 50, 230))
 					case 13:
-						if 485 + i * 50 < mouse_x < 515 + i * 50 and 223 < mouse_y < 263: changed_key = j
-						pygame.draw.rect(win, key_color, (485 + i * 50, 223, 40, 40), 3)
-						win.blit(littleTextInfo.render("PG UP", True, key_color), (490 + i * 50, 230))
+						if 485 + key_x * 50 < mouse_x < 515 + key_x * 50 and 223 < mouse_y < 263: changed_key = key
+						pygame.draw.rect(win, key_color, (485 + key_x * 50, 223, 40, 40), 3)
+						win.blit(littleTextInfo.render("PG UP", True, key_color), (490 + key_x * 50, 230))
 					case _:
-						if 455 + i * 50 < mouse_x < 495 + i * 50 and 223 < mouse_y < 263: changed_key = j
-						pygame.draw.rect(win, key_color, (455 + i * 50, 223, 40, 40), 3)
-						win.blit(littleTextInfo.render(j, True, key_color), (460 + i * 50, 230))
+						if 455 + key_x * 50 < mouse_x < 495 + key_x * 50 and 223 < mouse_y < 263: changed_key = key
+						pygame.draw.rect(win, key_color, (455 + key_x * 50, 223, 40, 40), 3)
+						win.blit(littleTextInfo.render(key, True, key_color), (460 + key_x * 50, 230))
 			
 			if chek_keys("CAPS LOOK"): key_color = (58, 68, 102)
 			else: key_color = (139, 155, 180)
@@ -3338,25 +3375,25 @@ def settings():
 			pygame.draw.rect(win, (139, 155, 180), (385, 273, 70, 40), 3)
 			win.blit(littleTextInfo.render("CAPS LOCK", True, (139, 155, 180)), (390, 280))
 			
-			for i, j in enumerate(["A", "S", "D", "F", "G", "H", "J", "K", "L", ";", "'", "ENTER", "PG DOWN"]):
+			for key_x, key in enumerate(["A", "S", "D", "F", "G", "H", "J", "K", "L", ";", "'", "ENTER", "PG DOWN"]):
 				
-				if chek_keys(j): key_color = (58, 68, 102)
+				if chek_keys(key): key_color = (58, 68, 102)
 				else: key_color = (139, 155, 180)
-				if chek_blocked_keys(j): key_color = (255, 255, 255)
+				if chek_blocked_keys(key): key_color = (255, 255, 255)
 				
-				match i:
+				match key_x:
 					case 11:
-						if 470 + i * 50 < mouse_x < 580 + i * 50 and 273 < mouse_y < 313: changed_key = j
-						pygame.draw.rect(win, key_color, (465 + i * 50, 273, 110, 40), 3)
-						win.blit(littleTextInfo.render(j, True, key_color), (470 + i * 50, 280))
+						if 470 + key_x * 50 < mouse_x < 580 + key_x * 50 and 273 < mouse_y < 313: changed_key = key
+						pygame.draw.rect(win, key_color, (465 + key_x * 50, 273, 110, 40), 3)
+						win.blit(littleTextInfo.render(key, True, key_color), (470 + key_x * 50, 280))
 					case 12:
-						if 535 + i * 50 < mouse_x < 575 + i * 50 and 273 < mouse_y < 313: changed_key = j
-						pygame.draw.rect(win, key_color, (535 + i * 50, 273, 40, 40), 3)
-						win.blit(littleTextInfo.render(j, True, key_color), (540 + i * 50, 280))
+						if 535 + key_x * 50 < mouse_x < 575 + key_x * 50 and 273 < mouse_y < 313: changed_key = key
+						pygame.draw.rect(win, key_color, (535 + key_x * 50, 273, 40, 40), 3)
+						win.blit(littleTextInfo.render(key, True, key_color), (540 + key_x * 50, 280))
 					case _:
-						if 465 + i * 50 < mouse_x < 505 + i * 50 and 273 < mouse_y < 313: changed_key = j
-						pygame.draw.rect(win, key_color, (465 + i * 50, 273, 40, 40), 3)
-						win.blit(littleTextInfo.render(j, True, key_color), (470 + i * 50, 280))
+						if 465 + key_x * 50 < mouse_x < 505 + key_x * 50 and 273 < mouse_y < 313: changed_key = key
+						pygame.draw.rect(win, key_color, (465 + key_x * 50, 273, 40, 40), 3)
+						win.blit(littleTextInfo.render(key, True, key_color), (470 + key_x * 50, 280))
 			
 			if chek_keys("SHIFT"): key_color = (58, 68, 102)
 			else: key_color = (139, 155, 180)
@@ -3364,35 +3401,35 @@ def settings():
 			pygame.draw.rect(win, key_color, (385, 323, 90, 40), 3)
 			win.blit(littleTextInfo.render("SHIFT", True, key_color), (390, 330))
 			
-			for i, j in enumerate(["Z", "X", "C", "V", "B", "N", "M", ",", ".", "/", "SHIFT", "END"]):
+			for key_x, key in enumerate(["Z", "X", "C", "V", "B", "N", "M", ",", ".", "/", "SHIFT", "END"]):
 				
-				if chek_keys(j): key_color = (58, 68, 102)
+				if chek_keys(key): key_color = (58, 68, 102)
 				else: key_color = (139, 155, 180)
-				if chek_blocked_keys(j): key_color = (255, 255, 255)
+				if chek_blocked_keys(key): key_color = (255, 255, 255)
 				
-				match i:
+				match key_x:
 					case 10:
-						if 485 + i * 50 < mouse_x < 625 + i * 50 and 323 < mouse_y < 363: changed_key = j
-						pygame.draw.rect(win, key_color, (485 + i * 50, 323, 140, 40), 3)
-						win.blit(littleTextInfo.render("SHIFT", True, key_color), (490 + i * 50, 330))
+						if 485 + key_x * 50 < mouse_x < 625 + key_x * 50 and 323 < mouse_y < 363: changed_key = key
+						pygame.draw.rect(win, key_color, (485 + key_x * 50, 323, 140, 40), 3)
+						win.blit(littleTextInfo.render("SHIFT", True, key_color), (490 + key_x * 50, 330))
 					case 11:
-						if 585 + i * 50 < mouse_x < 625 + i * 50 and 323 < mouse_y < 363: changed_key = j
-						pygame.draw.rect(win, key_color, (585 + i * 50, 323, 40, 40), 3)
-						win.blit(littleTextInfo.render("END", True, key_color), (590 + i * 50, 330))
+						if 585 + key_x * 50 < mouse_x < 625 + key_x * 50 and 323 < mouse_y < 363: changed_key = key
+						pygame.draw.rect(win, key_color, (585 + key_x * 50, 323, 40, 40), 3)
+						win.blit(littleTextInfo.render("END", True, key_color), (590 + key_x * 50, 330))
 					case _:
-						if 485 + i * 50 < mouse_x < 525 + i * 50 and 323 < mouse_y < 363: changed_key = j
-						pygame.draw.rect(win, key_color, (485 + i * 50, 323, 40, 40), 3)
-						win.blit(littleTextInfo.render(j, True, key_color), (490 + i * 50, 330))
+						if 485 + key_x * 50 < mouse_x < 525 + key_x * 50 and 323 < mouse_y < 363: changed_key = key
+						pygame.draw.rect(win, key_color, (485 + key_x * 50, 323, 40, 40), 3)
+						win.blit(littleTextInfo.render(key, True, key_color), (490 + key_x * 50, 330))
 
-			for i, j in enumerate(["CTRL", "FN", "WIN", "L_ALT"]):
+			for key_x, key in enumerate(["CTRL", "FN", "WIN", "L_ALT"]):
 				
-				if chek_keys(j): key_color = (58, 68, 102)
+				if chek_keys(key): key_color = (58, 68, 102)
 				else: key_color = (139, 155, 180)
-				if chek_blocked_keys(j): key_color = (255, 255, 255)
-				if 385 + i * 50 < mouse_x < 425 + i * 50 and 373 < mouse_y < 413: changed_key = j
+				if chek_blocked_keys(key): key_color = (255, 255, 255)
+				if 385 + key_x * 50 < mouse_x < 425 + key_x * 50 and 373 < mouse_y < 413: changed_key = key
 				
-				pygame.draw.rect(win, key_color, (385 + i * 50, 373, 40, 40), 3)
-				win.blit(littleTextInfo.render(j, True, key_color), (390 + i * 50, 380))
+				pygame.draw.rect(win, key_color, (385 + key_x * 50, 373, 40, 40), 3)
+				win.blit(littleTextInfo.render(key, True, key_color), (390 + key_x * 50, 380))
 				
 			if chek_keys("SPACE"): key_color = (58, 68, 102)
 			else: key_color = (139, 155, 180)
@@ -3400,21 +3437,21 @@ def settings():
 			pygame.draw.rect(win, key_color, (585, 373, 340, 40), 3)
 			win.blit(littleTextInfo.render("SPACE", True, key_color), (590, 380))
 
-			for i, j in enumerate(["R_ALT", "CTRL", "<", "<>", ">"]):
+			for key_x, key in enumerate(["R_ALT", "CTRL", "<", "<>", ">"]):
 				
-				if chek_keys(j): key_color = (58, 68, 102)
+				if chek_keys(key): key_color = (58, 68, 102)
 				else: key_color = (139, 155, 180)
-				if chek_blocked_keys(j): key_color = (255, 255, 255)
-				if 935 + i * 50 < mouse_x < 975 + i * 50 and 373 < mouse_y < 413: changed_key = j
+				if chek_blocked_keys(key): key_color = (255, 255, 255)
+				if 935 + key_x * 50 < mouse_x < 975 + key_x * 50 and 373 < mouse_y < 413: changed_key = key
 				
-				if i == 3:
-					pygame.draw.rect(win, key_color, (935 + i * 50, 373, 40, 17), 3)
-					win.blit(littleTextInfo.render("/\\", True, key_color), (940 + i * 50, 380))
-					pygame.draw.rect(win, key_color, (935 + i * 50, 396, 40, 17), 3)
-					win.blit(littleTextInfo.render("\\/", True, key_color), (940 + i * 50, 404))
+				if key_x == 3:
+					pygame.draw.rect(win, key_color, (935 + key_x * 50, 373, 40, 17), 3)
+					win.blit(littleTextInfo.render("/\\", True, key_color), (940 + key_x * 50, 380))
+					pygame.draw.rect(win, key_color, (935 + key_x * 50, 396, 40, 17), 3)
+					win.blit(littleTextInfo.render("\\/", True, key_color), (940 + key_x * 50, 404))
 				else:
-					pygame.draw.rect(win, key_color, (935 + i * 50, 373, 40, 40), 3)
-					win.blit(littleTextInfo.render(j, True, key_color), (940 + i * 50, 380))
+					pygame.draw.rect(win, key_color, (935 + key_x * 50, 373, 40, 40), 3)
+					win.blit(littleTextInfo.render(key, True, key_color), (940 + key_x * 50, 380))
 			
 			win.blit(textInfo.render(t("Hotkeys are highlighted in dark blue"), True, (139, 155, 180)), (385, 440))
 			win.blit(textInfo.render(t("Locked keys are highlighted in white"), True, (255, 255, 255)), (385, 470))
@@ -3423,7 +3460,7 @@ def settings():
 			if Width - 30 - textInfo.size(t("Reset key settings"))[0] < mouse_x < Width - 30 and 420 < mouse_y < 450:
 				win.blit(textInfo.render(t("Reset key settings"), True, (58, 68, 102)), (Width - 30 - textInfo.size(t("Reset key settings"))[0], 420))
 				if click[0]:
-					hot_keys = default_fill_surface
+					hot_keys = default_hot_keys
 			else:
 				win.blit(textInfo.render(t("Reset key settings"), True, (139, 155, 180)), (Width - 30 - textInfo.size(t("Reset key settings"))[0], 420))
 
@@ -3431,26 +3468,36 @@ def settings():
 			pygame.draw.rect(win, (58, 68, 102), (385, 530, Width - 500, 150), 5)
 			win.blit(textInfo.render(changed_key, True, (58, 68, 102)), (400, 545))
 			
-			a = ""
+			changed_key_key = ""
+			if changed_key in key_values:
+				changed_key_value = key_values[changed_key]
+			else:
+				changed_key_value = None
 			for key, val in hot_keys.items():
 				if val == changed_key:
-					a = key
+					changed_key_key = key
+					break
+			if changed_key_value is not None:
+				text(str(changed_key_value), 200, 10, (58, 68, 102))
 			if looked_key is None:
-				win.blit(textInfo.render(a, True, (58, 68, 102)), (400, 575))
+				win.blit(textInfo.render(changed_key_key, True, (58, 68, 102)), (400, 575))
 			else:
 				for key, val in hot_keys.items():
 					if val.lower() == looked_key.lower():
-						win.blit(textInfo.render(key, True, (58, 68, 102)), (400, 575))
+						key_text = key
+						if changed_key_key != "":
+							key_text += "\n" + changed_key_key
+						text(key_text, 400, 575, (58, 68, 102))
 						break
-			
+
 			if changed_key != "" and click[0]:
 				
-				if looked_key is None and a != "":
+				if looked_key is None and changed_key_key != "":
 					looked_key = changed_key
 				elif changed_key != looked_key and looked_key is not None and not chek_blocked_keys(changed_key):
 					for key, val in hot_keys.items():
 						if val.lower() == looked_key.lower():
-							hot_keys[key] = getattr(pygame, f"K_{changed_key}", None)
+							hot_keys[key] = changed_key_value
 							break
 					looked_key = None
 
@@ -4475,17 +4522,17 @@ def start_game():
 							if object.x < object.special_flags[0]:
 								object.x += 30
 								i = object.image.get_rect()
-								j = pygame.transform.rotate(object.image, -10)
+								key = pygame.transform.rotate(object.image, -10)
 								ii = i.copy()
-								ii.center = j.get_rect().center
-								object.image = j.subsurface(ii).copy()
+								ii.center = key.get_rect().center
+								object.image = key.subsurface(ii).copy()
 							else:
 								object.x -= 30
 								i = object.image.get_rect()
-								j = pygame.transform.rotate(object.image, 10)
+								key = pygame.transform.rotate(object.image, 10)
 								ii = i.copy()
-								ii.center = j.get_rect().center
-								object.image = j.subsurface(ii).copy()
+								ii.center = key.get_rect().center
+								object.image = key.subsurface(ii).copy()
 
 						if not object.y - 60 < object.special_flags[1] < object.y + 60:
 							if object.y < object.special_flags[1]:
