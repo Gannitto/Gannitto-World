@@ -3211,8 +3211,6 @@ def settings():
 	def Keys():
 
 		global win, screenmode, Settings, click, mouse_x, mouse_y, does_lighten, page, alt_pressed, hot_keys
-
-		mouse_x, mouse_y = pygame.mouse.get_pos()
 		
 		changed_key = ""
 		looked_key = None
@@ -3393,15 +3391,17 @@ def settings():
 			key_color = (139, 155, 180)
 			X = 385
 			Y = 123
+			close_key = ""
 
 			for line_num, line in enumerate(key_values):
 				for key_x, key in enumerate(line):
 					key_size = key_sizes[line_num][key_x]
 					key_rect = pygame.Rect(X, Y, key_size, 40)
+					key_color = (139, 155, 180)
 					if check_keys(key): key_color = (58, 68, 102)
-					elif key == looked_key: key_color = (139, 155, 180)
-					else: key_color = (139, 155, 180)
+					if key == looked_key: key_color = (139, 155, 180)
 					if check_blocked_keys(key): key_color = (255, 255, 255)
+					if key_values_combined[key] == hot_keys["Close"]: close_key = key
 					if key_rect.collidepoint((mouse_x, mouse_y)): changed_key = key
 					
 					pygame.draw.rect(win, key_color, (X, Y, key_size, 40), 6 if changed_key == key else 3)
@@ -3423,7 +3423,7 @@ def settings():
 
 			pygame.draw.rect(win, (139, 155, 180), (385, 530, Width - 500, 150))
 			pygame.draw.rect(win, (58, 68, 102), (385, 530, Width - 500, 150), 5)
-			win.blit(textInfo.render(changed_key, True, (58, 68, 102)), (400, 545))
+			text(changed_key if looked_key is None else f"Выбрана клавиша {looked_key}.\nНажмите {close_key}, чтобы отменить, либо выберите клавишу, которую Вы хотите назначить вместо неё.", 400, 545, (58, 68, 102))
 			
 			changed_key_key = ""
 			if changed_key == "":
@@ -3438,10 +3438,11 @@ def settings():
 					if val == changed_key_value:
 						text("\n" + key, 400, 575, (58, 68, 102))
 						break
+
 			if changed_key != "" and release:
 				
 				if looked_key is None:
-					if changed_key != "":
+					if changed_key != "" and check_keys(changed_key) and not check_blocked_keys(key):
 						looked_key = changed_key
 				elif changed_key != looked_key and looked_key is not None and not check_blocked_keys(changed_key) and not check_keys(changed_key):
 					for key, val in hot_keys.items():
