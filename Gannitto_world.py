@@ -3317,6 +3317,15 @@ def settings():
 		key_values_combined = {}
 		for key in key_values:
 			key_values_combined.update(key)
+
+		key_sizes = (
+			(40,) * 16,
+			(40,) * 13 + (90,) + (40,),
+			(60,) + (40,) * 12 + (70,) + (40,),
+			(70,) + (40,) * 11 + (110,) + (40,),
+			(90,) + (40,) * 10 + (90,) + (40,) * 2,
+			(40,) * 4 + (340,) + (40,) * 50
+			)
 		check_keys = lambda key: key_values_combined[key] in hot_keys.values() # Эта lambda-функция выясняет, является ли данная клавиша одной из горячих клавиш игры
 		check_blocked_keys = lambda key: key in ("prt sc", "super", "off")
 
@@ -3382,133 +3391,25 @@ def settings():
 			
 			littleTextInfo = pygame.font.Font(path + "Font.ttf", 8)
 			key_color = (139, 155, 180)
+			X = 385
+			Y = 123
 
-			for key_x, key in enumerate(key_values[0].keys()):
-				
-				if check_keys(key): key_color = (58, 68, 102)
-				elif key == looked_key: key_color = (139, 155, 180)
-				else: key_color = (139, 155, 180)
-				if check_blocked_keys(key): key_color = (255, 255, 255)
-				if 385 + key_x * 50 < mouse_x < 430 + key_x * 50 and 130 < mouse_y < 180: changed_key = key
-				
-				pygame.draw.rect(win, key_color, (385 + key_x * 50, 123, 40, 40), 6 if changed_key == key else 3)
-				win.blit(littleTextInfo.render(key, True, key_color), (390 + key_x * 50, 130))
+			for line_num, line in enumerate(key_values):
+				for key_x, key in enumerate(line):
+					key_size = key_sizes[line_num][key_x]
+					key_rect = pygame.Rect(X, Y, key_size, 40)
+					if check_keys(key): key_color = (58, 68, 102)
+					elif key == looked_key: key_color = (139, 155, 180)
+					else: key_color = (139, 155, 180)
+					if check_blocked_keys(key): key_color = (255, 255, 255)
+					if key_rect.collidepoint((mouse_x, mouse_y)): changed_key = key
+					
+					pygame.draw.rect(win, key_color, (X, Y, key_size, 40), 6 if changed_key == key else 3)
+					win.blit(littleTextInfo.render(key, True, key_color), (X + 5, Y + 7))
+					X += key_size + 10
+				X = 385
+				Y += 50
 			
-			for key_x, key in enumerate(key_values[1].keys()):
-				
-				if check_keys(key): key_color = (58, 68, 102)
-				elif key == looked_key: key_color = (139, 155, 180)
-				else: key_color = (139, 155, 180)
-				
-				match key_x:
-					case 13:
-						if 385 + key_x * 50 < mouse_x < 475 + key_x * 50 and 173 < mouse_y < 213: changed_key = key
-						pygame.draw.rect(win, key_color, (385 + key_x * 50, 173, 90, 40), 6 if changed_key == key else 3)
-					case 14:
-						if 435 + key_x * 50 < mouse_x < 480 + key_x * 50 and 173 < mouse_y < 213: changed_key = key
-						pygame.draw.rect(win, key_color, (435 + key_x * 50, 173, 40, 40), 6 if changed_key == key else 3)
-					case _:
-						if 385 + key_x * 50 < mouse_x < 430 + key_x * 50 and 173 < mouse_y < 213: changed_key = key
-						pygame.draw.rect(win, key_color, (385 + key_x * 50, 173, 40, 40), 6 if changed_key == key else 3)
-						
-				win.blit(littleTextInfo.render(key, True, key_color), (390 + key_x * 50 + 50 * (key_x == 14), 180))
-			
-			for key_x, key in enumerate(key_values[2].keys()):
-				
-				if check_keys(key): key_color = (58, 68, 102)
-				elif key == looked_key: key_color = (139, 155, 180)
-				else: key_color = (139, 155, 180)
-				if check_blocked_keys(key): key_color = (255, 255, 255)
-				
-				match key_x:
-					case 0:
-						if 385 < mouse_x < 445 and 223 < mouse_y < 263: changed_key = key
-						pygame.draw.rect(win, key_color, (385, 223, 60, 40), 6 if changed_key == key else 3)
-						win.blit(littleTextInfo.render(key, True, key_color), (390, 230))
-					case 13:
-						if 405 + key_x * 50 < mouse_x < 475 + key_x * 50 and 223 < mouse_y < 263: changed_key = key
-						pygame.draw.rect(win, key_color, (405 + key_x * 50, 223, 70, 40), 6 if changed_key == key else 3)
-						win.blit(littleTextInfo.render(key, True, key_color), (410 + key_x * 50, 230))
-					case 14:
-						if 435 + key_x * 50 < mouse_x < 465 + key_x * 50 and 223 < mouse_y < 263: changed_key = key
-						pygame.draw.rect(win, key_color, (435 + key_x * 50, 223, 40, 40), 6 if changed_key == key else 3)
-						win.blit(littleTextInfo.render(key, True, key_color), (440 + key_x * 50, 230))
-					case _:
-						if 405 + key_x * 50 < mouse_x < 445 + key_x * 50 and 223 < mouse_y < 263: changed_key = key
-						pygame.draw.rect(win, key_color, (405 + key_x * 50, 223, 40, 40), 6 if changed_key == key else 3)
-						win.blit(littleTextInfo.render(key, True, key_color), (410 + key_x * 50, 230))
-			
-			for key_x, key in enumerate(key_values[3].keys()):
-				
-				if check_keys(key): key_color = (58, 68, 102)
-				elif key == looked_key: key_color = (139, 155, 180)
-				else: key_color = (139, 155, 180)
-				if check_blocked_keys(key): key_color = (255, 255, 255)
-				
-				match key_x:
-					case 0:
-						if 385 < mouse_x < 445 and 273 < mouse_y < 313: changed_key = key
-						pygame.draw.rect(win, (139, 155, 180), (385, 273, 70, 40), 6 if changed_key == key else 3)
-						win.blit(littleTextInfo.render(key, True, (139, 155, 180)), (390, 280))
-					case 12:
-						if 420 + key_x * 50 < mouse_x < 530 + key_x * 50 and 273 < mouse_y < 313: changed_key = key
-						pygame.draw.rect(win, key_color, (415 + key_x * 50, 273, 110, 40), 6 if changed_key == key else 3)
-						win.blit(littleTextInfo.render(key, True, key_color), (420 + key_x * 50, 280))
-					case 13:
-						if 485 + key_x * 50 < mouse_x < 525 + key_x * 50 and 273 < mouse_y < 313: changed_key = key
-						pygame.draw.rect(win, key_color, (485 + key_x * 50, 273, 40, 40), 6 if changed_key == key else 3)
-						win.blit(littleTextInfo.render(key, True, key_color), (490 + key_x * 50, 280))
-					case _:
-						if 415 + key_x * 50 < mouse_x < 455 + key_x * 50 and 273 < mouse_y < 313: changed_key = key
-						pygame.draw.rect(win, key_color, (415 + key_x * 50, 273, 40, 40), 6 if changed_key == key else 3)
-						win.blit(littleTextInfo.render(key, True, key_color), (420 + key_x * 50, 280))
-			
-			for key_x, key in enumerate(key_values[4].keys()):
-				
-				if check_keys(key): key_color = (58, 68, 102)
-				elif key == looked_key: key_color = (139, 155, 180)
-				else: key_color = (139, 155, 180)
-				if check_blocked_keys(key): key_color = (255, 255, 255)
-				
-				match key_x:
-					case 0:
-						if 385 < mouse_x < 475 and 323 < mouse_y < 363: changed_key = key
-						pygame.draw.rect(win, key_color, (385, 323, 90, 40), 6 if changed_key == key else 3)
-						win.blit(littleTextInfo.render(key, True, key_color), (390, 330))
-					case 11:
-						if 435 + key_x * 50 < mouse_x < 525 + key_x * 50 and 323 < mouse_y < 363: changed_key = key
-						pygame.draw.rect(win, key_color, (435 + key_x * 50, 323, 90, 40), 6 if changed_key == key else 3)
-						win.blit(littleTextInfo.render(key, True, key_color), (440 + key_x * 50, 330))
-					case 12 | 13:
-						if 485 + key_x * 50 < mouse_x < 525 + key_x * 50 and 323 < mouse_y < 363: changed_key = key
-						pygame.draw.rect(win, key_color, (485 + key_x * 50, 323, 40, 40), 6 if changed_key == key else 3)
-						win.blit(littleTextInfo.render(key, True, key_color), (490 + key_x * 50, 330))
-					case _:
-						if 435 + key_x * 50 < mouse_x < 475 + key_x * 50 and 323 < mouse_y < 363: changed_key = key
-						pygame.draw.rect(win, key_color, (435 + key_x * 50, 323, 40, 40), 6 if changed_key == key else 3)
-						win.blit(littleTextInfo.render(key, True, key_color), (440 + key_x * 50, 330))
-
-			for key_x, key in enumerate(key_values[5].keys()):
-				
-				if check_keys(key): key_color = (58, 68, 102)
-				elif key == looked_key: key_color = (139, 155, 180)
-				else: key_color = (139, 155, 180)
-				if check_blocked_keys(key): key_color = (255, 255, 255)
-
-				match key_x:
-					case 0 | 1 | 2 | 3:
-						if 385 + key_x * 50 < mouse_x < 425 + key_x * 50 and 373 < mouse_y < 413: changed_key = key
-						pygame.draw.rect(win, key_color, (385 + key_x * 50, 373, 40, 40), 6 if changed_key == key else 3)
-						win.blit(littleTextInfo.render(key, True, key_color), (390 + key_x * 50, 380))
-					case 4:
-						if 585 < mouse_x < 925 and 373 < mouse_y < 413: changed_key = key
-						pygame.draw.rect(win, key_color, (585, 373, 340, 40), 6 if changed_key == key else 3)
-						win.blit(littleTextInfo.render(key, True, key_color), (590, 380))
-					case _:
-						if 685 + key_x * 50 < mouse_x < 725 + key_x * 50 and 373 < mouse_y < 413: changed_key = key
-						pygame.draw.rect(win, key_color, (685 + key_x * 50, 373, 40, 40), 6 if changed_key == key else 3)
-						win.blit(littleTextInfo.render(key, True, key_color), (690 + key_x * 50, 380))
-				
 			text(t("Hotkeys are highlighted in dark blue"), 385, 440, (58, 68, 102))
 			text(t("Locked keys are highlighted in white"), 385, 470, (255, 255, 255))
 			text(t("To change the hot key, click on it"), 385, 500, (139, 155, 180))
