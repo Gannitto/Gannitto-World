@@ -15,6 +15,11 @@ def draw_select_image(win, w, h, Width, Height, player, mouse_x, mouse_y):
 	else:
 		win_fill(rect=((player.x + mouse_x - Width // 2) // w * w - player.x + Width // 2, player.y - (player.y - mouse_y + Height // 2) // h * h + Height // 2 - h, w, h))
 
+def draw_select_image_arbitrarily(win, X, Y, w, h, world_to_screen, world_rect_to_screen):
+	if (w, h) in select_images:
+		win.blit(select_images[(w, h)], (world_to_screen(X, Y, w, h)))
+	else:
+		win_fill(rect=world_rect_to_screen(X, Y, w, h))
 
 def build(
 		build_tuple: tuple,

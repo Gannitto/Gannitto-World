@@ -14,7 +14,7 @@ import Backrooms
 from Ron import Ron
 import Saver
 from Functions import *
-from Build import build, check_build_objects, draw_select_image
+from Build import build, check_build_objects, draw_select_image, draw_select_image_arbitrarily
 from Chunks import ChunkManager
 from Inventory import inventory
 from Translator import translator
@@ -478,6 +478,7 @@ class Player:
 		self.pass_through_walls = False # TODO
 		self.is_moving = False
 		self.rect = pygame.Rect(self.x - 25, self.y - 112, 50, 224)
+		self.hovered_object = None
 		self.breaking_object = None
 		
 		# Текущий спрайт
@@ -641,22 +642,24 @@ class Object:
 	
 	def main(self, dt):
 
-		if player.breaking_object == None and self.breakable and self.get_left_pressed():
+		if player.hovered_object is None and self.get_hovered():
+			player.hovered_object = self
+			if self.breakable and pygame.mouse.get_pressed()[0]:
 
-			player.breaking_object = self
-			self.breaked -= dt * 100
-			self.image = crack_surface(world, Particle, self, (self.max_break - self.breaked) // self.max_break, 8)
+				player.breaking_object = self
+				self.breaked -= dt * 100
+				self.image = crack_surface(world, Particle, self, (self.max_break - self.breaked) // self.max_break, 8)
 
-			if self.breaked < 1:
+				if self.breaked < 1:
 
-				destroy_object(self.image, self.x, self.y, world, Particle)
-				world.chunk_manager.get_chunk_at(self.x, self.y).objects.remove(self)
+					destroy_object(self.image, self.x, self.y, world, Particle)
+					world.chunk_manager.get_chunk_at(self.x, self.y).objects.remove(self)
 
-				statistics[2] += 1
-				for item_name, min_amount, max_amount in self.drop_items:
-					for _ in range(random.randint(min_amount, max_amount)):
-						rand_x, rand_y = self.x + random.randint(-self.w // 2, self.w // 2), self.y + random.randint(-self.h // 2, self.h // 2)
-						world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object(item_name, rand_x, rand_y, f"Images/Items/{item_name}.png", pickable=True))
+					statistics[2] += 1
+					for item_name, min_amount, max_amount in self.drop_items:
+						for _ in range(random.randint(min_amount, max_amount)):
+							rand_x, rand_y = self.x + random.randint(-self.w // 2, self.w // 2), self.y + random.randint(-self.h // 2, self.h // 2)
+							world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object(item_name, rand_x, rand_y, f"Images/Items/{item_name}.png", pickable=True))
 
 		if player.x - Width // 2 - self.w // 2 <= self.x <= player.x + Width // 2 + self.w // 2 and player.y - Height // 2 <= player.y + Height // 2:
 			win.blit(self.image, world_to_screen(self.x, self.y, self.w, self.h, player))
@@ -678,6 +681,9 @@ class Object:
 			return True
 		else:
 			return False
+
+	def get_hovered(self):
+		return pygame.Rect((*world_to_screen(self.rect[0] + self.w // 2, self.rect[1] + self.h // 2, self.rect[2], self.rect[3], player), self.rect[2], self.rect[3])).collidepoint(pygame.mouse.get_pos())
 
 	def copy(self):
 		return Object(self.name, self.x, self.y, self.image_path, self.scale, self.image, self.special_flags, self.add_path, self.start_time, self.is_solid, self.rect, self.is_solid, self.breakable, self.max_break, self.breakable_by_hammer, self.drop_items)
@@ -3847,6 +3853,7 @@ def start_game():
 		dx = 0
 		dy = 0
 		screen_rect = pygame.Rect((player.x - Width / 2, player.y + Height / 2, Width, Height))
+		player.hovered_object = None
 		player.breaking_object = None
 
 		FPS = int(clock.get_fps())
@@ -4866,7 +4873,8 @@ def start_game():
 		# 2 слой - тени
 		# 3 слой - искусственное освещение
 		world.chunk_manager.show_light_and_dark(light_level, player, game.shadow_surface) #TODO оптимизировать
-		# win.blit(game.shadow_surface, (0, 0))
+		if player.hovered_object is not None:
+			draw_select_image_arbitrarily(win, player.hovered_object.x, player.hovered_object.y, player.hovered_object.w, player.hovered_object.h, world_to_screen, world_rect_to_screen)
 
 		# Механика анимации слотов
 		if Settings["Display"][5]:
