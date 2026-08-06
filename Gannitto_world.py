@@ -4874,7 +4874,7 @@ def start_game():
 		# 3 слой - искусственное освещение
 		world.chunk_manager.show_light_and_dark(light_level, player, game.shadow_surface) #TODO оптимизировать
 		if player.hovered_object is not None:
-			draw_select_image_arbitrarily(win, player.hovered_object.x, player.hovered_object.y, player.hovered_object.w, player.hovered_object.h, world_to_screen, world_rect_to_screen)
+			draw_select_image_arbitrarily(player.hovered_object.x, player.hovered_object.y, player.hovered_object.w, player.hovered_object.h, world_to_screen, world_rect_to_screen)
 
 		# Механика анимации слотов
 		if Settings["Display"][5]:
@@ -5614,7 +5614,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 
 			if in_motherboard is None:
 				pos = (player.x + mouse_x - Width // 2) // 64 * 64 + 32, (player.y - mouse_y + Height // 2) // 64 * 64 + 32
-				draw_select_image(win, 64, 64, Width, Height, player, mouse_x, mouse_y)
+				draw_select_image(64, 64, player, mouse_x, mouse_y)
 
 
 				a = True
@@ -5646,7 +5646,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Lever":
 
 			pos = (player.x + mouse_x - Width // 2) // 64 * 64 + 32, (player.y - mouse_y + Height // 2) // 64 * 64 + 32
-			draw_select_image(win, 64, 64, Width, Height, player, mouse_x, mouse_y)
+			draw_select_image(64, 64, player, mouse_x, mouse_y)
 
 			a = True
 			if click[0]:
@@ -5663,7 +5663,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Wrench":
 
 			pos = (player.x + mouse_x - Width // 2) // 64 * 64 + 32, (player.y - mouse_y + Height // 2) // 64 * 64 + 32
-			draw_select_image(win, 64, 64, Width, Height, player, mouse_x, mouse_y)
+			draw_select_image(64, 64, player, mouse_x, mouse_y)
 			if click[0]:
 				for mechanism in world.mechanisms:
 					if mechanism.x == (player.x + mouse_x - Width // 2) // 64 and mechanism.y == (player.y - mouse_y + Height // 2) // 64:
@@ -5674,7 +5674,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Random box":
 
 			pos = (player.x + mouse_x - Width // 2) // 64 * 64 + 32, (player.y - mouse_y + Height // 2) // 64 * 64 + 32
-			draw_select_image(win, 64, 64, Width, Height, player, mouse_x, mouse_y)
+			draw_select_image(64, 64, player, mouse_x, mouse_y)
 			a = True
 
 			if click[0]:
@@ -5692,7 +5692,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Motherboard":
 
 			pos = (player.x + mouse_x - Width // 2) // 64 * 64 + 32, (player.y - mouse_y + Height // 2) // 64 * 64 + 32
-			draw_select_image(win, 64, 64, Width, Height, player, mouse_x, mouse_y)
+			draw_select_image(64, 64, player, mouse_x, mouse_y)
 
 			a = True
 			if click[0]:
@@ -5707,14 +5707,14 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 					world.mechanisms.append(Motherboard(None))
 		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Portal gun":
 
-			draw_select_image(win, 128, 256, Width, Height, player, mouse_x, mouse_y)
+			draw_select_image(128, 256, player, mouse_x, mouse_y)
 
 			if click[0]:
 
 				a = 0
 				if not check_collision(pygame.Rect((player.x + mouse_x - Width // 2) // 256 * 256 + 128, (player.y - mouse_y + Height // 2) // 256 * 256 + 128, 256, 256), world, False):
 					world.chunk_manager.get_chunk_at((player.x + mouse_x - Width // 2) // 128, (player.y + mouse_y - Height // 2) // 256).objects.append(Portal())
-		build_tuple = (changed_slot, player, world.particles, Width, Height, world, inventory.whole_inventory, win)
+		build_tuple = (changed_slot, player, world, inventory.whole_inventory)
 		check_build_objects(objects_templates, build_tuple)
 		build(build_tuple, Object("Farmland", 0, 0, "Images/Objects/Farmland.png", (128, 128), special_flags=1), "Stone hoe", get_item_from_inventory=0, command="pygame.mixer.Sound.play(pygame.mixer.Sound('" + path + "Sounds/Dirt.mp3" + "'))")
 		if inventory.whole_inventory[changed_slot] is None: a = ""
@@ -5754,7 +5754,7 @@ if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0]
 		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name in ("Wooden wall", "Brick wall", "Stone brick wall"):
 			
 			wall_pos = (player.x + mouse_x - Width // 2) // 256 * 256 + 128, (player.y - mouse_y + Height // 2) // 256 * 256 + 128
-			draw_select_image(win, 256, 256, Width, Height, player, mouse_x, mouse_y)
+			draw_select_image(256, 256, player, mouse_x, mouse_y)
 
 			if click[0] and wall_pos not in world.visible_walls and not check_collision(pygame.Rect(wall_pos[0], wall_pos[1], 256, 256), world, False, False):
 				world.chunk_manager.get_chunk_at(*wall_pos).walls[wall_pos] = Wall(inventory.whole_inventory[changed_slot].name, wall_pos[0], wall_pos[1])
@@ -5768,7 +5768,7 @@ if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0]
 		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Wooden door":
 
 			wall_pos = (player.x + mouse_x - Width // 2) // 256 * 256 + 128, (player.y - mouse_y + Height // 2) // 256 * 256 + 128
-			draw_select_image(win, 256, 256, Width, Height, player, mouse_x, mouse_y)
+			draw_select_image(256, 256, player, mouse_x, mouse_y)
 
 			if click[0] and wall_pos not in world.visible_walls and check_collision(pygame.Rect(wall_pos[0], wall_pos[1], 256, 256), world, False, False):
 				world.chunk_manager.get_chunk_at(*wall_pos).walls[wall_pos] = Wall(inventory.whole_inventory[changed_slot].name, wall_pos[0], wall_pos[1], True)
@@ -5782,7 +5782,7 @@ if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0]
 		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Stone hammer":
 
 			break_pos = (player.x + mouse_x - Width // 2) // 256 * 256 + 128, (player.y - mouse_y + Height // 2) // 256 * 256 + 128
-			draw_select_image(win, 256, 256, Width, Height, player, mouse_x, mouse_y)
+			draw_select_image(256, 256, player, mouse_x, mouse_y)
 
 			if click[0]:
 				if break_pos in world.visible_walls:

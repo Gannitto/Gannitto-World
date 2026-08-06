@@ -1,21 +1,24 @@
 import pygame
-from Globals import path
+from Globals import path, Width, Height, win
 from Functions import win_fill
 
 select_images = {
-		(256, 256): pygame.transform.scale(pygame.image.load(path + "Images/Select 256x256.png"), (256, 256))
+		(512, 512): pygame.transform.scale(pygame.image.load(path + "Images/Select/512x512.png"), (512, 512)),
+		(256, 256): pygame.transform.scale(pygame.image.load(path + "Images/Select/256x256.png"), (256, 256)),
+		(128, 128): pygame.transform.scale(pygame.image.load(path + "Images/Select/128x128.png"), (128, 128)),
+		(64, 64): pygame.transform.scale(pygame.image.load(path + "Images/Select/64x64.png"), (64, 64))
 		}
 
 for image in select_images.values():
-	image.set_alpha(50)
+	image.set_alpha(70)
 
-def draw_select_image(win, w, h, Width, Height, player, mouse_x, mouse_y):
+def draw_select_image(w, h, player, mouse_x, mouse_y):
 	if (w, h) in select_images:
 		win.blit(select_images[(w, h)], ((player.x + mouse_x - Width // 2) // w * w - player.x + Width // 2, player.y - (player.y - mouse_y + Height // 2) // h * h + Height // 2 - h))
 	else:
 		win_fill(rect=((player.x + mouse_x - Width // 2) // w * w - player.x + Width // 2, player.y - (player.y - mouse_y + Height // 2) // h * h + Height // 2 - h, w, h))
 
-def draw_select_image_arbitrarily(win, X, Y, w, h, world_to_screen, world_rect_to_screen):
+def draw_select_image_arbitrarily(X, Y, w, h, world_to_screen, world_rect_to_screen):
 	if (w, h) in select_images:
 		win.blit(select_images[(w, h)], (world_to_screen(X, Y, w, h)))
 	else:
@@ -49,7 +52,7 @@ def build(
 	command - Команда, которую надо выполнить, если поставился объект
 	"""
 	
-	changed_slot, player, particles, Width, Height, world, whole_inventory, win = build_tuple
+	changed_slot, player, world, whole_inventory = build_tuple
 
 	if whole_inventory[changed_slot] is not None:
 
@@ -58,11 +61,11 @@ def build(
 		if changed_slot_name in item_name.split(",") or whole_inventory[changed_slot].type in item_type.split(","):
 			
 			mouse_x, mouse_y = pygame.mouse.get_pos()
-			draw_select_image(win, object_to_build.w, object_to_build.h, Width, Height, player, mouse_x, mouse_y)
+			draw_select_image(object_to_build.w, object_to_build.h, player, mouse_x, mouse_y)
 
 			if pygame.mouse.get_pressed()[0]:
 			
-				for i, object in enumerate(world.visible_objects + particles):
+				for i, object in enumerate(world.visible_objects + world.particles):
 				
 					if i < len(world.visible_objects) or object.can_interfere_with_placing:
 
@@ -82,7 +85,7 @@ def build(
 						new_object = object_to_build.copy()
 						new_object.x, new_object.y = ((player.x + mouse_x - Width // 2) // object_to_build.w * object_to_build.w + object_to_build.w // 2, (player.y - mouse_y + Height // 2) // object_to_build.h * object_to_build.h + object_to_build.h // 2)
 						new_object.rect = pygame.Rect(new_object.x - new_object.w / 2, new_object.y - new_object.h / 2, new_object.w, new_object.h)
-						if particle_to_build: particles.append(object_to_build)
+						if particle_to_build: world.particles.append(object_to_build)
 						else: world.chunk_manager.get_chunk_at(new_object.x, new_object.y).objects.append(new_object)
 						eval(command)
 
