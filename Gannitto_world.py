@@ -602,8 +602,6 @@ class Object:
 		drop_items - Предметы, которые дропаются из объекта (название, мин количество, макс количество)
 		"""
 
-		self.object_class = "Object"
-
 		if start_time is None:
 			self.start_time = time.time()
 		else:
@@ -3959,7 +3957,7 @@ def start_game():
 					if event.key == pygame.K_8: changed_slot = 7
 					if event.key == pygame.K_9: changed_slot = 8
 					if event.key == pygame.K_0: changed_slot = 9
-					if event.key == pygame.K_o:
+					if event.key == pygame.K_o and False:
 						create_light_circle(world.chunk_manager, player.x, player.y, 10, 15)
 						# world.chunk_manager.chunks[(0, 0)].shadow_map.update({(0, 0): 0, (1, 0): 1, (2, 0): 2, (3, 0): 3, (4, 0): 4, (5, 0): 5, (6, 0): 6, (7, 0): 7, (8, 0): 8, (9, 0): 9, (10, 0): 10, (11, 0): 11, (12, 0): 12, (13, 0): 13, (14, 0): 14, (15, 0): 15})
 						# world.chunk_manager.chunks[(0, 0)].light_map.update({(0, 1): 0, (1, 1): 1, (2, 1): 2, (3, 1): 3, (4, 1): 4, (5, 1): 5, (6, 1): 6, (7, 1): 7, (8, 1): 8, (9, 1): 9, (10, 1): 10, (11, 1): 11, (12, 1): 12, (13, 1): 13, (14, 1): 14, (15, 1): 15})
@@ -5270,7 +5268,7 @@ def start_game():
 			else:
 				win.blit(pygame.transform.scale(Compact_inventory1, (64, 64)), (810, 170))
 
-			inventory.draw_whole(craft_images_list, craft_amounts_list)
+			inventory.draw_whole(craft_images_list, craft_amounts_list, Inventory_slot)
 			
 			if craft_list_open:
 

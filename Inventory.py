@@ -1,7 +1,7 @@
 import pygame
 import os
 import json
-from Globals import path
+from Globals import path, win
 from Translator import translator
 
 pygame.init()
@@ -255,12 +255,10 @@ class Inventory:
 				current_index += 1
 				total_amount -= stack_size
 
-	def draw_whole(self, craft_images_list, craft_amounts_list):
+	def draw_whole(self, craft_images_list, craft_amounts_list, Inventory_slot):
 		
 		"""Рисует весь инвентарь"""
 
-		from Globals import win
-		from Gannitto_world import Inventory_slot
 		cell_x = cell_y = 10
 		for cell in self.whole_inventory:
 			if cell is not None:
@@ -291,7 +289,6 @@ class Inventory:
 		
 		"""Draws the top panel"""
 
-		from Globals import win
 		i = 0
 		cell_x = cell_y = 10
 		for cell in self.whole_inventory:

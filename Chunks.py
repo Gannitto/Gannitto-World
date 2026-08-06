@@ -3,7 +3,7 @@ import random
 from itertools import product
 from NoiseGenerator import NoiseGenerator
 from Functions import win_fill, reverse_fill_area
-from Saver import save_chunk, load_chunk, chunk_exists
+from Saver import save_chunk, load_chunk, delete_chunk, chunk_exists
 from Globals import win, Width, Height
 
 chunk_size = 2048
@@ -12,6 +12,7 @@ tile_size = 256
 biomes = ["Desert", "Field", "Forest", "Swamp", "Taiga"]
 
 structures = {
+
 		"Pond": (0.01, {
 			"Objects": (
 				{
@@ -32,7 +33,9 @@ structures = {
 					"Template": {
 						"name": "Reed",
 						"image_path": "Images/Objects/Reed.png",
-						"scale": (256, 256)
+						"scale": (256, 256),
+						"breakable": True,
+						"max_break": 100
 						}
 				}
 			   ),
@@ -50,12 +53,16 @@ biomes_objects = {
 					"image_path": "Images/Objects/Cactus.png",
 					"scale": (256, 256),
 					"is_solid": True,
-					"rect": (-80, 0, 160, 232)
+					"rect": (-80, 0, 160, 232),
+					"breakable": True,
+					"max_break": 300
 					}),
 				(0.5, {
 					"name": "Pile of sand",
 					"image_path": "Images/Objects/Pile of sand.png",
 					"scale": (256, 256),
+					"breakable": True,
+					"max_break": 500
 					})),
 			"Items": (),
 			"Structures": ()},
@@ -91,7 +98,9 @@ biomes_objects = {
 					"name": "Bush",
 					"image_path": "Images/Objects/Bush.png",
 					"scale": (128, 128),
-					"is_solid": True
+					"is_solid": True,
+					"breakable": True,
+					"max_break": 100
 				})),
 			"Items": (
 				(0.3, {
@@ -176,13 +185,17 @@ biomes_objects = {
 					"image_path": "Images/Objects/Spruce.png",
 					"scale": (512, 512),
 					"special_flags": 100,
-					"is_solid": True
+					"is_solid": True,
+					"breakable": True,
+					"max_break": 600
 					}),
 				(0.5, {
 					"name": "Dark bush",
 					"image_path": "Images/Objects/Dark bush.png",
 					"scale": (128, 128),
-					"is_solid": True
+					"is_solid": True,
+					"breakable": True,
+					"max_break": 100
 				})),
 			"Items": (),
 			"Structures": ()}
@@ -434,6 +447,5 @@ class ChunkManager:
 
 	def delete_chunk_save(self, chunk_x, chunk_y):
 		"""Удаляет сохраненный файл чанка (для перегенерации)"""
-		from Saver import delete_chunk
 		return delete_chunk(chunk_x, chunk_y, self.save_directory)
 

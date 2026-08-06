@@ -27,7 +27,6 @@ class Button:
 	
 	def main(self, action=None):
 		"""Shows the button"""
-		import time
 
 		mouse_x, mouse_y = pygame.mouse.get_pos()
 		click = pygame.mouse.get_pressed()

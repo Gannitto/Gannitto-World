@@ -72,3 +72,4 @@ class GameTime:
 		self.current_time += seconds
 		if self.current_time >= self.day_duration:
 			self.current_time -= self.day_duration
+
