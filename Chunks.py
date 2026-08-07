@@ -212,6 +212,7 @@ class Chunk:
 		self.items = []
 		self.particles = []
 		self.walls = {}
+		self.farmlands = {}
 		self.caves = []
 		self.shadow_map = {}
 		self.light_map = {}

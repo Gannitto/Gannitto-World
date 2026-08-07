@@ -27,6 +27,7 @@ def save_chunk(chunk, save_directory):
 		"mobs": chunk.mobs,
 		"items": chunk.items,
 		"walls": chunk.walls,
+		"farmlands": chunk.farmlands,
 		"caves": chunk.caves,
 		"shadow_map": chunk.shadow_map,
 		"light_map": chunk.light_map,
@@ -53,6 +54,7 @@ def load_chunk(chunk_x, chunk_y, save_directory):
 	chunk.mobs = chunk_data["mobs"]
 	chunk.items = chunk_data["items"]
 	chunk.walls = chunk_data["walls"]
+	chunk.farmlands = chunk_data["farmlands"]
 	chunk.caves = chunk_data["caves"]
 	chunk.shadow_map = chunk_data["shadow_map"]
 	chunk.light_map = chunk_data["light_map"]

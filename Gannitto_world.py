@@ -379,6 +379,35 @@ Screensaver2 = pygame.transform.scale(Screensaver2, (Height * 2, Height))
 
 Heart = pygame.transform.scale(pygame.image.load(path + "Images/Heart.png"), (32, 32))
 
+wall_types = ("Wooden wall", "Brick wall", "Stone brick wall")
+door_types = ("Wooden door",)
+wall_images = {}
+
+for wall_type in wall_types:
+	wall_images[wall_type] = (
+		pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + wall_type + " 1.png"), (256, 256)),
+		pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + wall_type + " 2.png"), (256, 256)),
+		pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + wall_type + " 3.png"), (256, 256)),
+		pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + wall_type + " 4.png"), (256, 256)),
+		pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + wall_type + " 5.png"), (256, 256)),
+		pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + wall_type + " 6.png"), (256, 256)),
+		pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + wall_type + " 7.png"), (256, 256)),
+		pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + wall_type + " 8.png"), (256, 256)),
+		pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + wall_type + " 9.png"), (256, 256)),
+		pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + wall_type + " 10.png"), (256, 256)),
+		pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + wall_type + " 11.png"), (256, 256))
+	)
+
+for door_type in door_types:
+	wall_images[door_type] = (
+		pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + door_type + " 1.png"), (256, 256)),
+		pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + door_type + " 2.png"), (256, 256)),
+		pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + door_type + " 1 Open.png"), (256, 256)),
+		pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + door_type + " 2 Open.png"), (256, 256))
+	)
+
+farmland_images = (pygame.transform.scale(pygame.image.load(path + "Images/Objects/Farmland.png"), (128, 128)),)
+
 textures = {
 
 	"Forest": pygame.transform.scale(pygame.image.load(path + "Images/Bioms/Forest.png"), (256, 256)),
@@ -1826,38 +1855,10 @@ class Wall:
 
 		self.wall_type = wall_type
 		self.neigbords = []
-		self.name = "Wall"
 		self.is_door = is_door
 		self.open = False
 		self.rect = pygame.Rect(self.x - 128, self.y - 128, 256, 256)
-
-		if is_door:
-
-			self.images = [
-
-				pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + wall_type + " 1.png"), (256, 256)),
-				pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + wall_type + " 2.png"), (256, 256)),
-				pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + wall_type + " 1 Open.png"), (256, 256)),
-				pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + wall_type + " 2 Open.png"), (256, 256))
-
-			]
-		else:
-
-			self.images = [
-
-				pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + wall_type + " 1.png"), (256, 256)),
-				pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + wall_type + " 2.png"), (256, 256)),
-				pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + wall_type + " 3.png"), (256, 256)),
-				pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + wall_type + " 4.png"), (256, 256)),
-				pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + wall_type + " 5.png"), (256, 256)),
-				pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + wall_type + " 6.png"), (256, 256)),
-				pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + wall_type + " 7.png"), (256, 256)),
-				pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + wall_type + " 8.png"), (256, 256)),
-				pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + wall_type + " 9.png"), (256, 256)),
-				pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + wall_type + " 10.png"), (256, 256)),
-				pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + wall_type + " 11.png"), (256, 256))
-
-			]
+		self.images = wall_images[self.wall_type]
 
 		self.image = self.images[0]
 		self.update_neigboors()
@@ -1947,7 +1948,7 @@ class Wall:
 			self.open = not self.open
 		win.blit(self.image, world_to_screen(self.x, self.y, 256, 256))
 		if Settings["Display"][3]:
-			pygame.draw.rect(win, (0, 0, 0), world_to_screen(self.x, self.y, 256, 256) + (256, 256), 3)
+			pygame.draw.rect(win, (0, 0, 0), world_rect_to_screen(self.x, self.y, 256, 256), 3)
 		
 	def __getstate__(self):
 		
@@ -1959,33 +1960,87 @@ class Wall:
 	def __setstate__(self, state):
 		
 		self.__dict__.update(state)
-		if self.is_door:
+		self.images = wall_images[self.wall_type]
+		self.image = self.images[self.image]
 
-			self.images = [
+class Farmland:
 
-				pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + self.wall_type + " 1.png"), (256, 256)),
-				pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + self.wall_type + " 2.png"), (256, 256)),
-				pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + self.wall_type + " 1 Open.png"), (256, 256)),
-				pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + self.wall_type + " 2 Open.png"), (256, 256))
+	def __init__(self, X, Y):
 
-			]
-		else:
+		self.x = X
+		self.y = Y
 
-			self.images = [
+		self.neigbords = []
+		self.rect = pygame.Rect(self.x - 64, self.y - 64, 128, 128)
+		self.images = farmland_images
+		self.image = self.images[0]
+		# self.update_neigboors()
 
-				pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + self.wall_type + " 1.png"), (256, 256)),
-				pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + self.wall_type + " 2.png"), (256, 256)),
-				pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + self.wall_type + " 3.png"), (256, 256)),
-				pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + self.wall_type + " 4.png"), (256, 256)),
-				pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + self.wall_type + " 5.png"), (256, 256)),
-				pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + self.wall_type + " 6.png"), (256, 256)),
-				pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + self.wall_type + " 7.png"), (256, 256)),
-				pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + self.wall_type + " 8.png"), (256, 256)),
-				pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + self.wall_type + " 9.png"), (256, 256)),
-				pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + self.wall_type + " 10.png"), (256, 256)),
-				pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + self.wall_type + " 11.png"), (256, 256))
+		self.plant = None
+		self.plant_growth_stage = 0
+		self.watered = False
 
-			]
+	def update_neigboors(self):
+
+		self.neigbords = []
+		for farmland in ((self.x - 128, self.y), (self.x + 128, self.y), (self.x, self.y - 128), (self.x, self.y + 128)):
+			if farmland in world.chunk_manager.get_chunk_at(*farmland).farmlands:
+				self.neigbords.append(farmland)
+		if len(self.neigbords) == 1:
+
+			if self.neigbords[0][0] == self.x:
+				self.image = self.images[1]
+			else:
+				self.image = self.images[0]
+
+		elif len(self.neigbords) == 2:
+
+			if self.neigbords[0][0] == self.x == self.neigbords[1][0]:
+				self.image = self.images[1]
+			elif self.neigbords[0][1] == self.y == self.neigbords[1][1]:
+				self.image = self.images[0]
+			elif (self.neigbords[0][0] == self.x - 256 and self.neigbords[1][1] == self.y + 256) or (self.neigbords[1][0] == self.x - 256 and self.neigbords[0][1] == self.y + 256):
+				self.image = self.images[2]
+			elif (self.neigbords[0][0] == self.x + 256 and self.neigbords[1][1] == self.y + 256) or (self.neigbords[1][0] == self.x + 256 and self.neigbords[0][1] == self.y + 256):
+				self.image = self.images[3]
+			elif (self.neigbords[0][0] == self.x + 256 and self.neigbords[1][1] == self.y - 256) or (self.neigbords[1][0] == self.x + 256 and self.neigbords[0][1] == self.y - 256):
+				self.image = self.images[4]
+			elif (self.neigbords[0][0] == self.x - 256 and self.neigbords[1][1] == self.y - 256) or (self.neigbords[1][0] == self.x - 256 and self.neigbords[0][1] == self.y - 256):
+				self.image = self.images[5]
+
+		elif len(self.neigbords) == 3:
+
+			if self.neigbords[0][1] != self.y + 256 and self.neigbords[1][1] != self.y + 256 and self.neigbords[2][1] != self.y + 256:
+				self.image = self.images[6]
+			if self.neigbords[0][1] != self.y - 256 and self.neigbords[1][1] != self.y - 256 and self.neigbords[2][1] != self.y - 256:
+				self.image = self.images[7]
+			if self.neigbords[0][0] != self.x + 256 and self.neigbords[1][0] != self.x + 256 and self.neigbords[2][0] != self.x + 256:
+				self.image = self.images[8]
+			if self.neigbords[0][0] != self.x - 256 and self.neigbords[1][0] != self.x - 256 and self.neigbords[2][0] != self.x - 256:
+				self.image = self.images[9]
+
+		elif len(self.neigbords) == 4:
+			self.image = self.images[10]
+		
+	def main(self, release):
+
+		if False and release and self.x + Width // 2 - player.x <= mouse_x <= self.x + Width // 2 - player.x + 256 and player.y - self.y + Height // 2 - 128 <= mouse_y <= player.y - self.y + Height // 2 + 128:
+			...
+		win.blit(self.image, world_to_screen(self.x, self.y, 256, 256))
+		if Settings["Display"][3]:
+			pygame.draw.rect(win, (0, 0, 0), world_rect_to_screen(self.x, self.y, 128, 128), 3)
+		
+	def __getstate__(self):
+		
+		state = self.__dict__.copy()
+		state["image"] = self.images.index(self.image)
+		del state["images"]
+		return state
+
+	def __setstate__(self, state):
+		
+		self.__dict__.update(state)
+		self.images = farmland_images
 		self.image = self.images[self.image]
 
 class Random_box:
@@ -2238,6 +2293,7 @@ class World:
 		self.visible_objects = []
 		self.visible_items = []
 		self.visible_walls = {}
+		self.visible_farmlands = {}
 		self.visible_caves = []
 
 		self.mobs = []
@@ -2251,12 +2307,14 @@ class World:
 		self.visible_objects.clear()
 		self.visible_items.clear()
 		self.visible_walls.clear()
+		self.visible_farmlands.clear()
 		self.visible_caves.clear()
 		for chunk_key in self.chunk_manager.loaded_chunks:
 			chunk = self.chunk_manager.chunks[chunk_key]
 			self.visible_objects.extend(chunk.objects)
 			self.visible_items.extend(chunk.items)
 			self.visible_walls.update(chunk.walls)
+			self.visible_farmlands.update(chunk.farmlands)
 			self.visible_caves.extend(chunk.caves)
 
 	def render_loaded_chunks(self):
@@ -4353,7 +4411,6 @@ def start_game():
 									for _ in range(random.randint(1, 3)):
 										world.current_cave.objects.append(Object("Gold ore", random.randint(object.x - 128, object.x + 128), random.randint(object.y - 128, object.y + 128), "Images/Items/Gold ore.png", special_flags="Item"))
 									break
-							mouse_object = object.name
 
 						if object.name == "Pot":
 							if object.get_right_pressed() and inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].type == "Flower":
@@ -4508,6 +4565,9 @@ def start_game():
 
 		for projectile in world.projectiles:
 			projectile.main()
+		
+		for farmland in world.visible_farmlands.values():
+			farmland.main(release)
 
 		for wall in world.visible_walls.values():
 			wall.main(release)
@@ -4873,6 +4933,8 @@ def start_game():
 		world.chunk_manager.show_light_and_dark(light_level, player, game.shadow_surface) #TODO оптимизировать
 		if player.hovered_object is not None:
 			draw_select_image_arbitrarily(player.hovered_object.x, player.hovered_object.y, player.hovered_object.w, player.hovered_object.h, world_to_screen, world_rect_to_screen)
+			mouse_object = player.hovered_object.name
+
 
 		# Механика анимации слотов
 		if Settings["Display"][5]:
@@ -5714,42 +5776,55 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 					world.chunk_manager.get_chunk_at((player.x + mouse_x - Width // 2) // 128, (player.y + mouse_y - Height // 2) // 256).objects.append(Portal())
 		build_tuple = (changed_slot, player, world, inventory.whole_inventory)
 		check_build_objects(objects_templates, build_tuple)
-		build(build_tuple, Object("Farmland", 0, 0, "Images/Objects/Farmland.png", (128, 128), special_flags=1), "Stone hoe", get_item_from_inventory=0, command="pygame.mixer.Sound.play(pygame.mixer.Sound('" + path + "Sounds/Dirt.mp3" + "'))")
-		if inventory.whole_inventory[changed_slot] is None: a = ""
-		else:
-			a = inventory.whole_inventory[changed_slot].name[:-6] if " seeds" in inventory.whole_inventory[changed_slot].name else inventory.whole_inventory[changed_slot].name
+		# if build(build_tuple, Object("Farmland", 0, 0, "Images/Objects/Farmland.png", (128, 128), special_flags=1), "Stone hoe", get_item_from_inventory=0):
+		# 	pygame.mixer.Sound.play(pygame.mixer.Sound(path + "Sounds/Dirt.mp3"))
+		# if inventory.whole_inventory[changed_slot] is None: a = ""
+		# else:
+		# 	a = inventory.whole_inventory[changed_slot].name[:-6] if " seeds" in inventory.whole_inventory[changed_slot].name else inventory.whole_inventory[changed_slot].name
 		
-		try: build(build_tuple, Particle(0, 0, pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + a + " 1.png"), (128, 128)), can_interfere_with_placing=True, end_time=random.randint(1, 3),
-					end_command="world.particles.append(Particle(particle.x, particle.y, pygame.transform.scale(pygame.image.load(path + 'Images/Objects/' + particle.special_flags[0] + ' 2.png'), (128, 128)), can_interfere_with_placing=True, end_time=random.randint(5, 10), save_particle=True, tick_command=particle.special_flags[1], tick_command_locals={'a': 0, 'b': 0}, tick_command_globals={'world_to_screen': world_to_screen, 'win_fill': win_fill, 'random': random}, tick_command_globals_in_the_end=('inventory', 'changed_slot'), end_command=particle.special_flags[3], end_command_globals={'random': random}, special_flags=particle.special_flags))", end_command_globals={"world.particles": world.particles, "Particle": Particle, "random": random, "world_to_screen": world_to_screen, "win_fill": win_fill}, save_particle=True, special_flags=[a, """
-if self.special_flags[2]:
-	a, b = world_to_screen(self.x, self.y, 128, 128)
-	win_fill((255, 255, 255), 30, (a, b, 128, 128))
-	if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Water bucket" and pygame.Rect(a, b, 128, 128).collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0]:
-		inventory.whole_inventory[changed_slot].amount -= 1
-		if inventory.whole_inventory[changed_slot].amount < 1: inventory.whole_inventory[changed_slot] = None
-		inventory.increate("Bucket", 1)
-		self.special_flags[2] = False
-		pygame.mixer.Sound.play(pygame.mixer.Sound(path + "Sounds/Watering plants " + str(random.randint(1, 2)) + ".mp3"))""", True, """
-if particle.special_flags[2]: world.particles.append(Particle(particle.x, particle.y, pygame.transform.scale(pygame.image.load(path + 'Images/Objects/' + particle.special_flags[0] + ' 4.png'), (128, 128)), can_interfere_with_placing=True, save_particle=True, del_self_condition=lambda particle: (click[0] and pygame.Rect(particle.x - player.x + Width // 2 - particle.image.get_width() // 2, player.y - particle.y + Height // 2 - particle.image.get_height() // 2, particle.w, particle.h).collidepoint(mouse_x, mouse_y)), end_command='pygame.mixer.Sound.play(pygame.mixer.Sound(path + "Sounds/Breaking.mp3"))'))
-else: world.particles.append(Particle(particle.x, particle.y, pygame.transform.scale(pygame.image.load(path + 'Images/Objects/' + particle.special_flags[0] + ' 3.png'), (128, 128)), can_interfere_with_placing=True, save_particle=True, tick_command='''
-if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0], self.display_mode(self.x, self.y, self.w, self.h)[1], self.w, self.h).collidepoint(mouse_x, mouse_y):
-	for _ in range(random.randint(1, 3)):
-		rand_x, rand_y = self.x + random.randint(-30, 30), self.y + random.randint(-30, 30)
-		world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object(self.special_flags[0], rand_x, rand_y, "Images/Items/" + self.special_flags[0] + ".png"))
-	if self.special_flags[0] == "Wheat":
-		for _ in range(random.randint(0, 2)):
-			rand_x, rand_y = self.x + random.randint(-30, 30), self.y + random.randint(-30, 30)
-			world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Wheat seeds", rand_x, rand_y, "Images/Items/Wheat seeds.png"))
-	''', tick_command_globals={"random": random}, tick_command_globals_in_the_end=("Object", "world", "click", "x", "y", "Width", "Height", "mouse_x", "mouse_y"), del_self_condition=lambda particle: (click[0] and pygame.Rect(particle.x - player.x + Width // 2 - particle.image.get_width() // 2, player.y - particle.y + Height // 2 - particle.image.get_height() // 2, particle.w, particle.h).collidepoint(mouse_x, mouse_y)), special_flags=particle.special_flags))
-"""]),
-			 "Carrot,Onion,Tomato", "Seed", particle_to_build=True, needed_object="Farmland", remove_part=" seeds")
+		# try: build(build_tuple, Particle(0, 0, pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + a + " 1.png"), (128, 128)), can_interfere_with_placing=True, end_time=random.randint(1, 3),
+		# 			end_command="world.particles.append(Particle(particle.x, particle.y, pygame.transform.scale(pygame.image.load(path + 'Images/Objects/' + particle.special_flags[0] + ' 2.png'), (128, 128)), can_interfere_with_placing=True, end_time=random.randint(5, 10), save_particle=True, tick_command=particle.special_flags[1], tick_command_locals={'a': 0, 'b': 0}, tick_command_globals={'world_to_screen': world_to_screen, 'win_fill': win_fill, 'random': random}, tick_command_globals_in_the_end=('inventory', 'changed_slot'), end_command=particle.special_flags[3], end_command_globals={'random': random}, special_flags=particle.special_flags))", end_command_globals={"world.particles": world.particles, "Particle": Particle, "random": random, "world_to_screen": world_to_screen, "win_fill": win_fill}, save_particle=True, special_flags=[a, """
+# if self.special_flags[2]:
+	# a, b = world_to_screen(self.x, self.y, 128, 128)
+	# win_fill((255, 255, 255), 30, (a, b, 128, 128))
+	# if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Water bucket" and pygame.Rect(a, b, 128, 128).collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0]:
+		# inventory.whole_inventory[changed_slot].amount -= 1
+		# if inventory.whole_inventory[changed_slot].amount < 1: inventory.whole_inventory[changed_slot] = None
+		# inventory.increate("Bucket", 1)
+		# self.special_flags[2] = False
+		# pygame.mixer.Sound.play(pygame.mixer.Sound(path + "Sounds/Watering plants " + str(random.randint(1, 2)) + ".mp3"))""", True, """
+# if particle.special_flags[2]: world.particles.append(Particle(particle.x, particle.y, pygame.transform.scale(pygame.image.load(path + 'Images/Objects/' + particle.special_flags[0] + ' 4.png'), (128, 128)), can_interfere_with_placing=True, save_particle=True, del_self_condition=lambda particle: (click[0] and pygame.Rect(particle.x - player.x + Width // 2 - particle.image.get_width() // 2, player.y - particle.y + Height // 2 - particle.image.get_height() // 2, particle.w, particle.h).collidepoint(mouse_x, mouse_y)), end_command='pygame.mixer.Sound.play(pygame.mixer.Sound(path + "Sounds/Breaking.mp3"))'))
+# else: world.particles.append(Particle(particle.x, particle.y, pygame.transform.scale(pygame.image.load(path + 'Images/Objects/' + particle.special_flags[0] + ' 3.png'), (128, 128)), can_interfere_with_placing=True, save_particle=True, tick_command='''
+# if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0], self.display_mode(self.x, self.y, self.w, self.h)[1], self.w, self.h).collidepoint(mouse_x, mouse_y):
+	# for _ in range(random.randint(1, 3)):
+		# rand_x, rand_y = self.x + random.randint(-30, 30), self.y + random.randint(-30, 30)
+		# world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object(self.special_flags[0], rand_x, rand_y, "Images/Items/" + self.special_flags[0] + ".png"))
+	# if self.special_flags[0] == "Wheat":
+		# for _ in range(random.randint(0, 2)):
+		# 	rand_x, rand_y = self.x + random.randint(-30, 30), self.y + random.randint(-30, 30)
+		# 	world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Wheat seeds", rand_x, rand_y, "Images/Items/Wheat seeds.png"))
+	# ''', tick_command_globals={"random": random}, tick_command_globals_in_the_end=("Object", "world", "click", "x", "y", "Width", "Height", "mouse_x", "mouse_y"), del_self_condition=lambda particle: (click[0] and pygame.Rect(particle.x - player.x + Width // 2 - particle.image.get_width() // 2, player.y - particle.y + Height // 2 - particle.image.get_height() // 2, particle.w, particle.h).collidepoint(mouse_x, mouse_y)), special_flags=particle.special_flags))
+# """]),
+		# 	 "Carrot,Onion,Tomato", "Seed", particle_to_build=True, needed_object="Farmland", remove_part=" seeds")
 		
-		except: pass
+		# except: pass
 		#world.particles.append(Particle(particle.x, particle.y, pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + particle.special_flags[0] + " 2.png"), (128, 128)), end_time=random.randint(1, 3), save_particle=True, tick_command=particle.special_flags[1], end_command=particle.special_flags[3]))
 		
 		#world.particles.append(Particle(particle.x, particle.y, path + "Images/Objects/" + particle.special_flags[0] + " 3.png"))
 		
-		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name in ("Wooden wall", "Brick wall", "Stone brick wall"):
+		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Stone hoe":
+			
+			farmland_pos = (player.x + mouse_x - Width // 2) // 128 * 128 + 128, (player.y - mouse_y + Height // 2) // 128 * 128
+			draw_select_image(128, 128, player, mouse_x, mouse_y)
+
+			if click[0] and farmland_pos not in world.visible_farmlands and not check_collision(pygame.Rect(farmland_pos[0], farmland_pos[1], 256, 256), world, False, False):
+				world.chunk_manager.get_chunk_at(*farmland_pos).farmlands[farmland_pos] = Farmland(farmland_pos[0], farmland_pos[1])
+				pygame.mixer.Sound.play(pygame.mixer.Sound(path + "Sounds/Dirt.mp3"))
+				# for farmland in (((farmland_pos[0] - 128, farmland_pos[1]), (farmland_pos[0] + 128, farmland_pos[1]), (farmland_pos[0], farmland_pos[1] - 128), (farmland_pos[0], farmland_pos[1] + 128))):
+				# 	if farmland in world.visible_farmlands:
+				# 		world.visible_farmlands[farmland].update_neigboors()
+
+		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name in wall_types:
 			
 			wall_pos = (player.x + mouse_x - Width // 2) // 256 * 256 + 128, (player.y - mouse_y + Height // 2) // 256 * 256 + 128
 			draw_select_image(256, 256, player, mouse_x, mouse_y)
