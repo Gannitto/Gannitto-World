@@ -4,7 +4,6 @@ import pyperclip
 from pathlib import Path
 import time
 import random
-import numpy as np
 import math
 from itertools import product
 import socket
@@ -2576,16 +2575,7 @@ def settings():
 			win.blit(bigTextInfo.render(t("Reset settings"), True, (58, 68, 102)), (Width - 30 - bigTextInfo.size(t("Reset settings"))[0], 30))
 			if pygame.mouse.get_pressed()[0]:
 					
-				Settings = {
-					
-					"Display": [100, 90, 0, False, True, True, 30, True, True, True, True],
-					"Languages": ["English"],
-					"User": ["Player"],
-					"Sound": [100, 100],
-					"Keys": ["a", "s", "w", "d", "e", "c", "TAB", "SPACE"],
-					"Game": [True, False]
-						
-					}
+				Settings = default_settings
 		else:
 			win.blit(bigTextInfo.render(t("Reset settings"), True, (139, 155, 180)), (Width - 30 - bigTextInfo.size(t("Reset settings"))[0], 30))
 
@@ -5817,7 +5807,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 			farmland_pos = (player.x + mouse_x - Width // 2) // 128 * 128 + 128, (player.y - mouse_y + Height // 2) // 128 * 128
 			draw_select_image(128, 128, player, mouse_x, mouse_y)
 
-			if click[0] and farmland_pos not in world.visible_farmlands and not check_collision(pygame.Rect(farmland_pos[0], farmland_pos[1], 256, 256), world, False, False):
+			if click[0] and farmland_pos not in world.visible_farmlands and not check_collision(pygame.Rect(farmland_pos[0], farmland_pos[1], 256, 256), world, False):
 				world.chunk_manager.get_chunk_at(*farmland_pos).farmlands[farmland_pos] = Farmland(farmland_pos[0], farmland_pos[1])
 				pygame.mixer.Sound.play(pygame.mixer.Sound(path + "Sounds/Dirt.mp3"))
 				# for farmland in (((farmland_pos[0] - 128, farmland_pos[1]), (farmland_pos[0] + 128, farmland_pos[1]), (farmland_pos[0], farmland_pos[1] - 128), (farmland_pos[0], farmland_pos[1] + 128))):

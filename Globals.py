@@ -9,15 +9,7 @@ if getattr(sys, "frozen", False):
 else:
 	path = os.path.dirname(os.path.abspath(__file__)) + os.sep
 
-try:
-
-	Settings = Saver.load_objects(path + "Settings/Settings.save")
-
-except FileNotFoundError:
-
-	# После изменения настроек тут, надо бы изменить их и во вкладке настроек в функции show_reset_settings
-
-	Settings = {
+default_settings = {
 		
 		"Display": [100, 90, 0, False, True, True, 30, True, True, True, True],
 		"Languages": ["English"],
@@ -27,7 +19,11 @@ except FileNotFoundError:
 		"Game": [True, False]
 		
 		}
-	
+
+try:
+	Settings = Saver.load_objects(path + "Settings/Settings.save")
+except FileNotFoundError:
+	Settings = default_settings
 	Saver.save_objects(path + "Settings/Settings.save", Settings)
 
 changed_slot = 0
@@ -110,7 +106,6 @@ try:
 except FileNotFoundError:
 	
 	hot_keys = default_hot_keys
-
 	Saver.save_objects(path + "Settings/Hot keys.save", hot_keys)
 
 clock = pygame.time.Clock()
