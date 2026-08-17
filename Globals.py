@@ -43,9 +43,10 @@ FPS = MAX_FPS - 1
 page = 1
 Width, Height = pygame.display.get_surface().get_size()
 screenmode = "FULLSCREEN"
-green_color = (87, 245, 66)
 text_color = (0, 180, 0)
-blue_color = (139, 155, 180)
+menu_color_light = (192, 203, 220)
+menu_color_medium = (139, 155, 180)
+menu_color_dark = (58, 68, 102)
 menu_open = False
 multyplayer_menu_open = False
 textInfo = pygame.font.Font(path + "Font.ttf", 18)
@@ -53,7 +54,6 @@ bigTextInfo = pygame.font.Font(path + "Font.ttf", 36)
 mouse_x, mouse_y = pygame.mouse.get_pos()
 inventory_open = False
 hold_left = False
-# TODO возможность в настройках очистить кеш, переделать кнопку display, реки, ачивки, берёзовый сок, стена из тёмной древесины, стол из тёмной древесины, музыкальные инструменты, падающие листья, кукуруза в полях, враги вороны, обвал в шахте, летучие мыши, таблички, забор, броня, хвощ(растение), песчаные бури в пустыне
 backrooms_objects = []
 screenshot_num = 1
 bullet_num = 0
@@ -65,14 +65,9 @@ slot_animations = [[False, 15] for _ in range(30)]   # Используется 
 special_slot_animations = {"Craft list slot": [False, 0.6], "Game menu slot": [False, 0.6], "Menu slot": [False, 0.6], "Multyplayer slot": [False, 0.6], "Close slot": [False, 0.6], "Reference slot": [False, 0.6], "Close slot": [False, 0.6], "Split items slot": [False, 0.6], "Compact inventory slot": [False, 0.6]}   # Используется для анимации при наведении на слот, который выполняет какое-либо действие
 
 try:
-
 	statistics = Saver.load_objects(path + "Settings/Statistics.save")
-
 except FileNotFoundError:
-
 	statistics = [0, 0, 0]   # Заходы в игру, срублено деревьев
-
-# После изменения hot_keys'ов, надо обязательно изменить их и во вкладке keys в настройках
 
 default_hot_keys = {
 	

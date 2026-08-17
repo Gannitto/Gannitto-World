@@ -1,3 +1,4 @@
+from numpy import spacing
 import pygame
 import subprocess
 import pyperclip
@@ -81,12 +82,12 @@ def text(
 		color: tuple=text_color,
 		size: int=20,
 		alignment: bool=False,
-		letter_spasing: int=10,
+		letter_spasing: int=15,
 		surface: pygame.Surface=win,
 		max_width: int=0,
 		max_height: int=0,
 		return_surface: bool=False,
-		spase_between_strings: int=10
+		space_between_strings: int=10
 		):
 	
 	"""
@@ -129,7 +130,7 @@ def text(
 				surface.blit(line_surface, (X - TextX // 2 if alignment else X, Y))
 				line_surface = pygame.Surface((max_width, size), pygame.SRCALPHA)
 				TextX = 0
-				Y += word_height + spase_between_strings
+				Y += word_height + space_between_strings
 			
 			line_surface.blit(word_surface, (TextX, 0))
 			TextX += word_width + letter_spasing
@@ -138,7 +139,7 @@ def text(
 			all_text_surface.blit(line_surface, (X - TextX // 2 if alignment else X, Y))
 		else:
 			surface.blit(line_surface, (X - TextX // 2 if alignment else X, Y))
-		Y += word_height + spase_between_strings
+		Y += word_height + space_between_strings
 
 	return all_text_surface
 
@@ -147,7 +148,7 @@ def get_text_height(
 		size: int=20,
 		letter_spasing: int=10,
 		max_width: int=0,
-		spase_between_strings: int=10
+		space_between_strings: int=10
 		) -> int:
 	
 	"""
@@ -166,12 +167,12 @@ def get_text_height(
 
 	for line in (word.split(" ") for word in text.splitlines()):
 		TextX = 0
-		text_height += size - 2 + spase_between_strings
+		text_height += size - 2 + space_between_strings
 		for word in line:
 			word_width = tempTextInfo.size(word)[0]
 			if TextX + word_width >= Width // 3:
 				TextX = 0
-				text_height += size - 2 + spase_between_strings
+				text_height += size - 2 + space_between_strings
 			TextX += word_width + 10
 
 	return text_height
@@ -1576,11 +1577,11 @@ class Button:
 		if self.info is not None and self.info_y != 0:
 
 			if self.alignment:
-				pygame.draw.rect(self.surface, (139, 155, 180), (self.x - textInfo.size(self.info)[0] // 2 - 5, self.y - self.h / 2 - self.info_y - 5, textInfo.size(self.info)[0] + 10, 28))
-				self.surface.blit(textInfo.render(self.info, True, (139, 155, 180), (192, 203, 220)), (self.x - textInfo.size(self.info)[0] // 2, self.y - self.h / 2 - self.info_y))
+				pygame.draw.rect(self.surface, menu_color_medium, (self.x - textInfo.size(self.info)[0] // 2 - 5, self.y - self.h / 2 - self.info_y - 5, textInfo.size(self.info)[0] + 10, 28))
+				self.surface.blit(textInfo.render(self.info, True, menu_color_medium, menu_color_light), (self.x - textInfo.size(self.info)[0] // 2, self.y - self.h / 2 - self.info_y))
 			else:
-				pygame.draw.rect(self.surface, (139, 155, 180), (self.x - self.w // 2 - textInfo.size(self.info)[0] // 2 - 5, self.y - self.h / 2 - self.info_y - 5, textInfo.size(self.info)[0] + 10, 28))
-				self.surface.blit(textInfo.render(self.info, True, (139, 155, 180), (192, 203, 220), ), (self.x - self.w // 2 - textInfo.size(self.info)[0] // 2, self.y - self.info_y))
+				pygame.draw.rect(self.surface, menu_color_medium, (self.x - self.w // 2 - textInfo.size(self.info)[0] // 2 - 5, self.y - self.h / 2 - self.info_y - 5, textInfo.size(self.info)[0] + 10, 28))
+				self.surface.blit(textInfo.render(self.info, True, menu_color_medium, menu_color_light), (self.x - self.w // 2 - textInfo.size(self.info)[0] // 2, self.y - self.info_y))
 
 		hovered = self.alignment and (self.x - self.w / 2 < mouse_x < self.x + self.w / 2 and self.y - self.h / 2 < mouse_y < self.y + self.h / 2) or not self.alignment and (self.x < mouse_x < self.x + self.w and self.y < mouse_y < self.y + self.h)
 		if hovered:
@@ -2572,12 +2573,12 @@ def settings():
 		global Settings
 
 		if Width - 30 - bigTextInfo.size(t("Reset settings"))[0] < mouse_x < Width - 30 and 30 < mouse_y < 60:
-			win.blit(bigTextInfo.render(t("Reset settings"), True, (58, 68, 102)), (Width - 30 - bigTextInfo.size(t("Reset settings"))[0], 30))
+			win.blit(bigTextInfo.render(t("Reset settings"), True, menu_color_dark), (Width - 30 - bigTextInfo.size(t("Reset settings"))[0], 30))
 			if pygame.mouse.get_pressed()[0]:
 					
 				Settings = default_settings
 		else:
-			win.blit(bigTextInfo.render(t("Reset settings"), True, (139, 155, 180)), (Width - 30 - bigTextInfo.size(t("Reset settings"))[0], 30))
+			win.blit(bigTextInfo.render(t("Reset settings"), True, menu_color_medium), (Width - 30 - bigTextInfo.size(t("Reset settings"))[0], 30))
 
 	def help():
 
@@ -2608,9 +2609,9 @@ def settings():
 						win_darken(win)
 						menu()
 
-			win.fill((192, 203, 220))
-			pygame.draw.rect(win, (139, 155, 180), (-8, 100, 373, Height), 8)
-			pygame.draw.line(win, (139, 155, 180), (307, 103), (Width, 103), 8)
+			win.fill(menu_color_light)
+			pygame.draw.rect(win, menu_color_medium, (-8, 100, 373, Height), 8)
+			pygame.draw.line(win, menu_color_medium, (307, 103), (Width, 103), 8)
 			back_button.main()
 			show_reset_settings()
 			
@@ -2623,7 +2624,7 @@ def settings():
 			page_next_button.main()
 			page = min(page, 2)
 
-			win.blit(bigTextInfo.render(str(page), True, (139, 155, 180)), ((Width - 415) // 2 + 391, Height - 96))
+			win.blit(bigTextInfo.render(str(page), True, menu_color_medium), ((Width - 415) // 2 + 391, Height - 96))
 			win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Help 2.png"), (132, 64)), (10, 117))
 			display_button.main(display)
 			languages_button.main(Languages)
@@ -2635,42 +2636,42 @@ def settings():
 
 			if page == 1:
 				
-				win.blit(bigTextInfo.render(t("Start game"), True, (139, 155, 180)), (385, 123))
-				win.blit(textInfo.render(t(" • To move, you can use the arrows or A, S, W and D"), True, (139, 155, 180)), (385, 209)) # между строками 86 пикселей
+				win.blit(bigTextInfo.render(t("Start game"), True, menu_color_medium), (385, 123))
+				win.blit(textInfo.render(t(" • To move, you can use the arrows or A, S, W and D"), True, menu_color_medium), (385, 209)) # между строками 86 пикселей
 				win.blit(arrow_up, (459, 239))
 				win.blit(arrow_left, (385, 313))
 				win.blit(arrow_down, (459, 313))
 				win.blit(arrow_right, (533, 313))
-				pygame.draw.rect(win, (139, 155, 180), (701, 239, 64, 64), 6)
-				pygame.draw.rect(win, (139, 155, 180), (627, 313, 64, 64), 6)
-				pygame.draw.rect(win, (139, 155, 180), (701, 313, 64, 64), 6)
-				pygame.draw.rect(win, (139, 155, 180), (775, 313, 64, 64), 6)
-				win.blit(bigTextInfo.render("W", True, (139, 155, 180)), (710, 247))
-				win.blit(bigTextInfo.render("A", True, (139, 155, 180)), (640, 321))
-				win.blit(bigTextInfo.render("S", True, (139, 155, 180)), (716, 321))
-				win.blit(bigTextInfo.render("D", True, (139, 155, 180)), (790, 321))
-				win.blit(textInfo.render(t("  Also, you can put an item on the ground by pressing E, and to get it, just click"), True, (139, 155, 180)), (385, 381)) # между строками 30 пикселей
-				win.blit(textInfo.render(t("on it!"), True, (139, 155, 180)), (385, 411))
-				win.blit(textInfo.render(languages(" • Если вы хотите узнать свой координаты, или что-нибудь ещё, нажмите F2", " • If you want to know you coordinate, or anything more, press F2", "• Координаттарды немесе басқа кез келген нәрсені білгіңіз келсе, F2 пернесін басыңыз"), True, (139, 155, 180)), (385, 441))
-				win.blit(textInfo.render(languages("для открытия меню.", "to open the menu", "мәзірді ашу үшін"), True, (139, 155, 180)), (385, 471))
-				win.blit(textInfo.render(languages(" • При нажатии на I откроется весь инвентарь, чтобы его закрыть, нажмите", " • Clicking on I will open the entire inventory, to close it, click again.", "• Мен түймешігін бассаңыз, бүкіл тізімді ашамын, оны жабу үшін қайтадан басыңыз"), True, (139, 155, 180)), (385, 501))
-				win.blit(textInfo.render(languages("ещё раз", None, None), True, (139, 155, 180)), (385, 531))
-				win.blit(textInfo.render(languages(" • В верхнем правом углу есть пункт, в котором можно узнать информацию", " • In the upper right corner there is an item where you can find out", " • Жоғарғы оң жақ бұрышта ақпаратты табуға болатын элемент бар"), True, (139, 155, 180)), (385, 561))
-				win.blit(textInfo.render(languages("об объекте, на который вы навели.", "information about the object you hovered over", "меңзерді апарған нысан туралы."), True, (139, 155, 180)), (385, 591))
+				pygame.draw.rect(win, menu_color_medium, (701, 239, 64, 64), 6)
+				pygame.draw.rect(win, menu_color_medium, (627, 313, 64, 64), 6)
+				pygame.draw.rect(win, menu_color_medium, (701, 313, 64, 64), 6)
+				pygame.draw.rect(win, menu_color_medium, (775, 313, 64, 64), 6)
+				win.blit(bigTextInfo.render("W", True, menu_color_medium), (710, 247))
+				win.blit(bigTextInfo.render("A", True, menu_color_medium), (640, 321))
+				win.blit(bigTextInfo.render("S", True, menu_color_medium), (716, 321))
+				win.blit(bigTextInfo.render("D", True, menu_color_medium), (790, 321))
+				win.blit(textInfo.render(t("  Also, you can put an item on the ground by pressing E, and to get it, just click"), True, menu_color_medium), (385, 381)) # между строками 30 пикселей
+				win.blit(textInfo.render(t("on it!"), True, menu_color_medium), (385, 411))
+				win.blit(textInfo.render(languages(" • Если вы хотите узнать свой координаты, или что-нибудь ещё, нажмите F2", " • If you want to know you coordinate, or anything more, press F2", "• Координаттарды немесе басқа кез келген нәрсені білгіңіз келсе, F2 пернесін басыңыз"), True, menu_color_medium), (385, 441))
+				win.blit(textInfo.render(languages("для открытия меню.", "to open the menu", "мәзірді ашу үшін"), True, menu_color_medium), (385, 471))
+				win.blit(textInfo.render(languages(" • При нажатии на I откроется весь инвентарь, чтобы его закрыть, нажмите", " • Clicking on I will open the entire inventory, to close it, click again.", "• Мен түймешігін бассаңыз, бүкіл тізімді ашамын, оны жабу үшін қайтадан басыңыз"), True, menu_color_medium), (385, 501))
+				win.blit(textInfo.render(languages("ещё раз", None, None), True, menu_color_medium), (385, 531))
+				win.blit(textInfo.render(languages(" • В верхнем правом углу есть пункт, в котором можно узнать информацию", " • In the upper right corner there is an item where you can find out", " • Жоғарғы оң жақ бұрышта ақпаратты табуға болатын элемент бар"), True, menu_color_medium), (385, 561))
+				win.blit(textInfo.render(languages("об объекте, на который вы навели.", "information about the object you hovered over", "меңзерді апарған нысан туралы."), True, menu_color_medium), (385, 591))
 				
 			elif page == 2:
 				
-				win.blit(bigTextInfo.render(languages("Крафт", "Craft", "Қолөнер"), True, (139, 155, 180)), (385, 123))
-				win.blit(textInfo.render(languages("   Наверняка, тебе было интересно, что это за слоты под инвентарём. Это", "    Forsnre, you were interesting about the cells under the inventory. This is", "Әлбетте, сіз бұл слоттардың түгендеу астында не бар екенін сұрадыңыз. Бұл"), True, (139, 155, 180)), (385, 209))
-				win.blit(textInfo.render(languages("система крафта", "crafting system", "Қолөнер жүйесі"), True, (139, 155, 180)), (385, 239))
+				win.blit(bigTextInfo.render(languages("Крафт", "Craft", "Қолөнер"), True, menu_color_medium), (385, 123))
+				win.blit(textInfo.render(languages("   Наверняка, тебе было интересно, что это за слоты под инвентарём. Это", "    Forsnre, you were interesting about the cells under the inventory. This is", "Әлбетте, сіз бұл слоттардың түгендеу астында не бар екенін сұрадыңыз. Бұл"), True, menu_color_medium), (385, 209))
+				win.blit(textInfo.render(languages("система крафта", "crafting system", "Қолөнер жүйесі"), True, menu_color_medium), (385, 239))
 				win.blit(Changed_inventory_slot, (385, 269))
 				win.blit(Changed_inventory_slot, (465, 269))
 				win.blit(Inventory_slot, (545, 269))
-				win.blit(textInfo.render(languages("   На первый взгляд, всё как-то уныло, но на самом деле, крафтить весело!", "  At first glance, everything is somehow dull, but in fact, crafting is fun!", "Бір қарағанда, бәрі қандай да бір түсініксіз, бірақ шын мәнінде қолөнер қызықты!"), True, (139, 155, 180)), (385, 359))
-				win.blit(textInfo.render(languages("Первый слот обозначает объект, который нужен для крафта, например стол.", "The first slot denotes an object that is needed for crafting, such as a table.", "Бірінші ұяшық кесте сияқты өңдеуге қажет нысанды білдіреді"), True, (139, 155, 180)), (385, 389))
-				win.blit(textInfo.render(languages("Второй слот - инструмент, который тебе нужен, например молоток. Дальше", "The second slot is the tool you need, like a hammer. Еhen there are 7 slots", "Екінші ұяшық - балға сияқты сізге қажет құрал. Әрі қарай"), True, (139, 155, 180)), (385, 419))
-				win.blit(textInfo.render(languages("идут 7 слотов для предметов. Если положить предмет в первый, то", "for items. If you put an item in the first one, then the second one is", "7 элемент ұясы бар. Егер объектіні біріншіге қойсақ, онда"), True, (139, 155, 180)), (385, 449))
-				win.blit(textInfo.render(languages("разблокируется второй, потом третий, и так далее.", "unlocked, then the third, and so on.", "екіншісі құлыптан босатылады, содан кейін үшінші және т.б."), True, (139, 155, 180)), (385, 479))
+				win.blit(textInfo.render(languages("   На первый взгляд, всё как-то уныло, но на самом деле, крафтить весело!", "  At first glance, everything is somehow dull, but in fact, crafting is fun!", "Бір қарағанда, бәрі қандай да бір түсініксіз, бірақ шын мәнінде қолөнер қызықты!"), True, menu_color_medium), (385, 359))
+				win.blit(textInfo.render(languages("Первый слот обозначает объект, который нужен для крафта, например стол.", "The first slot denotes an object that is needed for crafting, such as a table.", "Бірінші ұяшық кесте сияқты өңдеуге қажет нысанды білдіреді"), True, menu_color_medium), (385, 389))
+				win.blit(textInfo.render(languages("Второй слот - инструмент, который тебе нужен, например молоток. Дальше", "The second slot is the tool you need, like a hammer. Еhen there are 7 slots", "Екінші ұяшық - балға сияқты сізге қажет құрал. Әрі қарай"), True, menu_color_medium), (385, 419))
+				win.blit(textInfo.render(languages("идут 7 слотов для предметов. Если положить предмет в первый, то", "for items. If you put an item in the first one, then the second one is", "7 элемент ұясы бар. Егер объектіні біріншіге қойсақ, онда"), True, menu_color_medium), (385, 449))
+				win.blit(textInfo.render(languages("разблокируется второй, потом третий, и так далее.", "unlocked, then the third, and so on.", "екіншісі құлыптан босатылады, содан кейін үшінші және т.б."), True, menu_color_medium), (385, 479))
 				win.blit(Changed_inventory_slot, (385, 509))
 				win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Items/Furnace.png"), (64, 64)), (385, 509))
 				win.blit(Changed_inventory_slot, (465, 509))
@@ -2679,9 +2680,9 @@ def settings():
 				win.blit(Inventory_slot, (625, 509))
 				win.blit(Changed_inventory_slot, (1185, 509))
 				win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Items/Brick.png"), (64, 64)), (1185, 509))
-				win.blit(textInfo.render(languages("   Если положить определённую комбинацию предметов, то можно будет", "	 If you put a certain combination of items, then you can", "Егер сіз элементтердің белгілі бір комбинациясын қойсаңыз, онда сіз жасай аласыз"), True, (139, 155, 180)), (385, 599))
-				win.blit(textInfo.render(languages("получить что-либо. Например, если поставить печь и положить глину в ячейки", "get something. For example, if you put a furnace and put clay in the cells of", "бірдеңе алу. Мысалы, пешті қойып, ұяшықтарға балшық салсаңыз"), True, (139, 155, 180)), (385, 629))
-				win.blit(textInfo.render(languages("крафта, то можно будет получить кирпич, а чтобы его получить, нажми.", "crafting, you can get a brick, and to get it, click.", "қолөнер, сіз кірпіш алуға болады, және оны алу үшін басыңыз."), True, (139, 155, 180)), (385, 659))
+				win.blit(textInfo.render(languages("   Если положить определённую комбинацию предметов, то можно будет", "	 If you put a certain combination of items, then you can", "Егер сіз элементтердің белгілі бір комбинациясын қойсаңыз, онда сіз жасай аласыз"), True, menu_color_medium), (385, 599))
+				win.blit(textInfo.render(languages("получить что-либо. Например, если поставить печь и положить глину в ячейки", "get something. For example, if you put a furnace and put clay in the cells of", "бірдеңе алу. Мысалы, пешті қойып, ұяшықтарға балшық салсаңыз"), True, menu_color_medium), (385, 629))
+				win.blit(textInfo.render(languages("крафта, то можно будет получить кирпич, а чтобы его получить, нажми.", "crafting, you can get a brick, and to get it, click.", "қолөнер, сіз кірпіш алуға болады, және оны алу үшін басыңыз."), True, menu_color_medium), (385, 659))
 			
 
 			if alt_pressed:
@@ -2745,7 +2746,7 @@ def settings():
 					settings_ui._set_positions(bias, "Display")
 			
 			# Очистка экрана
-			win.fill((192, 203, 220))
+			win.fill(menu_color_light)
 			
 			# Обработка UI
 			settings_ui.handle_events(events, mouse_x, mouse_y, release, "Display")
@@ -2828,9 +2829,9 @@ def settings():
 							win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 							screenmode = "FULLSCREEN"
 
-			win.fill((192, 203, 220))
-			pygame.draw.rect(win, (139, 155, 180), (-8, 100, 373, Height), 8)
-			pygame.draw.line(win, (139, 155, 180), (307, 103), (Width, 103), 8)
+			win.fill(menu_color_light)
+			pygame.draw.rect(win, menu_color_medium, (-8, 100, 373, Height), 8)
+			pygame.draw.line(win, menu_color_medium, (307, 103), (Width, 103), 8)
 			back_button.main()
 			if back_button.get_pressed():
 				Saver.save_objects(path + "Settings/Settings.save", Settings)
@@ -2842,8 +2843,8 @@ def settings():
 			page_next_button.main()
 			page = min(page, 1)
 
-			win.blit(bigTextInfo.render(t("You can choose one of these"), True, (139, 155, 180)), (385, 123))
-			win.blit(bigTextInfo.render(t("languages:"), True, (139, 155, 180)), (385, 153))
+			win.blit(bigTextInfo.render(t("You can choose one of these"), True, menu_color_medium), (385, 123))
+			win.blit(bigTextInfo.render(t("languages:"), True, menu_color_medium), (385, 153))
 
 			english_button.main()
 			if english_button.get_pressed():
@@ -2872,7 +2873,7 @@ def settings():
 						element.label_width = element.font.size(t(element.label))[0] + 10
 						element.rect = pygame.Rect(element.x + element.label_width, element.y, element.width, element.height)
 
-			win.blit(bigTextInfo.render(str(page), True, (139, 155, 180)), ((Width - 415) // 2 + 391, Height - 96))
+			win.blit(bigTextInfo.render(str(page), True, menu_color_medium), ((Width - 415) // 2 + 391, Height - 96))
 			help_button.main(help)
 			display_button.main(display)
 			win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Languages 2.png"), (272, 64)), (10, 267))
@@ -2950,9 +2951,9 @@ def settings():
 			if bigTextInfo.size(t("Comming soon"))[0] + 337 <= mouse_x <= bigTextInfo.size(t("Comming soon"))[0] + 467 + 120 and 199 <= mouse_y <= 270 and click[0]:
 				Inventory_alpha = True
 			
-			win.fill((192, 203, 220))
-			pygame.draw.rect(win, (139, 155, 180), (-8, 100, 373, Height), 8)
-			pygame.draw.line(win, (139, 155, 180), (307, 103), (Width, 103), 8)
+			win.fill(menu_color_light)
+			pygame.draw.rect(win, menu_color_medium, (-8, 100, 373, Height), 8)
+			pygame.draw.line(win, menu_color_medium, (307, 103), (Width, 103), 8)
 			back_button.main()
 			if back_button.get_pressed():
 				Saver.save_objects(path + "Settings/Settings.save", Settings)
@@ -2964,7 +2965,7 @@ def settings():
 			page_next_button.main()
 			page = min(page, 1)
 
-			win.blit(bigTextInfo.render(str(page), True, (139, 155, 180)), ((Width - 415) // 2 + 391, Height - 96))
+			win.blit(bigTextInfo.render(str(page), True, menu_color_medium), ((Width - 415) // 2 + 391, Height - 96))
 			help_button.main(help)
 			display_button.main(display)
 			languages_button.main(Languages)
@@ -2975,19 +2976,19 @@ def settings():
 			game_button.main(Game)
 
 			if page == 1:
-				win.blit(bigTextInfo.render(t("Nickname"), True, (139, 155, 180)), (385, 123))
-				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(t("Nickname"))[0] + 395, 113, 200, 71), 5)
+				win.blit(bigTextInfo.render(t("Nickname"), True, menu_color_medium), (385, 123))
+				pygame.draw.rect(win, menu_color_medium, (bigTextInfo.size(t("Nickname"))[0] + 395, 113, 200, 71), 5)
 				if Nick:
-					win.blit(bigTextInfo.render(input_text, True, (139, 155, 180)), (bigTextInfo.size(t("Nickname"))[0] + 405, 123))
+					win.blit(bigTextInfo.render(input_text, True, menu_color_medium), (bigTextInfo.size(t("Nickname"))[0] + 405, 123))
 				else:
-					win.blit(bigTextInfo.render(Settings["User"][0], True, (139, 155, 180)), (bigTextInfo.size(t("Nickname"))[0] + 405, 123))
+					win.blit(bigTextInfo.render(Settings["User"][0], True, menu_color_medium), (bigTextInfo.size(t("Nickname"))[0] + 405, 123))
 				
-				win.blit(bigTextInfo.render(t("Comming soon"), True, (139, 155, 180)), (385, 209))
-				pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(t("Comming soon"))[0] + 395, 199, 120, 71), 5)
+				win.blit(bigTextInfo.render(t("Comming soon"), True, menu_color_medium), (385, 209))
+				pygame.draw.rect(win, menu_color_medium, (bigTextInfo.size(t("Comming soon"))[0] + 395, 199, 120, 71), 5)
 				if Inventory_alpha:
-					win.blit(bigTextInfo.render(input_text, True, (139, 155, 180)), (bigTextInfo.size(t("Comming soon"))[0] + 405, 209))
+					win.blit(bigTextInfo.render(input_text, True, menu_color_medium), (bigTextInfo.size(t("Comming soon"))[0] + 405, 209))
 				else:
-					win.blit(bigTextInfo.render(str(Settings["Display"][1]), True, (139, 155, 180)), (bigTextInfo.size(t("Comming soon"))[0] + 405, 209))
+					win.blit(bigTextInfo.render(str(Settings["Display"][1]), True, menu_color_medium), (bigTextInfo.size(t("Comming soon"))[0] + 405, 209))
 					
 			
 			if alt_pressed:
@@ -3051,7 +3052,7 @@ def settings():
 					settings_ui._set_positions(bias, "User")
 			
 			# Очистка экрана
-			win.fill((192, 203, 220))
+			win.fill(menu_color_light)
 			
 			# Обработка UI
 			settings_ui.handle_events(events, mouse_x, mouse_y, release, "User")
@@ -3153,7 +3154,7 @@ def settings():
 					settings_ui._set_positions(bias, "Sound")
 			
 			# Очистка экрана
-			win.fill((192, 203, 220))
+			win.fill(menu_color_light)
 			
 			# Обработка UI
 			settings_ui.handle_events(events, mouse_x, mouse_y, release, "Sound")
@@ -3229,7 +3230,7 @@ def settings():
 					settings_ui._set_positions(bias, "Statistics")
 			
 			# Очистка экрана
-			win.fill((192, 203, 220))
+			win.fill(menu_color_light)
 			
 			# Обработка UI
 			settings_ui.draw("Statistics", win, Width, Height, bias, max_bias)
@@ -3425,9 +3426,9 @@ def settings():
 					win_darken(win)
 					menu()
 				
-			win.fill((192, 203, 220))
-			pygame.draw.rect(win, (139, 155, 180), (-8, 100, 373, Height), 8)
-			pygame.draw.line(win, (139, 155, 180), (307, 103), (Width, 103), 8)
+			win.fill(menu_color_light)
+			pygame.draw.rect(win, menu_color_medium, (-8, 100, 373, Height), 8)
+			pygame.draw.line(win, menu_color_medium, (307, 103), (Width, 103), 8)
 			back_button.main()
 			show_reset_settings()
 			help_button.main(help)
@@ -3440,7 +3441,7 @@ def settings():
 			game_button.main(Game)
 			
 			littleTextInfo = pygame.font.Font(path + "Font.ttf", 8)
-			key_color = (139, 155, 180)
+			key_color = menu_color_medium
 			X = 385
 			Y = 123
 			close_key = ""
@@ -3449,9 +3450,9 @@ def settings():
 				for key_x, key in enumerate(line):
 					key_size = key_sizes[line_num][key_x]
 					key_rect = pygame.Rect(X, Y, key_size, 40)
-					key_color = (139, 155, 180)
-					if check_keys(key): key_color = (58, 68, 102)
-					if key == looked_key: key_color = (139, 155, 180)
+					key_color = menu_color_medium
+					if check_keys(key): key_color = menu_color_dark
+					if key == looked_key: key_color = menu_color_medium
 					if check_blocked_keys(key): key_color = (255, 255, 255)
 					if key_values_combined[key] == hot_keys["Close"]: close_key = key
 					if key_rect.collidepoint((mouse_x, mouse_y)): changed_key = key
@@ -3462,20 +3463,20 @@ def settings():
 				X = 385
 				Y += 50
 			
-			text(t("Hotkeys are highlighted in dark blue"), 385, 440, (58, 68, 102))
+			text(t("Hotkeys are highlighted in dark blue"), 385, 440, menu_color_dark)
 			text(t("Locked keys are highlighted in white"), 385, 470, (255, 255, 255))
-			text(t("To change the hot key, click on it"), 385, 500, (139, 155, 180))
+			text(t("To change the hot key, click on it"), 385, 500, menu_color_medium)
 
 			if Width - 30 - textInfo.size(t("Reset key settings"))[0] < mouse_x < Width - 30 and 420 < mouse_y < 450:
-				win.blit(textInfo.render(t("Reset key settings"), True, (58, 68, 102)), (Width - 30 - textInfo.size(t("Reset key settings"))[0], 420))
+				win.blit(textInfo.render(t("Reset key settings"), True, menu_color_dark), (Width - 30 - textInfo.size(t("Reset key settings"))[0], 420))
 				if click[0]:
 					hot_keys = default_hot_keys
 			else:
-				win.blit(textInfo.render(t("Reset key settings"), True, (139, 155, 180)), (Width - 30 - textInfo.size(t("Reset key settings"))[0], 420))
+				win.blit(textInfo.render(t("Reset key settings"), True, menu_color_medium), (Width - 30 - textInfo.size(t("Reset key settings"))[0], 420))
 
-			pygame.draw.rect(win, (139, 155, 180), (385, 530, Width - 500, 150))
-			pygame.draw.rect(win, (58, 68, 102), (385, 530, Width - 500, 150), 5)
-			text(changed_key if looked_key is None else f"Выбрана клавиша {looked_key}.\nНажмите {close_key}, чтобы отменить, либо выберите клавишу, которую Вы хотите назначить вместо неё.", 400, 545, (58, 68, 102))
+			pygame.draw.rect(win, menu_color_medium, (385, 530, Width - 500, 150))
+			pygame.draw.rect(win, menu_color_dark, (385, 530, Width - 500, 150), 5)
+			text(changed_key if looked_key is None else f"Выбрана клавиша {looked_key}.\nНажмите {close_key}, чтобы отменить, либо выберите клавишу, которую Вы хотите назначить вместо неё.", 400, 545, menu_color_dark)
 			
 			changed_key_key = ""
 			if changed_key == "":
@@ -3484,11 +3485,11 @@ def settings():
 				changed_key_value = key_values_combined[changed_key]
 
 			if changed_key_value is None:
-				win.blit(textInfo.render(changed_key_key, True, (58, 68, 102)), (400, 575))
+				win.blit(textInfo.render(changed_key_key, True, menu_color_dark), (400, 575))
 			else:
 				for key, val in hot_keys.items():
 					if val == changed_key_value:
-						text("\n" + key, 400, 575, (58, 68, 102))
+						text("\n" + key, 400, 575, menu_color_dark)
 						break
 
 			if changed_key != "" and release:
@@ -3561,7 +3562,7 @@ def settings():
 					settings_ui._set_positions(bias, "Game")
 			
 			# Очистка экрана
-			win.fill((192, 203, 220))
+			win.fill(menu_color_light)
 			
 			# Обработка UI
 			settings_ui.handle_events(events, mouse_x, mouse_y, release, "Game")
@@ -3670,20 +3671,20 @@ def change_a_character():
 							win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 							screenmode = "FULLSCREEN"
 			
-			win.fill((192, 203, 220))
+			win.fill()
 
-			pygame.draw.rect(win, (139, 155, 180), (-8, 100, 315, Height), 8)
-			pygame.draw.rect(win, (139, 155, 180), (315, 100, Width - 325, 100), 8)
-			pygame.draw.rect(win, (139, 155, 180), (316 + changed_character_num * 300, 210, 256, 256), 8)
-			pygame.draw.rect(win, (139, 155, 180), (316, 476, 256, Height - 604), 8)
-			pygame.draw.rect(win, (139, 155, 180), ((Width - 415) // 2 + 230, 476, 256, Height - 604), 8)
-			pygame.draw.rect(win, (139, 155, 180), (Width - 266, 476, 256, Height - 604), 8)
+			pygame.draw.rect(win, menu_color_medium, (-8, 100, 315, Height), 8)
+			pygame.draw.rect(win, menu_color_medium, (315, 100, Width - 325, 100), 8)
+			pygame.draw.rect(win, menu_color_medium, (316 + changed_character_num * 300, 210, 256, 256), 8)
+			pygame.draw.rect(win, menu_color_medium, (316, 476, 256, Height - 604), 8)
+			pygame.draw.rect(win, menu_color_medium, ((Width - 415) // 2 + 230, 476, 256, Height - 604), 8)
+			pygame.draw.rect(win, menu_color_medium, (Width - 266, 476, 256, Height - 604), 8)
 
-			win.blit(textInfo.render(t("Name") + ":", True, (139, 155, 180)), (335, 120))
-			win.blit(bigTextInfo.render(changed_character.name, True, (139, 155, 180)), (335, 140))
-			pygame.draw.line(win, (139, 155, 180), (325 + len(changed_character.name) * 30, 100), (325 + len(changed_character.name) * 30, 198), 8)
-			win.blit(textInfo.render(t("Info") + ":", True, (139, 155, 180)), (Width - len(changed_character.info) * 30 - 28, 120))
-			win.blit(bigTextInfo.render(changed_character.info, True, (139, 155, 180)), (Width - len(changed_character.info) * 30 - 28, 140))
+			win.blit(textInfo.render(t("Name") + ":", True, menu_color_medium), (335, 120))
+			win.blit(bigTextInfo.render(changed_character.name, True, menu_color_medium), (335, 140))
+			pygame.draw.line(win, menu_color_medium, (325 + len(changed_character.name) * 30, 100), (325 + len(changed_character.name) * 30, 198), 8)
+			win.blit(textInfo.render(t("Info") + ":", True, menu_color_medium), (Width - len(changed_character.info) * 30 - 28, 120))
+			win.blit(bigTextInfo.render(changed_character.info, True, menu_color_medium), (Width - len(changed_character.info) * 30 - 28, 140))
 			back_button.main()
 			
 			if back_button.get_pressed():
@@ -3697,7 +3698,7 @@ def change_a_character():
 			page_next_button.main()
 			
 			if page_next_button.get_pressed() and page < 3: page += 1
-			win.blit(bigTextInfo.render(str(page), True, (139, 155, 180)), ((Width - 415) // 2 + 340, Height - 96))
+			win.blit(bigTextInfo.render(str(page), True, menu_color_medium), ((Width - 415) // 2 + 340, Height - 96))
 
 			for index, character in enumerate(characters_list):
 				
@@ -3749,10 +3750,10 @@ def change_a_character():
 						menu()
 
 
-			win.fill((192, 203, 220))
+			win.fill(menu_color_light)
 
-			pygame.draw.rect(win, (139, 155, 180), (-8, 100, 315, Height), 8)
-			pygame.draw.rect(win, (139, 155, 180), (315, 100, Width - 325, 100), 8)
+			pygame.draw.rect(win, menu_color_medium, (-8, 100, 315, Height), 8)
+			pygame.draw.rect(win, menu_color_medium, (315, 100, Width - 325, 100), 8)
 
 			back_button.main()
 
@@ -5864,10 +5865,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 						break
 
 		if mouse_object is not None and Settings["Display"][8]:
-			if screenmode == "FULLSCREEN":
-				win.blit(textInfo.render(mouse_object, True, text_color), (Width - textInfo.size(mouse_object)[0] - 10, 10))
-			else:
-				win.blit(textInfo.render(mouse_object, True, text_color), (990 - textInfo.size(mouse_object)[0], 10))
+			text("1 2 3 4 5", Width - textInfo.size("1 2 3 4 5")[0] - 10, 10)
 		
 		if chat_input:
 			win_fill()
@@ -5895,8 +5893,8 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 		
 		if multyplayer_menu_open:
 			
-			enable_multiplayer = Button(Width // 2, Height // 2 - 30, bigTextInfo.render(t("Enable multiplayer"), True, (139, 155, 180)), bigTextInfo.render(t("Enable multiplayer"), True, (58, 68, 102)), alignment=True, info=t("Your IP-address - ") + socket.gethostbyname(socket.gethostname()))
-			enter_another_game = Button(Width // 2, Height // 2 + 30, bigTextInfo.render(t("Enter another game"), True, (139, 155, 180)), bigTextInfo.render(t("Enter another game"), True, (58, 68, 102)), alignment=True)
+			enable_multiplayer = Button(Width // 2, Height // 2 - 30, bigTextInfo.render(t("Enable multiplayer"), True, menu_color_medium), bigTextInfo.render(t("Enable multiplayer"), True, menu_color_dark), alignment=True, info=t("Your IP-address - ") + socket.gethostbyname(socket.gethostname()))
+			enter_another_game = Button(Width // 2, Height // 2 + 30, bigTextInfo.render(t("Enter another game"), True, menu_color_medium), bigTextInfo.render(t("Enter another game"), True, menu_color_dark), alignment=True)
 			
 			pygame.image.save(win, path + "Cache/Win.png")
 			win_darken(win)
@@ -5923,7 +5921,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 					elif event.type == pygame.KEYDOWN and event.key == hot_keys["Close"]:
 						multyplayer_menu_open = False						
 
-				win.fill((192, 203, 220))
+				win.fill(menu_color_light)
 
 				if mouse_x <= 128 and mouse_y <= 128:
 					win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Back 2.png"), (128, 128)), (0, 0))
@@ -5933,8 +5931,8 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 				else:
 					win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Back.png"), (128, 128)), (0, 0))
 
-				pygame.draw.rect(win, (58, 68, 102), (0, 0, Width, Height), 10)
-				pygame.draw.rect(win, (139, 155, 180), (10, 10, Width - 20, Height - 20), 10)
+				pygame.draw.rect(win, menu_color_dark, (0, 0, Width, Height), 10)
+				pygame.draw.rect(win, menu_color_medium, (10, 10, Width - 20, Height - 20), 10)
 				
 				enable_multiplayer.main()
 				enter_another_game.main()
@@ -6013,12 +6011,12 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 								elif len(input_text) <= 500:
 									input_text += event.unicode
 
-						win.fill((192, 203, 220))
-						pygame.draw.rect(win, (58, 68, 102), (0, 0, Width, Height), 10)
-						pygame.draw.rect(win, (139, 155, 180), (10, 10, Width - 20, Height - 20), 10)
+						win.fill(menu_color_light)
+						pygame.draw.rect(win, menu_color_dark, (0, 0, Width, Height), 10)
+						pygame.draw.rect(win, menu_color_medium, (10, 10, Width - 20, Height - 20), 10)
 
-						win.blit(textInfo.render("Enter server host", True, (139, 155, 180)), ((Width - textInfo.size("Enter server host")[0]) // 2, Height // 2 - 30))
-						win.blit(textInfo.render(input_text, True, (139, 155, 180)), ((Width - textInfo.size(input_text)[0]) // 2, Height // 2))
+						win.blit(textInfo.render("Enter server host", True, menu_color_medium), ((Width - textInfo.size("Enter server host")[0]) // 2, Height // 2 - 30))
+						win.blit(textInfo.render(input_text, True, menu_color_medium), ((Width - textInfo.size(input_text)[0]) // 2, Height // 2))
 
 						pygame.display.update()
 						clock.tick(MAX_FPS)
@@ -6041,7 +6039,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 						
 					except:
 						
-						a = Button(Width // 2, Height // 2 + 20, bigTextInfo.render(i("Next"), True, (139, 155, 180)), bigTextInfo.render(t("Next"), True, (58, 68, 102)), alignment=True)
+						a = Button(Width // 2, Height // 2 + 20, bigTextInfo.render(i("Next"), True, menu_color_medium), bigTextInfo.render(t("Next"), True, menu_color_dark), alignment=True)
 
 						while True:
 						
@@ -6051,11 +6049,11 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 									sys.exit()
 						   
 									
-							win.fill((192, 203, 220))
-							pygame.draw.rect(win, (58, 68, 102), (0, 0, Width, Height), 10)
-							pygame.draw.rect(win, (139, 155, 180), (10, 10, Width - 20, Height - 20), 10)
+							win.fill(menu_color_light)
+							pygame.draw.rect(win, menu_color_dark, (0, 0, Width, Height), 10)
+							pygame.draw.rect(win, menu_color_medium, (10, 10, Width - 20, Height - 20), 10)
 							
-							win.blit(textInfo.render(t("Connection error"), True, (139, 155, 180)), ((Width - textInfo.size(t("Connection error"))[0]) // 2, Height // 2 - 20))
+							win.blit(textInfo.render(t("Connection error"), True, menu_color_medium), ((Width - textInfo.size(t("Connection error"))[0]) // 2, Height // 2 - 20))
 
 							a.main()
 							if a.get_pressed():
@@ -6221,11 +6219,11 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 			
 			win = pygame.display.set_mode((0, 0), pygame.RESIZABLE)
 
-			win.fill((192, 203, 220))
-			pygame.draw.rect(win, (58, 68, 102), (0, 0, Width, Height), 10)
-			pygame.draw.rect(win, (139, 155, 180), (10, 10, Width - 20, Height - 20), 10)
+			win.fill(menu_color_light)
+			pygame.draw.rect(win, menu_color_dark, (0, 0, Width, Height), 10)
+			pygame.draw.rect(win, menu_color_medium, (10, 10, Width - 20, Height - 20), 10)
 
-			win.blit(textInfo.render(t("The gameplay will continue, when you close the plugin creator"), True, (139, 155, 180)), ((Width - textInfo.size(t("The gameplay will continue, when you close the plugin creator"))[0]) // 2, Height // 2 - 32))
+			win.blit(textInfo.render(t("The gameplay will continue, when you close the plugin creator"), True, menu_color_medium), ((Width - textInfo.size(t("The gameplay will continue, when you close the plugin creator"))[0]) // 2, Height // 2 - 32))
 			pygame.display.update()
 			os.system("python " + path + "Plugin_creater.py")
 
@@ -6263,7 +6261,7 @@ def edit_world():
 	hard_but = Button(50, 340, pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Hard.png"), (132, 64)), pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Hard 2.png"), (132, 64)))
 	skull_but = Button(50, 410, pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Skull.png"), (132, 64)), pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Skull 2.png"), (132, 64)))
 	
-	win.fill((192, 203, 220))
+	win.fill(menu_color_light)
 
 	if create_world:
 		world.chunk_manager.generator.seed = random.randint(0, 2**31 - 1)
@@ -6312,27 +6310,27 @@ def edit_world():
 		if bigTextInfo.size(t("World name"))[0] + 100 <= mouse_x <= bigTextInfo.size(t("World name"))[0] + 900 and 50 <= mouse_y <= 121 and release:
 			world_name_input = True
 		
-		win.fill((192, 203, 220))
+		win.fill(menu_color_light)
 
-		win.blit(bigTextInfo.render("x", True, (139, 155, 180)), (Width - 50, 15))
+		win.blit(bigTextInfo.render("x", True, menu_color_medium), (Width - 50, 15))
 		
 		if Width - 50 < mouse_x < Width - 20 and 15 < mouse_y < 45:
 			
-			win.blit(bigTextInfo.render("x", True, (58, 68, 102)), (Width - 50, 15))
+			win.blit(bigTextInfo.render("x", True, menu_color_dark), (Width - 50, 15))
 			
 			if pygame.mouse.get_pressed()[0]:
 				
 				if not create_world: Saver.save_objects(path + "Worlds/" + world_name + "/Settings.save", [game.difficulty, player.god_mode])
 				worlds()
 
-		win.blit(bigTextInfo.render(t("World name"), True, (139, 155, 180)), (50, 60))
-		pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(t("World name"))[0] + 100, 50, 800, 71), 5)
+		win.blit(bigTextInfo.render(t("World name"), True, menu_color_medium), (50, 60))
+		pygame.draw.rect(win, menu_color_medium, (bigTextInfo.size(t("World name"))[0] + 100, 50, 800, 71), 5)
 		if world_name_input:
-			win.blit(bigTextInfo.render(input_text, True, (139, 155, 180)), (bigTextInfo.size(t("World name"))[0] + 120, 60))
+			win.blit(bigTextInfo.render(input_text, True, menu_color_medium), (bigTextInfo.size(t("World name"))[0] + 120, 60))
 		else:
-			win.blit(bigTextInfo.render(world_name, True, (139, 155, 180)), (bigTextInfo.size(t("World name"))[0] + 120, 60))
+			win.blit(bigTextInfo.render(world_name, True, menu_color_medium), (bigTextInfo.size(t("World name"))[0] + 120, 60))
 			
-		win.blit(bigTextInfo.render(t("Game difficulty:"), True, (139, 155, 180)), (50, 150))
+		win.blit(bigTextInfo.render(t("Game difficulty:"), True, menu_color_medium), (50, 150))
 
 		easy_but.main()
 		if easy_but.get_pressed():
@@ -6366,15 +6364,15 @@ def edit_world():
 			case "skull":
 				win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Skull 2.png"), (132, 64)), (50, 410))
 
-		win.blit(bigTextInfo.render(t("God mode"), True, (139, 155, 180)), (50, 520))
+		win.blit(bigTextInfo.render(t("God mode"), True, menu_color_medium), (50, 520))
 		
-		pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(t("God mode"))[0] + 60, 510, 71, 71), 5)
+		pygame.draw.rect(win, menu_color_medium, (bigTextInfo.size(t("God mode"))[0] + 60, 510, 71, 71), 5)
 		if player.god_mode:
-			win.blit(bigTextInfo.render(" ✓", True, (139, 155, 180)), (bigTextInfo.size(t("God mode"))[0] + 60, 520))
+			win.blit(bigTextInfo.render(" ✓", True, menu_color_medium), (bigTextInfo.size(t("God mode"))[0] + 60, 520))
 			if bigTextInfo.size(t("God mode"))[0] + 60 <= mouse_x <= bigTextInfo.size(t("God mode"))[0] + 131 and 510 <= mouse_y <= 568 and release:
 				player.god_mode = False
 		else:
-			win.blit(bigTextInfo.render(" x", True, (139, 155, 180)), (bigTextInfo.size(t("God mode"))[0] + 60, 520))
+			win.blit(bigTextInfo.render(" x", True, menu_color_medium), (bigTextInfo.size(t("God mode"))[0] + 60, 520))
 			if bigTextInfo.size(t("God mode"))[0] + 60 <= mouse_x <= bigTextInfo.size(t("God mode"))[0] + 131 and 510 <= mouse_y <= 568 and release:
 				player.god_mode = True
 
@@ -6383,35 +6381,35 @@ def edit_world():
 		
 			if bigTextInfo.size(t("World seed"))[0] + 100 <= mouse_x <= bigTextInfo.size(t("World seed"))[0] + 900 and 590 <= mouse_y <= 661 and release:
 				seed_input = True
-			win.blit(bigTextInfo.render(t("World seed"), True, (139, 155, 180)), (50, 600))
-			pygame.draw.rect(win, (139, 155, 180), (bigTextInfo.size(t("World seed"))[0] + 100, 590, 800, 71), 5)
+			win.blit(bigTextInfo.render(t("World seed"), True, menu_color_medium), (50, 600))
+			pygame.draw.rect(win, menu_color_medium, (bigTextInfo.size(t("World seed"))[0] + 100, 590, 800, 71), 5)
 			if seed_input:
-				win.blit(bigTextInfo.render(input_text, True, (139, 155, 180)), (bigTextInfo.size(t("World seed"))[0] + 120, 600))
+				win.blit(bigTextInfo.render(input_text, True, menu_color_medium), (bigTextInfo.size(t("World seed"))[0] + 120, 600))
 			else:
-				win.blit(bigTextInfo.render(str(world.chunk_manager.generator.seed), True, (139, 155, 180)), (bigTextInfo.size(t("World seed"))[0] + 120, 600))
-			win.blit(bigTextInfo.render(t("Create world"), True, (139, 155, 180)), (Width - bigTextInfo.size(t("Create world"))[0] - 50, 150))
+				win.blit(bigTextInfo.render(str(world.chunk_manager.generator.seed), True, menu_color_medium), (bigTextInfo.size(t("World seed"))[0] + 120, 600))
+			win.blit(bigTextInfo.render(t("Create world"), True, menu_color_medium), (Width - bigTextInfo.size(t("Create world"))[0] - 50, 150))
 			
 			if Width - bigTextInfo.size(t("Create world"))[0] - 50 < mouse_x < Width - 50 and 150 < mouse_y < 180:
 				
-				win.blit(bigTextInfo.render(t("Create world"), True, (58, 68, 102)), (Width - bigTextInfo.size(t("Create world"))[0] - 50, 150))
+				win.blit(bigTextInfo.render(t("Create world"), True, menu_color_dark), (Width - bigTextInfo.size(t("Create world"))[0] - 50, 150))
 				if release:
 					win_darken(win)
 					start_game()
 		else:
 			
-			win.blit(bigTextInfo.render(t("Delete world"), True, (139, 155, 180)), (50, 660))
+			win.blit(bigTextInfo.render(t("Delete world"), True, menu_color_medium), (50, 660))
 
 			if 50 < mouse_x < 50 + bigTextInfo.size(t("Delete world"))[0] and 660 < mouse_y < 690:
 		   
-				win.blit(bigTextInfo.render(t("Delete world"), True, (58, 68, 102)), (50, 660))
+				win.blit(bigTextInfo.render(t("Delete world"), True, menu_color_dark), (50, 660))
 			
 				if release:
 				
 					win_fill()
 					a = win.copy()
 				
-					yes_button = Button(Width // 2 - 150, Height // 2, bigTextInfo.render(t("Yes"), True, (139, 155, 180)), bigTextInfo.render(t("Yes"), True, (58, 68, 102)), alignment=True)
-					no_button = Button(Width // 2 + 150, Height // 2, bigTextInfo.render(t("No"), True, (139, 155, 180)), bigTextInfo.render(t("No"), True, (58, 68, 102)), alignment=True)
+					yes_button = Button(Width // 2 - 150, Height // 2, bigTextInfo.render(t("Yes"), True, menu_color_medium), bigTextInfo.render(t("Yes"), True, menu_color_dark), alignment=True)
+					no_button = Button(Width // 2 + 150, Height // 2, bigTextInfo.render(t("No"), True, menu_color_medium), bigTextInfo.render(t("No"), True, menu_color_dark), alignment=True)
 
 					while True:
 					
@@ -6426,10 +6424,10 @@ def edit_world():
 					
 						win.blit(a, (0, 0))
 					
-						pygame.draw.rect(win, (192, 203, 220), (Width // 2 - 300, Height // 2 - 150, 600, 300))
-						pygame.draw.rect(win, (139, 155, 180), (Width // 2 - 300, Height // 2 - 150, 600, 300), 5)
+						pygame.draw.rect(win, menu_color_light, (Width // 2 - 300, Height // 2 - 150, 600, 300))
+						pygame.draw.rect(win, menu_color_medium, (Width // 2 - 300, Height // 2 - 150, 600, 300), 5)
 					
-						win.blit(textInfo.render(t("Are you sure want to delete this world?"), True, (139, 155, 180)), ((Width - textInfo.size(t("Are you sure want to delete this world?"))[0]) // 2, Height // 2 - 100))
+						win.blit(textInfo.render(t("Are you sure want to delete this world?"), True, menu_color_medium), ((Width - textInfo.size(t("Are you sure want to delete this world?"))[0]) // 2, Height // 2 - 100))
 
 						yes_button.main()
 						if yes_button.get_pressed():   # Удалить выбранный мир
@@ -6448,10 +6446,10 @@ def edit_world():
 						pygame.display.update()
 						clock.tick(30)
 					
-			win.blit(bigTextInfo.render(t("Copy world"), True, (139, 155, 180)), (50, 600))
+			win.blit(bigTextInfo.render(t("Copy world"), True, menu_color_medium), (50, 600))
 
 			if 50 < mouse_x < 50 + bigTextInfo.size(t("Copy world"))[0] and 600 < mouse_y < 630:
-				win.blit(bigTextInfo.render(t("Copy world"), True, (58, 68, 102)), (50, 600))
+				win.blit(bigTextInfo.render(t("Copy world"), True, menu_color_dark), (50, 600))
 				if release:
 					import shutil
 					shutil.copytree(path + "Worlds/" + world_name, path + "Worlds/" + world_name + t(" - copy"))
@@ -6487,7 +6485,7 @@ def worlds():
 
 	page_back_button = Button(10, Height - 138, pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Back.png"), (128, 128)), pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Back 2.png"), (128, 128)))
 	page_next_button = Button(Width - 148, Height - 148, pygame.transform.flip(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Back.png"), (128, 128)), True, False), pygame.transform.flip(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Back 2.png"), (128, 128)), True, False))
-	create_new_world_button = Button(Width // 2, 50, textInfo.render(t("Create world"), True, (139, 155, 180)), textInfo.render(t("Create world"), True, (58, 68, 102)), alignment=True)
+	create_new_world_button = Button(Width // 2, 50, textInfo.render(t("Create world"), True, menu_color_medium), textInfo.render(t("Create world"), True, menu_color_dark), alignment=True)
 	back_button = Button(-20, -20, pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Back.png"), (128, 128)), pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Back 2.png"), (128, 128)))
 	page = 1
 	input_text = None
@@ -6500,7 +6498,7 @@ def worlds():
 		break
 
 	inside_folders.sort()
-	win.fill((192, 203, 220))
+	win.fill(menu_color_light)
 
 	create_new_world_button.main()
 
@@ -6512,7 +6510,7 @@ def worlds():
 		
 				a += 1
 		
-				win.blit(textInfo.render(inside_folders[i], True, (139, 155, 180)), (50, 50 + a * 50))
+				win.blit(textInfo.render(inside_folders[i], True, menu_color_medium), (50, 50 + a * 50))
 		
 		else:
 		
@@ -6521,7 +6519,7 @@ def worlds():
 			for i in range((page - 1) * 5, (page - 1) * 5 + len(inside_folders) % 5):
 		
 				a += 1
-				win.blit(textInfo.render(inside_folders[i], True, (139, 155, 180)), (50, 50 + a * 50))
+				win.blit(textInfo.render(inside_folders[i], True, menu_color_medium), (50, 50 + a * 50))
 
 	page_back_button.main()
 	page_next_button.main()
@@ -6569,7 +6567,7 @@ def worlds():
 			break
 
 		inside_folders.sort()
-		win.fill((192, 203, 220))
+		win.fill(menu_color_light)
 
 		if input_text is None:
 
@@ -6592,7 +6590,7 @@ def worlds():
 				win_darken(win)
 				menu()
 
-			text(str(page), Width // 2, Height - 60, blue_color, alignment=True)
+			text(str(page), Width // 2, Height - 60, menu_color_medium, alignment=True)
 
 			if inside_folders != []:
 
@@ -6602,7 +6600,7 @@ def worlds():
 
 						a += 1
 
-						win.blit(textInfo.render(inside_folders[i], True, (139, 155, 180)), (50, 50 + a * 50))
+						win.blit(textInfo.render(inside_folders[i], True, menu_color_medium), (50, 50 + a * 50))
 
 						if 50 + textInfo.size(inside_folders[i])[0] <= mouse_x <= 82 + textInfo.size(inside_folders[i])[0] and 50 + a * 50 <= mouse_y <= 82 + a * 50:
 							win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Edit 2.png"), (32, 32)), (50 + textInfo.size(inside_folders[i])[0], 50 + a * 50))
@@ -6614,7 +6612,7 @@ def worlds():
 
 						if 50 <= mouse_x <= 50 + textInfo.size(inside_folders[i])[0] and 50 + a * 50 <= mouse_y <= 50 + a * 50 + textInfo.size(inside_folders[i])[1]:
 
-							win.blit(textInfo.render(inside_folders[i], True, (58, 68, 102)), (50, 50 + a * 50))
+							win.blit(textInfo.render(inside_folders[i], True, menu_color_dark), (50, 50 + a * 50))
 							
 							win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Edit.png"), (32, 32)), (50 + textInfo.size(inside_folders[i])[0], 50 + a * 50))
 							
@@ -6630,7 +6628,7 @@ def worlds():
 
 						a += 1
 
-						win.blit(textInfo.render(inside_folders[i], True, (139, 155, 180)), (50, 50 + a * 50))
+						win.blit(textInfo.render(inside_folders[i], True, menu_color_medium), (50, 50 + a * 50))
 						
 						if 50 + textInfo.size(inside_folders[i])[0] <= mouse_x <= 82 + textInfo.size(inside_folders[i])[0] and 50 + a * 50 <= mouse_y <= 82 + a * 50:
 							win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Edit 2.png"), (32, 32)), (50 + textInfo.size(inside_folders[i])[0], 50 + a * 50))
@@ -6642,7 +6640,7 @@ def worlds():
 
 						if 50 <= mouse_x <= 50 + textInfo.size(inside_folders[i])[0] and 50 + a * 50 <= mouse_y <= 50 + a * 50 + textInfo.size(inside_folders[i])[1]:
 
-							win.blit(textInfo.render(inside_folders[i], True, (58, 68, 102)), (50, 50 + a * 50))
+							win.blit(textInfo.render(inside_folders[i], True, menu_color_dark), (50, 50 + a * 50))
 							
 							win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Edit.png"), (32, 32)), (50 + textInfo.size(inside_folders[i])[0], 50 + a * 50))
 							
@@ -6652,7 +6650,7 @@ def worlds():
 
 		else:
 			text(f"""{t("Enter world name:")}
-{input_text}""", Width // 2, Height // 2 - 15, blue_color, alignment=True)
+{input_text}""", Width // 2, Height // 2 - 15, menu_color_medium, alignment=True)
 			
 		if alt_pressed: draw_key("ESC", 44, 108)
 
@@ -6677,18 +6675,21 @@ def menu():
 
 	version = f"Version {open(path + 'Version.txt').read()} (Build {str(get_build_number())})"
 	more_menu_open = False
-	mouse_press = False
 	does_lighten = False
 
 	while True:
 		
 		mouse_x, mouse_y = pygame.mouse.get_pos()
 		click = pygame.mouse.get_pressed()
+		release = False
 
 		for event in pygame.event.get():
+
 			if event.type == pygame.QUIT:
 				save()
 				sys.exit()
+			elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+				release = True
 			elif event.type == pygame.KEYUP:
 				if event.key == pygame.K_RETURN:
 					worlds()
@@ -6735,33 +6736,30 @@ def menu():
 		if Width - 140 < mouse_x < Width - 76 and Height - 70 < mouse_y < Height - 6:
 			win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/More 2.png"), (64, 64)), (Width - 140, Height - 70))
 
-			if mouse_press and not click:
-				if more_menu_open: more_menu_open = False
-				else: more_menu_open = True
+			if release:
+				more_menu_open = not more_menu_open
 				
-			if click[0]: mouse_press = True
-			else: mouse_press = False
 		else:
 			win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/More.png"), (64, 64)), (Width - 140, Height - 70))
 
 		if more_menu_open:
 			
-			pygame.draw.rect(win, (192, 203, 220), (100, 100, Width - 200, Height - 200))
-			pygame.draw.rect(win, (58, 68, 102), (100, 100, Width - 200, Height - 200), 10)
-			pygame.draw.rect(win, (139, 155, 180), (110, 110, Width - 220, Height - 220), 10)
+			pygame.draw.rect(win, menu_color_light, (100, 100, Width - 200, Height - 200))
+			pygame.draw.rect(win, menu_color_dark, (100, 100, Width - 200, Height - 200), 10)
+			pygame.draw.rect(win, menu_color_medium, (110, 110, Width - 220, Height - 220), 10)
 			
 			win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Telegram logo.png"), (100, 100)), (200, Height // 2 + 50))
-			text("Telegram\n@Gannitto", 250, Height // 2 + 180, blue_color, alignment=True)
+			text("Telegram\n@Gannitto", 250, Height // 2 + 180, menu_color_medium, alignment=True)
 			
 			win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Discord logo.png"), (200, 150)), (Width // 2 - 100, Height // 2 + 30))
-			text("Discord\nGannitto#0694", Width // 2, Height // 2 + 180, blue_color, alignment=True)
+			text("Discord\nGannitto#0694", Width // 2, Height // 2 + 180, menu_color_medium, alignment=True)
 			
 			win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Gmail logo.png"), (100, 100)), (Width - 300, Height // 2 + 50))
-			text("Gmail", Width - 250, Height // 2 + 180, blue_color, alignment=True)
-			text("danilaserezhin@gmail.com", Width - 250, Height // 2 + 200, blue_color, 16, True)
+			text("Gmail", Width - 250, Height // 2 + 180, menu_color_medium, alignment=True)
+			text("danilaserezhin@gmail.com", Width - 250, Height // 2 + 200, menu_color_medium, 16, True)
 			
 			win.blit(pygame.image.load(path + "Images/Rickrolling QR-code.png"), (Width // 2 - 100, Height // 2 - 200))
-			text(t("You can get other information from this QR code"), Width // 2, Height // 2 + 10, blue_color, alignment=True)
+			text(t("You can get other information from this QR code"), Width // 2, Height // 2 + 10, menu_color_medium, alignment=True)
 
 		animate_click(Settings, win, mouse_x, mouse_y)
 
