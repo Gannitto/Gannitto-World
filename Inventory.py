@@ -7,7 +7,7 @@ from Translator import translator
 pygame.init()
 t = translator.get
 textInfo = pygame.font.Font(None, 20)
-types = ["Just an item", "Tool", "Food", "Drink", "Mechanism", "Flower", "Seed", "Build"]
+types = ("Just an item", "Tool", "Food", "Drink", "Mechanism", "Flower", "Seed", "Build")
 
 class Resource:
 
@@ -65,15 +65,15 @@ class Recipe:
 			c = True
 			d = None
 
-			if self.need_object != None:
+			if self.need_object is not None:
 				a = False
-				for object in world.objects:
+				for object in world.visible_objects:
 					if player.x - 1000 <= object.x <= player.x + 1000 and player.y - 1000 <= object.y <= player.y + 1000 and object.name == self.need_object:
 						a = True
 						b = object.name
 						break
 			
-			if self.need_tool != None:
+			if self.need_tool is not None:
 				c = False
 				for cell in inventory.whole_inventory:
 					if cell != None and cell.name == self.need_tool:
@@ -193,25 +193,6 @@ class Inventory:
 			from Gannitto_world import t, chat_message
 			chat_message(t("<<< Error increasing: item not found >>>"))
 	
-	def update_whole(self):
-		
-		for name, resource in self.resources.items():
-			if resource.amount != 0 and resource not in self.whole_inventory:
-				self.whole_inventory.insert(self.whole_inventory.index(None), resource)
-				self.whole_inventory.remove(None)
-
-		def check():
-			for cell in self.whole_inventory:
-				if cell is not None and cell.amount > 99:
-					for _ in range(int(cell.amount / 99)):
-						a = self.whole_inventory.index(None)
-						self.whole_inventory[a] = Resource(cell.name, cell.image_path, cell.info, cell.purpose, cell.type)
-						self.whole_inventory[a].amount = 99
-					cell.amount -= int(cell.amount / 99) * 99
-					check()
-
-		check()
-
 	def compact_inventory(self):
 		"""Компактизирует инвентарь: объединяет одинаковые предметы и убирает пустые слоты"""
 		
@@ -242,12 +223,12 @@ class Inventory:
 				
 				new_item = Resource(
 					template.name,
-					template.image_path,
 					template.info,
 					template.purpose,
 					template.type,
 					template.special_info,
-					template.max_stack
+					template.max_stack,
+					template.image_path
 				)
 				new_item.amount = stack_size
 				
@@ -351,12 +332,12 @@ class Inventory:
 							self.whole_inventory[self.start_cell].amount //= 2
 							new_item = Resource(
 								self.whole_inventory[self.start_cell].name,
-								self.whole_inventory[self.start_cell].image_path,
 								self.whole_inventory[self.start_cell].info,
 								self.whole_inventory[self.start_cell].purpose,
 								self.whole_inventory[self.start_cell].type,
 								self.whole_inventory[self.start_cell].special_info,
-								self.whole_inventory[self.start_cell].max_stack
+								self.whole_inventory[self.start_cell].max_stack,
+								self.whole_inventory[self.start_cell].image_path
 							)
 							self.whole_inventory[self.end_cell] = new_item
 					else:

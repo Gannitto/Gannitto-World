@@ -82,7 +82,7 @@ def text(
 		color: tuple=text_color,
 		size: int=20,
 		alignment: bool=False,
-		letter_spasing: int=15,
+		letter_spasing: int=10,
 		surface: pygame.Surface=win,
 		max_width: int=0,
 		max_height: int=0,
@@ -5865,7 +5865,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 						break
 
 		if mouse_object is not None and Settings["Display"][8]:
-			text("1 2 3 4 5", Width - textInfo.size("1 2 3 4 5")[0] - 10, 10)
+			text(mouse_object, Width - textInfo.size(mouse_object)[0] - 10, 10)
 		
 		if chat_input:
 			win_fill()
