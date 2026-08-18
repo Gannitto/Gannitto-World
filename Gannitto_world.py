@@ -579,8 +579,8 @@ class Player:
 	
 	def render(self, screen, dx, dy):
 		"""Отрисовывает игрока на экране"""
-		
-		screen.blit(shadow(self.image, f"Player {self.direction} {self.frame_index}"), (Width / 2 - 128, Height / 2 - 128))
+		frames = self.animations[self.direction]
+		screen.blit(shadow(self.image, f"Player {self.direction} {self.frame_index % len(frames)}"), (Width / 2 - 128, Height / 2 - 128))
 		
 		if Settings["Display"][3]:
 			self.rect = pygame.Rect(self.x - 25, self.y - 112, 50, 224)
@@ -2899,115 +2899,6 @@ def settings():
 			pygame.display.update()
 			clock.tick(MAX_FPS)
 
-	def User_old():
-
-		global win, screenmode, Settings, click, mouse_x, mouse_y, does_lighten, page, alt_pressed
-		
-		mouse_x, mouse_y = pygame.mouse.get_pos()
-		Nick = False
-		Inventory_alpha = False
-		input_text = ""
-		
-		while True:
-			click = pygame.mouse.get_pressed()
-			mouse_x, mouse_y = pygame.mouse.get_pos()
-			for event in pygame.event.get():
-				if event.type == pygame.QUIT:
-					save()
-					sys.exit()
-
-				elif event.type == pygame.KEYDOWN and (Nick or Inventory_alpha):
-					if event.key == pygame.K_RETURN or ((Nick and len(input_text) == 10) or (Inventory_alpha and len(input_text) == 3)):
-						if Nick:
-							Nick = False
-							if input_text != "":
-								Settings["User"][0] = input_text
-						elif Inventory_alpha:
-							Inventory_alpha = False
-							if input_text != "":
-								Settings["User"][1] = int(input_text)
-						input_text = ""
-					elif event.key == pygame.K_BACKSPACE:
-						input_text = input_text[:-1]
-					elif Nick or event.unicode in "0123456789":
-						input_text += event.unicode
-				if event.type == pygame.KEYUP:
-					if event.key == hot_keys["Show keys"]:
-						alt_pressed = not alt_pressed
-					if event.key == hot_keys["Close"]:
-						Saver.save_objects(path + "Settings/Settings.save", Settings)
-						win_darken(win)
-						menu()
-					if event.key == hot_keys["Change screen"]:
-						if screenmode == "FULLSCREEN":
-							win = pygame.display.set_mode((1000,700), pygame.RESIZABLE)
-							screenmode = "RESIZABLE"
-						else:
-							win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-							screenmode = "FULLSCREEN"
-
-			if bigTextInfo.size(t("Nickname"))[0] + 337 <= mouse_x <= bigTextInfo.size(t("Nickname"))[0] + 467 + 120 and 113 <= mouse_y <= 184 and click[0]:
-				Nick = True
-			if bigTextInfo.size(t("Comming soon"))[0] + 337 <= mouse_x <= bigTextInfo.size(t("Comming soon"))[0] + 467 + 120 and 199 <= mouse_y <= 270 and click[0]:
-				Inventory_alpha = True
-			
-			win.fill(menu_color_light)
-			pygame.draw.rect(win, menu_color_medium, (-8, 100, 373, Height), 8)
-			pygame.draw.line(win, menu_color_medium, (307, 103), (Width, 103), 8)
-			back_button.main()
-			if back_button.get_pressed():
-				Saver.save_objects(path + "Settings/Settings.save", Settings)
-				win_darken(win)
-				menu()
-			show_reset_settings()
-				
-			page_back_button.main()
-			page_next_button.main()
-			page = min(page, 1)
-
-			win.blit(bigTextInfo.render(str(page), True, menu_color_medium), ((Width - 415) // 2 + 391, Height - 96))
-			help_button.main(help)
-			display_button.main(display)
-			languages_button.main(Languages)
-			win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/User 2.png"), (132, 64)), (10, 342))
-			sound_button.main(Sound)
-			statistics_button.main(Statistics)
-			keys_button.main(Keys)
-			game_button.main(Game)
-
-			if page == 1:
-				win.blit(bigTextInfo.render(t("Nickname"), True, menu_color_medium), (385, 123))
-				pygame.draw.rect(win, menu_color_medium, (bigTextInfo.size(t("Nickname"))[0] + 395, 113, 200, 71), 5)
-				if Nick:
-					win.blit(bigTextInfo.render(input_text, True, menu_color_medium), (bigTextInfo.size(t("Nickname"))[0] + 405, 123))
-				else:
-					win.blit(bigTextInfo.render(Settings["User"][0], True, menu_color_medium), (bigTextInfo.size(t("Nickname"))[0] + 405, 123))
-				
-				win.blit(bigTextInfo.render(t("Comming soon"), True, menu_color_medium), (385, 209))
-				pygame.draw.rect(win, menu_color_medium, (bigTextInfo.size(t("Comming soon"))[0] + 395, 199, 120, 71), 5)
-				if Inventory_alpha:
-					win.blit(bigTextInfo.render(input_text, True, menu_color_medium), (bigTextInfo.size(t("Comming soon"))[0] + 405, 209))
-				else:
-					win.blit(bigTextInfo.render(str(Settings["Display"][1]), True, menu_color_medium), (bigTextInfo.size(t("Comming soon"))[0] + 405, 209))
-					
-			
-			if alt_pressed:
-				
-				draw_key("ESC", 44, 108)
-				draw_key("<-", 425, Height - 168)
-				draw_key("->", Width - 74, Height - 168)
-
-			animate_click(Settings, win, mouse_x, mouse_y)
-
-			win_fill(alpha=100 - Settings["Display"][0])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
-			
-			if not does_lighten:
-				win_lighten(win)
-				does_lighten = True
-
-			pygame.display.update()
-			clock.tick(MAX_FPS)
-
 	def User():
 
 		global win, screenmode, Settings, alt_pressed, MAX_FPS
@@ -3794,7 +3685,7 @@ objects_templates = {
 
 def start_game():
 	
-	global win, changed_slot, menu_open, multyplayer_menu_open, screenmode, inventory_open, hold_left, backrooms, text_color, bullet_num, craft_items_list, craft_amounts_list, craft_images_list, screenshot_num, mouse_x, mouse_y, item_settings_open, multyplayer_panel, chat_tick, chat, main_chat, craft_list_open, craft_list_page, click, in_motherboard, os, world_name, color, multyplayer_mode, multyplayer, animation, start_time, new_particles, inside_files, game, alt_pressed, player, world, FPS, MAX_FPS, screen_rect, time_index
+	global win, changed_slot, menu_open, multyplayer_menu_open, screenmode, inventory_open, hold_left, backrooms, text_color, bullet_num, craft_items_list, craft_amounts_list, craft_images_list, screenshot_num, mouse_x, mouse_y, item_settings_open, multyplayer_panel, chat_tick, chat, main_chat, craft_list_open, craft_list_page, craft_list_offset, click, in_motherboard, os, world_name, color, multyplayer_mode, multyplayer, animation, start_time, new_particles, inside_files, game, alt_pressed, player, world, FPS, MAX_FPS, screen_rect, time_index
 
 	night_playing = False
 	input_text = ""
@@ -3820,6 +3711,10 @@ def start_game():
 		left_b = Button(Width - 222, Height - 74, arrow_left, arrow_left, sound=False, cooldown=0)
 		down_b = Button(Width - 148, Height - 74, arrow_down, arrow_down, sound=False, cooldown=0)
 		right_b = Button(Width - 74, Height - 74, arrow_right, arrow_right, sound=False, cooldown=0)
+
+	
+	craft_list_back_button = Button(114, Height - 176, bigTextInfo.render("<", True, (0, 150, 0)), bigTextInfo.render("<", True, (0, 100, 0)))
+	craft_list_next_button = Button(Width - 144, Height - 176, bigTextInfo.render(">", True, (0, 150, 0)), bigTextInfo.render(">", True, (0, 100, 0)))
 
 	# Загрузка данных мира
 
@@ -3941,11 +3836,13 @@ def start_game():
 				elif len(input_text) <= 500:
 					input_text += event.unicode
 			
-			elif event.type == pygame.MOUSEWHEEL and not any((item_settings_open, ron.window[0], in_motherboard, craft_list_open)):
-				
-				changed_slot += event.y
-				if changed_slot > 9: changed_slot = 0
-				if changed_slot < 0: changed_slot = 9
+			elif event.type == pygame.MOUSEWHEEL and not any((item_settings_open, ron.window[0], in_motherboard)):
+				if craft_list_open:
+					craft_list_offset = max((min(craft_list_offset + event.y * 100, 0)), craft_list_max_offset)
+				else:
+					changed_slot += event.y
+					if changed_slot > 9: changed_slot = 0
+					if changed_slot < 0: changed_slot = 9
 
 			if event.type == pygame.KEYUP:
 				if chat_input:
@@ -5325,106 +5222,35 @@ def start_game():
 			
 			if craft_list_open:
 
-				back_button = Button(114, Height - 176, bigTextInfo.render("<", True, (0, 150, 0)), bigTextInfo.render("<", True, (0, 100, 0)))
-				next_button = Button(Width - 144, Height - 176, bigTextInfo.render(">", True, (0, 150, 0)), bigTextInfo.render(">", True, (0, 100, 0)))
 				win.blit(Changed_craft_list_inventory_slot, (810, 90))
-				win_fill()
-				pygame.draw.rect(win, text_color, (100, 100, Width - 200, Height - 200))
-				pygame.draw.rect(win, (0, 150, 0), (100, 100, Width - 200, Height - 200), 10)
-				win.blit(bigTextInfo.render("x", True, (0, 150, 0)), (Width - 160, 130))
-				
-				if alt_pressed:
-					draw_key("ESC", Width - 160, 170)
+				win_fill(rect=(970, 0, Width - 970, Height))
 					
-				if Width - 160 <= mouse_x <= Width - 130 and 130 <= mouse_y <= 160:
-					win.blit(bigTextInfo.render("x", True, (0, 100, 0)), (Width - 160, 130))
-					if release:
-						craft_list_open = False
-						
-				win.blit(bigTextInfo.render(str(craft_list_page), True, (0, 150, 0)), (Width // 2 - 15, Height - 230))
-				back_button.main()
-				if back_button.get_pressed() and craft_list_page != 1:
-					craft_list_page -= 1
-				next_button.main()
-				if next_button.get_pressed() and craft_list_page < len(inventory.recipes) / 5:
-					craft_list_page += 1
-				a = -1
-				if craft_list_page < len(inventory.recipes) / 5 or len(inventory.recipes) % 5 == 0:
-					for i in range((craft_list_page - 1) * 5 - 1, (craft_list_page - 1) * 5 + 5 - 1):
-						a += 1
-						aa = -1
-						for ii in inventory.recipes[i].ingredients:
-							if ii is None:
-								break
-							else:
-								aa += 1
-								win.blit(Inventory_slot, (130 + aa * 80, 130 + a * 80))
-								try:
-									win.blit(inventory.resources[ii].image, (130 + aa * 80, 130 + a * 80))
-								except KeyError:
-									win.blit(no_file_texture, (130 + aa * 80, 130 + a * 80))
-								win.blit(textInfo.render(str(inventory.recipes[i].ingredients_amounts[aa]), True, (0, 150, 0)), (140 + aa * 80, 172 + a * 80))
-						aa += 1
-						if inventory.recipes[i].need_object is not None:
-							win.blit(Changed_inventory_slot, (150 + aa * 80, 130 + a * 80))
-							try:
-								win.blit(inventory.resources[inventory.recipes[i].need_object].image, (200 + aa * 80, 130 + a * 80))
-							except KeyError:
-								win.blit(no_file_texture, (200 + aa * 80, 130 + a * 80))
-						aa += 1
-						if inventory.recipes[i].need_tool is not None:
-							win.blit(Changed_inventory_slot, (150 + aa * 80, 130 + a * 80))
-							try:
-								win.blit(inventory.resources[inventory.recipes[i].need_tool].image, (200 + aa * 80, 130 + a * 80))
-							except KeyError:
-								win.blit(no_file_texture, (200 + aa * 80, 130 + a * 80))
-						aa += 1
-						win.blit(Changed_inventory_slot, (150 + aa * 80, 130 + a * 80))
-						try:
-							win.blit(inventory.resources[inventory.recipes[i].result].image, (200 + aa * 80, 130 + a * 80))
-							win.blit(textInfo.render(str(inventory.recipes[i].result_amount), True, (0, 150, 0)), (210 + aa * 80, 172 + a * 80))
-						except KeyError:
-							win.blit(no_file_texture, (200 + aa * 80, 130 + a * 80))
-						
-				else:
+				for cell_y, recipe in enumerate(inventory.recipes):
+					cell_y += 1
+					cell_x = -1
+					for ii in recipe.ingredients:
+						if ii is None:
+							break
+						else:
+							cell_x += 1
+							win.blit(Inventory_slot, (970 + cell_x * 80, 10 + craft_list_offset + cell_y * 80))
+							win.blit(inventory.resources[ii].image, (970 + cell_x * 80, 10 + craft_list_offset + cell_y * 80))
+							win.blit(textInfo.render(str(recipe.ingredients_amounts[cell_x]), True, (0, 150, 0)), (980 + cell_x * 80, 52 + craft_list_offset + cell_y * 80))
+					cell_x = 8
+					if recipe.need_object is not None:
+						win.blit(Changed_inventory_slot, (990 + cell_x * 80, 10 + craft_list_offset + cell_y * 80))
+						win.blit(inventory.resources[recipe.need_object].image, (990 + cell_x * 80, 10 + craft_list_offset + cell_y * 80))
+					cell_x = 9
+					if recipe.need_tool is not None:
+						win.blit(Changed_inventory_slot, (990 + cell_x * 80, 10 + craft_list_offset + cell_y * 80))
+						win.blit(inventory.resources[recipe.need_tool].image, (990 + cell_x * 80, 10 + craft_list_offset + cell_y * 80))
+					cell_x = 10
+					win.blit(Changed_inventory_slot, (990 + cell_x * 80, 10 + craft_list_offset + cell_y * 80))
+					win.blit(inventory.resources[recipe.result].image, (990 + cell_x * 80, 10 + craft_list_offset + cell_y * 80))
+					win.blit(textInfo.render(str(recipe.result_amount), True, (0, 150, 0)), (1000 + cell_x * 80, 52 + craft_list_offset + cell_y * 80))
 
-					b = ""
-
-					for i in ((craft_list_page - 1) * 5 - 1, (craft_list_page - 1) * 5 - 1 + len(inventory.recipes) % 5):
-						b += str(i) + " "
-
-					for craft_y, i in enumerate(((craft_list_page - 1) * 5 - 1, (craft_list_page - 1) * 5 - 1 + len(inventory.recipes) % 5)):
-
-						aa = -1
-
-						for ii in inventory.recipes[i].ingredients:
-
-							if ii is None:
-								break
-							
-							else:
-								aa += 1
-								win.blit(Inventory_slot, (130 + aa * 80, 130 + craft_y * 80))
-								win.blit(inventory.resources[ii].image, (130 + aa * 80, 130 + craft_y * 80))
-								win.blit(textInfo.render(str(inventory.recipes[i].ingredients_amounts[aa]), True, (0, 150, 0)), (140 + aa * 80, 172 + craft_y * 80))
-
-						aa += 1
-
-						if inventory.recipes[i].need_object is not None:
-							win.blit(Changed_inventory_slot, (150 + aa * 80, 130 + craft_y * 80))
-							win.blit(inventory.resources[inventory.recipes[i].need_object].image, (200 + aa * 80, 130 + craft_y * 80))
-
-						aa += 1
-
-						if inventory.recipes[i].need_tool is not None:
-							win.blit(Changed_inventory_slot, (150 + aa * 80, 130 + craft_y * 80))
-							win.blit(inventory.resources[inventory.recipes[i].need_tool].image, (200 + aa * 80, 130 + craft_y * 80))
-
-						aa += 1
-
-						win.blit(Changed_inventory_slot, (150 + aa * 80, 130 + craft_y * 80))
-						win.blit(inventory.resources[inventory.recipes[i].result].image, (200 + aa * 80, 130 + craft_y * 80))
-						win.blit(textInfo.render(str(inventory.recipes[i].result_amount), True, (0, 150, 0)), (210 + aa * 80, 172 + craft_y * 80))
+				if 810 <= mouse_x <= 874 and 90 <= mouse_y <= 154 and release:
+					craft_list_open = False
 						
 			else:
 				
@@ -5865,7 +5691,8 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 						break
 
 		if mouse_object is not None and Settings["Display"][8]:
-			text(mouse_object, Width - textInfo.size(mouse_object)[0] - 10, 10)
+			# text(mouse_object, Width - textInfo.size(mouse_object)[0] - 10, 10)
+			win.blit(textInfo.render(mouse_object, True, text_color), (Width - textInfo.size(mouse_object)[0] - 10, 10))
 		
 		if chat_input:
 			win_fill()

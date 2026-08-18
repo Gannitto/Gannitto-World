@@ -36,7 +36,6 @@ def shadow(
 	cache_file = cache_path + name + ".png"
 	if os.path.exists(cache_file):
 		return pygame.image.load(cache_file)
-	
 	# Конвертируем pygame surface в PIL Image
 	width, height = surface.get_width(), surface.get_height()
 	

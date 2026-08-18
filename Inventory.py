@@ -11,7 +11,7 @@ types = ("Just an item", "Tool", "Food", "Drink", "Mechanism", "Flower", "Seed",
 
 class Resource:
 
-	"""Предмет с определёнными харрактеристиками"""
+	"""Предмет с определёнными характеристиками"""
 
 	def __init__(self, name: str="", item_type: str="Just an item", info=["", ""], purpose=["", ""], special_info=None, max_stack=99, image_path=""):
 
@@ -57,7 +57,7 @@ class Recipe:
 
 	def get_result(self, player, world, craft_items_list, craft_amounts_list):
 
-		"""Проверяет, может ли быть какой-то результат от данных ингридеентов"""
+		"""Проверяет, может ли быть какой-то результат от данных ингридиентов"""
 
 		if craft_items_list == self.ingredients and craft_amounts_list == self.ingredients_amounts:
 			a = True
@@ -340,6 +340,7 @@ class Inventory:
 								self.whole_inventory[self.start_cell].image_path
 							)
 							self.whole_inventory[self.end_cell] = new_item
+							self.whole_inventory[self.end_cell].amount = self.whole_inventory[self.start_cell].amount
 					else:
 						# Обычный обмен
 						temp = self.whole_inventory[self.end_cell]
