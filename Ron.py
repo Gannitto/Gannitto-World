@@ -1,5 +1,6 @@
 import pygame
 import os
+import math
 from random import randint
 from Globals import path, Width, Height, win
 from Functions import shadow
@@ -26,24 +27,30 @@ class Ron:
 
 	def show(self):
 		win.blit(shadow(self.images[self.direction], "Ron " + self.direction), self.world_to_screen(self.x, self.y, 256, 256))
+	
+	def move_towards(self, dt, target_x, target_y, radius):
 
-	def move_towards_player(self, dt):
 		"""Обобщенный метод движения к цели"""
-		dx = self.player.x - self.x
-		dy = self.player.y - self.y
-		distance = (dx**2 + dy**2)**0.5
+
+		if target_x < self.x: dx = -1
+		if target_x > self.x: dx = 1
+		if target_y < self.y: dy = -1
+		if target_y > self.y: dy = 1
 		
-		if distance > self.PLAYER_RADIUS:
-			step = self.speed / dt * 30
-			if abs(dx) > self.PLAYER_RADIUS:
-				self.x += step if dx > 0 else -step
-			if abs(dy) > self.PLAYER_RADIUS:
-				self.y += step if dy > 0 else -step
-			return True
-		return False
+		if abs(self.x - target_x) < radius:
+			dx = 0
+		if abs(self.y - target_y) < radius:
+			dy = 0
+
+		if abs(dx) == 1 and abs(dy) == 1:
+			dx *= 0.7
+			dy *= 0.7
+		
+		self.x += self.speed * dt * 30 * dx
+		self.y += self.speed * dt * 30 * dy
+		return dx == 0 and dy == 0
 
 	def move_towards_item(self, target_x, target_y, dt):
-		"""Обобщенный метод движения к цели"""
 		dx = target_x - self.x
 		dy = target_y - self.y
 		distance = (dx**2 + dy**2)**0.5
@@ -81,7 +88,7 @@ class Ron:
 					dy_to_player = self.player.y - item.y
 					distance_to_player = (dx_to_player**2 + dy_to_player**2)**0.5
 				if self.home or distance_to_player <= self.PLAYER_RADIUS:
-					self.move_towards_item(item.x, item.y, dt)
+					self.move_towards(dt, item.x, item.y, self.PICKUP_RADIUS)
 					return True
 		
 		return False
@@ -111,7 +118,8 @@ class Ron:
 	def update(self, world, dt):
 	
 		if self.home is None:
-			self.move_towards_player(dt)
+			# self.move_towards_player(dt)
+			self.move_towards(dt, self.player.x, self.player.y, self.PLAYER_RADIUS)
 		self.check_items(world, dt)
 		self.check_mobs(world, dt)
 		self.show()

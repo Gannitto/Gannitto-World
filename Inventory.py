@@ -55,31 +55,28 @@ class Recipe:
 		self.need_object = need_object
 		self.need_tool = need_tool
 
-	def get_result(self, player, world, craft_items_list, craft_amounts_list):
+	def get_result(self, need_object, craft_items_list, craft_amounts_list):
 
 		"""Проверяет, может ли быть какой-то результат от данных ингридиентов"""
 
 		if craft_items_list == self.ingredients and craft_amounts_list == self.ingredients_amounts:
-			a = True
 			b = None
 			c = True
 			d = None
 
 			if self.need_object is not None:
-				a = False
-				for object in world.visible_objects:
-					if player.x - 1000 <= object.x <= player.x + 1000 and player.y - 1000 <= object.y <= player.y + 1000 and object.name == self.need_object:
-						a = True
-						b = object.name
-						break
+				if self.need_object == need_object:
+					b = self.need_object
+				else:
+					return None
 			
 			if self.need_tool is not None:
 				c = False
 				for cell in inventory.whole_inventory:
-					if cell != None and cell.name == self.need_tool:
+					if cell is not None and cell.name == self.need_tool:
 						c = True
 						d = cell.name
-			if a and c:
+			if c:
 				return [self.result, self.result_amount, b, d]
 			else:
 				return None
@@ -364,9 +361,9 @@ class Inventory:
 		# self.compact_inventory()	# Компактизируем после каждого изменения
 		return craft_items_list, craft_amounts_list, craft_images_list
 
-	def check_recipies(self, player, world, craft_items_list, craft_amounts_list):
+	def check_recipies(self, need_object, craft_items_list, craft_amounts_list):
 		for recipie in self.recipes:
-			result = recipie.get_result(player, world, craft_items_list, craft_amounts_list)
+			result = recipie.get_result(need_object, craft_items_list, craft_amounts_list)
 			if result is not None:
 				return result
 		return None

@@ -4009,10 +4009,14 @@ def start_game():
 
 		if not chat_input:
 
-			if keys[hot_keys["Move left"]]: dx = -1 + (keys[hot_keys["Move up"]] or keys[hot_keys["Move down"]]) * 0.3
-			if keys[hot_keys["Move right"]]: dx = 1 - (keys[hot_keys["Move up"]] or keys[hot_keys["Move down"]]) * 0.3
-			if keys[hot_keys["Move down"]]: dy = -1 + (keys[hot_keys["Move left"]] or keys[hot_keys["Move right"]]) * 0.3
-			if keys[hot_keys["Move up"]]: dy = 1 - (keys[hot_keys["Move left"]] or keys[hot_keys["Move right"]]) * 0.3
+			if keys[hot_keys["Move left"]]: dx = -1
+			if keys[hot_keys["Move right"]]: dx = 1
+			if keys[hot_keys["Move down"]]: dy = -1
+			if keys[hot_keys["Move up"]]: dy = 1
+
+			if abs(dx) == abs(dy) == 1:
+				dx *= 0.7
+				dy *= 0.7
 
 		# Если есть движение - двигаем игрока
 		if dx != 0 or dy != 0:
@@ -5140,9 +5144,23 @@ def start_game():
 					slot_y += 80
 			
 			win.blit(Object_inventory_slot, (10, 250))
+			
+			# TODO перенести это в функцию main у объекта
+			min_dist = 512
+			need_object = None
+			for object in world.visible_objects:
+				if object.name in ("Table", "Wall table", "Furnace"):
+					distance = math.dist((player.x, player.y), (object.x, object.y))
+					if distance < min_dist:
+						need_object = object.name
+						min_dist = distance
+
+			if need_object is not None:
+				win.blit(inventory.resources[need_object].image, (10, 250))
+
 			win.blit(Tool_inventory_slot, (90, 250))
 
-			item_to_get = inventory.check_recipies(player, world, craft_items_list, craft_amounts_list)
+			item_to_get = inventory.check_recipies(need_object, craft_items_list, craft_amounts_list)
 			
 			if item_to_get is not None:
 
@@ -5236,12 +5254,12 @@ def start_game():
 							win.blit(Inventory_slot, (970 + cell_x * 80, 10 + craft_list_offset + cell_y * 80))
 							win.blit(inventory.resources[ii].image, (970 + cell_x * 80, 10 + craft_list_offset + cell_y * 80))
 							win.blit(textInfo.render(str(recipe.ingredients_amounts[cell_x]), True, (0, 150, 0)), (980 + cell_x * 80, 52 + craft_list_offset + cell_y * 80))
-					cell_x = 8
 					if recipe.need_object is not None:
+						cell_x = 8
 						win.blit(Changed_inventory_slot, (990 + cell_x * 80, 10 + craft_list_offset + cell_y * 80))
 						win.blit(inventory.resources[recipe.need_object].image, (990 + cell_x * 80, 10 + craft_list_offset + cell_y * 80))
-					cell_x = 9
 					if recipe.need_tool is not None:
+						cell_x = 9
 						win.blit(Changed_inventory_slot, (990 + cell_x * 80, 10 + craft_list_offset + cell_y * 80))
 						win.blit(inventory.resources[recipe.need_tool].image, (990 + cell_x * 80, 10 + craft_list_offset + cell_y * 80))
 					cell_x = 10
