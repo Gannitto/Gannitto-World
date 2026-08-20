@@ -890,7 +890,7 @@ class BaseEnemy:
 		self.max_hp = HP
 		self.speed = speed
 		self.animation_frames = animation_frames
-		self.animation_count = 0
+		self.animation_timer = 0
 		self.rect = animation_frames[0].get_rect()
 		self.state = "Idle"  # Idle, Wonder, Jumping, Retreat
 		self.attack_cooldown = 0
@@ -903,8 +903,10 @@ class BaseEnemy:
 		self._update_state(player, world)
 		self._update_position(world)
 		
-	def _update_animation(self):
-		self.animation_count = (self.animation_count + 1) % 20
+	def _update_animation(self, dt):
+		self.animation_timer += dt * 5
+		if self.animation_timer >= 4:
+			self.animation_timer = 0
 		
 	def _update_state(self, player, world):
 		"""Определяет текущее состояние на основе расстояния до игрока"""
@@ -974,14 +976,13 @@ class Slime(BaseEnemy):
 	def __init__(self, x, y):
 
 		slime_type = random.choice((1, 2))
-		animation_frames = SLIME_TYPES[slime_type]
 		self.name = "Slime"
 		
 		super().__init__(
 			x=x, y=y,
 			HP=50,
 			speed=random.randint(10, 20),
-			animation_frames=animation_frames
+			animation_frames=SLIME_TYPES[slime_type]
 		)
 		
 		self.slime_type = slime_type
@@ -991,12 +992,12 @@ class Slime(BaseEnemy):
 		self.wander_angle = random.uniform(0, 2 * math.pi)
 		self.wander_distance = random.uniform(100, self.wander_radius)
 		self.wander_timer = 0
-		self.wander_change_interval = FPS
+		self.wander_change_interval = 1
 		self.rect = pygame.Rect(self.x - 50, self.y - 50, 100, 100)
 
 		# Параметры атаки
 		self.attack_cooldown = 0
-		self.attack_charge_time = 0.5 * FPS
+		self.attack_charge_time = 30
 		self.charge_timer = 0
 		self.jump_speed = 50  # Скорость прыжка
 		self.retreat_speed = 50	# Скорость отскока
@@ -1012,28 +1013,28 @@ class Slime(BaseEnemy):
 		# Флаг урона
 		self.damage_dealt = False
 	
-	def update(self, player, world):
+	def update(self, player, world, dt):
 
-		self._update_animation()
+		self._update_animation(dt)
 		
 		if self.HP < 16 and self.speed < 8:
 			self.speed += 10  # Ускорение при низком HP
 	
-		self.attack_cooldown = max(0, self.attack_cooldown - 1)
+		self.attack_cooldown = max(0, self.attack_cooldown - dt * 30)
 
 		match self.state:
-			case "Wander": self._handle_wander(player, world)
-			case "Prepare attak": self._handle_prepare_attack(player, world)
+			case "Wander": self._handle_wander(player, world, dt)
+			case "Prepare attak": self._handle_prepare_attack(player, world, dt)
 			case "Jumping": self._handle_jumping(player, world)
 			case "Retreat": self._handle_retreat(player, world)
 	
-	def _handle_wander(self, player, world):
+	def _handle_wander(self, player, world, dt):
 
 		"""Блуждание вокруг игрока"""
 
 		distance = math.sqrt((player.x - self.x) ** 2 + (player.y - self.y) ** 2)
 		if (distance < self.detection_range and 
-			self.attack_cooldown == 0 and
+			self.attack_cooldown <= 0 and
 			random.random() < 0.02):  # 2% шанс начать атаку
 			self.state = "Prepare attak"
 			self.charge_timer = self.attack_charge_time
@@ -1042,7 +1043,7 @@ class Slime(BaseEnemy):
 			return
 			
 		# Случайное блуждание по окружности вокруг игрока
-		self.wander_timer += 1
+		self.wander_timer += dt
 		
 		# Меняем направление через определенные интервалы
 		if self.wander_timer >= self.wander_change_interval:
@@ -1069,15 +1070,15 @@ class Slime(BaseEnemy):
 			if not self._check_collision(self.x, self.y + move_y, world):
 				self.y += move_y
 				
-	def _handle_prepare_attack(self, player, world):
+	def _handle_prepare_attack(self, player, world, dt):
 		"""Подготовка к прыжку (прицеливание)"""
-		self.charge_timer -= 1
+		self.charge_timer -= dt * 60
 		
 		# Слизень слегка дрожит в процессе подготовки
-		if self.charge_timer % 4 < 2:
-			self.y -= 2
+		if int(self.charge_timer) % 4 < 2:
+			self.y -= 3
 		else:
-			self.y += 2
+			self.y += 3
 			
 		if self.charge_timer <= 0:
 			self.state = "Jumping"
@@ -1142,7 +1143,6 @@ class Slime(BaseEnemy):
 			self.x = self.start_x
 			self.y = self.start_y
 			self.state = "Wander"
-			self.attack_cooldown = FPS * 2
 
 	def _attack(self, player):
 		"""Атака игрока"""
@@ -1150,7 +1150,7 @@ class Slime(BaseEnemy):
 			if pygame.Rect(self.x - 50, self.y + 50, 100, 100).colliderect(pygame.Rect(player.x - 100, player.y + 100, 200, 200)):
 				player.HP -= 10
 				player.HP_animation_tick = 1
-			self.attack_cooldown = FPS
+		self.attack_cooldown = 100
 
 	def _check_collision(self, x, y, world):
 		"""Проверка столкновения со стенами"""
@@ -1162,7 +1162,7 @@ class Slime(BaseEnemy):
 		screen_x = self.x - player.x + Width // 2 - 64
 		screen_y = player.y - self.y + Height // 2 - 64
 		
-		frame_index = (self.animation_count - self.animation_count % 5) // 5
+		frame_index = int(self.animation_timer) % 5
 		frame = self.animation_frames[frame_index]
 		
 		win.blit(frame, (screen_x, screen_y))
@@ -3904,7 +3904,8 @@ def start_game():
 					if event.key == pygame.K_9: changed_slot = 8
 					if event.key == pygame.K_0: changed_slot = 9
 					if event.key == pygame.K_o and False:
-						create_light_circle(world.chunk_manager, player.x, player.y, 10, 15)
+						world.mobs.append(Slime(player.x, player.y))
+						# create_light_circle(world.chunk_manager, player.x, player.y, 10, 15)
 						# world.chunk_manager.chunks[(0, 0)].shadow_map.update({(0, 0): 0, (1, 0): 1, (2, 0): 2, (3, 0): 3, (4, 0): 4, (5, 0): 5, (6, 0): 6, (7, 0): 7, (8, 0): 8, (9, 0): 9, (10, 0): 10, (11, 0): 11, (12, 0): 12, (13, 0): 13, (14, 0): 14, (15, 0): 15})
 						# world.chunk_manager.chunks[(0, 0)].light_map.update({(0, 1): 0, (1, 1): 1, (2, 1): 2, (3, 1): 3, (4, 1): 4, (5, 1): 5, (6, 1): 6, (7, 1): 7, (8, 1): 8, (9, 1): 9, (10, 1): 10, (11, 1): 11, (12, 1): 12, (13, 1): 13, (14, 1): 14, (15, 1): 15})
 
@@ -4469,7 +4470,7 @@ def start_game():
 			# Отображение мобов
 			for mob in world.mobs:
 
-				mob.update(player, world)
+				mob.update(player, world, dt)
 				mob.draw(player)
 
 				if world.projectiles != []:
@@ -4482,7 +4483,7 @@ def start_game():
 						mob.HP -= 15
 
 						if mob.name == "Slime":
-							temp = mob.animation_frames[(mob.animation_count - mob.animation_count % 5) // 5].copy().convert_alpha()
+							temp = mob.animation_frames[int(mob.animation_timer) % 5].copy().convert_alpha()
 						if mob.name == "Spider":
 							temp = mob.animation_images[mob.direction].copy().convert_alpha()
 
