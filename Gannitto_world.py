@@ -12,7 +12,7 @@ import os
 import Backrooms
 from Ron import Ron
 import Saver
-import Multiplayer
+from Multiplayer import NetworkManager
 from Functions import *
 from Build import build, check_build_objects, draw_select_image, draw_select_image_arbitrarily
 from Chunks import ChunkManager
@@ -575,7 +575,7 @@ class Player:
 		self.animation_timer = 0
 		self.move_timer = 0
 	
-	def render(self, screen, dx, dy):
+	def render(self, screen):
 		"""Отрисовывает игрока на экране"""
 		frames = self.animations[self.direction]
 		screen.blit(shadow(self.image, f"Player {self.direction} {self.frame_index % len(frames)}"), (Width / 2 - 128, Height / 2 - 128))
@@ -597,6 +597,16 @@ class PeerInfo(Player):
 		self.name = name
 		self.last_seen = last_seen
 		self.position = position
+	
+	def render(self, screen):
+		"""Отрисовывает игрока на экране"""
+		frames = self.animations[self.direction]
+		screen.blit(shadow(self.image, f"Player {self.direction} {self.frame_index % len(frames)}"), world_to_screen(self.x, self.y, 256, 256))
+		
+		if Settings["Display"][3]:
+			self.rect = pygame.Rect(self.x - 25, self.y - 112, 50, 224)
+			pygame.draw.rect(screen, (0, 255, 0), world_rect_to_screen(self.x, self.y, self.image.get_width(), self.image.get_height()), 2)
+			pygame.draw.rect(win, (0, 0, 0), (self.rect[0] - self.x + Width // 2, self.y - self.rect[1] - self.rect[3] + Height // 2, self.rect[2], self.rect[3]), 3)
 
 
 class Object:
@@ -2310,7 +2320,8 @@ class World:
 		self.projectiles = []
 		
 	def update(self):
-		self.chunk_manager.update_visible_chunks(player.x, player.y)
+		if not multiplayer or multiplayer_role == "Host":
+			self.chunk_manager.update_visible_chunks(player.x, player.y)
 		# Сборка объектов из загруженных чанков
 		self.visible_objects.clear()
 		self.visible_items.clear()
@@ -2391,13 +2402,13 @@ class Cave:
 	def generate(self):
 
 		# for _ in range(self.own_width // 100 + random.randint(-10, 10)):
-		# 	self.objects.append(Object("Stone", random.randint(self.own_width // 2 * -1, self.own_width // 2), random.randint(self.own_height // 2 * -1, self.own_height // 2), "Images/Items/Stone.png"))
+		#	self.objects.append(Object("Stone", random.randint(self.own_width // 2 * -1, self.own_width // 2), random.randint(self.own_height // 2 * -1, self.own_height // 2), "Images/Items/Stone.png"))
 			
 		# for _ in range(self.own_width // 300 + random.randint(-10, 10)):
-		# 	self.objects.append(Object("Iron ore", random.randint(self.own_width // 2 * -1, self.own_width // 2), random.randint(self.own_height // 2 * -1, self.own_height // 2), "Images/Objects/Iron ore.png", (256, 256), special_flags=100, is_solid=True))
+		#	self.objects.append(Object("Iron ore", random.randint(self.own_width // 2 * -1, self.own_width // 2), random.randint(self.own_height // 2 * -1, self.own_height // 2), "Images/Objects/Iron ore.png", (256, 256), special_flags=100, is_solid=True))
 
 		# for _ in range(self.own_width // 300 + random.randint(-10, 10)):
-		# 	self.objects.append(Object("Gold ore", random.randint(self.own_width // 2 * -1, self.own_width // 2), random.randint(self.own_height // 2 * -1, self.own_height // 2), "Images/Objects/Gold ore.png", (256, 256), special_flags=100, is_solid=True))
+		#	self.objects.append(Object("Gold ore", random.randint(self.own_width // 2 * -1, self.own_width // 2), random.randint(self.own_height // 2 * -1, self.own_height // 2), "Images/Objects/Gold ore.png", (256, 256), special_flags=100, is_solid=True))
 		self.cave_map = world.chunk_manager.generator.generate_cave(self.noise, self.own_width, self.own_height)
 
 	def main(self):
@@ -2517,31 +2528,31 @@ command_system.commands = {
 		}
 
 # def show_bar(times):
-# 	import matplotlib.pyplot as plt
-# 	categories = range(len(times))
-# 	values = []
-# 	for i in times:
-# 		values.append(sum(i) / len(i))
+#	import matplotlib.pyplot as plt
+#	categories = range(len(times))
+#	values = []
+#	for i in times:
+#		values.append(sum(i) / len(i))
 
-# 	plt.bar(categories, values, color="orange")
-# 	plt.title("Время на обработку")
-# 	plt.xlabel('Часть кода')
-# 	plt.ylabel('Время')
-# 	plt.show()
-# 	plt.savefig("aboba.png")
+#	plt.bar(categories, values, color="orange")
+#	plt.title("Время на обработку")
+#	plt.xlabel('Часть кода')
+#	plt.ylabel('Время')
+#	plt.show()
+#	plt.savefig("aboba.png")
 
 # time_values = []
 # time_index = 0
 
 # def add_time(t):
-# 	global time_index
-# 	if len(time_values) <= time_index:
-# 		time_values.append([])
-# 	time_values[time_index].append(t)
-# 	time_index += 1
+#	global time_index
+#	if len(time_values) <= time_index:
+#		time_values.append([])
+#	time_values[time_index].append(t)
+#	time_index += 1
 # def reset_time():
-# 	global time_index
-# 	time_index = 0
+#	global time_index
+#	time_index = 0
 
 # Кнопки в меню
 
@@ -2722,7 +2733,6 @@ def settings():
 			click = pygame.mouse.get_pressed()
 			mouse_x, mouse_y = pygame.mouse.get_pos()
 			release = False
-			
 			events = pygame.event.get()
 			
 			for event in events:
@@ -3707,6 +3717,7 @@ def start_game():
 	dx = 0
 	dy = 0
 	release = False
+	game_events = []
 
 	new_particles = []
 
@@ -3805,6 +3816,8 @@ def start_game():
 		dt = clock.tick(MAX_FPS) / 1000.0
 		game_time.update(dt)
 		player.changed_item = inventory.whole_inventory[changed_slot]
+		if multiplayer:
+			game_events.clear()
 
 		for event in pygame.event.get():
 			
@@ -4027,6 +4040,7 @@ def start_game():
 		# Если есть движение - двигаем игрока
 		if dx != 0 or dy != 0:
 			player.move(dx, dy, dt)
+			game_events.append({"event_type": "move", "x": player.x, "y": player.y, "direction": player.direction})
 		else:
 			player.stop()
 		
@@ -4521,7 +4535,30 @@ def start_game():
 
 		# Отрисовка игрока
 		
-		player.render(win, dx, dy)
+		player.render(win)
+
+		if multiplayer:
+			# print(net.server_events)
+			with net.lock:
+				peers_copy = dict(net.peers.items())  # Создаем копию
+			for pid, peer in peers_copy.items():
+				if pid != net.player_id:
+					need_to_stop = True
+					if pid in net.server_events:
+						for event in net.server_events[pid]:
+							if event["event_type"] == "move":
+								peer.x = event["x"]
+								peer.y = event["y"]
+								peer.direction = event["direction"]
+								net.server_events[pid].remove(event)
+								if net.server_events[pid].len == 0:
+									net.server_events.remove(pid)
+								need_to_stop = False
+								break
+					if need_to_stop:
+						peer.stop()
+					peer.render(win)
+					# print(player.x, player.y, peer.x, peer.y)
 
 		# Анимации Хиро
 
@@ -5618,13 +5655,13 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 		build_tuple = (changed_slot, player, world, inventory.whole_inventory)
 		check_build_objects(objects_templates, build_tuple)
 		# if build(build_tuple, Object("Farmland", 0, 0, "Images/Objects/Farmland.png", (128, 128), special_flags=1), "Stone hoe", get_item_from_inventory=0):
-		# 	pygame.mixer.Sound.play(pygame.mixer.Sound(path + "Sounds/Dirt.mp3"))
+		#	pygame.mixer.Sound.play(pygame.mixer.Sound(path + "Sounds/Dirt.mp3"))
 		# if inventory.whole_inventory[changed_slot] is None: a = ""
 		# else:
-		# 	a = inventory.whole_inventory[changed_slot].name[:-6] if " seeds" in inventory.whole_inventory[changed_slot].name else inventory.whole_inventory[changed_slot].name
+		#	a = inventory.whole_inventory[changed_slot].name[:-6] if " seeds" in inventory.whole_inventory[changed_slot].name else inventory.whole_inventory[changed_slot].name
 		
 		# try: build(build_tuple, Particle(0, 0, pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + a + " 1.png"), (128, 128)), can_interfere_with_placing=True, end_time=random.randint(1, 3),
-		# 			end_command="world.particles.append(Particle(particle.x, particle.y, pygame.transform.scale(pygame.image.load(path + 'Images/Objects/' + particle.special_flags[0] + ' 2.png'), (128, 128)), can_interfere_with_placing=True, end_time=random.randint(5, 10), save_particle=True, tick_command=particle.special_flags[1], tick_command_locals={'a': 0, 'b': 0}, tick_command_globals={'world_to_screen': world_to_screen, 'win_fill': win_fill, 'random': random}, tick_command_globals_in_the_end=('inventory', 'changed_slot'), end_command=particle.special_flags[3], end_command_globals={'random': random}, special_flags=particle.special_flags))", end_command_globals={"world.particles": world.particles, "Particle": Particle, "random": random, "world_to_screen": world_to_screen, "win_fill": win_fill}, save_particle=True, special_flags=[a, """
+		#			end_command="world.particles.append(Particle(particle.x, particle.y, pygame.transform.scale(pygame.image.load(path + 'Images/Objects/' + particle.special_flags[0] + ' 2.png'), (128, 128)), can_interfere_with_placing=True, end_time=random.randint(5, 10), save_particle=True, tick_command=particle.special_flags[1], tick_command_locals={'a': 0, 'b': 0}, tick_command_globals={'world_to_screen': world_to_screen, 'win_fill': win_fill, 'random': random}, tick_command_globals_in_the_end=('inventory', 'changed_slot'), end_command=particle.special_flags[3], end_command_globals={'random': random}, special_flags=particle.special_flags))", end_command_globals={"world.particles": world.particles, "Particle": Particle, "random": random, "world_to_screen": world_to_screen, "win_fill": win_fill}, save_particle=True, special_flags=[a, """
 # if self.special_flags[2]:
 	# a, b = world_to_screen(self.x, self.y, 128, 128)
 	# win_fill((255, 255, 255), 30, (a, b, 128, 128))
@@ -5642,11 +5679,11 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 		# world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object(self.special_flags[0], rand_x, rand_y, "Images/Items/" + self.special_flags[0] + ".png"))
 	# if self.special_flags[0] == "Wheat":
 		# for _ in range(random.randint(0, 2)):
-		# 	rand_x, rand_y = self.x + random.randint(-30, 30), self.y + random.randint(-30, 30)
-		# 	world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Wheat seeds", rand_x, rand_y, "Images/Items/Wheat seeds.png"))
+		#	rand_x, rand_y = self.x + random.randint(-30, 30), self.y + random.randint(-30, 30)
+		#	world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Wheat seeds", rand_x, rand_y, "Images/Items/Wheat seeds.png"))
 	# ''', tick_command_globals={"random": random}, tick_command_globals_in_the_end=("Object", "world", "click", "x", "y", "Width", "Height", "mouse_x", "mouse_y"), del_self_condition=lambda particle: (click[0] and pygame.Rect(particle.x - player.x + Width // 2 - particle.image.get_width() // 2, player.y - particle.y + Height // 2 - particle.image.get_height() // 2, particle.w, particle.h).collidepoint(mouse_x, mouse_y)), special_flags=particle.special_flags))
 # """]),
-		# 	 "Carrot,Onion,Tomato", "Seed", particle_to_build=True, needed_object="Farmland", remove_part=" seeds")
+		#	 "Carrot,Onion,Tomato", "Seed", particle_to_build=True, needed_object="Farmland", remove_part=" seeds")
 		
 		# except: pass
 		#world.particles.append(Particle(particle.x, particle.y, pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + particle.special_flags[0] + " 2.png"), (128, 128)), end_time=random.randint(1, 3), save_particle=True, tick_command=particle.special_flags[1], end_command=particle.special_flags[3]))
@@ -5662,8 +5699,8 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 				world.chunk_manager.get_chunk_at(*farmland_pos).farmlands[farmland_pos] = Farmland(farmland_pos[0], farmland_pos[1])
 				pygame.mixer.Sound.play(pygame.mixer.Sound(path + "Sounds/Dirt.mp3"))
 				# for farmland in (((farmland_pos[0] - 128, farmland_pos[1]), (farmland_pos[0] + 128, farmland_pos[1]), (farmland_pos[0], farmland_pos[1] - 128), (farmland_pos[0], farmland_pos[1] + 128))):
-				# 	if farmland in world.visible_farmlands:
-				# 		world.visible_farmlands[farmland].update_neigboors()
+				#	if farmland in world.visible_farmlands:
+				#		world.visible_farmlands[farmland].update_neigboors()
 
 		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name in wall_types:
 			
@@ -5863,38 +5900,35 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 
 					# try:
 						
-					# 	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-					# 	sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-					# 	sock.connect((input_text, 10000))
+					#	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+					#	sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+					#	sock.connect((input_text, 10000))
 						
 					# except:
 						
-					# 	a = Button(Width // 2, Height // 2 + 20, bigTextInfo.render(i("Next"), True, menu_color_medium), bigTextInfo.render(t("Next"), True, menu_color_dark), alignment=True)
+					#	a = Button(Width // 2, Height // 2 + 20, bigTextInfo.render(i("Next"), True, menu_color_medium), bigTextInfo.render(t("Next"), True, menu_color_dark), alignment=True)
 
-					# 	while True:
+					#	while True:
 						
-					# 		for event in pygame.event.get():
-					# 			if event.type == pygame.QUIT:
-					# 				save()
-					# 				sys.exit()
+					#		for event in pygame.event.get():
+					#			if event.type == pygame.QUIT:
+					#				save()
+					#				sys.exit()
 						   
 									
-					# 		win.fill(menu_color_light)
-					# 		pygame.draw.rect(win, menu_color_dark, (0, 0, Width, Height), 10)
-					# 		pygame.draw.rect(win, menu_color_medium, (10, 10, Width - 20, Height - 20), 10)
+					#		win.fill(menu_color_light)
+					#		pygame.draw.rect(win, menu_color_dark, (0, 0, Width, Height), 10)
+					#		pygame.draw.rect(win, menu_color_medium, (10, 10, Width - 20, Height - 20), 10)
 							
-					# 		win.blit(textInfo.render(t("Connection error"), True, menu_color_medium), ((Width - textInfo.size(t("Connection error"))[0]) // 2, Height // 2 - 20))
+					#		win.blit(textInfo.render(t("Connection error"), True, menu_color_medium), ((Width - textInfo.size(t("Connection error"))[0]) // 2, Height // 2 - 20))
 
-					# 		a.main()
-					# 		if a.get_pressed():
-					# 			break
+					#		a.main()
+					#		if a.get_pressed():
+					#			break
 							
-					# 		pygame.display.update()
-					# 		clock.tick(MAX_FPS)
+					#		pygame.display.update()
+					#		clock.tick(MAX_FPS)
 				
-		if multiplayer:
-			pass # TODO тут будет логика мультиплеера
-		
 		if inventory.whole_inventory[inventory.start_cell] is not None and inventory.start_cell > -1 and hold_left:
 
 			item_text = t("Item info " + inventory.whole_inventory[inventory.start_cell].name) + "\n" + t("Item purpose " + inventory.whole_inventory[inventory.start_cell].name)
@@ -5920,6 +5954,12 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 			
 			win.blit(inventory.whole_inventory[inventory.start_cell].image, (mouse_x - 32, mouse_y - 32))
 		
+		if multiplayer:
+			if multiplayer_role == "Host":
+				pass
+			else:
+				net.send_data(tuple(game_events), "event" if len(game_events) != 0 else "idle")
+
 		if keys[hot_keys["Screenshot"]] and not keys[hot_keys["Show keys"]]:
 			
 			pygame.image.save(win, str(Path.home()) + "/Your Screenshot " + str(time.asctime().replace(":", " ")) + ".png")
@@ -6190,7 +6230,7 @@ def edit_world():
 
 def multiplayer_settings_menu():
 	
-	global alt_pressed, does_lighten, multiplayer_role
+	global alt_pressed, does_lighten, multiplayer_role, net
 
 	back_button = Button(-20, -20, pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Back.png"), (128, 128)), pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Back 2.png"), (128, 128)))
 	host_button = Button(Width // 4, 50, textInfo.render("Хост (в твой мир заходят игроки)", True, menu_color_medium), textInfo.render("Хост (в твой мир заходят игроки)", True, menu_color_dark), alignment=True)
@@ -6268,8 +6308,15 @@ def multiplayer_settings_menu():
 			if client_button.get_pressed():
 				multiplayer_role = "Client"
 		start_game_button.main()
+
 		if start_game_button.get_pressed():
+			net = NetworkManager(PeerInfo, chat_message)
+			if multiplayer_role == "Host":
+				assert net.start_host(5555), "Failed to start host"
+			else:
+				assert net.connect_to_host("127.0.0.1", 5555), "Failed to connect"
 			start_game()
+
 		if alt_pressed: draw_key("ESC", 44, 108)
 		win_fill(alpha=100 - Settings["Display"][0])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
 

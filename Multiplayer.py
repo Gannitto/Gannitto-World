@@ -8,18 +8,10 @@ from typing import Dict, List, Optional
 # Версия протокола для совместимости
 PROTOCOL_VERSION = 1
 
-# @dataclass
-# class PeerInfo:
-# 	id: str
-# 	address: tuple
-# 	name: str
-# 	last_seen: float
-# 	position: tuple = (0, 0)  # (x, y)
-
 class NetworkManager:
 	"""Основной класс для управления сетевым взаимодействием"""
 	
-	def __init__(self, PeerInfo):
+	def __init__(self, PeerInfo, chat_message):
 		self.role = "Disconnected"
 		self.socket: Optional[socket.socket] = None
 		self.running = False
@@ -27,6 +19,8 @@ class NetworkManager:
 		self.player_id = self._generate_id()
 		self.encryption_key = b"gannitto_world_secret_key_123456"  # Простой ключ шифрования (временно)
 		self.PeerInfo = PeerInfo
+		self.chat_message = chat_message
+		self.server_events = {}
 		
 		# Коллбэки для событий
 		self.callbacks = {
@@ -111,11 +105,11 @@ class NetworkManager:
 			self.receive_thread = threading.Thread(target=self._receive_loop, daemon=True)
 			self.receive_thread.start()
 			
-			print(f"[Network] Connected to host at {host_ip}:{port}")
+			self.chat_message(f"Подключено к хосту {host_ip}:{port}")
 			return True
 			
 		except Exception as e:
-			print(f"[Network] Failed to connect to host: {e}")
+			self.chat_message(f"Не удалось подключиться к хосту: {e}")
 			return False
 	
 	def _receive_loop(self):
@@ -142,70 +136,73 @@ class NetworkManager:
 					
 			except socket.timeout:
 				continue
-			except Exception as e:
-				if self.running:
-					print(f"[Network] Receive error: {e}")
-					break
+			# except Exception as e:
+			# 	if self.running:
+			# 		self.chat_message(f"Ошибка получения: {e}")
+			# 		break
 	
 	def _handle_packet_as_host(self, packet: Dict, addr: tuple):
 		"""Обработка пакетов на стороне хоста"""
+		print(packet)
 		packet_type = packet.get("type")
 		player_id = packet.get("player_id")
-		
-		if packet_type == "handshake":
-			# Новый игрок подключается
-			# Используем блокировку при добавлении
-			with self.lock:
-				if player_id not in self.peers:
-					peer = self.PeerInfo(
-						id=player_id,
-						address=addr,
-						name=packet.get("name", f"Player_{player_id[:4]}"),
-						last_seen=time.time(),
-						position=packet.get("position", (0, 0))
-					)
-					self.peers[player_id] = peer
-					print(f"[Network] New peer joined: {player_id} from {addr}")
-			
-			# Отправляем список (вне блокировки, чтобы не блокировать надолго)
-			self._send_peer_list_to(player_id)
-			
-			# Оповещаем всех остальных
-			self._broadcast({
-				"type": "peer_joined",
-				"peer": {
-					"id": player_id,
-					"name": peer.name,
-					"position": peer.position
-				}
-			}, player_id)
-			
-			# Вызываем коллбэк
-			if self.callbacks["on_peer_joined"]:
-				self.callbacks["on_peer_joined"](peer)
+		match packet_type:
+			case "handshake":
+				# Новый игрок подключается
+				# Используем блокировку при добавлении
+				with self.lock:
+					if player_id not in self.peers:
+						peer = self.PeerInfo(
+							id=player_id,
+							address=addr,
+							name=packet.get("name", f"Player_{player_id[:4]}"),
+							last_seen=time.time(),
+							position=packet.get("position", (0, 0))
+						)
+						self.peers[player_id] = peer
+						self.chat_message(f">>> Подключился игрок {player_id} с {addr}")
 				
-		elif packet_type == "move":
-			# Обновление позиции игрока
-			with self.lock:
-				if player_id in self.peers:
-					self.peers[player_id].position = tuple(packet.get("position", (0, 0)))
-					self.peers[player_id].last_seen = time.time()
-					position = self.peers[player_id].position
-			
-			# Пересылаем движение всем остальным (вне блокировки)
-			self._broadcast({
-				"type": "peer_moved",
-				"player_id": player_id,
-				"position": position
-			}, player_id)
-			
-			if self.callbacks["on_peer_moved"]:
-				self.callbacks["on_peer_moved"](player_id, position)
+				# Отправляем список (вне блокировки, чтобы не блокировать надолго)
+				self._send_peer_list_to(player_id)
 				
-		elif packet_type == "disconnect":
-			# Игрок отключается
-			self._remove_peer(player_id)
+				# Оповещаем всех остальных
+				self._broadcast({
+					"type": "peer_joined",
+					"peer": {
+						"id": player_id,
+						"name": peer.name,
+						"position": peer.position
+					}
+				}, player_id)
+				
+				# Вызываем коллбэк
+				if self.callbacks["on_peer_joined"]:
+					self.callbacks["on_peer_joined"](peer)
 
+			case "disconnect":
+				# Игрок отключается
+				self._remove_peer(player_id)
+				
+			case "event":
+				for event in packet.get("events"):
+					match event.get("event_type"):
+						case "move":
+							# Обновление позиции игрока
+							# with self.lock:
+							# 	if player_id in self.peers:
+							# 		self.peers[player_id].move(event.get("x"), event.get("dy"), 40)
+							# 		self.peers[player_id].last_seen = time.time()
+							
+							# Пересылаем движение всем остальным (вне блокировки)
+							self.server_events[player_id].append(event)
+							self._broadcast({
+								"type": "server_event",
+								"player_id": player_id,
+								"x": event.get("x"),
+								"y": event.get("y"),
+								"direction": event.get("direction")
+							}, player_id)
+					
 	def _handle_packet_as_client(self, packet: Dict, addr: tuple):
 		"""Обработка пакетов на стороне клиента"""
 		packet_type = packet.get("type")
@@ -245,21 +242,18 @@ class NetworkManager:
 				if self.callbacks["on_peer_joined"]:
 					self.callbacks["on_peer_joined"](peer)
 					
-		elif packet_type == "peer_moved":
-			# Кто-то двинулся
-			pid = packet.get("player_id")
-			pos = tuple(packet.get("position", (0, 0)))
-			if pid and pid != self.player_id and pid in self.peers:
-				self.peers[pid].position = pos
-				self.peers[pid].last_seen = time.time()
-				
-				if self.callbacks["on_peer_moved"]:
-					self.callbacks["on_peer_moved"](pid, pos)
-					
 		elif packet_type == "peer_left":
 			# Кто-то отключился
 			pid = packet.get("player_id")
 			self._remove_peer(pid)
+			
+		elif packet_type == "server_event":
+			match packet.get("event_type"):
+				case "move":
+					pid = packet.get("player_id")
+					if pid and pid != self.player_id and pid in self.peers:
+						self.server_events[pid].append(packet)
+						self.peers[pid].last_seen = time.time()
 	
 	def _send_packet(self, packet: Dict, address: tuple):
 		"""Отправка зашифрованного пакета"""
@@ -272,7 +266,7 @@ class NetworkManager:
 			self.socket.sendto(encrypted, address)
 			return True
 		except Exception as e:
-			print(f"[Network] Send error: {e}")
+			self.chat_message(f"Ошибка отправки: {e}")
 			return False
 	
 	def _broadcast(self, packet: Dict, exclude_ids: List[str] = None):
@@ -314,9 +308,10 @@ class NetworkManager:
 			"peers": peers_data
 		}, self.peers[player_id].address)
 	
-	def send_data(self, events: tuple):
-		"""Отправка данных всем остальным"""
+	def send_data(self, events: tuple, type="idle"):
+		"""Отправка данных"""
 		packet = {
+			"type": type,
 			"player_id": self.player_id,
 			"events": events
 		}
@@ -356,14 +351,14 @@ class NetworkManager:
 			self.peers.clear()
 			
 		self.role = "Disconnected"
-		print("[Network] Disconnected from network")
+		self.chat_message("Отключено от сети")
 
 	def _remove_peer(self, player_id: str):
 		"""Удаление пира из списка"""
 		with self.lock:
 			if player_id in self.peers:
 				del self.peers[player_id]
-				print(f"[Network] Peer left: {player_id}")
+				self.chat_message(f"<<< Игрок {player_id} вышел")
 		
 		# Вызываем коллбэк вне блокировки
 		if self.callbacks["on_peer_left"]:
