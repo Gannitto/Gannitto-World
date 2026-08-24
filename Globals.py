@@ -35,7 +35,7 @@ craft_images_list = [None] * 7
 does_lighten = False
 alt_pressed = False
 win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-multyplayer_panel = pygame.surface.Surface((500, 250))
+multiplayer_panel = pygame.surface.Surface((500, 250))
 start_time = time.time()
 world_name = None
 MAX_FPS = Settings["Display"][6]
@@ -48,7 +48,7 @@ menu_color_light = (192, 203, 220)
 menu_color_medium = (139, 155, 180)
 menu_color_dark = (58, 68, 102)
 menu_open = False
-multyplayer_menu_open = False
+multiplayer_menu_open = False
 textInfo = pygame.font.Font(path + "Font.ttf", 18)
 bigTextInfo = pygame.font.Font(path + "Font.ttf", 36)
 mouse_x, mouse_y = pygame.mouse.get_pos()
@@ -62,9 +62,10 @@ craft_list_open = False
 craft_list_page = 1
 craft_list_offset = 0
 craft_list_max_offset = -10000
-multyplayer_mode = None
+multiplayer_mode = None
+multiplayer = False
 slot_animations = [[False, 15] for _ in range(30)]   # Используется для анимации при наведении на слот
-special_slot_animations = {"Craft list slot": [False, 0.6], "Game menu slot": [False, 0.6], "Menu slot": [False, 0.6], "Multyplayer slot": [False, 0.6], "Close slot": [False, 0.6], "Reference slot": [False, 0.6], "Close slot": [False, 0.6], "Split items slot": [False, 0.6], "Compact inventory slot": [False, 0.6]}   # Используется для анимации при наведении на слот, который выполняет какое-либо действие
+special_slot_animations = {"Craft list slot": [False, 0.6], "Game menu slot": [False, 0.6], "Menu slot": [False, 0.6], "Multiplayer slot": [False, 0.6], "Close slot": [False, 0.6], "Reference slot": [False, 0.6], "Close slot": [False, 0.6], "Split items slot": [False, 0.6], "Compact inventory slot": [False, 0.6]}   # Используется для анимации при наведении на слот, который выполняет какое-либо действие
 
 try:
 	statistics = Saver.load_objects(path + "Settings/Statistics.save")
@@ -73,7 +74,7 @@ except FileNotFoundError:
 
 default_hot_keys = {
 	
-		"Multyplayer menu": pygame.K_m,
+		"Multiplayer menu": pygame.K_m,
 		"TAB menu": pygame.K_TAB,
 		"Help": pygame.K_F1,
 		"Menu": pygame.K_F2,

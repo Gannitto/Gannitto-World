@@ -13,6 +13,7 @@ import os
 import Backrooms
 from Ron import Ron
 import Saver
+import Multiplayer
 from Functions import *
 from Build import build, check_build_objects, draw_select_image, draw_select_image_arbitrarily
 from Chunks import ChunkManager
@@ -190,12 +191,9 @@ def save(darken:bool=True, save_world_settings:bool=False):
 	
 	if world_name is not None:
 		
-		if multyplayer:
-			another_players = []
-			for player in ...:
-				another_players.append(...)   # TODO
-				another_players.append(...)
-				
+		if multiplayer:
+			pass
+			# TODO сохранение данных о других игроках
 		else:
 			
 			Saver.save_objects(path + "Worlds/" + world_name + "/Mobs.save", world.mobs)
@@ -259,8 +257,8 @@ Game_menu_slot2 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/
 Menu_slot1 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Menu slot.png"), (64, 64))
 Menu_slot2 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Menu slot 2.png"), (64, 64))
 
-Multyplayer_slot1 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Multyplayer slot.png"), (64, 64))
-Multyplayer_slot2 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Multyplayer slot 2.png"), (64, 64))
+Multiplayer_slot1 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Multiplayer slot.png"), (64, 64))
+Multiplayer_slot2 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Multiplayer slot 2.png"), (64, 64))
 
 Close_slot1 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Close slot.png"), (64, 64))
 Close_slot2 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Close slot 2.png"), (64, 64))
@@ -284,8 +282,8 @@ Game_menu_slot1.set_alpha(Settings["Display"][1])
 Game_menu_slot2.set_alpha(Settings["Display"][1])
 Menu_slot1.set_alpha(Settings["Display"][1])
 Menu_slot2.set_alpha(Settings["Display"][1])
-Multyplayer_slot1.set_alpha(Settings["Display"][1])
-Multyplayer_slot2.set_alpha(Settings["Display"][1])
+Multiplayer_slot1.set_alpha(Settings["Display"][1])
+Multiplayer_slot2.set_alpha(Settings["Display"][1])
 Close_slot1.set_alpha(Settings["Display"][1])
 Close_slot2.set_alpha(Settings["Display"][1])
 Reference_slot1.set_alpha(Settings["Display"][1])
@@ -509,6 +507,7 @@ class Player:
 		self.rect = pygame.Rect(self.x - 25, self.y - 112, 50, 224)
 		self.hovered_object = None
 		self.breaking_object = None
+		self.changed_item = None
 		
 		# Текущий спрайт
 		self.image = self.get_current_frame()
@@ -3669,10 +3668,6 @@ def change_a_character():
 
 	characters()
 
-
-
-multyplayer = False
-
 hot_keys = Saver.load_objects(path + "Settings/Hot keys.save")
 objects_templates = {
 		"Table": Object("Table", 0, 0, "Images/Objects/Table.png", (256, 256), is_solid=True, breakable_by_hammer=True),
@@ -3685,7 +3680,7 @@ objects_templates = {
 
 def start_game():
 	
-	global win, changed_slot, menu_open, multyplayer_menu_open, screenmode, inventory_open, hold_left, backrooms, text_color, bullet_num, craft_items_list, craft_amounts_list, craft_images_list, screenshot_num, mouse_x, mouse_y, item_settings_open, multyplayer_panel, chat_tick, chat, main_chat, craft_list_open, craft_list_page, craft_list_offset, click, in_motherboard, os, world_name, color, multyplayer_mode, multyplayer, animation, start_time, new_particles, inside_files, game, alt_pressed, player, world, FPS, MAX_FPS, screen_rect, time_index
+	global win, changed_slot, menu_open, multiplayer_menu_open, screenmode, inventory_open, hold_left, backrooms, text_color, bullet_num, craft_items_list, craft_amounts_list, craft_images_list, screenshot_num, mouse_x, mouse_y, item_settings_open, multiplayer_panel, chat_tick, chat, main_chat, craft_list_open, craft_list_page, craft_list_offset, click, in_motherboard, os, world_name, color, multiplayer_mode, multiplayer, animation, start_time, new_particles, inside_files, game, alt_pressed, player, world, FPS, MAX_FPS, screen_rect, time_index
 
 	night_playing = False
 	input_text = ""
@@ -3801,6 +3796,8 @@ def start_game():
 		FPS = int(clock.get_fps())
 		dt = clock.tick(MAX_FPS) / 1000.0
 		game_time.update(dt)
+		player.changed_item = inventory.whole_inventory[changed_slot]
+
 		for event in pygame.event.get():
 			
 			if event.type == pygame.QUIT:
@@ -3854,8 +3851,8 @@ def start_game():
 						alt_pressed = not alt_pressed
 					if event.key == hot_keys["Use item"]:
 						use_item_pressed = True
-					if event.key == hot_keys["Multyplayer menu"]:
-						multyplayer_menu_open = True
+					if event.key == hot_keys["Multiplayer menu"]:
+						multiplayer_menu_open = True
 					if event.key == hot_keys["Set Ron home"]:
 						ron.home = [player.x, player.y]
 					if event.key == hot_keys["Menu"]:
@@ -4141,22 +4138,22 @@ def start_game():
 
 				case 0:
 
-					wall_color = Color(180, 159, 50)
+					wall_color = (180, 159, 50)
 					next_levels = [0.2, 1]
 
 				case 0.2:
 
-					wall_color = Color(200, 180, 70)
+					wall_color = (200, 180, 70)
 					next_levels = [0, 1]
 
 				case 1:
 
-					wall_color = Color(50, 50, 50)
+					wall_color = (50, 50, 50)
 					next_levels = [2]
 
 				case 2:
 
-					wall_color = Color(50, 50, 50)
+					wall_color = (50, 50, 50)
 
 			a, b, c, d = True, True, True, True
 
@@ -4445,7 +4442,7 @@ def start_game():
 							else:
 								object.y -= 30
 		
-		if not Backrooms.InBackrooms and world.current_cave is None and (not multyplayer or multyplayer_mode == "My game"):
+		if not Backrooms.InBackrooms and world.current_cave is None and (not multiplayer or multiplayer_mode == "My game"):
 
 			if game_time.day_phase == "Night":
 				if random.randint(1, 800) == 1:
@@ -4977,7 +4974,7 @@ def start_game():
 						special_slot_animations["Menu slot"] = [True, 0, 10]
 					
 					if click[0]:
-						multyplayer_menu_open = True
+						multiplayer_menu_open = True
 						b = True
 						display_speed = 7
 
@@ -4999,31 +4996,31 @@ def start_game():
 
 
 				if Width // 2 + math.cos((2 * math.pi * 3) / 6) * radius - 32 < mouse_x < Width // 2 + math.cos((2 * math.pi * 3) / 6) * radius + 32 and Height // 2 + math.sin((2 * math.pi * 3) / 6) * radius - 32 < mouse_y < Height // 2 + math.sin((2 * math.pi * 3) / 6) * radius + 32:
-					if special_slot_animations["Multyplayer slot"][0]:
-						if special_slot_animations["Multyplayer slot"][1] < FPS / 6:
-							special_slot_animations["Multyplayer slot"][1] += 1
-							special_slot_animations["Multyplayer slot"][2] -= 3
-							special_slot_animations["Multyplayer slot"][2] = abs(special_slot_animations["Multyplayer slot"][2])
+					if special_slot_animations["Multiplayer slot"][0]:
+						if special_slot_animations["Multiplayer slot"][1] < FPS / 6:
+							special_slot_animations["Multiplayer slot"][1] += 1
+							special_slot_animations["Multiplayer slot"][2] -= 3
+							special_slot_animations["Multiplayer slot"][2] = abs(special_slot_animations["Multiplayer slot"][2])
 					else:
-						special_slot_animations["Multyplayer slot"] = [True, 0, 10]
+						special_slot_animations["Multiplayer slot"] = [True, 0, 10]
 					
 					if click[0]:
-						multyplayer_menu_open = True
+						multiplayer_menu_open = True
 						b = True
 						display_speed = 7
 
-				elif special_slot_animations["Multyplayer slot"][0]:
-					special_slot_animations["Multyplayer slot"][0] = False
-					special_slot_animations["Multyplayer slot"][1] = 0
-				elif special_slot_animations["Multyplayer slot"][1] < FPS / 4:
-					special_slot_animations["Multyplayer slot"][1] += 1   
+				elif special_slot_animations["Multiplayer slot"][0]:
+					special_slot_animations["Multiplayer slot"][0] = False
+					special_slot_animations["Multiplayer slot"][1] = 0
+				elif special_slot_animations["Multiplayer slot"][1] < FPS / 4:
+					special_slot_animations["Multiplayer slot"][1] += 1   
 
-				if special_slot_animations["Multyplayer slot"][0] and Settings["Display"][5]:
-					try:win.blit(pygame.transform.scale(Multyplayer_slot2, (64 - special_slot_animations["Multyplayer slot"][2], 64 - special_slot_animations["Multyplayer slot"][2])), (Width // 2 + math.cos((2 * math.pi * 3) / 6) * radius - 32, Height // 2 + math.sin((2 * math.pi * 3) / 6) * radius - 32))
-					except: win.blit(Multyplayer_slot2, (Width // 2 + math.cos((2 * math.pi * 3) / 6) * radius - 32, Height // 2 + math.sin((2 * math.pi * 3) / 6) * radius - 32))
+				if special_slot_animations["Multiplayer slot"][0] and Settings["Display"][5]:
+					try:win.blit(pygame.transform.scale(Multiplayer_slot2, (64 - special_slot_animations["Multiplayer slot"][2], 64 - special_slot_animations["Multiplayer slot"][2])), (Width // 2 + math.cos((2 * math.pi * 3) / 6) * radius - 32, Height // 2 + math.sin((2 * math.pi * 3) / 6) * radius - 32))
+					except: win.blit(Multiplayer_slot2, (Width // 2 + math.cos((2 * math.pi * 3) / 6) * radius - 32, Height // 2 + math.sin((2 * math.pi * 3) / 6) * radius - 32))
 				
 				else:
-					win.blit(Multyplayer_slot1, (Width // 2 + math.cos((2 * math.pi * 3) / 6) * radius - 32, Height // 2 + math.sin((2 * math.pi * 3) / 6) * radius - 32))
+					win.blit(Multiplayer_slot1, (Width // 2 + math.cos((2 * math.pi * 3) / 6) * radius - 32, Height // 2 + math.sin((2 * math.pi * 3) / 6) * radius - 32))
 
 				text(t("Multiplayer menu"), Width // 2 + math.cos((2 * math.pi * 3) / 6) * radius, Height // 2 + math.sin((2 * math.pi * 3) / 6) * radius + 40, alignment=True)
 				
@@ -5737,7 +5734,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 		
 		chat_tick = max(0, chat_tick - 1)
 		
-		if multyplayer_menu_open:
+		if multiplayer_menu_open:
 			
 			enable_multiplayer = Button(Width // 2, Height // 2 - 30, bigTextInfo.render(t("Enable multiplayer"), True, menu_color_medium), bigTextInfo.render(t("Enable multiplayer"), True, menu_color_dark), alignment=True, info=t("Your IP-address - ") + socket.gethostbyname(socket.gethostname()))
 			enter_another_game = Button(Width // 2, Height // 2 + 30, bigTextInfo.render(t("Enter another game"), True, menu_color_medium), bigTextInfo.render(t("Enter another game"), True, menu_color_dark), alignment=True)
@@ -5748,7 +5745,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 			animation_showed = False
 			release = False
 
-			while multyplayer_menu_open:
+			while multiplayer_menu_open:
 
 				mouse_x, mouse_y = pygame.mouse.get_pos()
 				click = pygame.mouse.get_pressed()
@@ -5765,14 +5762,14 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 							release = True
 
 					elif event.type == pygame.KEYDOWN and event.key == hot_keys["Close"]:
-						multyplayer_menu_open = False						
+						multiplayer_menu_open = False						
 
 				win.fill(menu_color_light)
 
 				if mouse_x <= 128 and mouse_y <= 128:
 					win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Back 2.png"), (128, 128)), (0, 0))
 					if release:
-						multyplayer_menu_open = False
+						multiplayer_menu_open = False
 						
 				else:
 					win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Back.png"), (128, 128)), (0, 0))
@@ -5785,11 +5782,11 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 
 				if enable_multiplayer.get_pressed():
 					b = 1
-					multyplayer_menu_open = False
+					multiplayer_menu_open = False
 
 				elif enter_another_game.get_pressed():
 					b = 2
-					multyplayer_menu_open = False
+					multiplayer_menu_open = False
 				if not animation_showed:
 					win_lighten(win)
 					animation_showed = True
@@ -5824,10 +5821,8 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 
 					save(False)
 
-					multyplayer_mode = "My game"
-					multyplayer = True
-
-					import Multyplayer
+					multiplayer_mode = "My game"
+					multiplayer = True
 
 					main_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 					main_socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
@@ -5869,163 +5864,42 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 
 					save(False)
 
-					multyplayer_mode = "Your game"
-					multyplayer = True
-					try:
+					multiplayer_mode = "Your game"
+					multiplayer = True
+					# try:
 						
-						sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-						sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-						sock.connect((input_text, 10000))
-						world_name = "ᴥᴥᴥ░▒▓█╬█▓▒░ᴥᴥᴥ_Multiplayer_ᴥᴥᴥ░▒▓█╬█▓▒░ᴥᴥᴥ"
-						world.mobs = []
-						world.mechanisms = []
-						world.projectiles = []
-						player.effects = []
-						#player.x, player.y, player.speed
+					# 	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+					# 	sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+					# 	sock.connect((input_text, 10000))
 						
-					except:
+					# except:
 						
-						a = Button(Width // 2, Height // 2 + 20, bigTextInfo.render(i("Next"), True, menu_color_medium), bigTextInfo.render(t("Next"), True, menu_color_dark), alignment=True)
+					# 	a = Button(Width // 2, Height // 2 + 20, bigTextInfo.render(i("Next"), True, menu_color_medium), bigTextInfo.render(t("Next"), True, menu_color_dark), alignment=True)
 
-						while True:
+					# 	while True:
 						
-							for event in pygame.event.get():
-								if event.type == pygame.QUIT:
-									save()
-									sys.exit()
+					# 		for event in pygame.event.get():
+					# 			if event.type == pygame.QUIT:
+					# 				save()
+					# 				sys.exit()
 						   
 									
-							win.fill(menu_color_light)
-							pygame.draw.rect(win, menu_color_dark, (0, 0, Width, Height), 10)
-							pygame.draw.rect(win, menu_color_medium, (10, 10, Width - 20, Height - 20), 10)
+					# 		win.fill(menu_color_light)
+					# 		pygame.draw.rect(win, menu_color_dark, (0, 0, Width, Height), 10)
+					# 		pygame.draw.rect(win, menu_color_medium, (10, 10, Width - 20, Height - 20), 10)
 							
-							win.blit(textInfo.render(t("Connection error"), True, menu_color_medium), ((Width - textInfo.size(t("Connection error"))[0]) // 2, Height // 2 - 20))
+					# 		win.blit(textInfo.render(t("Connection error"), True, menu_color_medium), ((Width - textInfo.size(t("Connection error"))[0]) // 2, Height // 2 - 20))
 
-							a.main()
-							if a.get_pressed():
-								break
+					# 		a.main()
+					# 		if a.get_pressed():
+					# 			break
 							
-							pygame.display.update()
-							clock.tick(MAX_FPS)
+					# 		pygame.display.update()
+					# 		clock.tick(MAX_FPS)
 				
-		if multyplayer:
-			
-			if multyplayer_mode == "My game":
-
-				try:
-					new_socket, addr = main_socket.accept()
-					chat_message("Новое подключение от: " + str(addr))
-					new_socket.setblocking(0)
-					Multyplayer.players.append(Multyplayer.Player(new_socket, addr, 0, 0, "new player"))
-
-				except:
-					pass   # Нет желающих войти в игру
-				
-				# Считываем команды игроков
-				
-				new_objects = ""
-
-				for object in world.visible_objects:
-					if object.object_class == "Object":
-						new_objects += "Object" + "!" + object.name + "!" + str(object.x) + "!" + str(object.y) + "!" + object.image_path + "!" + str(object.w) + "!" + str(object.h) + "!" + str(object.special_flags) + "!" + str(object.start_time) + "#"
-
-				new_mobs = ""
-
-				for mob in world.mobs:
-					if mob.name == "Slime":
-						new_mobs += "Slime" + "!" + str(mob.x) + "!" + str(mob.y) + "!" + str(mob.rand_mob) + "!" + str(mob.HP) + "!" + str(mob.animation_count) + "!" + str(mob.attak) + "!" + str(mob.reset_offset) + "!" + str(mob.offset_x) + "!" + str(mob.offset_y) + "!" + str(mob.speed) + "#"
-
-				message = str(ron.x) + ", " + str(ron.y) + ", " + str(ron.home) + ", " + str(start_time) + ", " + new_rects + ", " + new_objects + "|" + str(player.x) + ", " + str(player.y) + ", " + player.direction + ", " + str(player.costum) + "|"
-				
-				for player in Multyplayer.players:
-
-					try:
-						data = player.connection_socket.recv(1024)
-						data = data.decode()
-						data = data.split(", ")
-						player.x, player.y = int(data[0]), int(data[1])
-						player.run = data[2]
-						player.costum = data[3]
-						if player.costum == "0":
-							player.costum = "1"
-						win.blit(eval("Hiro_" + player.run.lower() + "_run_" + str(player.costum)), (player.x - player.x + Width // 2 - 128, player.y - player.y + Height // 2 - 128))
-						message += str(player.x) + ", " + str(player.y) + ", " + player.run + ", " + str(player.ostum) + "|"
-						player.errors = 0
-
-					except:
-
-						try:
-							win.blit(eval("Hiro_" + player.run.lower() + "_run_" + str(player.costum)), (player.x - player.x + Width // 2 - 128, player.y - player.y + Height // 2 - 128))
-						except:
-							win.blit(eval("Hiro_" + player.run.lower() + "_run_1"), (player.x - player.x + Width // 2 - 128, player.y - player.y + Height // 2 - 128))
-
-						player.errors += 1
-
-				# Новое состояние игры
-
-				for player in Multyplayer.players:
-
-					try:
-						player.connection_socket.send(message.encode())
-						player.errors = 0
-					except:
-						player.errors += 1
-
-				for player in Multyplayer.players:
-
-					if player.errors >= 500:
-
-						player.connection_socket.close()
-						chat_message(player.nickname + " отключился от сервера.")
-						Multyplayer.players.remove(player)
-					
-			else:
-
-				message = str(player.x) + ", " + str(player.y) + ", " + player.direction + ", " + str(player.costum)
-
-				try:
-					sock.send(message.encode())
-				except:
-					sock.close()
-					chat_message(t("Connection error"))
-					multyplayer = False
-
-				# Получение нового состояния игры
-
-				try:
-
-					data = sock.recv(2 ** 20)
-					data = data.decode()
-					data = data.split("|")
-					
-					ron.x, ron.y, ron.home, start_time = int(data[0].split(", ")[0]), int(data[0].split(", ")[1]), eval(data[0].split(", ")[2]), float(data[0].split(", ")[3])
-					
-					
-					world.visible_objects = []
-					
-					for i in data[0].split(", ")[5].split("#")[:-1]:
-						
-						if i.split("!")[0] == "Object":
-
-							if i.split("!")[7][0] == "[":
-								a = eval(i.split("!")[7])
-							else:
-								a = i.split("!")[7]
-							world.visible_objects.append(Object(i.split("!")[1], int(i.split("!")[2]), int(i.split("!")[3]), i.split("!")[4], [int(i.split("!")[5]), int(i.split("!")[6])], special_flags=a, start_time=i.split("!")[8]))
-
-					for i in data[1:]:
-						
-						data2 = i.split(", ")
-						
-						if data2 != [""]:
-							if data2[3] == "0":
-								data2[3] = "1" 
-								
-							win.blit(player.animations[data2[2]][int(data2[3])], (int(data2[0]) - player.x + Width // 2 - 128, player.y - int(data2[1]) + Height // 2 - 128))
-
-				except:
-					pass
-
+		if multiplayer:
+			pass # TODO тут будет логика мультиплеера
+		
 		if inventory.whole_inventory[inventory.start_cell] is not None and inventory.start_cell > -1 and hold_left:
 
 			item_text = t("Item info " + inventory.whole_inventory[inventory.start_cell].name) + "\n" + t("Item purpose " + inventory.whole_inventory[inventory.start_cell].name)
@@ -6327,14 +6201,18 @@ def edit_world():
 
 def worlds():
 
-	global world_name, mouse, keys, alt_pressed
+	global world_name, keys, alt_pressed, does_lighten, multiplayer
 
 	page_back_button = Button(10, Height - 138, pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Back.png"), (128, 128)), pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Back 2.png"), (128, 128)))
 	page_next_button = Button(Width - 148, Height - 148, pygame.transform.flip(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Back.png"), (128, 128)), True, False), pygame.transform.flip(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Back 2.png"), (128, 128)), True, False))
-	create_new_world_button = Button(Width // 2, 50, textInfo.render(t("Create world"), True, menu_color_medium), textInfo.render(t("Create world"), True, menu_color_dark), alignment=True)
+	create_new_world_button = Button(Width // 2, 130, textInfo.render(t("Create world"), True, menu_color_medium), textInfo.render(t("Create world"), True, menu_color_dark), alignment=True)
+	single_player_button = Button(Width // 4, 50, textInfo.render(t("Single play"), True, menu_color_medium), textInfo.render(t("Single play"), True, menu_color_dark), alignment=True)
+	multiplayer_button = Button(Width * 3 // 4, 50, textInfo.render(t("Multiplayer"), True, menu_color_medium), textInfo.render(t("Multiplayer"), True, menu_color_dark), alignment=True)
 	back_button = Button(-20, -20, pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Back.png"), (128, 128)), pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Back 2.png"), (128, 128)))
 	page = 1
 	input_text = None
+	does_lighten = False
+	bias = 0
 
 	win_darken(win)
 
@@ -6344,41 +6222,12 @@ def worlds():
 		break
 
 	inside_folders.sort()
-	win.fill(menu_color_light)
-
-	create_new_world_button.main()
-
-	if inside_folders != []:
-
-		if page < len(inside_folders) / 5 or len(inside_folders) % 5 == 0:
-			a = 0
-			for i in range((page - 1) * 5, (page - 1) * 5 + 5):
-		
-				a += 1
-		
-				win.blit(textInfo.render(inside_folders[i], True, menu_color_medium), (50, 50 + a * 50))
-		
-		else:
-		
-			a = 0
-		
-			for i in range((page - 1) * 5, (page - 1) * 5 + len(inside_folders) % 5):
-		
-				a += 1
-				win.blit(textInfo.render(inside_folders[i], True, menu_color_medium), (50, 50 + a * 50))
-
-	page_back_button.main()
-	page_next_button.main()
-	back_button.main()
 	release = False
-
-	win_lighten(win)
 
 	while True:
 
 		mouse_x, mouse_y = pygame.mouse.get_pos()
 		click = pygame.mouse.get_pressed()
-		keys = pygame.key.get_pressed()
 		release = False
 
 		for event in pygame.event.get():
@@ -6390,6 +6239,8 @@ def worlds():
 			elif event.type == pygame.MOUSEBUTTONUP:
 				if event.button == 1:
 					release = True
+			elif event.type == pygame.MOUSEWHEEL:
+				bias = (min(bias + event.y * 100, 0))
 
 			elif event.type == pygame.KEYDOWN and input_text is not None:
 				
@@ -6403,96 +6254,70 @@ def worlds():
 					edit_world()
 				else:
 					input_text += event.unicode
+
 			if event.type == pygame.KEYUP:
 				if event.key == hot_keys["Show keys"]:
 					alt_pressed = not alt_pressed
+				if event.key == hot_keys["Close"]:
+					if input_text is None:
+						win_darken(win)
+						menu()
+					else:
+						input_text = None
 
-
-		for dirs, folder, files in os.walk(path + "Worlds/"):
-			inside_folders = folder
-			break
-
-		inside_folders.sort()
 		win.fill(menu_color_light)
 
 		if input_text is None:
 
-			create_new_world_button.main()
-
 			if create_new_world_button.get_pressed():
 				input_text = ""
-
-			page_back_button.main()
-			if page_back_button.get_pressed() and page != 1:
-				page -= 1
-
-			page_next_button.main()
-			if page_next_button.get_pressed() and page < len(inside_folders) / 5:
-				page += 1
-
-			back_button.main()
 			
-			if keys[hot_keys["Close"]] or back_button.get_pressed():
+			if back_button.get_pressed():
 				win_darken(win)
 				menu()
 
-			text(str(page), Width // 2, Height - 60, menu_color_medium, alignment=True)
+			if len(inside_folders) == 0:
+				pass #TODO надпись что типа нет миров ещё
+			else:
 
-			if inside_folders != []:
+				for temp_y, name_of_world in enumerate(inside_folders):
 
-				if page < len(inside_folders) / 5 or len(inside_folders) % 5 == 0:
-					a = 0
-					for i in range((page - 1) * 5, (page - 1) * 5 + 5):
+					text_y = 150 + bias + temp_y * 50
 
-						a += 1
+					win.blit(textInfo.render(name_of_world, True, menu_color_medium), (50, text_y))
 
-						win.blit(textInfo.render(inside_folders[i], True, menu_color_medium), (50, 50 + a * 50))
+					if 50 + textInfo.size(name_of_world)[0] <= mouse_x <= 82 + textInfo.size(name_of_world)[0] and text_y <= mouse_y <= text_y + 32:
+						win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Edit 2.png"), (32, 32)), (50 + textInfo.size(name_of_world)[0], text_y))
+						if release:
+							world_name = name_of_world
+							win_darken(win)
+							edit_world()
 
-						if 50 + textInfo.size(inside_folders[i])[0] <= mouse_x <= 82 + textInfo.size(inside_folders[i])[0] and 50 + a * 50 <= mouse_y <= 82 + a * 50:
-							win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Edit 2.png"), (32, 32)), (50 + textInfo.size(inside_folders[i])[0], 50 + a * 50))
-							if release:
-								world_name = inside_folders[i]
-								
-								win_darken(win)
-								edit_world()
+					if 50 <= mouse_x <= 50 + textInfo.size(name_of_world)[0] and text_y <= mouse_y <= text_y + textInfo.size(name_of_world)[1]:
 
-						if 50 <= mouse_x <= 50 + textInfo.size(inside_folders[i])[0] and 50 + a * 50 <= mouse_y <= 50 + a * 50 + textInfo.size(inside_folders[i])[1]:
-
-							win.blit(textInfo.render(inside_folders[i], True, menu_color_dark), (50, 50 + a * 50))
-							
-							win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Edit.png"), (32, 32)), (50 + textInfo.size(inside_folders[i])[0], 50 + a * 50))
-							
-							if release:
-								world_name = inside_folders[i]
-								start_game()
-
-				else:
-
-					a = 0
-
-					for i in range((page - 1) * 5, (page - 1) * 5 + len(inside_folders) % 5):
-
-						a += 1
-
-						win.blit(textInfo.render(inside_folders[i], True, menu_color_medium), (50, 50 + a * 50))
+						win.blit(textInfo.render(name_of_world, True, menu_color_dark), (50, text_y))
 						
-						if 50 + textInfo.size(inside_folders[i])[0] <= mouse_x <= 82 + textInfo.size(inside_folders[i])[0] and 50 + a * 50 <= mouse_y <= 82 + a * 50:
-							win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Edit 2.png"), (32, 32)), (50 + textInfo.size(inside_folders[i])[0], 50 + a * 50))
-							if release:
-								world_name = inside_folders[i]
-
-								win_darken(win)
-								edit_world()
-
-						if 50 <= mouse_x <= 50 + textInfo.size(inside_folders[i])[0] and 50 + a * 50 <= mouse_y <= 50 + a * 50 + textInfo.size(inside_folders[i])[1]:
-
-							win.blit(textInfo.render(inside_folders[i], True, menu_color_dark), (50, 50 + a * 50))
-							
-							win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Edit.png"), (32, 32)), (50 + textInfo.size(inside_folders[i])[0], 50 + a * 50))
-							
-							if release:
-								world_name = inside_folders[i]
-								start_game()
+						win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Edit.png"), (32, 32)), (50 + textInfo.size(name_of_world)[0], text_y))
+						
+						if release:
+							world_name = name_of_world
+							start_game()
+			
+			pygame.draw.rect(win, menu_color_light, (0, 0, Width, 103))
+			pygame.draw.line(win, menu_color_medium, (0, 103), (Width, 103), 8)
+			pygame.draw.line(win, menu_color_medium, (Width // 2, 0), (Width // 2, 103), 8)
+			back_button.main()
+			create_new_world_button.main()
+			if multiplayer:
+				single_player_button.main()
+				if single_player_button.get_pressed():
+					multiplayer = False
+				win.blit(textInfo.render(t("Multiplayer"), True, menu_color_dark), (Width * 3 // 4 - textInfo.size(t("Multiplayer"))[0] // 2, 50 - textInfo.size(t("Multiplayer"))[1] // 2))
+			else:
+				win.blit(textInfo.render(t("Single play"), True, menu_color_dark), (Width // 4 - textInfo.size(t("Single play"))[0] // 2, 50 - textInfo.size(t("Single play"))[1] // 2))
+				multiplayer_button.main()
+				if multiplayer_button.get_pressed():
+					multiplayer = True
 
 		else:
 			text(f"""{t("Enter world name:")}
@@ -6503,6 +6328,9 @@ def worlds():
 		animate_click(Settings, win, mouse_x, mouse_y)
 
 		win_fill(alpha=100 - Settings["Display"][0])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
+		if not does_lighten:
+			win_lighten(win)
+			does_lighten = True
 		
 		pygame.display.update()
 		clock.tick(30)
@@ -6614,7 +6442,6 @@ def menu():
 		if not does_lighten:
 			win_lighten(win)
 			does_lighten = True
-
 
 		pygame.display.update()
 		clock.tick(MAX_FPS)
