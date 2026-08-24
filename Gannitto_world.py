@@ -1,4 +1,3 @@
-from numpy import spacing
 import pygame
 import subprocess
 import pyperclip
@@ -585,10 +584,20 @@ class Player:
 			self.rect = pygame.Rect(self.x - 25, self.y - 112, 50, 224)
 			pygame.draw.rect(screen, (0, 255, 0), (Width / 2 - 128, Height / 2 - 128, self.image.get_width(), self.image.get_height()), 2)
 			pygame.draw.rect(win, (0, 0, 0), (self.rect[0] - self.x + Width // 2, self.y - self.rect[1] - self.rect[3] + Height // 2, self.rect[2], self.rect[3]), 3)
-	
+
 player = Player()
 world_to_screen = lambda X, Y, W, H, player=player: (X - player.x + Width // 2 - W // 2, player.y - Y + Height // 2 - H // 2)
 world_rect_to_screen = lambda X, Y, W, H, player=player: (X - player.x + Width // 2 - W // 2, player.y - Y + Height // 2 - H // 2, W, H)
+
+class PeerInfo(Player):
+
+	def __init__(self, id: str, address: tuple, name: str, last_seen: float, position: tuple = (0, 0)):
+		super().__init__()
+		self.address = address
+		self.name = name
+		self.last_seen = last_seen
+		self.position = position
+
 
 class Object:
 
@@ -3680,7 +3689,7 @@ objects_templates = {
 
 def start_game():
 	
-	global win, changed_slot, menu_open, multiplayer_menu_open, screenmode, inventory_open, hold_left, backrooms, text_color, bullet_num, craft_items_list, craft_amounts_list, craft_images_list, screenshot_num, mouse_x, mouse_y, item_settings_open, multiplayer_panel, chat_tick, chat, main_chat, craft_list_open, craft_list_page, craft_list_offset, click, in_motherboard, os, world_name, color, multiplayer_mode, multiplayer, animation, start_time, new_particles, inside_files, game, alt_pressed, player, world, FPS, MAX_FPS, screen_rect, time_index
+	global win, changed_slot, menu_open, multiplayer_menu_open, screenmode, inventory_open, hold_left, backrooms, text_color, bullet_num, craft_items_list, craft_amounts_list, craft_images_list, screenshot_num, mouse_x, mouse_y, item_settings_open, chat_tick, chat, main_chat, craft_list_open, craft_list_page, craft_list_offset, click, in_motherboard, os, world_name, color, multiplayer, animation, start_time, new_particles, inside_files, game, alt_pressed, player, world, FPS, MAX_FPS, screen_rect, time_index
 
 	night_playing = False
 	input_text = ""
@@ -3712,72 +3721,71 @@ def start_game():
 	craft_list_next_button = Button(Width - 144, Height - 176, bigTextInfo.render(">", True, (0, 150, 0)), bigTextInfo.render(">", True, (0, 100, 0)))
 
 	# Загрузка данных мира
+	if not multiplayer or multiplayer_role == "Host":
+		world.chunk_manager.save_directory = path + "Worlds/" + world_name + "/Chunks/"
 
-	from Inventory import Resource
+		if os.path.exists(path + "Worlds/" + world_name):
+			
+			world.mobs = Saver.load_objects(path + "Worlds/" + world_name + "/Mobs.save")
+			player.x, player.y, Backrooms.InBackrooms, Backrooms.Level, world.current_cave, player.speed, player.HP, start_time, ron.x, ron.y, ron.home, ron.inventory, world.chunk_manager.generator.seed, game_time.current_time = Saver.load_objects(path + "Worlds/" + world_name + "/Info.save")
+			game.difficulty, player.god_mode = Saver.load_objects(path + "Worlds/" + world_name + "/Settings.save")
+			inventory.whole_inventory = Saver.load_objects(path + "Worlds/" + world_name + "/Inventory.save")
+			player.effects = Saver.load_objects(path + "Worlds/" + world_name + "/Effects.save")
+			
+		else:
 
-	world.chunk_manager.save_directory = path + "Worlds/" + world_name + "/Chunks/"
+			os.mkdir(path + "Worlds/" + world_name)
+			os.mkdir(path + "Worlds/" + world_name + "/Images")
 
-	if os.path.exists(path + "Worlds/" + world_name):
+			save(False, True)
+
+		inside_files = []
+		for dirs, folder, files in os.walk(os.path.dirname(path) + "/Plugins/"):
+			inside_files = files
+			break
 		
-		world.mobs = Saver.load_objects(path + "Worlds/" + world_name + "/Mobs.save")
-		player.x, player.y, Backrooms.InBackrooms, Backrooms.Level, world.current_cave, player.speed, player.HP, start_time, ron.x, ron.y, ron.home, ron.inventory, world.chunk_manager.generator.seed, game_time.current_time = Saver.load_objects(path + "Worlds/" + world_name + "/Info.save")
-		game.difficulty, player.god_mode = Saver.load_objects(path + "Worlds/" + world_name + "/Settings.save")
-		inventory.whole_inventory = Saver.load_objects(path + "Worlds/" + world_name + "/Inventory.save")
-		player.effects = Saver.load_objects(path + "Worlds/" + world_name + "/Effects.save")
-		
-	else:
+		for file in inside_files:
 
-		os.mkdir(path + "Worlds/" + world_name)
-		os.mkdir(path + "Worlds/" + world_name + "/Images")
+			for i in Saver.load_objects(path + "" + file):
 
-		save(False, True)
+				match i[0]:
 
-	inside_files = []
-	for dirs, folder, files in os.walk(os.path.dirname(path) + "/Plugins/"):
-		inside_files = files
-		break
-	
-	for file in inside_files:
-
-		for i in Saver.load_objects(path + "" + file):
-
-			match i[0]:
-
-				case "Item":
-
-					try:
-						inventory.resources[i[1]] = Resource(i[1], i[2], [i[3], i[4]], [i[5], i[6]], i[7])
-					except FileNotFoundError:
-						inventory.resources[i[1]] = Resource(i[1], path + "Images/No-file texture.png", [i[3], i[4]], [i[5], i[6]], i[7])
-
-				case "Recipe":
-
-					from Inventory import Recipe
-					a = []
-					for ii in i[2]: a.append(str(ii))
-					inventory.recipes.append(Recipe(i[1], a, i[3], i[4], i[5], i[6]))
-					del Recipe
-		
-				case "Object":
-
-					try:
-						a = Object(i[1], i[3], i[4], i[2], (pygame.image.load(i[2]).get_width(), pygame.image.load(i[2]).get_height()), special_flags=i[5], add_path=False)
-					except FileNotFoundError:
-						a = Object(i[1], i[3], i[4], "Images/No-file texture.png", special_flags=i[5])
-					b = True
-					for object in world.visible_objects:
-						if a == object:
-							b = False
-					if b and world_name == i[6]:
-						world.visible_objects.append(a)
-
-				case "Command":
-
-					if i[2] == "1":
+					case "Item":
+						
+						from Inventory import Resource
 						try:
-							eval(i[1])
-						except:
-							pass
+							inventory.resources[i[1]] = Resource(i[1], i[2], [i[3], i[4]], [i[5], i[6]], i[7])
+						except FileNotFoundError:
+							inventory.resources[i[1]] = Resource(i[1], path + "Images/No-file texture.png", [i[3], i[4]], [i[5], i[6]], i[7])
+
+					case "Recipe":
+
+						from Inventory import Recipe
+						a = []
+						for ii in i[2]: a.append(str(ii))
+						inventory.recipes.append(Recipe(i[1], a, i[3], i[4], i[5], i[6]))
+						del Recipe
+			
+					case "Object":
+
+						try:
+							a = Object(i[1], i[3], i[4], i[2], (pygame.image.load(i[2]).get_width(), pygame.image.load(i[2]).get_height()), special_flags=i[5], add_path=False)
+						except FileNotFoundError:
+							a = Object(i[1], i[3], i[4], "Images/No-file texture.png", special_flags=i[5])
+						b = True
+						for object in world.visible_objects:
+							if a == object:
+								b = False
+						if b and world_name == i[6]:
+							world.visible_objects.append(a)
+
+					case "Command":
+
+						if i[2] == "1":
+							try:
+								eval(i[1])
+							except:
+								pass
 	
 	while True:
 
@@ -4442,7 +4450,7 @@ def start_game():
 							else:
 								object.y -= 30
 		
-		if not Backrooms.InBackrooms and world.current_cave is None and (not multiplayer or multiplayer_mode == "My game"):
+		if not Backrooms.InBackrooms and world.current_cave is None:
 
 			if game_time.day_phase == "Night":
 				if random.randint(1, 800) == 1:
@@ -5821,17 +5829,6 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 
 					save(False)
 
-					multiplayer_mode = "My game"
-					multiplayer = True
-
-					main_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-					main_socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-					main_socket.bind(("0.0.0.0", 10000))
-					main_socket.setblocking(0)
-					main_socket.listen(5)
-				
-					chat_message("[ Server started ]")
-
 				else:
 
 					input_text = ""
@@ -5864,8 +5861,6 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 
 					save(False)
 
-					multiplayer_mode = "Your game"
-					multiplayer = True
 					# try:
 						
 					# 	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -5980,8 +5975,6 @@ def edit_world():
 	norm_but = Button(50, 270, pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Norm.png"), (132, 64)), pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Norm 2.png"), (132, 64)))
 	hard_but = Button(50, 340, pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Hard.png"), (132, 64)), pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Hard 2.png"), (132, 64)))
 	skull_but = Button(50, 410, pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Skull.png"), (132, 64)), pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Skull 2.png"), (132, 64)))
-	
-	win.fill(menu_color_light)
 
 	if create_world:
 		world.chunk_manager.generator.seed = random.randint(0, 2**31 - 1)
@@ -6195,6 +6188,97 @@ def edit_world():
 		pygame.display.update()
 		clock.tick(30)
 
+def multiplayer_settings_menu():
+	
+	global alt_pressed, does_lighten, multiplayer_role
+
+	back_button = Button(-20, -20, pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Back.png"), (128, 128)), pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Back 2.png"), (128, 128)))
+	host_button = Button(Width // 4, 50, textInfo.render("Хост (в твой мир заходят игроки)", True, menu_color_medium), textInfo.render("Хост (в твой мир заходят игроки)", True, menu_color_dark), alignment=True)
+	client_button = Button(Width * 3 // 4, 50, textInfo.render("Клиент (ты заходишь в мир хоста)", True, menu_color_medium), textInfo.render("Клиент (ты заходишь в мир хоста)", True, menu_color_dark), alignment=True)
+	start_game_button = Button(Width - 10 - bigTextInfo.size("Начать игру")[0], 150, bigTextInfo.render("Начать игру", True, menu_color_medium), bigTextInfo.render("Начать игру", True, menu_color_dark), alignment=True)
+
+	create_world = False
+	multiplayer_role = "Host"
+	release = False
+	does_lighten = False
+	input_text = ""
+	world_name_input = False
+	seed_input = False
+
+	if create_world:
+		world.chunk_manager.generator.seed = random.randint(0, 2**31 - 1)
+
+	while True:
+		
+		mouse_x, mouse_y = pygame.mouse.get_pos()
+		click = pygame.mouse.get_pressed()
+		keys = pygame.key.get_pressed()
+		release = False
+
+		for event in pygame.event.get():
+
+			if event.type == pygame.QUIT:
+				win_darken(win)
+				sys.exit()
+				
+			elif event.type == pygame.MOUSEBUTTONUP:
+				if event.button == 1:
+					release = True
+
+			elif event.type == pygame.KEYDOWN and (world_name_input or seed_input):
+				if event.key == pygame.K_RETURN or len(input_text) == 50:
+					if world_name_input:
+						world_name_input = False
+					if seed_input:
+						if input_text != "":
+							world.chunk_manager.generator.seed = int(input_text)
+						seed_input = False
+					input_text = ""
+				elif event.key == pygame.K_BACKSPACE:
+					input_text = input_text[:-1]
+				elif not seed_input or event.unicode in "0123456789":
+					input_text += event.unicode
+			
+			if event.type == pygame.KEYUP:
+				
+				if event.key == hot_keys["Show keys"]:
+					alt_pressed = not alt_pressed
+				if event.key == hot_keys["Close"]:
+					win_darken(win)
+					worlds()
+		
+		win.fill(menu_color_light)
+
+		pygame.draw.rect(win, menu_color_light, (0, 0, Width, 103))
+		pygame.draw.line(win, menu_color_medium, (0, 103), (Width, 103), 8)
+		pygame.draw.line(win, menu_color_medium, (Width // 2, 0), (Width // 2, 103), 8)
+		back_button.main()
+		if back_button.get_pressed():
+			win_darken(win)
+			worlds()
+
+		if multiplayer_role == "Client":
+			host_button.main()
+			if host_button.get_pressed():
+				multiplayer_role = "Host"
+			win.blit(textInfo.render("Клиент (ты заходишь в мир хоста)", True, menu_color_dark), (Width * 3 // 4 - textInfo.size("Клиент (ты заходишь в мир хоста)")[0] // 2, 50 - textInfo.size("Клиент (ты заходишь в мир хоста)")[1] // 2))
+		else:
+			win.blit(textInfo.render("Хост (в твой мир заходят игроки)", True, menu_color_dark), (Width // 4 - textInfo.size("Хост (в твой мир заходят игроки)")[0] // 2, 50 - textInfo.size("Хост (в твой мир заходят игроки)")[1] // 2))
+			client_button.main()
+			if client_button.get_pressed():
+				multiplayer_role = "Client"
+		start_game_button.main()
+		if start_game_button.get_pressed():
+			start_game()
+		if alt_pressed: draw_key("ESC", 44, 108)
+		win_fill(alpha=100 - Settings["Display"][0])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
+
+		if not does_lighten:
+			win_lighten(win)
+			does_lighten = True
+		
+		pygame.display.update()
+		clock.tick(30)
 
 
 # Меню миров
@@ -6203,8 +6287,6 @@ def worlds():
 
 	global world_name, keys, alt_pressed, does_lighten, multiplayer
 
-	page_back_button = Button(10, Height - 138, pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Back.png"), (128, 128)), pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Back 2.png"), (128, 128)))
-	page_next_button = Button(Width - 148, Height - 148, pygame.transform.flip(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Back.png"), (128, 128)), True, False), pygame.transform.flip(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Back 2.png"), (128, 128)), True, False))
 	create_new_world_button = Button(Width // 2, 130, textInfo.render(t("Create world"), True, menu_color_medium), textInfo.render(t("Create world"), True, menu_color_dark), alignment=True)
 	single_player_button = Button(Width // 4, 50, textInfo.render(t("Single play"), True, menu_color_medium), textInfo.render(t("Single play"), True, menu_color_dark), alignment=True)
 	multiplayer_button = Button(Width * 3 // 4, 50, textInfo.render(t("Multiplayer"), True, menu_color_medium), textInfo.render(t("Multiplayer"), True, menu_color_dark), alignment=True)
@@ -6300,8 +6382,13 @@ def worlds():
 						win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Edit.png"), (32, 32)), (50 + textInfo.size(name_of_world)[0], text_y))
 						
 						if release:
-							world_name = name_of_world
-							start_game()
+							if multiplayer:
+								world_name = name_of_world
+								win_darken(win)
+								multiplayer_settings_menu()
+							else:
+								world_name = name_of_world
+								start_game()
 			
 			pygame.draw.rect(win, menu_color_light, (0, 0, Width, 103))
 			pygame.draw.line(win, menu_color_medium, (0, 103), (Width, 103), 8)
