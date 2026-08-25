@@ -3823,8 +3823,11 @@ def start_game():
 			
 			if event.type == pygame.QUIT:
 				statistics[1] += (time.time() - start_time) / 3600
+				if multiplayer:
+					net.disconnect()
 				save()
 				sys.exit()
+
 			elif event.type == pygame.MOUSEBUTTONUP:
 				if event.button == 1:
 					release = True
@@ -3909,6 +3912,8 @@ def start_game():
 							main_chat = []
 							chat_tick = 0
 							inventory.whole_inventory = [None] * 30
+							if multiplayer:
+								net.disconnect()
 							menu()
 
 					if event.key == pygame.K_1: changed_slot = 0
@@ -4551,8 +4556,7 @@ def start_game():
 								peer.y = event["y"]
 								peer.direction = event["direction"]
 								net.server_events[pid].remove(event)
-								if net.server_events[pid].len == 0:
-									net.server_events.remove(pid)
+								peer.is_moving = True
 								need_to_stop = False
 								break
 					if need_to_stop:
@@ -4990,6 +4994,8 @@ def start_game():
 					
 					if click[0]:
 						save(False)
+						if multiplayer:
+							net.disconnect()
 						menu()
 					
 				elif special_slot_animations["Game menu slot"][0]:
@@ -5955,10 +5961,14 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 			win.blit(inventory.whole_inventory[inventory.start_cell].image, (mouse_x - 32, mouse_y - 32))
 		
 		if multiplayer:
+			if len(game_events) != 0:
+				net.send_events(tuple(game_events))
+
 			if multiplayer_role == "Host":
-				pass
+				pass # тут будет логика хоста
 			else:
-				net.send_data(tuple(game_events), "event" if len(game_events) != 0 else "idle")
+				if time.time() - net.last_heartbeat > 3:
+					net.send_heartbeat()
 
 		if keys[hot_keys["Screenshot"]] and not keys[hot_keys["Show keys"]]:
 			
