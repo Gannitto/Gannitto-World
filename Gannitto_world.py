@@ -2321,8 +2321,12 @@ class World:
 		self.projectiles = []
 		
 	def update(self):
-		if not multiplayer or multiplayer_role == "Host":
-			self.chunk_manager.update_visible_chunks(player.x, player.y, multiplayer)
+		# if not multiplayer or multiplayer_role == "Host":
+		chunks_to_get = self.chunk_manager.update_visible_chunks(player.x, player.y, multiplayer and multiplayer_role == "Client")
+		if multiplayer and multiplayer_role == "Client":
+			for chunk_key in chunks_to_get:
+				net._send_packet({"type": "get_chunk", "player_id": net.player_id, "chunk_key": chunk_key}, net.host_address)
+				self.chunk_manager.chunks_to_get.append(chunk_key)
 		# Сборка объектов из загруженных чанков
 		self.visible_objects.clear()
 		self.visible_items.clear()
@@ -3700,7 +3704,7 @@ objects_templates = {
 
 def start_game():
 	
-	global win, changed_slot, menu_open, multiplayer_menu_open, screenmode, inventory_open, hold_left, backrooms, text_color, bullet_num, craft_items_list, craft_amounts_list, craft_images_list, screenshot_num, mouse_x, mouse_y, item_settings_open, chat_tick, chat, main_chat, craft_list_open, craft_list_page, craft_list_offset, click, in_motherboard, os, world_name, color, multiplayer, animation, start_time, new_particles, inside_files, game, alt_pressed, player, world, FPS, MAX_FPS, screen_rect, time_index
+	global win, changed_slot, menu_open, multiplayer_menu_open, screenmode, inventory_open, hold_left, backrooms, text_color, bullet_num, craft_items_list, craft_amounts_list, craft_images_list, screenshot_num, mouse_x, mouse_y, item_settings_open, chat_tick, chat, main_chat, craft_list_open, craft_list_page, craft_list_offset, click, in_motherboard, os, world_name, color, multiplayer, animation, start_time, new_particles, inside_files, game, alt_pressed, player, world, FPS, MAX_FPS, screen_rect, time_index, game_events
 
 	night_playing = False
 	input_text = ""
@@ -5975,6 +5979,8 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 							net._send_packet({"type": "server_event", "player_id": "Game", "event_type": "world_info", "world_info": (
 								0, 0, False, 0, None, player.speed, player.HP, start_time, ron.x, ron.y, ron.home, ron.inventory, world.chunk_manager.generator.seed, game_time.current_time, game.difficulty
 								)}, event["address"])
+						case "get_chunk":
+							net._send_packet({"type": "server_event", "event_type": "chunk", "player_id": "Game", "chunk_key": event["chunk_key"]}, net.peers[event["player_id"]].address)
 					net.server_events["Game"].remove(event)
 			else:
 				if time.time() - net.last_heartbeat > 3:
@@ -5983,10 +5989,15 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 					match event["event_type"]:
 						case "world_info":
 							player.x, player.y, Backrooms.InBackrooms, Backrooms.Level, world.current_cave, player.speed, player.HP, start_time, ron.x, ron.y, ron.home, ron.inventory, world.chunk_manager.generator.seed, game_time.current_time, game.difficulty = event["world_info"]
+
 						case "ron_moved":
 							ron.x = event["x"]
 							ron.y = event["y"]
 							ron.direction = event["direction"]
+
+						case "chunk":
+							print("ura, chunk!")
+
 					net.server_events["Game"].remove(event)
 
 		if keys[hot_keys["Screenshot"]] and not keys[hot_keys["Show keys"]]:

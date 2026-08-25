@@ -137,10 +137,10 @@ class NetworkManager:
 					
 			except socket.timeout:
 				continue
-			# except Exception as e:
-			# 	if self.running:
-			# 		self.chat_message(f"Ошибка получения: {e}")
-			# 		break
+			except Exception as e:
+				if self.running:
+					self.chat_message(f"Ошибка получения: {e}")
+					break
 	
 	def _handle_packet_as_host(self, packet: Dict, addr: tuple):
 		"""Обработка пакетов на стороне хоста"""
@@ -186,6 +186,14 @@ class NetworkManager:
 			case "disconnect":
 				# Игрок отключается
 				self._remove_peer(player_id)
+
+			case "get_chunk":
+				self.server_events["Game"].append({
+					"type": "event",
+					"event_type": "get_chunk",
+					"player_id": packet.get("player_id"),
+					"chunk_key": packet.get("chunk_key")
+					})
 				
 			case "event":
 				for event in packet.get("events"):
@@ -193,9 +201,9 @@ class NetworkManager:
 						case "player_moved":
 							# Обновление позиции игрока
 							# with self.lock:
-							# 	if player_id in self.peers:
-							# 		self.peers[player_id].move(event.get("x"), event.get("dy"), 40)
-							# 		self.peers[player_id].last_seen = time.time()
+							#	if player_id in self.peers:
+							#		self.peers[player_id].move(event.get("x"), event.get("dy"), 40)
+							#		self.peers[player_id].last_seen = time.time()
 							
 							# Пересылаем движение всем остальным (вне блокировки)
 							self.server_events[player_id].append(event)
@@ -349,7 +357,7 @@ class NetworkManager:
 						packet = {
 							"type": "server_event",
 							"event_type": "ron_moved",
-							"player_id": self.player_id,
+							"player_id": "Game",
 							"x": event.get("x"),
 							"y": event.get("y"),
 							"direction": event.get("direction")
@@ -365,35 +373,57 @@ class NetworkManager:
 			
 			# Клиент отправляет только хосту
 			self._send_packet(packet, self.host_address)
-	
+
 	def disconnect(self):
-		"""Отключение от сети"""
-		self.running = False
+		"""Отключение от сети с безопасной остановкой потоков"""
+		self.running = False  # Сначала останавливаем флаг
 		
-		# Отправляем сообщение о выходе
-		if self.role == "Host":
-			self._broadcast({
-				"type": "peer_left",
-				"player_id": self.player_id
-			})
-		elif self.role == "Client" and self.host_address:
-			self._send_packet({
-				"type": "disconnect",
-				"player_id": self.player_id
-			}, self.host_address)
-			
+		# Отправляем сообщение о выходе (если сокет еще жив)
 		if self.socket:
+			try:
+				if self.role == "Host":
+					self._broadcast({
+						"type": "peer_left",
+						"player_id": self.player_id
+					})
+				elif self.role == "Client" and self.host_address:
+					self._send_packet({
+						"type": "disconnect",
+						"player_id": self.player_id
+					}, self.host_address)
+			except Exception as e:
+				print(f"[Network] Error sending disconnect: {e}")
+		
+		# Закрываем сокет
+		if self.socket:
+			try:
+				self.socket.shutdown(socket.SHUT_RDWR)	# Прерываем все операции
+			except:
+				pass
 			try:
 				self.socket.close()
 			except:
 				pass
 			self.socket = None
-			
-		# Очищаем список пиров с блокировкой
+		
+		# Ждем завершения потоков (с таймаутом)
+		threads_to_join = []
+		if self.receive_thread and self.receive_thread.is_alive():
+			threads_to_join.append(self.receive_thread)
+		
+		for thread in threads_to_join:
+			try:
+				thread.join(timeout=1.0)  # Ждем максимум 1 секунду
+			except Exception as e:
+				print(f"[Network] Error joining thread: {e}")
+		
+		# Очищаем данные
 		with self.lock:
 			self.peers.clear()
-			
+			self.server_events.clear()
+		
 		self.role = "Disconnected"
+		self.host_address = None
 		self.chat_message("Отключено от сети")
 
 	def _remove_peer(self, player_id: str, time_out: bool = False):

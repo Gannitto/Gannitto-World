@@ -240,6 +240,7 @@ class ChunkManager:
 		self.Object = Object # Класс объекта передаётся как аргумент чтобы избежать циклического импорта
 		self.world_rect_to_screen = world_rect_to_screen
 		self.light_surfaces = {}
+		self.chunks_to_get = []
 		for light_level in range(16):
 			self.light_surfaces[light_level] = pygame.Surface((64, 64), pygame.SRCALPHA)
 			self.light_surfaces[light_level].fill((255, 255, 255, 255 - light_level * 16)) #TODO сделать разные уровни освещения
@@ -371,34 +372,39 @@ class ChunkManager:
 			if chunk_key in self.chunks:
 				del self.chunks[chunk_key]
 
-	def update_visible_chunks(self, player_x, player_y, multiplayer):
+	def update_visible_chunks(self, player_x, player_y, get_new_chunks):
 		
 		"""Обновление видимых чанков вокруг игрока"""
 		center_chunk_x = int(player_x // chunk_size)
 		center_chunk_y = int(player_y // chunk_size)
 		new_visible_chunks = set()
-		chunk_keys = []
+		chunks_to_get = []
 		
 		for dx, dy in product(range(-self.view_distance, self.view_distance + 1), range(-self.view_distance, self.view_distance + 1)):
 			chunk_x = center_chunk_x + dx
 			chunk_y = center_chunk_y + dy
 			
 			chunk_key = (chunk_x, chunk_y)
-			new_visible_chunks.add(chunk_key)
 			
 			# Если чанк еще не существует, то создаётся
 			if chunk_key not in self.chunks:
-				new_chunk = self._load_chunk_from_disk(chunk_x, chunk_y)
-				if new_chunk is None:
-					new_chunk = Chunk(chunk_x, chunk_y)
-				self.chunks[chunk_key] = new_chunk
-				self.chunks[chunk_key].is_loaded = True
-			
-			# Если чанк существует, но не сгенерирован, то он генерируется
-			chunk = self.chunks[chunk_key]
-			if not chunk.is_generated:
-				self.generate_chunk(chunk)
-				chunk.is_loaded = True
+				if get_new_chunks:
+					if chunk_key not in self.chunks_to_get:
+						chunks_to_get.append(chunk_key)
+				else:
+					new_chunk = self._load_chunk_from_disk(chunk_x, chunk_y)
+					if new_chunk is None:
+						new_chunk = Chunk(chunk_x, chunk_y)
+					self.chunks[chunk_key] = new_chunk
+					self.chunks[chunk_key].is_loaded = True
+
+			if not get_new_chunks:
+				# Если чанк существует, но не сгенерирован, то он генерируется
+				new_visible_chunks.add(chunk_key)
+				chunk = self.chunks[chunk_key]
+				if not chunk.is_generated:
+					self.generate_chunk(chunk)
+					chunk.is_loaded = True
 
 		# Выгрузка чанков, которые больше не видны
 		chunks_to_unload = []
@@ -409,6 +415,8 @@ class ChunkManager:
 		for chunk_key in chunks_to_unload:
 			self._unload_chunk(chunk_key)
 		self.loaded_chunks = new_visible_chunks.copy()
+
+		return chunks_to_get
 
 	def show_light_and_dark(self, light_level, player, shadow_surface):
 
