@@ -144,7 +144,7 @@ class NetworkManager:
 	
 	def _handle_packet_as_host(self, packet: Dict, addr: tuple):
 		"""Обработка пакетов на стороне хоста"""
-		# print(packet)
+		print(packet)
 		packet_type = packet.get("type")
 		player_id = packet.get("player_id")
 		with self.lock:
@@ -190,7 +190,7 @@ class NetworkManager:
 			case "event":
 				for event in packet.get("events"):
 					match event.get("event_type"):
-						case "move":
+						case "player_moved":
 							# Обновление позиции игрока
 							# with self.lock:
 							# 	if player_id in self.peers:
@@ -201,7 +201,7 @@ class NetworkManager:
 							self.server_events[player_id].append(event)
 							self._broadcast({
 								"type": "server_event",
-								"event_type": "move",
+								"event_type": "player_moved",
 								"player_id": player_id,
 								"x": event.get("x"),
 								"y": event.get("y"),
@@ -336,10 +336,19 @@ class NetworkManager:
 		if self.role == "Host":
 			for event in events:
 				match event.get("event_type"):
-					case "move":
+					case "player_moved":
 						packet = {
 							"type": "server_event",
-							"event_type": "move",
+							"event_type": "player_moved",
+							"player_id": self.player_id,
+							"x": event.get("x"),
+							"y": event.get("y"),
+							"direction": event.get("direction")
+						}
+					case "ron_moved":
+						packet = {
+							"type": "server_event",
+							"event_type": "ron_moved",
 							"player_id": self.player_id,
 							"x": event.get("x"),
 							"y": event.get("y"),

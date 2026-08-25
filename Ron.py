@@ -115,13 +115,13 @@ class Ron:
 				world.projectiles.append(self.Projectile(self.x, self.y, mob.x - self.x + Width // 2 - 64, self.y - mob.y + Height // 2 - 32, "Arrow"))
 				return
 	
-	def update(self, world, dt):
-	
-		if self.home is None:
-			# self.move_towards_player(dt)
-			self.move_towards(dt, self.player.x, self.player.y, self.PLAYER_RADIUS)
-		self.check_items(world, dt)
-		self.check_mobs(world, dt)
+	def update(self, world, dt, moving=True):
+
+		if moving:
+			if self.home is None:
+				self.move_towards(dt, self.player.x, self.player.y, self.PLAYER_RADIUS)
+			self.check_items(world, dt)
+			self.check_mobs(world, dt)
 		self.show()
 
 	def get_start_items(self):

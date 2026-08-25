@@ -50,6 +50,7 @@ pygame.init()
 	Меню на клавише TAB
 	Отображение инвентаря
 	Отображение полосы здоровья
+	Механика мультиплеера
 Меню редактирования мира
 Меню миров
 Меню
@@ -4045,7 +4046,7 @@ def start_game():
 		# Если есть движение - двигаем игрока
 		if dx != 0 or dy != 0:
 			player.move(dx, dy, dt)
-			game_events.append({"event_type": "move", "x": player.x, "y": player.y, "direction": player.direction})
+			game_events.append({"event_type": "player_moved", "x": player.x, "y": player.y, "direction": player.direction})
 		else:
 			player.stop()
 		
@@ -4551,7 +4552,7 @@ def start_game():
 					need_to_stop = True
 					if pid in net.server_events:
 						for event in net.server_events[pid]:
-							if event["event_type"] == "move":
+							if event["event_type"] == "player_moved":
 								peer.x = event["x"]
 								peer.y = event["y"]
 								peer.direction = event["direction"]
@@ -4562,7 +4563,6 @@ def start_game():
 					if need_to_stop:
 						peer.stop()
 					peer.render(win)
-					# print(player.x, player.y, peer.x, peer.y)
 
 		# Анимации Хиро
 
@@ -4744,8 +4744,10 @@ def start_game():
 									win.fill((62, 39, 49), (Width // 2 + 16, Height / 2 - 24, 8, (8 - animation[1] + 8) * 2))
 
 		# Рон
-
-		ron.update(world, dt)
+		old_ron_pos = ron.x, ron.y
+		ron.update(world, dt, not multiplayer or multiplayer_role == "Host")
+		if multiplayer and multiplayer_role == "Host" and old_ron_pos != (ron.x, ron.y):
+			game_events.append({"event_type": "ron_moved", "x": ron.x, "y": ron.y, "direction": ron.direction})
 
 		# Механика использования еды и некоторых предметов через пробел
 
@@ -5470,7 +5472,7 @@ def start_game():
 		if inventory.whole_inventory[changed_slot] is not None:
 			text(t("Item name " + inventory.whole_inventory[changed_slot].name), 10, 320 if inventory_open else 80)
 
-		if ron.x - player.x + Width // 2 - 128 <= mouse_x <= ron.x - player.x + Width // 2 + 128 and player.y - ron.y + Height // 2 - 128 <= mouse_y <= player.y - ron.y + Height // 2 + 128 and release:
+		if ron.x - player.x + Width // 2 - 128 <= mouse_x <= ron.x - player.x + Width // 2 + 128 and player.y - ron.y + Height // 2 - 128 <= mouse_y <= player.y - ron.y + Height // 2 + 128 and release and (not multiplayer or multiplayer_role == "Host"):
 			ron.window[0] = True
 
 		if ron.window[0]:
@@ -5960,6 +5962,8 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 			
 			win.blit(inventory.whole_inventory[inventory.start_cell].image, (mouse_x - 32, mouse_y - 32))
 		
+		# Механика мультиплеера
+
 		if multiplayer:
 			if len(game_events) != 0:
 				net.send_events(tuple(game_events))
@@ -5971,7 +5975,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 							net._send_packet({"type": "server_event", "player_id": "Game", "event_type": "world_info", "world_info": (
 								0, 0, False, 0, None, player.speed, player.HP, start_time, ron.x, ron.y, ron.home, ron.inventory, world.chunk_manager.generator.seed, game_time.current_time, game.difficulty
 								)}, event["address"])
-							net.server_events["Game"].remove(event)
+					net.server_events["Game"].remove(event)
 			else:
 				if time.time() - net.last_heartbeat > 3:
 					net.send_heartbeat()
@@ -5979,8 +5983,11 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 					match event["event_type"]:
 						case "world_info":
 							player.x, player.y, Backrooms.InBackrooms, Backrooms.Level, world.current_cave, player.speed, player.HP, start_time, ron.x, ron.y, ron.home, ron.inventory, world.chunk_manager.generator.seed, game_time.current_time, game.difficulty = event["world_info"]
-							net.server_events["Game"].remove(event)
-							print(123)
+						case "ron_moved":
+							ron.x = event["x"]
+							ron.y = event["y"]
+							ron.direction = event["direction"]
+					net.server_events["Game"].remove(event)
 
 		if keys[hot_keys["Screenshot"]] and not keys[hot_keys["Show keys"]]:
 			
