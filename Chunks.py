@@ -371,13 +371,13 @@ class ChunkManager:
 			if chunk_key in self.chunks:
 				del self.chunks[chunk_key]
 
-	def update_visible_chunks(self, player_x, player_y):
+	def update_visible_chunks(self, player_x, player_y, multiplayer):
 		
 		"""Обновление видимых чанков вокруг игрока"""
-
 		center_chunk_x = int(player_x // chunk_size)
 		center_chunk_y = int(player_y // chunk_size)
 		new_visible_chunks = set()
+		chunk_keys = []
 		
 		for dx, dy in product(range(-self.view_distance, self.view_distance + 1), range(-self.view_distance, self.view_distance + 1)):
 			chunk_x = center_chunk_x + dx

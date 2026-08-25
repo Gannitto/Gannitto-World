@@ -2321,7 +2321,7 @@ class World:
 		
 	def update(self):
 		if not multiplayer or multiplayer_role == "Host":
-			self.chunk_manager.update_visible_chunks(player.x, player.y)
+			self.chunk_manager.update_visible_chunks(player.x, player.y, multiplayer)
 		# Сборка объектов из загруженных чанков
 		self.visible_objects.clear()
 		self.visible_items.clear()
@@ -5965,10 +5965,22 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 				net.send_events(tuple(game_events))
 
 			if multiplayer_role == "Host":
-				pass # тут будет логика хоста
+				for event in net.server_events["Game"]:
+					match event["event_type"]:
+						case "peer_joined":
+							net._send_packet({"type": "server_event", "player_id": "Game", "event_type": "world_info", "world_info": (
+								0, 0, False, 0, None, player.speed, player.HP, start_time, ron.x, ron.y, ron.home, ron.inventory, world.chunk_manager.generator.seed, game_time.current_time, game.difficulty
+								)}, event["address"])
+							net.server_events["Game"].remove(event)
 			else:
 				if time.time() - net.last_heartbeat > 3:
 					net.send_heartbeat()
+				for event in net.server_events["Game"]:
+					match event["event_type"]:
+						case "world_info":
+							player.x, player.y, Backrooms.InBackrooms, Backrooms.Level, world.current_cave, player.speed, player.HP, start_time, ron.x, ron.y, ron.home, ron.inventory, world.chunk_manager.generator.seed, game_time.current_time, game.difficulty = event["world_info"]
+							net.server_events["Game"].remove(event)
+							print(123)
 
 		if keys[hot_keys["Screenshot"]] and not keys[hot_keys["Show keys"]]:
 			
@@ -6324,6 +6336,9 @@ def multiplayer_settings_menu():
 			if multiplayer_role == "Host":
 				assert net.start_host(5555), "Failed to start host"
 			else:
+				if not os.path.exists(path + "Cache/Multiplayer"):
+					os.mkdir(path + "Cache/Multiplayer")
+				world.chunk_manager.save_directory = path + "Cache/Multiplayer/"
 				assert net.connect_to_host("127.0.0.1", 5555), "Failed to connect"
 			start_game()
 

@@ -21,7 +21,7 @@ class NetworkManager:
 		self.PeerInfo = PeerInfo
 		self.chat_message = chat_message
 		self.last_heartbeat = time.time()
-		self.server_events = {}
+		self.server_events = {"Game": []}
 		
 		# Коллбэки для событий
 		self.callbacks = {
@@ -144,12 +144,13 @@ class NetworkManager:
 	
 	def _handle_packet_as_host(self, packet: Dict, addr: tuple):
 		"""Обработка пакетов на стороне хоста"""
-		print(packet)
+		# print(packet)
 		packet_type = packet.get("type")
 		player_id = packet.get("player_id")
 		with self.lock:
 			if player_id in self.peers:
 				self.peers[player_id].last_seen = time.time()
+
 		match packet_type:
 			case "handshake":
 				# Новый игрок подключается
@@ -179,6 +180,8 @@ class NetworkManager:
 						"position": peer.position
 					}
 				}, player_id)
+
+				self.server_events["Game"].append({"type": "event", "event_type": "peer_joined", "address": addr})
 
 			case "disconnect":
 				# Игрок отключается
@@ -252,14 +255,13 @@ class NetworkManager:
 				self._remove_peer(pid)
 				
 			case "server_event":
-				match packet.get("event_type"):
-					case "move":
-						pid = packet.get("player_id")
-						if pid and pid != self.player_id and pid in self.peers:
-							if pid not in self.server_events:
-								self.server_events[pid] = []
-							self.server_events[pid].append(packet)
-							self.peers[pid].last_seen = time.time()
+				pid = packet.get("player_id")
+				if pid and pid != self.player_id and (pid in self.peers or pid == "Game"):
+					if pid not in self.server_events:
+						self.server_events[pid] = []
+					self.server_events[pid].append(packet)
+					if pid != "Game":
+						self.peers[pid].last_seen = time.time()
 	
 	def _send_packet(self, packet: Dict, address: tuple):
 		"""Отправка зашифрованного пакета"""
