@@ -4548,7 +4548,6 @@ def start_game():
 		player.render(win)
 
 		if multiplayer:
-			# print(net.server_events)
 			with net.lock:
 				peers_copy = dict(net.peers.items())  # Создаем копию
 			for pid, peer in peers_copy.items():
@@ -5980,7 +5979,27 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 								0, 0, False, 0, None, player.speed, player.HP, start_time, ron.x, ron.y, ron.home, ron.inventory, world.chunk_manager.generator.seed, game_time.current_time, game.difficulty
 								)}, event["address"])
 						case "get_chunk":
-							net._send_packet({"type": "server_event", "event_type": "chunk", "player_id": "Game", "chunk_key": event["chunk_key"]}, net.peers[event["player_id"]].address)
+							chunk_key = tuple(event["chunk_key"])
+							if chunk_key in world.chunk_manager.chunks:
+								chunk = world.chunk_manager.chunks[chunk_key]
+							else:
+								chunk = world.chunk_manager._load_chunk_from_disk(*chunk_key)
+								if chunk is None:
+									world.chunk_manager.chunks[chunk_key] = world.chunk_manager.Chunk(*chunk_key)
+									chunk = world.chunk_manager.chunks[chunk_key]
+									world.chunk_manager.generate_chunk(chunk)
+									chunk.is_loaded = True
+							state = chunk.__getstate__()
+							state["mobs"] = []
+							state["objects"] = []
+							state["items"] = []
+							state["particles"] = []
+							state["walls"] = {}
+							state["farmlands"] = {}
+							state["caves"] = []
+
+							net._send_packet({"type": "server_event", "event_type": "chunk", "player_id": "Game", "chunk_key": chunk_key, "chunk_state": state}, net.peers[event["player_id"]].address)
+
 					net.server_events["Game"].remove(event)
 			else:
 				if time.time() - net.last_heartbeat > 3:
@@ -5996,7 +6015,10 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 							ron.direction = event["direction"]
 
 						case "chunk":
-							print("ura, chunk!")
+							chunk_key = tuple(event["chunk_key"])
+							world.chunk_manager.chunks[chunk_key] = world.chunk_manager.Chunk(*chunk_key)
+							world.chunk_manager.chunks[chunk_key].__setstate__(event["chunk_state"])
+							world.chunk_manager.chunks[chunk_key].is_loaded = True
 
 					net.server_events["Game"].remove(event)
 

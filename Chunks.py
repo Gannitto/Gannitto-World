@@ -229,6 +229,20 @@ class Chunk:
 			"y2": (self.y + 1) * chunk_size
 		}
 
+	def __getstate__(self):
+		state = self.__dict__.copy()
+		state["mobs"] = []
+		state["objects"] = []
+		state["items"] = []
+		state["particles"] = []
+		state["walls"] = []
+		state["farmlands"] = []
+		state["caves"] = []
+		return state
+
+	def __setstate__(self, state):
+		self.__dict__.update(state)
+
 class ChunkManager:
 
 	def __init__(self, Object, world_rect_to_screen):
@@ -241,6 +255,7 @@ class ChunkManager:
 		self.world_rect_to_screen = world_rect_to_screen
 		self.light_surfaces = {}
 		self.chunks_to_get = []
+		self.Chunk = Chunk
 		for light_level in range(16):
 			self.light_surfaces[light_level] = pygame.Surface((64, 64), pygame.SRCALPHA)
 			self.light_surfaces[light_level].fill((255, 255, 255, 255 - light_level * 16)) #TODO сделать разные уровни освещения
@@ -398,9 +413,11 @@ class ChunkManager:
 					self.chunks[chunk_key] = new_chunk
 					self.chunks[chunk_key].is_loaded = True
 
+			if chunk_key in self.chunks:
+				new_visible_chunks.add(chunk_key)
+
 			if not get_new_chunks:
 				# Если чанк существует, но не сгенерирован, то он генерируется
-				new_visible_chunks.add(chunk_key)
 				chunk = self.chunks[chunk_key]
 				if not chunk.is_generated:
 					self.generate_chunk(chunk)
