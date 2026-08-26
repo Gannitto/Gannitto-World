@@ -231,13 +231,6 @@ class Chunk:
 
 	def __getstate__(self):
 		state = self.__dict__.copy()
-		state["mobs"] = []
-		state["objects"] = []
-		state["items"] = []
-		state["particles"] = []
-		state["walls"] = []
-		state["farmlands"] = []
-		state["caves"] = []
 		return state
 
 	def __setstate__(self, state):

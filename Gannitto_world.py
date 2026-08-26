@@ -733,12 +733,13 @@ class Object:
 
 	def copy(self):
 		return Object(self.name, self.x, self.y, self.image_path, self.scale, self.image, self.special_flags, self.add_path, self.start_time, self.is_solid, self.rect, self.is_solid, self.breakable, self.max_break, self.breakable_by_hammer, self.drop_items)
-
 	
 	def __getstate__(self):
 		
 		state = self.__dict__.copy()
 		del state["image"]
+		rect = state["rect"]
+		state["rect"] = (rect[0], rect[1], rect[2], rect[3])
 		return state
 
 	def __setstate__(self, state):
@@ -748,6 +749,8 @@ class Object:
 			self.image = TextureCache.get(path + self.image_path, self.scale)
 		else:
 			self.image = TextureCache.get(self.image_path, self.scale)
+
+		self.rect = pygame.Rect(state["rect"][0], state["rect"][1], state["rect"][2], state["rect"][3])
 
 class Particle:
 
@@ -5991,12 +5994,19 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 									chunk.is_loaded = True
 							state = chunk.__getstate__()
 							state["mobs"] = []
-							state["objects"] = []
-							state["items"] = []
-							state["particles"] = []
+							# state["objects"] = []
+							# state["items"] = []
 							state["walls"] = {}
+							state["particles"] = []
 							state["farmlands"] = {}
 							state["caves"] = []
+
+							new_objects = [object.__getstate__() for object in state["objects"]]
+							state["objects"] = new_objects
+							new_items = [item.__getstate__() for item in state["items"]]
+							state["items"] = new_items
+							# new_walls = [wall.__getstate__() for _, wall in state["walls"].items()]
+							# state["walls"] = new_walls
 
 							net._send_packet({"type": "server_event", "event_type": "chunk", "player_id": "Game", "chunk_key": chunk_key, "chunk_state": state}, net.peers[event["player_id"]].address)
 
@@ -6017,8 +6027,15 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 						case "chunk":
 							chunk_key = tuple(event["chunk_key"])
 							world.chunk_manager.chunks[chunk_key] = world.chunk_manager.Chunk(*chunk_key)
-							world.chunk_manager.chunks[chunk_key].__setstate__(event["chunk_state"])
-							world.chunk_manager.chunks[chunk_key].is_loaded = True
+							chunk = world.chunk_manager.chunks[chunk_key]
+							chunk.__setstate__(event["chunk_state"])
+							chunk.is_loaded = True
+
+							new_objects = [Object(object["name"], object["x"], object["y"], object["image_path"], tuple(object["scale"]), None, object["special_flags"], object["add_path"], object["start_time"], object["is_solid"], object["rect"], object["is_solid"], object["breakable"], object["max_break"], object["breakable_by_hammer"], object["drop_items"]) for object in chunk.objects]
+							chunk.objects = new_objects
+
+							new_items = [Object(item["name"], item["x"], item["y"], item["image_path"], item["scale"], None, item["special_flags"], item["add_path"], item["start_time"], item["is_solid"], item["rect"], item["is_solid"], item["breakable"], item["max_break"], item["breakable_by_hammer"], item["drop_items"]) for item in chunk.items]
+							chunk.items = new_items
 
 					net.server_events["Game"].remove(event)
 
