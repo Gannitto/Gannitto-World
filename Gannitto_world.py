@@ -1977,6 +1977,8 @@ class Wall:
 		state = self.__dict__.copy()
 		state["image"] = self.images.index(self.image)
 		del state["images"]
+		rect = state["rect"]
+		state["rect"] = (rect[0], rect[1], rect[2], rect[3])
 		return state
 
 	def __setstate__(self, state):
@@ -1984,6 +1986,8 @@ class Wall:
 		self.__dict__.update(state)
 		self.images = wall_images[self.wall_type]
 		self.image = self.images[self.image]
+
+		self.rect = pygame.Rect(state["rect"][0], state["rect"][1], state["rect"][2], state["rect"][3])
 
 class Farmland:
 
@@ -2057,6 +2061,8 @@ class Farmland:
 		state = self.__dict__.copy()
 		state["image"] = self.images.index(self.image)
 		del state["images"]
+		rect = state["rect"]
+		state["rect"] = (rect[0], rect[1], rect[2], rect[3])
 		return state
 
 	def __setstate__(self, state):
@@ -2064,6 +2070,8 @@ class Farmland:
 		self.__dict__.update(state)
 		self.images = farmland_images
 		self.image = self.images[self.image]
+		self.rect = pygame.Rect(state["rect"][0], state["rect"][1], state["rect"][2], state["rect"][3])
+
 
 class Random_box:
 
@@ -2494,6 +2502,8 @@ def tp(x, y, player=player):
 	"""Телепортация игрока на указанные координаты"""
 	player.x = x
 	player.y = y
+	if multiplayer:
+		game_events.append({"event_type": "player_moved", "x": player.x, "y": player.y, "direction": player.direction})
 
 def chat_message(message: str):
 	"""Отправляет сообщение в чат"""
@@ -5994,19 +6004,18 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 									chunk.is_loaded = True
 							state = chunk.__getstate__()
 							state["mobs"] = []
-							# state["objects"] = []
-							# state["items"] = []
-							state["walls"] = {}
 							state["particles"] = []
-							state["farmlands"] = {}
+							# state["farmlands"] = {}
 							state["caves"] = []
 
 							new_objects = [object.__getstate__() for object in state["objects"]]
 							state["objects"] = new_objects
 							new_items = [item.__getstate__() for item in state["items"]]
 							state["items"] = new_items
-							# new_walls = [wall.__getstate__() for _, wall in state["walls"].items()]
-							# state["walls"] = new_walls
+							new_walls = [wall.__getstate__() for _, wall in state["walls"].items()]
+							state["walls"] = new_walls
+							new_farmlands = [farmland.__getstate__() for _, farmland in state["farmlands"].items()]
+							state["farmlands"] = new_farmlands
 
 							net._send_packet({"type": "server_event", "event_type": "chunk", "player_id": "Game", "chunk_key": chunk_key, "chunk_state": state}, net.peers[event["player_id"]].address)
 
@@ -6031,11 +6040,31 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 							chunk.__setstate__(event["chunk_state"])
 							chunk.is_loaded = True
 
-							new_objects = [Object(object["name"], object["x"], object["y"], object["image_path"], tuple(object["scale"]), None, object["special_flags"], object["add_path"], object["start_time"], object["is_solid"], object["rect"], object["is_solid"], object["breakable"], object["max_break"], object["breakable_by_hammer"], object["drop_items"]) for object in chunk.objects]
+							new_objects = []
+							for object in chunk.objects:
+								object["scale"] = tuple(object["scale"])
+								new_objects.append(Object(object["name"], object["x"], object["y"], object["image_path"], object["scale"], None, object["special_flags"], object["add_path"], object["start_time"], object["is_solid"], object["rect"], object["is_solid"], object["breakable"], object["max_break"], object["breakable_by_hammer"], object["drop_items"]))
+								new_objects[-1].__setstate__(object)
 							chunk.objects = new_objects
-
-							new_items = [Object(item["name"], item["x"], item["y"], item["image_path"], item["scale"], None, item["special_flags"], item["add_path"], item["start_time"], item["is_solid"], item["rect"], item["is_solid"], item["breakable"], item["max_break"], item["breakable_by_hammer"], item["drop_items"]) for item in chunk.items]
+							
+							new_items = []
+							for item in chunk.items:
+								item["scale"] = tuple(item["scale"])
+								new_items = [Object(item["name"], item["x"], item["y"], item["image_path"], item["scale"], None, item["special_flags"], item["add_path"], item["start_time"], item["is_solid"], item["rect"], item["is_solid"], item["breakable"], item["max_break"], item["breakable_by_hammer"], item["drop_items"]) for item in chunk.items]
+								new_items[-1].__setstate__(item)
 							chunk.items = new_items
+							
+							new_walls = {}
+							for wall in chunk.walls:
+								new_walls[(wall["x"], wall["y"])] = Wall(wall["wall_type"], wall["x"], wall["y"])
+								new_walls[(wall["x"], wall["y"])].__setstate__(wall)
+							chunk.walls = new_walls
+
+							new_farmlands = {}
+							for farmland in chunk.farmlands:
+								new_farmlands[(farmland["x"], farmland["y"])] = Farmland(farmland["x"], farmland["y"])
+								new_farmlands[(farmland["x"], farmland["y"])].__setstate__(farmland)
+							chunk.farmlands = new_farmlands
 
 					net.server_events["Game"].remove(event)
 
@@ -6696,6 +6725,8 @@ def show_intro():
 	except Exception as e:
 		music_channel.stop()
 		pygame.mixer.Sound.stop(Backrooms_lamps)
+		if multiplayer:
+			net.disconnect()
 		show_error_window(e)
 
 if __name__ == "__main__":

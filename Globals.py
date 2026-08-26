@@ -28,7 +28,6 @@ except FileNotFoundError:
 
 changed_slot = 0
 animation = [None, 0]
-player_bullets = []
 craft_items_list = [None] * 7
 craft_amounts_list = [None] * 7
 craft_images_list = [None] * 7
