@@ -79,10 +79,15 @@ def build(
 						new_object.x, new_object.y = ((player.x + mouse_x - Width // 2) // object_to_build.w * object_to_build.w + object_to_build.w // 2, (player.y - mouse_y + Height // 2) // object_to_build.h * object_to_build.h + object_to_build.h // 2)
 						new_object.rect = pygame.Rect(new_object.x - new_object.w / 2, new_object.y - new_object.h / 2, new_object.w, new_object.h)
 						world.chunk_manager.get_chunk_at(new_object.x, new_object.y).objects.append(new_object)
-						return True
-	return False
+						return new_object
+	return None
 
 def check_build_objects(objects_templates, build_tuple):
 	"""Проверяет все объекты, которые можно построить"""
+	new_object = None
 	for name, object in objects_templates.items():
-		build(build_tuple, object, name)
+		new_object_ = build(build_tuple, object, name)
+		if new_object_ is not None:
+			new_object = new_object_
+			break
+	return new_object

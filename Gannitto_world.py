@@ -5679,7 +5679,11 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 				if not check_collision(pygame.Rect((player.x + mouse_x - Width // 2) // 256 * 256 + 128, (player.y - mouse_y + Height // 2) // 256 * 256 + 128, 256, 256), world, False):
 					world.chunk_manager.get_chunk_at((player.x + mouse_x - Width // 2) // 128, (player.y + mouse_y - Height // 2) // 256).objects.append(Portal())
 		build_tuple = (changed_slot, player, world, inventory.whole_inventory)
-		check_build_objects(objects_templates, build_tuple)
+		new_object = check_build_objects(objects_templates, build_tuple)
+
+		if multiplayer and new_object is not None:
+			game_events.append({"event_type": "object_added", "object": new_object.__getstate__()})
+
 		# if build(build_tuple, Object("Farmland", 0, 0, "Images/Objects/Farmland.png", (128, 128), special_flags=1), "Stone hoe", get_item_from_inventory=0):
 		#	pygame.mixer.Sound.play(pygame.mixer.Sound(path + "Sounds/Dirt.mp3"))
 		# if inventory.whole_inventory[changed_slot] is None: a = ""
@@ -5984,6 +5988,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 		# Механика мультиплеера
 
 		if multiplayer:
+
 			if len(game_events) != 0:
 				net.send_events(tuple(game_events))
 
@@ -5996,6 +6001,13 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 								destroy_object(object.image, object.x, object.y, world, Particle)
 								world.chunk_manager.get_chunk_at(object.x, object.y).objects.remove(object)
 								break
+					case "object_added":
+						object = event["object"]
+						chunk = world.chunk_manager.get_chunk_at(object["x"], object["y"])
+						if chunk is not None:
+							object["scale"] = tuple(object["scale"])
+							chunk.objects.append(Object(object["name"], object["x"], object["y"], object["image_path"], object["scale"], None, object["special_flags"], object["add_path"], object["start_time"], object["is_solid"], object["rect"], object["is_solid"], object["breakable"], object["max_break"], object["breakable_by_hammer"], object["drop_items"]))
+							chunk.objects[-1].__setstate__(object)
 					case _:
 						remove_event = False
 

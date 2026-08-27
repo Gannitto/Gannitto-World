@@ -228,6 +228,16 @@ class NetworkManager:
 								"y": event.get("y"),
 								"name": event.get("name")
 							}, player_id)
+
+						case "object_added":
+							event["player_id"] = "Game"
+							self.server_events[player_id].append(event)
+							self._broadcast({
+								"type": "server_event",
+								"event_type": "object_added",
+								"player_id": "Game",
+								"object": event.get("object")
+							}, player_id)
 					
 	def _handle_packet_as_client(self, packet: Dict, addr: tuple):
 		"""Обработка пакетов на стороне клиента"""
@@ -385,6 +395,14 @@ class NetworkManager:
 							"x": event.get("x"),
 							"y": event.get("y"),
 							"name": event.get("name")
+						}
+
+					case "object_added":
+						packet = {
+							"type": "server_event",
+							"event_type": "object_added",
+							"player_id": "Game",
+							"object": event.get("object")
 						}
 				# Хост отправляет всем, кроме себя
 				if packet is None:
