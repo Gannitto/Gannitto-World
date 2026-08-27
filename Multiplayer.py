@@ -196,6 +196,7 @@ class NetworkManager:
 					})
 				
 			case "event":
+
 				for event in packet.get("events"):
 					match event.get("event_type"):
 						case "player_moved":
@@ -214,6 +215,18 @@ class NetworkManager:
 								"x": event.get("x"),
 								"y": event.get("y"),
 								"direction": event.get("direction")
+							}, player_id)
+
+						case "object_removed":
+							event["player_id"] = "Game"
+							self.server_events[player_id].append(event)
+							self._broadcast({
+								"type": "server_event",
+								"event_type": "object_removed",
+								"player_id": "Game",
+								"x": event.get("x"),
+								"y": event.get("y"),
+								"name": event.get("name")
 							}, player_id)
 					
 	def _handle_packet_as_client(self, packet: Dict, addr: tuple):
@@ -342,6 +355,7 @@ class NetworkManager:
 	def send_events(self, events: tuple):
 		"""Отправка событий"""
 		if self.role == "Host":
+			packet = None
 			for event in events:
 				match event.get("event_type"):
 					case "player_moved":
@@ -362,8 +376,21 @@ class NetworkManager:
 							"y": event.get("y"),
 							"direction": event.get("direction")
 						}
+
+					case "object_removed":
+						packet = {
+							"type": "server_event",
+							"event_type": "object_removed",
+							"player_id": "Game",
+							"x": event.get("x"),
+							"y": event.get("y"),
+							"name": event.get("name")
+						}
 				# Хост отправляет всем, кроме себя
-				self._broadcast_except(packet, self.player_id)
+				if packet is None:
+					self.chat_message("Ошибка отправки: неизвестный тип пакета")
+				else:
+					self._broadcast_except(packet, self.player_id)
 		else:
 			packet = {
 				"type": "event",

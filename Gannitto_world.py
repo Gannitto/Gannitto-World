@@ -699,13 +699,16 @@ class Object:
 				if self.breaked < 1:
 
 					destroy_object(self.image, self.x, self.y, world, Particle)
+					if multiplayer:
+						game_events.append({"event_type": "object_removed", "x": self.x, "y": self.y, "name": self.name})
 					world.chunk_manager.get_chunk_at(self.x, self.y).objects.remove(self)
-
+					
 					statistics[2] += 1
 					for item_name, min_amount, max_amount in self.drop_items:
 						for _ in range(random.randint(min_amount, max_amount)):
 							rand_x, rand_y = self.x + random.randint(-self.w // 2, self.w // 2), self.y + random.randint(-self.h // 2, self.h // 2)
 							world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object(item_name, rand_x, rand_y, f"Images/Items/{item_name}.png", pickable=True))
+					return
 
 		if player.x - Width // 2 - self.w // 2 <= self.x <= player.x + Width // 2 + self.w // 2 and player.y - Height // 2 <= player.y + Height // 2:
 			win.blit(self.image, world_to_screen(self.x, self.y, self.w, self.h, player))
@@ -3735,7 +3738,6 @@ def start_game():
 	dx = 0
 	dy = 0
 	release = False
-	game_events = []
 
 	new_particles = []
 
@@ -5772,6 +5774,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 					if object.breakable_by_hammer and (object.x, object.y) == break_pos:
 						inventory.increate(object.name)
 						destroy_object(object.image, object.x, object.y, world, Particle)
+						game_events.append({"event_type": "object_removed", "x": object.x, "y": object.y, "name": object.name})
 						world.chunk_manager.get_chunk_at(object.x, object.y).objects.remove(object)
 						break
 
@@ -5984,6 +5987,21 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 			if len(game_events) != 0:
 				net.send_events(tuple(game_events))
 
+			for event in net.server_events["Game"]:
+				remove_event = True
+				match event["event_type"]:
+					case "object_removed":
+						for object in world.visible_objects:
+							if (object.x, object.y, object.name) == (event["x"], event["y"], event["name"]):
+								destroy_object(object.image, object.x, object.y, world, Particle)
+								world.chunk_manager.get_chunk_at(object.x, object.y).objects.remove(object)
+								break
+					case _:
+						remove_event = False
+
+				if remove_event:
+					net.server_events["Game"].remove(event)
+
 			if multiplayer_role == "Host":
 				for event in net.server_events["Game"]:
 					match event["event_type"]:
@@ -6005,7 +6023,6 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 							state = chunk.__getstate__()
 							state["mobs"] = []
 							state["particles"] = []
-							# state["farmlands"] = {}
 							state["caves"] = []
 
 							new_objects = [object.__getstate__() for object in state["objects"]]
