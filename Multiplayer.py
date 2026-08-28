@@ -11,14 +11,14 @@ PROTOCOL_VERSION = 1
 class NetworkManager:
 	"""Основной класс для управления сетевым взаимодействием"""
 	
-	def __init__(self, PeerInfo, chat_message):
+	def __init__(self, Peer, chat_message):
 		self.role = "Disconnected"
 		self.socket: Optional[socket.socket] = None
 		self.running = False
-		self.peers = {}  # id -> PeerInfo
+		self.peers = {}  # id -> Peer
 		self.player_id = self._generate_id()
 		self.encryption_key = b"gannitto_world_secret_key_123456"  # Простой ключ шифрования (временно)
-		self.PeerInfo = PeerInfo
+		self.Peer = Peer
 		self.chat_message = chat_message
 		self.last_heartbeat = time.time()
 		self.server_events = {"Game": []}
@@ -64,7 +64,7 @@ class NetworkManager:
 			self.running = True
 			
 			# Добавляем себя как первого пира
-			self.peers[self.player_id] = self.PeerInfo(
+			self.peers[self.player_id] = self.Peer(
 				id=self.player_id,
 				address=("127.0.0.1", port),
 				name=f"Host_{self.player_id[:4]}",
@@ -157,7 +157,7 @@ class NetworkManager:
 				# Используем блокировку при добавлении
 				with self.lock:
 					if player_id not in self.peers:
-						peer = self.PeerInfo(
+						peer = self.Peer(
 							id=player_id,
 							address=addr,
 							name=packet.get("name", f"Player_{player_id[:4]}"),
@@ -217,6 +217,16 @@ class NetworkManager:
 								"direction": event.get("direction")
 							}, player_id)
 
+						case "object_added":
+							event["player_id"] = "Game"
+							self.server_events["Game"].append(event)
+							self._broadcast({
+								"type": "server_event",
+								"event_type": "object_added",
+								"player_id": "Game",
+								"object": event.get("object")
+							}, player_id)
+
 						case "object_removed":
 							event["player_id"] = "Game"
 							self.server_events["Game"].append(event)
@@ -229,16 +239,6 @@ class NetworkManager:
 								"name": event.get("name")
 							}, player_id)
 
-						case "object_added":
-							event["player_id"] = "Game"
-							self.server_events["Game"].append(event)
-							self._broadcast({
-								"type": "server_event",
-								"event_type": "object_added",
-								"player_id": "Game",
-								"object": event.get("object")
-							}, player_id)
-
 						case "wall_added":
 							event["player_id"] = "Game"
 							self.server_events["Game"].append(event)
@@ -247,6 +247,16 @@ class NetworkManager:
 								"event_type": "wall_added",
 								"player_id": "Game",
 								"wall": event.get("wall")
+							}, player_id)
+
+						case "wall_removed":
+							event["player_id"] = "Game"
+							self.server_events["Game"].append(event)
+							self._broadcast({
+								"type": "server_event",
+								"event_type": "wall_removed",
+								"player_id": "Game",
+								"break_pos": event.get("break_pos")
 							}, player_id)
 					
 	def _handle_packet_as_client(self, packet: Dict, addr: tuple):
@@ -259,7 +269,7 @@ class NetworkManager:
 				peers_data = packet.get("peers", {})
 				for pid, pdata in peers_data.items():
 					if pid != self.player_id:  # Не добавляем себя
-						self.peers[pid] = self.PeerInfo(
+						self.peers[pid] = self.Peer(
 							id=pid,
 							address=addr,
 							name=pdata.get("name", f"Player_{pid[:4]}"),
@@ -277,7 +287,7 @@ class NetworkManager:
 				pdata = packet.get("peer", {})
 				pid = pdata.get("id")
 				if pid and pid != self.player_id:
-					peer = self.PeerInfo(
+					peer = self.Peer(
 						id=pid,
 						address=addr,
 						name=pdata.get("name", f"Player_{pid[:4]}"),
@@ -397,6 +407,14 @@ class NetworkManager:
 							"direction": event.get("direction")
 						}
 
+					case "object_added":
+						packet = {
+							"type": "server_event",
+							"event_type": "object_added",
+							"player_id": "Game",
+							"object": event.get("object")
+						}
+
 					case "object_removed":
 						packet = {
 							"type": "server_event",
@@ -407,20 +425,20 @@ class NetworkManager:
 							"name": event.get("name")
 						}
 
-					case "object_added":
-						packet = {
-							"type": "server_event",
-							"event_type": "object_added",
-							"player_id": "Game",
-							"object": event.get("object")
-						}
-
 					case "wall_added":
 						packet = {
 							"type": "server_event",
 							"event_type": "wall_added",
 							"player_id": "Game",
 							"wall": event.get("wall")
+						}
+
+					case "wall_removed":
+						packet = {
+							"type": "server_event",
+							"event_type": "wall_removed",
+							"player_id": "Game",
+							"break_pos": event.get("break_pos")
 						}
 				# Хост отправляет всем, кроме себя
 				if packet is None:

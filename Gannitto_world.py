@@ -590,7 +590,7 @@ player = Player()
 world_to_screen = lambda X, Y, W, H, player=player: (X - player.x + Width // 2 - W // 2, player.y - Y + Height // 2 - H // 2)
 world_rect_to_screen = lambda X, Y, W, H, player=player: (X - player.x + Width // 2 - W // 2, player.y - Y + Height // 2 - H // 2, W, H)
 
-class PeerInfo(Player):
+class Peer(Player):
 
 	def __init__(self, id: str, address: tuple, name: str, last_seen: float, position: tuple = (0, 0)):
 		super().__init__()
@@ -603,6 +603,8 @@ class PeerInfo(Player):
 		"""Отрисовывает игрока на экране"""
 		frames = self.animations[self.direction]
 		screen.blit(shadow(self.image, f"Player {self.direction} {self.frame_index % len(frames)}"), world_to_screen(self.x, self.y, 256, 256))
+		text_x, text_y = world_to_screen(self.x + 128, self.y + 32, 256, 256)
+		text(self.name, text_x, text_y, (255, 255, 255), alignment=True)
 		
 		if Settings["Display"][3]:
 			self.rect = pygame.Rect(self.x - 25, self.y - 112, 50, 224)
@@ -5773,6 +5775,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 				if break_pos in world.visible_walls:
 					inventory.increate(world.chunk_manager.get_chunk_at(*break_pos).walls[break_pos].wall_type)
 					destroy_object(world.visible_walls[break_pos].image, world.visible_walls[break_pos].x, world.visible_walls[break_pos].y, world, Particle)
+					game_events.append({"event_type": "wall_removed", "break_pos": break_pos})
 					world.chunk_manager.get_chunk_at(*break_pos).walls.pop(break_pos, None)
 					for wall in ((break_pos[0] - 256, break_pos[1]), (break_pos[0] + 256, break_pos[1]), (break_pos[0], break_pos[1] - 256), (break_pos[0], break_pos[1] + 256)):
 						if wall in world.chunk_manager.get_chunk_at(*wall).walls:
@@ -5997,13 +6000,9 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 				net.send_events(tuple(game_events))
 			for event in net.server_events["Game"]:
 				remove_event = True
+
 				match event["event_type"]:
-					case "object_removed":
-						for object in world.visible_objects:
-							if (object.x, object.y, object.name) == (event["x"], event["y"], event["name"]):
-								destroy_object(object.image, object.x, object.y, world, Particle)
-								world.chunk_manager.get_chunk_at(object.x, object.y).objects.remove(object)
-								break
+
 					case "object_added":
 						object = event["object"]
 						chunk = world.chunk_manager.get_chunk_at(object["x"], object["y"])
@@ -6011,6 +6010,14 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 							object["scale"] = tuple(object["scale"])
 							chunk.objects.append(Object(object["name"], object["x"], object["y"], object["image_path"], object["scale"], None, object["special_flags"], object["add_path"], object["start_time"], object["is_solid"], object["rect"], object["is_solid"], object["breakable"], object["max_break"], object["breakable_by_hammer"], object["drop_items"]))
 							chunk.objects[-1].__setstate__(object)
+
+					case "object_removed":
+						for object in world.visible_objects:
+							if (object.x, object.y, object.name) == (event["x"], event["y"], event["name"]):
+								destroy_object(object.image, object.x, object.y, world, Particle)
+								world.chunk_manager.get_chunk_at(object.x, object.y).objects.remove(object)
+								break
+
 					case "wall_added":
 						wall = event["wall"]
 						chunk = world.chunk_manager.get_chunk_at(wall["x"], wall["y"])
@@ -6021,6 +6028,16 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 							for wall in (((wall_pos[0] - 256, wall_pos[1]), (wall_pos[0] + 256, wall_pos[1]), (wall_pos[0], wall_pos[1] - 256), (wall_pos[0], wall_pos[1] + 256))):
 								if wall in world.visible_walls:
 									world.visible_walls[wall].update_neigboors()
+
+					case "wall_removed":
+						break_pos = tuple(event["break_pos"])
+						chunk = world.chunk_manager.get_chunk_at(*break_pos)
+						if chunk is not None and break_pos in chunk.walls:
+							del chunk.walls[break_pos]
+							for wall in (((break_pos[0] - 256, break_pos[1]), (break_pos[0] + 256, break_pos[1]), (break_pos[0], break_pos[1] - 256), (break_pos[0], break_pos[1] + 256))):
+								if wall in world.visible_walls:
+									world.visible_walls[wall].update_neigboors()
+
 					case _:
 						remove_event = False
 
@@ -6460,7 +6477,7 @@ def multiplayer_settings_menu():
 		start_game_button.main()
 
 		if start_game_button.get_pressed():
-			net = NetworkManager(PeerInfo, chat_message)
+			net = NetworkManager(Peer, chat_message)
 			if multiplayer_role == "Host":
 				assert net.start_host(5555), "Failed to start host"
 			else:
