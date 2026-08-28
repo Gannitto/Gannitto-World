@@ -219,7 +219,7 @@ class NetworkManager:
 
 						case "object_removed":
 							event["player_id"] = "Game"
-							self.server_events[player_id].append(event)
+							self.server_events["Game"].append(event)
 							self._broadcast({
 								"type": "server_event",
 								"event_type": "object_removed",
@@ -231,12 +231,22 @@ class NetworkManager:
 
 						case "object_added":
 							event["player_id"] = "Game"
-							self.server_events[player_id].append(event)
+							self.server_events["Game"].append(event)
 							self._broadcast({
 								"type": "server_event",
 								"event_type": "object_added",
 								"player_id": "Game",
 								"object": event.get("object")
+							}, player_id)
+
+						case "wall_added":
+							event["player_id"] = "Game"
+							self.server_events["Game"].append(event)
+							self._broadcast({
+								"type": "server_event",
+								"event_type": "wall_added",
+								"player_id": "Game",
+								"wall": event.get("wall")
 							}, player_id)
 					
 	def _handle_packet_as_client(self, packet: Dict, addr: tuple):
@@ -403,6 +413,14 @@ class NetworkManager:
 							"event_type": "object_added",
 							"player_id": "Game",
 							"object": event.get("object")
+						}
+
+					case "wall_added":
+						packet = {
+							"type": "server_event",
+							"event_type": "wall_added",
+							"player_id": "Game",
+							"wall": event.get("wall")
 						}
 				# Хост отправляет всем, кроме себя
 				if packet is None:

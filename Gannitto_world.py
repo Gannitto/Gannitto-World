@@ -5742,6 +5742,8 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 				for wall in (((wall_pos[0] - 256, wall_pos[1]), (wall_pos[0] + 256, wall_pos[1]), (wall_pos[0], wall_pos[1] - 256), (wall_pos[0], wall_pos[1] + 256))):
 					if wall in world.visible_walls:
 						world.visible_walls[wall].update_neigboors()
+				if multiplayer:
+					game_events.append({"event_type": "wall_added", "wall": world.chunk_manager.get_chunk_at(*wall_pos).walls[wall_pos].__getstate__()})
 				inventory.whole_inventory[changed_slot].amount -= 1
 				if inventory.whole_inventory[changed_slot].amount == 0:
 					inventory.whole_inventory[changed_slot] = None
@@ -5756,6 +5758,8 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 				for wall in (((wall_pos[0] - 256, wall_pos[1]), (wall_pos[0] + 256, wall_pos[1]), (wall_pos[0], wall_pos[1] - 256), (wall_pos[0], wall_pos[1] + 256))):
 					if wall in world.visible_walls:
 						world.visible_walls[wall].update_neigboors()
+				if multiplayer:
+					game_events.append({"event_type": "wall_added", "wall": world.chunk_manager.get_chunk_at(*wall_pos).walls[wall_pos].__getstate__()})
 				inventory.whole_inventory[changed_slot].amount -= 1
 				if inventory.whole_inventory[changed_slot].amount == 0:
 					inventory.whole_inventory[changed_slot] = None
@@ -5991,7 +5995,6 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 
 			if len(game_events) != 0:
 				net.send_events(tuple(game_events))
-
 			for event in net.server_events["Game"]:
 				remove_event = True
 				match event["event_type"]:
@@ -6008,6 +6011,16 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 							object["scale"] = tuple(object["scale"])
 							chunk.objects.append(Object(object["name"], object["x"], object["y"], object["image_path"], object["scale"], None, object["special_flags"], object["add_path"], object["start_time"], object["is_solid"], object["rect"], object["is_solid"], object["breakable"], object["max_break"], object["breakable_by_hammer"], object["drop_items"]))
 							chunk.objects[-1].__setstate__(object)
+					case "wall_added":
+						wall = event["wall"]
+						chunk = world.chunk_manager.get_chunk_at(wall["x"], wall["y"])
+						if chunk is not None:
+							wall_pos = (wall["x"], wall["y"])
+							chunk.walls[wall_pos] = Wall(wall["wall_type"], wall["x"], wall["y"], wall["is_door"])
+							chunk.walls[wall_pos].__setstate__(wall)
+							for wall in (((wall_pos[0] - 256, wall_pos[1]), (wall_pos[0] + 256, wall_pos[1]), (wall_pos[0], wall_pos[1] - 256), (wall_pos[0], wall_pos[1] + 256))):
+								if wall in world.visible_walls:
+									world.visible_walls[wall].update_neigboors()
 					case _:
 						remove_event = False
 
