@@ -259,6 +259,16 @@ class NetworkManager:
 								"break_pos": event.get("break_pos")
 							}, player_id)
 					
+						case "farmland_added":
+							event["player_id"] = "Game"
+							self.server_events["Game"].append(event)
+							self._broadcast({
+								"type": "server_event",
+								"event_type": "farmland_added",
+								"player_id": "Game",
+								"farmland_pos": event.get("farmland_pos")
+							}, player_id)
+
 	def _handle_packet_as_client(self, packet: Dict, addr: tuple):
 		"""Обработка пакетов на стороне клиента"""
 		print(packet)
@@ -440,6 +450,15 @@ class NetworkManager:
 							"player_id": "Game",
 							"break_pos": event.get("break_pos")
 						}
+
+					case "farmland_added":
+						packet = {
+							"type": "server_event",
+							"event_type": "farmland_added",
+							"player_id": "Game",
+							"farmland_pos": event.get("farmland_pos")
+						}
+
 				# Хост отправляет всем, кроме себя
 				if packet is None:
 					self.chat_message("Ошибка отправки: неизвестный тип пакета")

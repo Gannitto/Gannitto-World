@@ -5729,6 +5729,8 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 
 			if click[0] and farmland_pos not in world.visible_farmlands and not check_collision(pygame.Rect(farmland_pos[0], farmland_pos[1], 256, 256), world, False):
 				world.chunk_manager.get_chunk_at(*farmland_pos).farmlands[farmland_pos] = Farmland(farmland_pos[0], farmland_pos[1])
+				game_events.append({"event_type": "farmland_added", "farmland_pos": farmland_pos})
+
 				pygame.mixer.Sound.play(pygame.mixer.Sound(path + "Sounds/Dirt.mp3"))
 				# for farmland in (((farmland_pos[0] - 128, farmland_pos[1]), (farmland_pos[0] + 128, farmland_pos[1]), (farmland_pos[0], farmland_pos[1] - 128), (farmland_pos[0], farmland_pos[1] + 128))):
 				#	if farmland in world.visible_farmlands:
@@ -6037,6 +6039,12 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 							for wall in (((break_pos[0] - 256, break_pos[1]), (break_pos[0] + 256, break_pos[1]), (break_pos[0], break_pos[1] - 256), (break_pos[0], break_pos[1] + 256))):
 								if wall in world.visible_walls:
 									world.visible_walls[wall].update_neigboors()
+
+					case "farmland_added":
+						farmland_pos = tuple(event["farmland_pos"])
+						chunk = world.chunk_manager.get_chunk_at(*farmland_pos)
+						if chunk is not None:
+							chunk.farmlands[farmland_pos] = Farmland(*farmland_pos)
 
 					case _:
 						remove_event = False
