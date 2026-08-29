@@ -2531,11 +2531,13 @@ def tp(x, y, player=player):
 		net.peers[net.player_id].y = player.y
 		net.peers[net.player_id].direction = player.direction
 
-def chat_message(message: str):
+def chat_message(message: str, send_to_peers: bool = False):
 	"""Отправляет сообщение в чат"""
 	global chat_tick
 	chat.append(message)
 	chat_tick = len(message) // 1.5 * FPS
+	if multiplayer and send_to_peers:
+		game_events.append({"event_type": "chat_message", "message_text": message})
 
 def command_help(command: str=""):
 	if command == "":
@@ -3888,7 +3890,11 @@ def start_game():
 					elif input_text[0] == "/":
 						chat_message(command_system.execute(input_text))
 					else:
-						chat_message(Settings["User"][0] + ": " + input_text)
+						if multiplayer:
+							message_text = f"{net.peers[net.player_id].name}: {input_text}"
+						else:
+							message_text = f"{Settings['User'][0]}: {input_text}"
+						chat_message(message_text, True)
 
 					input_text = ""
 				elif event.key == pygame.K_BACKSPACE:
@@ -6054,6 +6060,9 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 						chunk = world.chunk_manager.get_chunk_at(*farmland_pos)
 						if chunk is not None:
 							chunk.farmlands[farmland_pos] = Farmland(*farmland_pos)
+
+					case "chat_message":
+						chat_message(event["message_text"])
 
 					case _:
 						remove_event = False

@@ -309,6 +309,16 @@ class NetworkManager:
 								"event_type": "changed_item",
 								"player_id": player_id,
 								"changed_item": event.get("changed_item")
+							}, player_id),
+					
+						case "chat_message":
+							self.chat_message(event.get("message_text"))
+							self.server_events[player_id].append(event)
+							self._broadcast({
+								"type": "server_event",
+								"event_type": "chat_message",
+								"player_id": "Game",
+								"message_text": event.get("message_text")
 							}, player_id)
 
 	def _handle_packet_as_client(self, packet: Dict, addr: tuple):
@@ -538,6 +548,14 @@ class NetworkManager:
 							"event_type": "changed_item",
 							"player_id": self.player_id,
 							"changed_item": event.get("changed_item")
+						}
+
+					case "chat_message":
+						packet = {
+							"type": "server_event",
+							"event_type": "chat_message",
+							"player_id": "Game",
+							"message_text": event.get("message_text")
 						}
 
 				# Хост отправляет всем, кроме себя
