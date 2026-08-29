@@ -592,13 +592,14 @@ world_rect_to_screen = lambda X, Y, W, H, player=player: (X - player.x + Width /
 
 class Peer(Player):
 
-	def __init__(self, id: str, address: tuple, name: str, last_seen: float, X: int = 0, Y: int = 0):
+	def __init__(self, id: str, address: tuple, name: str, last_seen: float, X: int = 0, Y: int = 0, view_distance: int = 1):
 		super().__init__()
 		self.address = address
 		self.name = name
 		self.last_seen = last_seen
 		self.x = X
 		self.y = Y
+		self.view_distance = view_distance
 	
 	def render(self, screen):
 		"""Отрисовывает игрока на экране"""
@@ -1909,7 +1910,8 @@ class Wall:
 
 		self.neigbords = []
 		for wall in ((self.x - 256, self.y), (self.x + 256, self.y), (self.x, self.y - 256), (self.x, self.y + 256)):
-			if wall in world.chunk_manager.get_chunk_at(*wall).walls:
+			chunk = world.chunk_manager.get_chunk_at(*wall)
+			if chunk is not None and wall in chunk.walls:
 				self.neigbords.append(wall)
 
 		if self.is_door:
@@ -3787,6 +3789,11 @@ def start_game():
 			game.difficulty, player.god_mode = Saver.load_objects(path + "Worlds/" + world_name + "/Settings.save")
 			inventory.whole_inventory = Saver.load_objects(path + "Worlds/" + world_name + "/Inventory.save")
 			player.effects = Saver.load_objects(path + "Worlds/" + world_name + "/Effects.save")
+
+			if multiplayer:
+				net.peers[net.player_id].x = player.x
+				net.peers[net.player_id].y = player.y
+				net.peers[net.player_id].direction = player.direction
 			
 		else:
 
@@ -6504,16 +6511,16 @@ def multiplayer_settings_menu():
 		start_game_button.main()
 
 		if start_game_button.get_pressed():
-			net = NetworkManager(Peer, chat_message)
+			net = NetworkManager(Peer, chat_message, world.chunk_manager.view_distance)
 			if multiplayer_role == "Host":
-				# net.start_local_host(5555)
-				net.start_host(net.port, net.external_port)
+				net.start_local_host(5555)
+				# net.start_host(net.port, net.external_port)
 			else:
 				if not os.path.exists(path + "Cache/Multiplayer"):
 					os.mkdir(path + "Cache/Multiplayer")
 				world.chunk_manager.save_directory = path + "Cache/Multiplayer/"
-				# net.connect_to_local_host("127.0.0.1", 5555)
-				net.connect_to_host(net.host_ip, net.host_port)
+				net.connect_to_local_host("127.0.0.1", 5555)
+				# net.connect_to_host(net.host_ip, net.host_port)
 			start_game()
 
 		if alt_pressed: draw_key("ESC", 44, 108)

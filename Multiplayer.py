@@ -11,7 +11,7 @@ PROTOCOL_VERSION = 1
 class NetworkManager:
 	"""Основной класс для управления сетевым взаимодействием"""
 	
-	def __init__(self, Peer, chat_message):
+	def __init__(self, Peer, chat_message, view_distance):
 		self.role = "Disconnected"
 		self.socket: Optional[socket.socket] = None
 		self.running = False
@@ -20,6 +20,7 @@ class NetworkManager:
 		self.encryption_key = b"gannitto_world_secret_key_123456"  # Простой ключ шифрования (временно)
 		self.Peer = Peer
 		self.chat_message = chat_message
+		self.view_distance = view_distance
 		self.last_heartbeat = time.time()
 		self.server_events = {"Game": []}
 		self.port = 5555
@@ -77,6 +78,18 @@ class NetworkManager:
 		except:
 			return self._get_local_ip()
 
+	def get_exclude_ids(self, X, Y, sended_peer=None):
+		"""Получение списка пиров, которым не нужно присылать пакет данных"""
+		exclude_ids = []
+		if sended_peer is not None:
+			exclude_ids.append(sended_peer)
+		for pid, peer in self.peers.items():
+			center_chunk_x = int(peer.x // 2048) * 2048
+			center_chunk_y = int(peer.y // 2048) * 2048
+			if not (center_chunk_x - 2048 * peer.view_distance <= X <= center_chunk_x + 2048 * (peer.view_distance + 1) and center_chunk_y - 2048 * peer.view_distance <= Y <= center_chunk_y + 2048 * (peer.view_distance + 1)):
+				exclude_ids.append(pid)
+		return exclude_ids
+
 	def start_host(self, port: int = 5555, external_port: int = None) -> bool:
 		"""Запуск как хоста (сервера)"""
 		try:
@@ -98,7 +111,8 @@ class NetworkManager:
 				id=self.player_id,
 				address=(local_ip, port),
 				name=f"Host_{self.player_id[:4]}",
-				last_seen=time.time()
+				last_seen=time.time(),
+				view_distance=self.view_distance
 			)
 			
 			# Запускаем потоки
@@ -108,12 +122,9 @@ class NetworkManager:
 			self.heartbeat_thread = threading.Thread(target=self._heartbeat_loop, daemon=True)
 			self.heartbeat_thread.start()
 			
-			print(f"[Network] Host started on {local_ip}:{port}")
-			print(f"[Network] Your player ID: {self.player_id}")
-			
 			# Важно: показываем пользователю его внешний IP
 			if external_port:
-				print(f"[Network] External port: {external_port}")
+				self.chat_message(f"Внешний порт: {external_port}")
 				self.chat_message(f"Хост запущен. Ваш IP: {local_ip}, Порт: {port}")
 				self.chat_message(f"Для подключения используйте IP: {self._get_public_ip()}")
 			
@@ -137,6 +148,7 @@ class NetworkManager:
 				"type": "handshake",
 				"player_id": self.player_id,
 				"name": f"Player_{self.player_id[:4]}",
+				"view_distance": self.view_distance,
 				"timestamp": time.time()
 			}, self.host_address)
 			
@@ -169,7 +181,8 @@ class NetworkManager:
 				id=self.player_id,
 				address=("127.0.0.1", port),
 				name=f"Host_{self.player_id[:4]}",
-				last_seen=time.time()
+				last_seen=time.time(),
+				view_distance=self.view_distance
 			)
 			
 			# Запускаем поток получения
@@ -179,8 +192,8 @@ class NetworkManager:
 			# Запускаем поток проверки соединений
 			threading.Thread(target=self._heartbeat_loop, daemon=True).start()
 			
-			print(f"[Network] Host started on port {port}")
-			print(f"[Network] Your player ID: {self.player_id}")
+			self.chat_message(f"Хост запущен на порту {port}")
+			self.chat_message(f"Твой ID игрока: {self.player_id}")
 			return True
 			
 		except Exception as e:
@@ -201,6 +214,7 @@ class NetworkManager:
 				"type": "handshake",
 				"player_id": self.player_id,
 				"name": f"Player_{self.player_id[:4]}",
+				"view_distance": self.view_distance
 			}, self.host_address)
 			
 			# Запускаем поток получения
@@ -245,7 +259,7 @@ class NetworkManager:
 	
 	def _handle_packet_as_host(self, packet: Dict, addr: tuple):
 		"""Обработка пакетов на стороне хоста"""
-		# print(packet)
+		print(packet)
 		packet_type = packet.get("type")
 		player_id = packet.get("player_id")
 		with self.lock:
@@ -262,7 +276,8 @@ class NetworkManager:
 							id=player_id,
 							address=addr,
 							name=packet.get("name", f"Player_{player_id[:4]}"),
-							last_seen=time.time()
+							last_seen=time.time(),
+							view_distance=packet.get("view_distance")
 						)
 						self.peers[player_id] = peer
 						self.server_events[player_id] = []
@@ -311,6 +326,7 @@ class NetworkManager:
 							
 							# Пересылаем движение всем остальным (вне блокировки)
 							self.server_events[player_id].append(event)
+							exclude_ids = self.get_exclude_ids(event.get("x"), event.get("y"), player_id)
 							self._broadcast({
 								"type": "server_event",
 								"event_type": "player_moved",
@@ -318,21 +334,23 @@ class NetworkManager:
 								"x": event.get("x"),
 								"y": event.get("y"),
 								"direction": event.get("direction")
-							}, player_id)
+							}, exclude_ids)
 
 						case "object_added":
 							event["player_id"] = "Game"
 							self.server_events["Game"].append(event)
+							exclude_ids = self.get_exclude_ids(event.get("object").get("x"), event.get("object").get("y"), player_id)
 							self._broadcast({
 								"type": "server_event",
 								"event_type": "object_added",
 								"player_id": "Game",
 								"object": event.get("object")
-							}, player_id)
+							}, exclude_ids)
 
 						case "object_removed":
 							event["player_id"] = "Game"
 							self.server_events["Game"].append(event)
+							exclude_ids = self.get_exclude_ids(event.get("x"), event.get("y"), player_id)
 							self._broadcast({
 								"type": "server_event",
 								"event_type": "object_removed",
@@ -340,21 +358,23 @@ class NetworkManager:
 								"x": event.get("x"),
 								"y": event.get("y"),
 								"name": event.get("name")
-							}, player_id)
+							}, exclude_ids)
 
 						case "item_added":
 							event["player_id"] = "Game"
 							self.server_events["Game"].append(event)
+							exclude_ids = self.get_exclude_ids(event.get("item").get("x"), event.get("item").get("y"), player_id)
 							self._broadcast({
 								"type": "server_event",
 								"event_type": "item_added",
 								"player_id": "Game",
 								"item": event.get("item")
-							}, player_id)
+							}, exclude_ids)
 
 						case "item_removed":
 							event["player_id"] = "Game"
 							self.server_events["Game"].append(event)
+							exclude_ids = self.get_exclude_ids(event.get("x"), event.get("y"), player_id)
 							self._broadcast({
 								"type": "server_event",
 								"event_type": "item_removed",
@@ -362,56 +382,61 @@ class NetworkManager:
 								"x": event.get("x"),
 								"y": event.get("y"),
 								"name": event.get("name")
-							}, player_id)
+							}, exclude_ids)
 
 						case "wall_added":
 							event["player_id"] = "Game"
 							self.server_events["Game"].append(event)
+							exclude_ids = self.get_exclude_ids(event.get("wall").get("x"), event.get("wall").get("y"), player_id)
 							self._broadcast({
 								"type": "server_event",
 								"event_type": "wall_added",
 								"player_id": "Game",
 								"wall": event.get("wall")
-							}, player_id)
+							}, exclude_ids)
 
 						case "wall_removed":
 							event["player_id"] = "Game"
 							self.server_events["Game"].append(event)
+							exclude_ids = self.get_exclude_ids(event.get("break_pos")[0], event.get("break_pos")[1], player_id)
 							self._broadcast({
 								"type": "server_event",
 								"event_type": "wall_removed",
 								"player_id": "Game",
 								"break_pos": event.get("break_pos")
-							}, player_id)
+							}, exclude_ids)
 					
 						case "wall_interaction":
 							event["player_id"] = "Game"
 							self.server_events["Game"].append(event)
+							exclude_ids = self.get_exclude_ids(event.get("wall_pos")[0], event.get("wall_pos")[1], player_id)
 							self._broadcast({
 								"type": "server_event",
 								"event_type": "wall_interaction",
 								"player_id": "Game",
 								"wall_pos": event.get("wall_pos")
-							}, player_id)
+							}, exclude_ids)
 					
 						case "farmland_added":
 							event["player_id"] = "Game"
 							self.server_events["Game"].append(event)
+							exclude_ids = self.get_exclude_ids(event.get("farmland_pos")[0], event.get("farmland_pos")[1], player_id)
 							self._broadcast({
 								"type": "server_event",
 								"event_type": "farmland_added",
 								"player_id": "Game",
 								"farmland_pos": event.get("farmland_pos")
-							}, player_id)
+							}, exclude_ids)
 					
 						case "changed_item":
 							self.server_events[player_id].append(event)
+							exclude_ids = self.get_exclude_ids(self.peers[event.get("player_id")].x, self.peers[event.get("player_id")].y, player_id)
 							self._broadcast({
 								"type": "server_event",
 								"event_type": "changed_item",
 								"player_id": player_id,
 								"changed_item": event.get("changed_item")
-							}, player_id),
+							}, exclude_ids),
 					
 						case "chat_message":
 							self.chat_message(event.get("message_text"))
@@ -425,22 +450,21 @@ class NetworkManager:
 
 	def _handle_packet_as_client(self, packet: Dict, addr: tuple):
 		"""Обработка пакетов на стороне клиента"""
-		# print(packet)
+		print(packet)
 		packet_type = packet.get("type")
 		match packet_type:
 			case "peer_list":
 				# Получение списка всех игроков от хоста
 				peers_data = packet.get("peers", {})
 				for pid, pdata in peers_data.items():
-					X = pdata.get("x")
-					Y = pdata.get("y")
 					self.peers[pid] = self.Peer(
 						id=pid,
 						address=addr,
 						name=pdata.get("name", f"Player_{pid[:4]}"),
 						last_seen=time.time(),
-						X=X,
-						Y=Y
+						X=pdata.get("x"),
+						Y=pdata.get("y"),
+						view_distance=pdata.get("view_distance")
 					)
 					self.peers[pid].direction = pdata.get("direction")
 					self.peers[pid].changed_item = pdata.get("changed_item")
@@ -456,7 +480,8 @@ class NetworkManager:
 						name=pdata.get("name", f"Player_{pid[:4]}"),
 						last_seen=time.time(),
 						X=pdata.get("x", 0),
-						Y=pdata.get("y", 0)
+						Y=pdata.get("y", 0),
+						view_distance=pdata.get("view_distance")
 					)
 					self.peers[pid] = peer
 					self.peers[pid].direction = pdata.get("direction")
@@ -528,7 +553,8 @@ class NetworkManager:
 				"x": peer.x,
 				"y": peer.y,
 				"direction": peer.direction,
-				"changed_item": peer.changed_item
+				"changed_item": peer.changed_item,
+				"view_distance": peer.view_distance
 			}
 			
 		self._send_packet({
@@ -558,6 +584,7 @@ class NetworkManager:
 			for event in events:
 				match event.get("event_type"):
 					case "player_moved":
+						exclude_ids = self.get_exclude_ids(event.get("x"), event.get("y"))
 						packet = {
 							"type": "server_event",
 							"event_type": "player_moved",
@@ -577,6 +604,7 @@ class NetworkManager:
 						}
 
 					case "object_added":
+						exclude_ids = self.get_exclude_ids(event.get("object").get("x"), event.get("object").get("y"), self.player_id)
 						packet = {
 							"type": "server_event",
 							"event_type": "object_added",
@@ -585,6 +613,7 @@ class NetworkManager:
 						}
 
 					case "object_removed":
+						exclude_ids = self.get_exclude_ids(event.get("x"), event.get("y"), self.player_id)
 						packet = {
 							"type": "server_event",
 							"event_type": "object_removed",
@@ -595,6 +624,7 @@ class NetworkManager:
 						}
 
 					case "item_added":
+						exclude_ids = self.get_exclude_ids(event.get("item").get("x"), event.get("item").get("y"), self.player_id)
 						packet = {
 							"type": "server_event",
 							"event_type": "item_added",
@@ -603,6 +633,7 @@ class NetworkManager:
 						}
 
 					case "item_removed":
+						exclude_ids = self.get_exclude_ids(event.get("x"), event.get("y"), self.player_id)
 						packet = {
 							"type": "server_event",
 							"event_type": "item_removed",
@@ -613,6 +644,7 @@ class NetworkManager:
 						}
 
 					case "wall_added":
+						exclude_ids = self.get_exclude_ids(event.get("wall").get("x"), event.get("wall").get("y"), self.player_id)
 						packet = {
 							"type": "server_event",
 							"event_type": "wall_added",
@@ -621,6 +653,7 @@ class NetworkManager:
 						}
 
 					case "wall_removed":
+						exclude_ids = self.get_exclude_ids(event.get("break_pos")[0], event.get("break_pos")[1], self.player_id)
 						packet = {
 							"type": "server_event",
 							"event_type": "wall_removed",
@@ -629,6 +662,7 @@ class NetworkManager:
 						}
 
 					case "wall_interaction":
+						exclude_ids = self.get_exclude_ids(event.get("wall_pos")[0], event.get("wall_pos")[1], self.player_id)
 						packet = {
 							"type": "server_event",
 							"event_type": "wall_interaction",
@@ -637,6 +671,7 @@ class NetworkManager:
 						}
 
 					case "farmland_added":
+						exclude_ids = self.get_exclude_ids(event.get("farmland_pos")[0], event.get("farmland_pos")[1], self.player_id)
 						packet = {
 							"type": "server_event",
 							"event_type": "farmland_added",
@@ -645,6 +680,7 @@ class NetworkManager:
 						}
 
 					case "changed_item":
+						exclude_ids = self.get_exclude_ids(self.peers[self.player_id].x, self.peers[self.player_id].y, self.player_id)
 						packet = {
 							"type": "server_event",
 							"event_type": "changed_item",
@@ -664,7 +700,7 @@ class NetworkManager:
 				if packet is None:
 					self.chat_message("Ошибка отправки: неизвестный тип пакета")
 				else:
-					self._broadcast_except(packet, self.player_id)
+					self._broadcast(packet, exclude_ids)
 		else:
 			packet = {
 				"type": "event",
@@ -693,7 +729,7 @@ class NetworkManager:
 						"player_id": self.player_id
 					}, self.host_address)
 			except Exception as e:
-				print(f"[Network] Error sending disconnect: {e}")
+				self.chat_message(f"Ошибка отключения: {e}")
 		
 		# Закрываем сокет
 		if self.socket:
@@ -716,7 +752,7 @@ class NetworkManager:
 			try:
 				thread.join(timeout=1.0)  # Ждем максимум 1 секунду
 			except Exception as e:
-				print(f"[Network] Error joining thread: {e}")
+				self.chat_message(f"Ошибка завершения потоков: {e}")
 		
 		# Очищаем данные
 		with self.lock:
@@ -783,3 +819,4 @@ class NetworkManager:
 	def is_connected(self) -> bool:
 		"""Подключен ли к сети"""
 		return self.role != "Disconnected"
+
