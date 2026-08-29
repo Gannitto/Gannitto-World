@@ -6150,6 +6150,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 								new_farmlands[(farmland["x"], farmland["y"])] = Farmland(farmland["x"], farmland["y"])
 								new_farmlands[(farmland["x"], farmland["y"])].__setstate__(farmland)
 							chunk.farmlands = new_farmlands
+							world.chunk_manager.chunks_to_get.remove(chunk_key)
 
 					net.server_events["Game"].remove(event)
 
@@ -6505,12 +6506,14 @@ def multiplayer_settings_menu():
 		if start_game_button.get_pressed():
 			net = NetworkManager(Peer, chat_message)
 			if multiplayer_role == "Host":
-				assert net.start_host(5555), "Failed to start host"
+				# net.start_local_host(5555)
+				net.start_host(net.port, net.external_port)
 			else:
 				if not os.path.exists(path + "Cache/Multiplayer"):
 					os.mkdir(path + "Cache/Multiplayer")
 				world.chunk_manager.save_directory = path + "Cache/Multiplayer/"
-				assert net.connect_to_host("127.0.0.1", 5555), "Failed to connect"
+				# net.connect_to_local_host("127.0.0.1", 5555)
+				net.connect_to_host(net.host_ip, net.host_port)
 			start_game()
 
 		if alt_pressed: draw_key("ESC", 44, 108)

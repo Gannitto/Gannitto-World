@@ -22,6 +22,10 @@ class NetworkManager:
 		self.chat_message = chat_message
 		self.last_heartbeat = time.time()
 		self.server_events = {"Game": []}
+		self.port = 5555
+		self.external_port = self.port
+		self.host_ip = "125.234.122.182"
+		self.host_port = 5555
 		
 		# Коллбэки для событий
 		self.callbacks = {
@@ -51,8 +55,106 @@ class NetworkManager:
 	def _decrypt_data(self, data: bytes) -> bytes:
 		"""Расшифровка данных"""
 		return self._encrypt_data(data)  # XOR симметричен
+
+	def _get_local_ip(self) -> str:
+		"""Получение локального IP адреса"""
+		try:
+			s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+			s.connect(("8.8.8.8", 80))
+			ip = s.getsockname()[0]
+			s.close()
+			return ip
+		except:
+			return "127.0.0.1"
+
+	def _get_public_ip(self) -> str:
+		"""Получение публичного IP через STUN (упрощенная версия)"""
+		try:
+			# Простой способ - через запрос к внешнему серверу
+			import urllib.request
+			with urllib.request.urlopen('https://api.ipify.org', timeout=2) as response:
+				return response.read().decode('utf-8')
+		except:
+			return self._get_local_ip()
+
+	def start_host(self, port: int = 5555, external_port: int = None) -> bool:
+		"""Запуск как хоста (сервера)"""
+		try:
+			# Используем UDP
+			self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+			self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+			self.socket.settimeout(0.1)
+			
+			# Привязываемся ко всем интерфейсам
+			self.socket.bind(("0.0.0.0", port))
+			self.role = "Host"
+			self.running = True
+			
+			# Получаем реальный IP
+			local_ip = self._get_local_ip()
+			
+			# Добавляем себя как первого пира
+			self.peers[self.player_id] = self.Peer(
+				id=self.player_id,
+				address=(local_ip, port),
+				name=f"Host_{self.player_id[:4]}",
+				last_seen=time.time()
+			)
+			
+			# Запускаем потоки
+			self.receive_thread = threading.Thread(target=self._receive_loop, daemon=True)
+			self.receive_thread.start()
+			
+			self.heartbeat_thread = threading.Thread(target=self._heartbeat_loop, daemon=True)
+			self.heartbeat_thread.start()
+			
+			print(f"[Network] Host started on {local_ip}:{port}")
+			print(f"[Network] Your player ID: {self.player_id}")
+			
+			# Важно: показываем пользователю его внешний IP
+			if external_port:
+				print(f"[Network] External port: {external_port}")
+				self.chat_message(f"Хост запущен. Ваш IP: {local_ip}, Порт: {port}")
+				self.chat_message(f"Для подключения используйте IP: {self._get_public_ip()}")
+			
+			return True
+			
+		except Exception as e:
+			self.chat_message(f"Не удалось запустить хост: {e}")
+			return False
 	
-	def start_host(self, port: int = 5555) -> bool:
+	def connect_to_host(self, host_ip: str, port: int = 5555) -> bool:
+		"""Подключение к хосту"""
+		try:
+			self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+			self.socket.settimeout(0.1)
+			self.role = "Client"
+			self.running = True
+			self.host_address = (host_ip, port)
+			
+			# Отправляем несколько раз для надежности
+			self._send_packet({
+				"type": "handshake",
+				"player_id": self.player_id,
+				"name": f"Player_{self.player_id[:4]}",
+				"timestamp": time.time()
+			}, self.host_address)
+			
+			# Запускаем потоки
+			self.receive_thread = threading.Thread(target=self._receive_loop, daemon=True)
+			self.receive_thread.start()
+			
+			self.heartbeat_thread = threading.Thread(target=self._heartbeat_loop, daemon=True)
+			self.heartbeat_thread.start()
+			
+			self.chat_message(f"Подключаюсь к хосту {host_ip}:{port}")
+			return True
+			
+		except Exception as e:
+			self.chat_message(f"Не удалось подключиться к хосту: {e}")
+			return False
+	
+	def start_local_host(self, port: int = 5555) -> bool:
 		"""Запуск как хоста (сервера)"""
 		try:
 			self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)	# UDP протокол
@@ -85,7 +187,7 @@ class NetworkManager:
 			self.chat_message(f"Не удалось запустить хост: {e}")
 			return False
 	
-	def connect_to_host(self, host_ip: str, port: int = 5555) -> bool:
+	def connect_to_local_host(self, host_ip: str, port: int = 5555) -> bool:
 		"""Подключение к хосту"""
 		try:
 			self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
