@@ -143,7 +143,7 @@ class NetworkManager:
 	
 	def _handle_packet_as_host(self, packet: Dict, addr: tuple):
 		"""Обработка пакетов на стороне хоста"""
-		print(packet)
+		# print(packet)
 		packet_type = packet.get("type")
 		player_id = packet.get("player_id")
 		with self.lock:
@@ -269,29 +269,37 @@ class NetworkManager:
 								"player_id": "Game",
 								"farmland_pos": event.get("farmland_pos")
 							}, player_id)
+					
+						case "changed_item":
+							self.server_events[player_id].append(event)
+							self._broadcast({
+								"type": "server_event",
+								"event_type": "changed_item",
+								"player_id": player_id,
+								"changed_item": event.get("changed_item")
+							}, player_id)
 
 	def _handle_packet_as_client(self, packet: Dict, addr: tuple):
 		"""Обработка пакетов на стороне клиента"""
-		print(packet)
+		# print(packet)
 		packet_type = packet.get("type")
 		match packet_type:
 			case "peer_list":
 				# Получение списка всех игроков от хоста
 				peers_data = packet.get("peers", {})
 				for pid, pdata in peers_data.items():
-					if pid != self.player_id:  # Не добавляем себя
-						X = pdata.get("x")
-						Y = pdata.get("y")
-						self.peers[pid] = self.Peer(
-							id=pid,
-							address=addr,
-							name=pdata.get("name", f"Player_{pid[:4]}"),
-							last_seen=time.time(),
-							X=X,
-							Y=Y
-						)
-						self.peers[pid].direction = pdata.get("direction")
-						self.peers[pid].changed_item = pdata.get("changed_item")
+					X = pdata.get("x")
+					Y = pdata.get("y")
+					self.peers[pid] = self.Peer(
+						id=pid,
+						address=addr,
+						name=pdata.get("name", f"Player_{pid[:4]}"),
+						last_seen=time.time(),
+						X=X,
+						Y=Y
+					)
+					self.peers[pid].direction = pdata.get("direction")
+					self.peers[pid].changed_item = pdata.get("changed_item")
 
 			case "peer_joined":
 				# Новый игрок присоединился
@@ -464,6 +472,14 @@ class NetworkManager:
 							"event_type": "farmland_added",
 							"player_id": "Game",
 							"farmland_pos": event.get("farmland_pos")
+						}
+
+					case "changed_item":
+						packet = {
+							"type": "server_event",
+							"event_type": "changed_item",
+							"player_id": self.player_id,
+							"changed_item": event.get("changed_item")
 						}
 
 				# Хост отправляет всем, кроме себя

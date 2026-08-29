@@ -583,7 +583,7 @@ class Player:
 		
 		if Settings["Display"][3]:
 			self.rect = pygame.Rect(self.x - 25, self.y - 112, 50, 224)
-			pygame.draw.rect(screen, (0, 255, 0), (Width / 2 - 128, Height / 2 - 128, self.image.get_width(), self.image.get_height()), 2)
+			pygame.draw.rect(screen, (0, 255, 0), (Width / 2 - 128, Height / 2 - 128, 256, 256), 2)
 			pygame.draw.rect(win, (0, 0, 0), (self.rect[0] - self.x + Width // 2, self.y - self.rect[1] - self.rect[3] + Height // 2, self.rect[2], self.rect[3]), 3)
 
 player = Player()
@@ -604,12 +604,26 @@ class Peer(Player):
 		"""Отрисовывает игрока на экране"""
 		frames = self.animations[self.direction]
 		screen.blit(shadow(self.image, f"Player {self.direction} {self.frame_index % len(frames)}"), world_to_screen(self.x, self.y, 256, 256))
+		if self.changed_item is not None:
+			changed_item_x = 0
+			changed_item_y = 0
+			match self.direction:
+				case "Down":
+					changed_item_x = -80
+					changed_item_y = 0
+				case "Left":
+					changed_item_x = -84
+					changed_item_y = 0
+				case "Right":
+					changed_item_x = -20
+					changed_item_y = 0
+			win.blit(inventory.resources[self.changed_item].image, world_to_screen(self.x + changed_item_x + 128, self.y + changed_item_y - 128, 256, 256))
 		text_x, text_y = world_to_screen(self.x + 128, self.y + 32, 256, 256)
 		text(self.name, text_x, text_y, (255, 255, 255), alignment=True)
 		
 		if Settings["Display"][3]:
 			self.rect = pygame.Rect(self.x - 25, self.y - 112, 50, 224)
-			pygame.draw.rect(screen, (0, 255, 0), world_rect_to_screen(self.x, self.y, self.image.get_width(), self.image.get_height()), 2)
+			pygame.draw.rect(screen, (0, 255, 0), world_rect_to_screen(self.x, self.y, 256, 256), 2)
 			pygame.draw.rect(win, (0, 0, 0), (self.rect[0] - self.x + Width // 2, self.y - self.rect[1] - self.rect[3] + Height // 2, self.rect[2], self.rect[3]), 3)
 
 
@@ -3942,16 +3956,15 @@ def start_game():
 								net.disconnect()
 							menu()
 
-					if event.key == pygame.K_1: changed_slot = 0
-					if event.key == pygame.K_2: changed_slot = 1
-					if event.key == pygame.K_3: changed_slot = 2
-					if event.key == pygame.K_4: changed_slot = 3
-					if event.key == pygame.K_5: changed_slot = 4
-					if event.key == pygame.K_6: changed_slot = 5
-					if event.key == pygame.K_7: changed_slot = 6
-					if event.key == pygame.K_8: changed_slot = 7
-					if event.key == pygame.K_9: changed_slot = 8
-					if event.key == pygame.K_0: changed_slot = 9
+					if event.key in (pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_4, pygame.K_5, pygame.K_6, pygame.K_7, pygame.K_8, pygame.K_9, pygame.K_0, ):
+						last_changed_slot = changed_slot
+						changed_slot = int(event.unicode) - 1 + 10 * (event.key == pygame.K_0)
+						player.changed_item = inventory.whole_inventory[changed_slot]
+						if player.changed_item is not None:
+							player.changed_item = player.changed_item.name
+						if multiplayer and not (inventory.whole_inventory[changed_slot] is None and inventory.whole_inventory[last_changed_slot] is None):
+							game_events.append({"event_type": "changed_item", "changed_item": player.changed_item})
+
 					if event.key == pygame.K_o and False:
 						world.mobs.append(Slime(player.x, player.y))
 						# create_light_circle(world.chunk_manager, player.x, player.y, 10, 15)
@@ -4072,9 +4085,10 @@ def start_game():
 		if dx != 0 or dy != 0:
 			player.move(dx, dy, dt)
 			game_events.append({"event_type": "player_moved", "x": player.x, "y": player.y, "direction": player.direction})
-			net.peers[net.player_id].x = player.x
-			net.peers[net.player_id].y = player.y
-			net.peers[net.player_id].direction = player.direction
+			if multiplayer:
+				net.peers[net.player_id].x = player.x
+				net.peers[net.player_id].y = player.y
+				net.peers[net.player_id].direction = player.direction
 		else:
 			player.stop()
 		
@@ -4583,10 +4597,12 @@ def start_game():
 								peer.x = event["x"]
 								peer.y = event["y"]
 								peer.direction = event["direction"]
-								net.server_events[pid].remove(event)
 								peer.is_moving = True
 								need_to_stop = False
-								break
+							elif event["event_type"] == "changed_item":
+								peer.changed_item = event["changed_item"]
+
+							net.server_events[pid].remove(event)
 					if need_to_stop:
 						peer.stop()
 					peer.render(win)
@@ -4602,11 +4618,9 @@ def start_game():
 			animation[1] += 1
 		else:
 			animation = [None, 0]
-		
-		if inventory.whole_inventory[changed_slot] is None:
-			a = False
-		else:
-			a = True
+
+		changed_item_x = 0
+		changed_item_y = 0
 
 		match player.direction:
 
@@ -4616,8 +4630,8 @@ def start_game():
 					# 97, 209
 					case 0 | 1 | 3 | 4 | 6 | 7:
 
-						if a:
-							win.blit(inventory.whole_inventory[changed_slot].image, (Width // 2 - 80, Height // 2))
+						changed_item_x = Width // 2 - 80
+						changed_item_y = Height // 2
 
 						match animation[0]:
 
@@ -4648,8 +4662,8 @@ def start_game():
 
 					case 2:
 
-						if a:
-							win.blit(inventory.whole_inventory[changed_slot].image, (Width // 2 - 74, Height // 2 - 16))
+						changed_item_x = Width // 2 - 74
+						changed_item_y = Height // 2 - 16
 
 						match animation[0]:
 
@@ -4664,8 +4678,8 @@ def start_game():
 
 					case 5:
 
-						if a:
-							win.blit(inventory.whole_inventory[changed_slot].image, (Width // 2 - 94, Height // 2 - 16))
+						changed_item_x = Width // 2 - 94
+						changed_item_y = Height // 2 - 16
 
 						match animation[0]:
 
@@ -4684,8 +4698,8 @@ def start_game():
 
 					case 0 | 1 | 3 | 4 | 6 | 7:
 
-						if a:
-							win.blit(inventory.whole_inventory[changed_slot].image, (Width // 2 - 84, Height // 2 - 16))
+						changed_item_x = Width // 2 - 84
+						changed_item_y = Height // 2 - 16
 
 						match animation[0]:
 
@@ -4698,8 +4712,8 @@ def start_game():
 
 					case 2:
 
-						if a:
-							win.blit(inventory.whole_inventory[changed_slot].image, (Width // 2 - 104, Height // 2))
+						changed_item_x = Width // 2 - 104
+						changed_item_y = Height // 2
 
 						match animation[0]:
 
@@ -4712,8 +4726,8 @@ def start_game():
 
 					case 5:
 
-						if a:
-							win.blit(inventory.whole_inventory[changed_slot].image, (Width // 2 - 70, Height // 2))
+						changed_item_x = Width // 2 - 70
+						changed_item_y = Height // 2
 
 						match animation[0]:
 
@@ -4730,8 +4744,8 @@ def start_game():
 
 					case 0 | 1 | 3 | 4:
 
-						if a:
-							win.blit(pygame.transform.flip(inventory.whole_inventory[changed_slot].image, True, False), (Width // 2 - 20, Height // 2))
+						changed_item_x = Width // 2 - 20
+						changed_item_y = Height // 2
 
 						match animation[0]:
 
@@ -4744,8 +4758,8 @@ def start_game():
 
 					case 2:
 
-						if a:
-							win.blit(pygame.transform.flip(inventory.whole_inventory[changed_slot].image, True, False), (Width // 2 - 32, Height // 2))
+						changed_item_x = Width // 2 - 32
+						changed_item_y = Height // 2
 
 						match animation[0]:
 
@@ -4758,8 +4772,8 @@ def start_game():
 
 					case 5 | 6 | 7:
 
-						if a:
-							win.blit(pygame.transform.flip(inventory.whole_inventory[changed_slot].image, True, False), (Width // 2 - 16, Height // 2 + 16))
+						changed_item_x = Width // 2 - 16
+						changed_item_y = Height // 2 + 16
 
 						match animation[0]:
 
@@ -4769,6 +4783,9 @@ def start_game():
 									win.fill((62, 39, 49), (Width // 2 + 16, Height / 2 - 24, 8, animation[1] * 2))
 								else:
 									win.fill((62, 39, 49), (Width // 2 + 16, Height / 2 - 24, 8, (8 - animation[1] + 8) * 2))
+
+		if inventory.whole_inventory[changed_slot] is not None:
+			win.blit(inventory.whole_inventory[changed_slot].image, (changed_item_x, changed_item_y))
 
 		# Рон
 		old_ron_pos = ron.x, ron.y
