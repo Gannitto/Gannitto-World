@@ -376,5 +376,11 @@ class Inventory:
 		self.increate("Bow", 1)
 		self.increate("Arrow", 99)
 
+	def reduce(self, slot: int, amount: int = 1):
+		if self.whole_inventory[slot].amount - amount > 0:
+			self.whole_inventory[slot].amount -= amount
+		elif self.whole_inventory[slot].amount - amount == 0:
+			self.whole_inventory[slot] = None
+
 inventory = Inventory()
 	

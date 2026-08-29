@@ -996,7 +996,7 @@ def check_collision(rect: pygame.Rect, world, only_solid=True, check_walls=True)
 	"""Проверяет столкновение с твёрдыми объектами"""
 	if check_walls:
 		for wall in world.visible_walls.values():
-			if rect.colliderect(wall.rect):
+			if (not wall.is_door or not wall.open) and rect.colliderect(wall.rect):
 				return True
 	for object in world.visible_objects:
 		if (not only_solid or object.is_solid) and rect.colliderect(object.rect):
@@ -1985,12 +1985,13 @@ class Wall:
 				self.image = self.images[10]
 		
 	def main(self, release):
-
-		if self.is_door and release and self.x + Width // 2 - player.x <= mouse_x <= self.x + Width // 2 - player.x + 256 and player.y - self.y + Height // 2 - 128 <= mouse_y <= player.y - self.y + Height // 2 + 128:
+		screen_x, screen_y = world_to_screen(self.x, self.y, 256, 256)
+		if self.is_door and release and screen_x <= mouse_x <= screen_x + 256 and screen_y <= mouse_y <= screen_y + 256:
 			self.open = not self.open
+			self.update_neigboors()
 		win.blit(self.image, world_to_screen(self.x, self.y, 256, 256))
 		if Settings["Display"][3]:
-			pygame.draw.rect(win, (0, 0, 0), world_rect_to_screen(self.x, self.y, 256, 256), 3)
+			pygame.draw.rect(win, (0, 0, 0), (screen_x, screen_y), 3)
 		
 	def __getstate__(self):
 		
@@ -4035,9 +4036,7 @@ def start_game():
 							del x_bias_
 							del y_bias_
 						
-						inventory.whole_inventory[changed_slot].amount -= 1
-						if inventory.whole_inventory[changed_slot].amount == 0:
-							inventory.whole_inventory[changed_slot] = None
+						inventory.reduce(changed_slot)
 
 					if event.key == hot_keys["Change screen"]:
 						if screenmode == "FULLSCREEN":
@@ -4376,10 +4375,7 @@ def start_game():
 						if object.name == "Pot":
 							if object.get_right_pressed() and inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].type == "Flower":
 								world.chunk_manager.get_chunk_at(object.x, object.y).items.append(Object(inventory.whole_inventory[changed_slot].name, object.x, object.y + 36, 64, 64, inventory.whole_inventory[changed_slot].image))
-								inventory.whole_inventory[changed_slot].amount -= 1
-								inventory.resources[inventory.whole_inventory[changed_slot].name].amount -= 1
-								if inventory.whole_inventory[changed_slot].amount == 0:
-									inventory.whole_inventory[changed_slot] = None
+								inventory.reduce(changed_slot)
 				
 			else:
 
@@ -4400,10 +4396,7 @@ def start_game():
 								...
 							elif inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Bucket":
 
-								if inventory.whole_inventory[changed_slot].amount > 1:
-									inventory.whole_inventory[changed_slot].amount -= 1
-								else:
-									inventory.whole_inventory[changed_slot] = None
+								inventory.reduce(changed_slot)
 
 								inventory.increate("Water bucket")
 								object.special_flags[0] -= 1
@@ -4420,10 +4413,7 @@ def start_game():
 
 							if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].type == "Flower":
 								world.chunk_manager.get_chunk_at(object.x, object.y + 36).items.append(Object(inventory.whole_inventory[changed_slot].name, object.x, object.y + 36, 64, 64, inventory.whole_inventory[changed_slot].image))
-								inventory.whole_inventory[changed_slot].amount -= 1
-								inventory.resources[inventory.whole_inventory[changed_slot].name].amount -= 1
-								if inventory.whole_inventory[changed_slot].amount == 0:
-									inventory.whole_inventory[changed_slot] = None
+								inventory.reduce(changed_slot)
 
 					if object.name == "Dandelion" and time.time() - object.start_time > 1200:
 
@@ -4490,10 +4480,7 @@ def start_game():
 
 						if object.get_right_pressed() and inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].type == "Flower":
 							world.chunk_manager.get_chunk_at(object.x, object.y).items.append(Object(inventory.whole_inventory[changed_slot].name, object.x, object.y + 36, 64, 64, inventory.whole_inventory[changed_slot].image))
-							inventory.whole_inventory[changed_slot].amount -= 1
-							inventory.resources[inventory.whole_inventory[changed_slot].name].amount -= 1
-							if inventory.whole_inventory[changed_slot].amount == 0:
-								inventory.whole_inventory[changed_slot] = None
+							inventory.reduce(changed_slot)
 
 						if not object.x - 60 < object.special_flags[0] < object.x + 60:
 							if object.x < object.special_flags[0]:
@@ -4815,10 +4802,7 @@ def start_game():
 
 					for item_index, slot in enumerate(inventory.whole_inventory):
 						if slot is not None and slot.name == "Bullet":
-							if inventory.whole_inventory[item_index].amount > 1:
-								inventory.whole_inventory[item_index].amount -= 1
-							else:
-								inventory.whole_inventory[item_index] = None
+							inventory.reduce(item_index)
 							world.projectiles.append(Projectile(player.x, player.y, mouse_x, mouse_y, "Bullet"))
 							bullet_num += 1
 							break
@@ -4829,10 +4813,7 @@ def start_game():
 
 					for item_index, slot in enumerate(inventory.whole_inventory):
 						if slot is not None and slot.name == "Arrow":
-							if inventory.whole_inventory[item_index].amount > 1:
-								inventory.whole_inventory[item_index].amount -= 1
-							else:
-								inventory.whole_inventory[item_index] = None
+							inventory.reduce(item_index)
 							world.projectiles.append(Projectile(player.x, player.y, mouse_x, mouse_y, "Arrow"))
 							bullet_num += 1
 							break
@@ -4842,27 +4823,18 @@ def start_game():
 				case "Beer":
 
 					player.effects.append(["Drunk", 180])
-					if inventory.whole_inventory[changed_slot].amount > 1:
-						inventory.whole_inventory[changed_slot].amount -= 1
-					else:
-						inventory.whole_inventory[changed_slot] = None
+					inventory.reduce(changed_slot)
 
 				case "Grenade":
 
 					world.projectiles.append(ExplodingProjectile(player.x, player.y, mouse_x, mouse_y, "Grenade", (player.x + mouse_x - Width // 2, player.y - mouse_y + Height // 2)))
 
-					if inventory.whole_inventory[changed_slot].amount > 1:
-						inventory.whole_inventory[changed_slot].amount -= 1
-					else:
-						inventory.whole_inventory[changed_slot] = None
+					inventory.reduce(changed_slot)
 						
 			if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].type == "Food":
 				
 				player.HP += inventory.whole_inventory[changed_slot].special_info
-				if inventory.whole_inventory[changed_slot].amount > 1:
-					inventory.whole_inventory[changed_slot].amount -= 1
-				else:
-					inventory.whole_inventory[changed_slot] = None
+				inventory.reduce(changed_slot)
 				
 		
 
@@ -5620,9 +5592,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 							break
 				
 					if a:
-						inventory.whole_inventory[changed_slot].amount -= 1
-						if inventory.whole_inventory[changed_slot].amount == 0:
-							inventory.whole_inventory[changed_slot] = None
+						inventory.reduce(changed_slot)
 						world.mechanisms.append(Wire(None))
 			else:
 				a = True
@@ -5633,9 +5603,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 							break
 				
 					if a and Width // 2 - 300 <= mouse_x <= Width // 2 + 300 and  Height // 2 - 310 <= mouse_y < Height // 2 + 290:
-						inventory.whole_inventory[changed_slot].amount -= 1
-						if inventory.whole_inventory[changed_slot].amount == 0:
-							inventory.whole_inventory[changed_slot] = None
+						inventory.reduce(changed_slot)
 						in_motherboard.objects[(mouse_x - Width // 2 - 300) // 19 + ((mouse_y + Width // 2 - 300) // 19 - 19) * 32] = (Wire(in_motherboard))
 
 		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Lever":
@@ -5650,9 +5618,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 						a = False
 				
 				if a:
-					inventory.whole_inventory[changed_slot].amount -= 1
-					if inventory.whole_inventory[changed_slot].amount == 0:
-						inventory.whole_inventory[changed_slot] = None
+					inventory.reduce(changed_slot)
 					world.mechanisms.append(Lever(None))
 
 		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Wrench":
@@ -5679,9 +5645,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 						a = False
 				
 				if a:
-					inventory.whole_inventory[changed_slot].amount -= 1
-					if inventory.whole_inventory[changed_slot].amount == 0:
-						inventory.whole_inventory[changed_slot] = None
+					inventory.reduce(changed_slot)
 					world.mechanisms.append(Random_box(None))
 
 		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Motherboard":
@@ -5696,9 +5660,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 						a = False
 				
 				if a:
-					inventory.whole_inventory[changed_slot].amount -= 1
-					if inventory.whole_inventory[changed_slot].amount == 0:
-						inventory.whole_inventory[changed_slot] = None
+					inventory.reduce(changed_slot)
 					world.mechanisms.append(Motherboard(None))
 		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Portal gun":
 
@@ -5727,8 +5689,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 	# a, b = world_to_screen(self.x, self.y, 128, 128)
 	# win_fill((255, 255, 255), 30, (a, b, 128, 128))
 	# if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Water bucket" and pygame.Rect(a, b, 128, 128).collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0]:
-		# inventory.whole_inventory[changed_slot].amount -= 1
-		# if inventory.whole_inventory[changed_slot].amount < 1: inventory.whole_inventory[changed_slot] = None
+		# inventory.reduce(changed_slot)
 		# inventory.increate("Bucket", 1)
 		# self.special_flags[2] = False
 		# pygame.mixer.Sound.play(pygame.mixer.Sound(path + "Sounds/Watering plants " + str(random.randint(1, 2)) + ".mp3"))""", True, """
@@ -5777,25 +5738,21 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 						world.visible_walls[wall].update_neigboors()
 				if multiplayer:
 					game_events.append({"event_type": "wall_added", "wall": world.chunk_manager.get_chunk_at(*wall_pos).walls[wall_pos].__getstate__()})
-				inventory.whole_inventory[changed_slot].amount -= 1
-				if inventory.whole_inventory[changed_slot].amount == 0:
-					inventory.whole_inventory[changed_slot] = None
+				inventory.reduce(changed_slot)
 
-		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Wooden door":
+		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name in door_types:
 
 			wall_pos = (player.x + mouse_x - Width // 2) // 256 * 256 + 128, (player.y - mouse_y + Height // 2) // 256 * 256 + 128
 			draw_select_image(256, 256, player, mouse_x, mouse_y)
 
-			if click[0] and wall_pos not in world.visible_walls and check_collision(pygame.Rect(wall_pos[0], wall_pos[1], 256, 256), world, False, False):
+			if click[0] and wall_pos not in world.visible_walls and not check_collision(pygame.Rect(wall_pos[0], wall_pos[1], 256, 256), world, False, False):
 				world.chunk_manager.get_chunk_at(*wall_pos).walls[wall_pos] = Wall(inventory.whole_inventory[changed_slot].name, wall_pos[0], wall_pos[1], True)
 				for wall in (((wall_pos[0] - 256, wall_pos[1]), (wall_pos[0] + 256, wall_pos[1]), (wall_pos[0], wall_pos[1] - 256), (wall_pos[0], wall_pos[1] + 256))):
 					if wall in world.visible_walls:
 						world.visible_walls[wall].update_neigboors()
 				if multiplayer:
 					game_events.append({"event_type": "wall_added", "wall": world.chunk_manager.get_chunk_at(*wall_pos).walls[wall_pos].__getstate__()})
-				inventory.whole_inventory[changed_slot].amount -= 1
-				if inventory.whole_inventory[changed_slot].amount == 0:
-					inventory.whole_inventory[changed_slot] = None
+				inventory.reduce(changed_slot)
 
 		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Stone hammer":
 
