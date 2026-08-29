@@ -282,6 +282,16 @@ class NetworkManager:
 								"break_pos": event.get("break_pos")
 							}, player_id)
 					
+						case "wall_interaction":
+							event["player_id"] = "Game"
+							self.server_events["Game"].append(event)
+							self._broadcast({
+								"type": "server_event",
+								"event_type": "wall_interaction",
+								"player_id": "Game",
+								"wall_pos": event.get("wall_pos")
+							}, player_id)
+					
 						case "farmland_added":
 							event["player_id"] = "Game"
 							self.server_events["Game"].append(event)
@@ -504,6 +514,14 @@ class NetworkManager:
 							"event_type": "wall_removed",
 							"player_id": "Game",
 							"break_pos": event.get("break_pos")
+						}
+
+					case "wall_interaction":
+						packet = {
+							"type": "server_event",
+							"event_type": "wall_interaction",
+							"player_id": "Game",
+							"wall_pos": event.get("wall_pos")
 						}
 
 					case "farmland_added":

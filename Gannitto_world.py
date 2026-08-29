@@ -1989,6 +1989,8 @@ class Wall:
 		if self.is_door and release and screen_x <= mouse_x <= screen_x + 256 and screen_y <= mouse_y <= screen_y + 256:
 			self.open = not self.open
 			self.update_neigboors()
+			if multiplayer:
+				game_events.append({"event_type": "wall_interaction", "wall_pos": (self.x, self.y)})
 		win.blit(self.image, world_to_screen(self.x, self.y, 256, 256))
 		if Settings["Display"][3]:
 			pygame.draw.rect(win, (0, 0, 0), (screen_x, screen_y), 3)
@@ -6039,6 +6041,13 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 							for wall in (((break_pos[0] - 256, break_pos[1]), (break_pos[0] + 256, break_pos[1]), (break_pos[0], break_pos[1] - 256), (break_pos[0], break_pos[1] + 256))):
 								if wall in world.visible_walls:
 									world.visible_walls[wall].update_neigboors()
+
+					case "wall_interaction":
+						wall_pos = tuple(event["wall_pos"])
+						chunk = world.chunk_manager.get_chunk_at(*wall_pos)
+						if chunk is not None and wall_pos in chunk.walls:
+							chunk.walls[wall_pos].open = not chunk.walls[wall_pos].open
+							chunk.walls[wall_pos].update_neigboors()
 
 					case "farmland_added":
 						farmland_pos = tuple(event["farmland_pos"])
