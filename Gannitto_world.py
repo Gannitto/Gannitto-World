@@ -604,7 +604,7 @@ class Peer(Player):
 		"""Отрисовывает игрока на экране"""
 		frames = self.animations[self.direction]
 		screen.blit(shadow(self.image, f"Player {self.direction} {self.frame_index % len(frames)}"), world_to_screen(self.x, self.y, 256, 256))
-		if self.changed_item is not None:
+		if self.changed_item is not None and self.direction != "Up":
 			changed_item_x = 0
 			changed_item_y = 0
 			match self.direction:
@@ -4028,8 +4028,9 @@ def start_game():
 									   x_bias_, y_bias_,
 									   track_ticks=True,
 									   end_time=0.5,
-									   end_command=lambda particle: (world.chunk_manager.get_chunk_at(particle.x, particle.y).items.append(Object(particle.special_flags, particle.x, particle.y, "Images/Items/" + particle.special_flags + ".png", pickable=True))),
+									   end_command=lambda particle: (world.chunk_manager.get_chunk_at(particle.x, particle.y).items.append(Object(particle.special_flags, particle.x, particle.y, "Images/Items/" + particle.special_flags + ".png", pickable=True)), game_events.append({"event_type": "item_added", "item": world.chunk_manager.get_chunk_at(particle.x, particle.y).items[-1].__getstate__()})),
 									   special_flags=inventory.whole_inventory[changed_slot].name))
+							
 							
 							del x_bias_
 							del y_bias_
@@ -4460,6 +4461,8 @@ def start_game():
 					try_pick = True
 					if item.pickable and Settings["Game"][0] and player.x - 150 < item.x < player.x + 150 and player.y - 150 < item.y < player.y + 150:
 						world.particles.append(Particle(item.x, item.y, item.image, lambda particle: round(((player.x - particle.x) // 2) / 10 * 5), lambda particle: round(((player.y - particle.y) // 2) / 10 * 5), track_ticks=True, del_self_condition=lambda particle: abs(particle.x - player.x) < 30 and abs(particle.y - player.y) < 30, end_command=lambda particle: (inventory.increate(item.name), pygame.mixer.Sound.play(Pick_an_item))))
+						if multiplayer:
+							game_events.append({"event_type": "item_removed", "x": item.x, "y": item.y, "name": item.name})
 						world.chunk_manager.get_chunk_at(item.x, item.y).items.remove(item)
 						try_pick = False
 
@@ -4469,6 +4472,8 @@ def start_game():
 						if click[0]:
 							world.particles.append(Particle(item.x, item.y, item.image, lambda particle: round(((player.x - particle.x) // 2) / 10 * 5), lambda particle: round(((player.y - particle.y) // 2) / 10 * 5), track_ticks=True, del_self_condition=lambda particle: abs(particle.x - player.x) < 30 and abs(particle.y - player.y) < 30, end_command=lambda particle: (inventory.increate(particle.special_flags), pygame.mixer.Sound.play(Pick_an_item)), special_flags=item.name))
 									
+							if multiplayer:
+								game_events.append({"event_type": "item_removed", "x": item.x, "y": item.y, "name": item.name})
 							world.chunk_manager.get_chunk_at(item.x, item.y).items.remove(item)
 
 		elif len(Backrooms.objects) != 1:
@@ -4784,7 +4789,7 @@ def start_game():
 								else:
 									win.fill((62, 39, 49), (Width // 2 + 16, Height / 2 - 24, 8, (8 - animation[1] + 8) * 2))
 
-		if inventory.whole_inventory[changed_slot] is not None:
+		if inventory.whole_inventory[changed_slot] is not None and player.direction != "Up" and not (changed_item_x == changed_item_y == 0):
 			win.blit(inventory.whole_inventory[changed_slot].image, (changed_item_x, changed_item_y))
 
 		# Рон
@@ -6042,6 +6047,20 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 							if (object.x, object.y, object.name) == (event["x"], event["y"], event["name"]):
 								destroy_object(object.image, object.x, object.y, world, Particle)
 								world.chunk_manager.get_chunk_at(object.x, object.y).objects.remove(object)
+								break
+
+					case "item_added":
+						item = event["item"]
+						chunk = world.chunk_manager.get_chunk_at(item["x"], item["y"])
+						if chunk is not None:
+							item["scale"] = tuple(item["scale"])
+							chunk.items.append(Object(item["name"], item["x"], item["y"], item["image_path"], item["scale"], None, item["special_flags"], item["add_path"], item["start_time"], item["is_solid"], item["rect"], item["is_solid"], item["breakable"], item["max_break"], item["breakable_by_hammer"], item["drop_items"]))
+							chunk.items[-1].__setstate__(item)
+
+					case "item_removed":
+						for item in world.visible_items:
+							if (item.x, item.y, item.name) == (event["x"], event["y"], event["name"]):
+								world.chunk_manager.get_chunk_at(item.x, item.y).items.remove(item)
 								break
 
 					case "wall_added":

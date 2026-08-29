@@ -240,6 +240,28 @@ class NetworkManager:
 								"name": event.get("name")
 							}, player_id)
 
+						case "item_added":
+							event["player_id"] = "Game"
+							self.server_events["Game"].append(event)
+							self._broadcast({
+								"type": "server_event",
+								"event_type": "item_added",
+								"player_id": "Game",
+								"item": event.get("item")
+							}, player_id)
+
+						case "item_removed":
+							event["player_id"] = "Game"
+							self.server_events["Game"].append(event)
+							self._broadcast({
+								"type": "server_event",
+								"event_type": "item_removed",
+								"player_id": "Game",
+								"x": event.get("x"),
+								"y": event.get("y"),
+								"name": event.get("name")
+							}, player_id)
+
 						case "wall_added":
 							event["player_id"] = "Game"
 							self.server_events["Game"].append(event)
@@ -444,6 +466,24 @@ class NetworkManager:
 						packet = {
 							"type": "server_event",
 							"event_type": "object_removed",
+							"player_id": "Game",
+							"x": event.get("x"),
+							"y": event.get("y"),
+							"name": event.get("name")
+						}
+
+					case "item_added":
+						packet = {
+							"type": "server_event",
+							"event_type": "item_added",
+							"player_id": "Game",
+							"item": event.get("item")
+						}
+
+					case "item_removed":
+						packet = {
+							"type": "server_event",
+							"event_type": "item_removed",
 							"player_id": "Game",
 							"x": event.get("x"),
 							"y": event.get("y"),
