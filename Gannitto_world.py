@@ -592,12 +592,13 @@ world_rect_to_screen = lambda X, Y, W, H, player=player: (X - player.x + Width /
 
 class Peer(Player):
 
-	def __init__(self, id: str, address: tuple, name: str, last_seen: float, position: tuple = (0, 0)):
+	def __init__(self, id: str, address: tuple, name: str, last_seen: float, X: int = 0, Y: int = 0):
 		super().__init__()
 		self.address = address
 		self.name = name
 		self.last_seen = last_seen
-		self.position = position
+		self.x = X
+		self.y = Y
 	
 	def render(self, screen):
 		"""Отрисовывает игрока на экране"""
@@ -2509,6 +2510,9 @@ def tp(x, y, player=player):
 	player.y = y
 	if multiplayer:
 		game_events.append({"event_type": "player_moved", "x": player.x, "y": player.y, "direction": player.direction})
+		net.peers[net.player_id].x = player.x
+		net.peers[net.player_id].y = player.y
+		net.peers[net.player_id].direction = player.direction
 
 def chat_message(message: str):
 	"""Отправляет сообщение в чат"""
@@ -4068,6 +4072,9 @@ def start_game():
 		if dx != 0 or dy != 0:
 			player.move(dx, dy, dt)
 			game_events.append({"event_type": "player_moved", "x": player.x, "y": player.y, "direction": player.direction})
+			net.peers[net.player_id].x = player.x
+			net.peers[net.player_id].y = player.y
+			net.peers[net.player_id].direction = player.direction
 		else:
 			player.stop()
 		

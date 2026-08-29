@@ -2,7 +2,7 @@ import socket
 import threading
 import json
 import time
-import hashlib
+import uuid
 from typing import Dict, List, Optional
 
 # Версия протокола для совместимости
@@ -41,7 +41,6 @@ class NetworkManager:
 		
 	def _generate_id(self) -> str:
 		"""Генерирует уникальный ID для игрока"""
-		import uuid
 		return str(uuid.uuid4())[:8]
 	
 	def _encrypt_data(self, data: bytes) -> bytes:
@@ -161,8 +160,7 @@ class NetworkManager:
 							id=player_id,
 							address=addr,
 							name=packet.get("name", f"Player_{player_id[:4]}"),
-							last_seen=time.time(),
-							position=packet.get("position", (0, 0))
+							last_seen=time.time()
 						)
 						self.peers[player_id] = peer
 						self.server_events[player_id] = []
@@ -177,7 +175,10 @@ class NetworkManager:
 					"peer": {
 						"id": player_id,
 						"name": peer.name,
-						"position": peer.position
+						"x": peer.x,
+						"y": peer.y,
+						"direction": peer.direction,
+						"changed_item": peer.changed_item
 					}
 				}, player_id)
 
@@ -279,19 +280,19 @@ class NetworkManager:
 				peers_data = packet.get("peers", {})
 				for pid, pdata in peers_data.items():
 					if pid != self.player_id:  # Не добавляем себя
+						X = pdata.get("x")
+						Y = pdata.get("y")
 						self.peers[pid] = self.Peer(
 							id=pid,
 							address=addr,
 							name=pdata.get("name", f"Player_{pid[:4]}"),
 							last_seen=time.time(),
-							position=tuple(pdata.get("position", (0, 0)))
+							X=X,
+							Y=Y
 						)
-				print(f"[Network] Received peer list: {len(self.peers)} peers")
-				
-				# Вызываем коллбэк
-				if self.callbacks["on_game_state"]:
-					self.callbacks["on_game_state"]()
-					
+						self.peers[pid].direction = pdata.get("direction")
+						self.peers[pid].changed_item = pdata.get("changed_item")
+
 			case "peer_joined":
 				# Новый игрок присоединился
 				pdata = packet.get("peer", {})
@@ -302,9 +303,12 @@ class NetworkManager:
 						address=addr,
 						name=pdata.get("name", f"Player_{pid[:4]}"),
 						last_seen=time.time(),
-						position=tuple(pdata.get("position", (0, 0)))
+						X=pdata.get("x", 0),
+						Y=pdata.get("y", 0)
 					)
 					self.peers[pid] = peer
+					self.peers[pid].direction = pdata.get("direction")
+					self.peers[pid].changed_item = pdata.get("changed_item")
 					self.server_events[pid] = []
 					
 					if self.callbacks["on_peer_joined"]:
@@ -369,7 +373,10 @@ class NetworkManager:
 		for pid, peer in self.peers.items():
 			peers_data[pid] = {
 				"name": peer.name,
-				"position": peer.position
+				"x": peer.x,
+				"y": peer.y,
+				"direction": peer.direction,
+				"changed_item": peer.changed_item
 			}
 			
 		self._send_packet({
