@@ -3,6 +3,7 @@ import threading
 import json
 import time
 import uuid
+import upnpclient
 from typing import Dict, List, Optional
 
 # Версия протокола для совместимости
@@ -25,7 +26,7 @@ class NetworkManager:
 		self.server_events = {"Game": []}
 		self.port = 5555
 		self.external_port = self.port
-		self.host_ip = "125.234.122.182"
+		self.host_ip = "185.234.120.75"
 		self.host_port = 5555
 		
 		# Коллбэки для событий
@@ -90,6 +91,39 @@ class NetworkManager:
 				exclude_ids.append(pid)
 		return exclude_ids
 
+	def setup_upnp(self, port: int = 5555) -> bool:
+		"""Автоматический проброс портов через UPnP"""
+		try:
+			# Ищем UPnP устройства в сети
+			devices = upnpclient.discover()
+			
+			if not devices:
+				self.chat_message("UPnP не поддерживается роутером")
+				return False
+			
+			for device in devices:
+				try:
+					# Пробрасываем порт
+					result = device.WANIPConn1.AddPortMapping(
+						NewRemoteHost='',
+						NewExternalPort=port,
+						NewProtocol='UDP',
+						NewInternalPort=port,
+						NewInternalClient=self._get_local_ip(),
+						NewEnabled='1',
+						NewPortMappingDescription='GannittoWorld',
+						NewLeaseDuration=3600
+					)
+					self.chat_message(f"Порт {port} проброшен через UPnP")
+					return True
+				except:
+					continue
+			
+			return False
+		except Exception as e:
+			self.chat_message(f"Ошибка UPnP: {e}")
+			return False
+
 	def start_host(self, port: int = 5555, external_port: int = None) -> bool:
 		"""Запуск как хоста (сервера)"""
 		try:
@@ -106,10 +140,22 @@ class NetworkManager:
 			# Получаем реальный IP
 			local_ip = self._get_local_ip()
 			
+			# ПЫТАЕМСЯ ПОЛУЧИТЬ ПУБЛИЧНЫЙ IP
+			public_ip = None
+			try:
+				public_ip = self._get_public_ip()
+				self.chat_message(f"Ваш публичный IP: {public_ip}")
+			except:
+				self.chat_message("Не удалось определить публичный IP")
+			
+			# Используем публичный IP для внешних подключений
+			# Но для локальных подключений оставляем локальный IP
+			host_ip = public_ip if public_ip else local_ip
+			
 			# Добавляем себя как первого пира
 			self.peers[self.player_id] = self.Peer(
 				id=self.player_id,
-				address=(local_ip, port),
+				address=(host_ip, external_port if external_port else port),  # Используем external_port если указан
 				name=f"Host_{self.player_id[:4]}",
 				last_seen=time.time(),
 				view_distance=self.view_distance
@@ -122,35 +168,49 @@ class NetworkManager:
 			self.heartbeat_thread = threading.Thread(target=self._heartbeat_loop, daemon=True)
 			self.heartbeat_thread.start()
 			
-			# Важно: показываем пользователю его внешний IP
-			if external_port:
-				self.chat_message(f"Внешний порт: {external_port}")
-				self.chat_message(f"Хост запущен. Ваш IP: {local_ip}, Порт: {port}")
-				self.chat_message(f"Для подключения используйте IP: {self._get_public_ip()}")
+			# ПОКАЗЫВАЕМ ИНФОРМАЦИЮ ДЛЯ ПОДКЛЮЧЕНИЯ
+			self.chat_message("=" * 50)
+			self.chat_message("СЕРВЕР ЗАПУЩЕН!")
+			self.chat_message(f"Локальный IP: {local_ip}:{port}")
+			if public_ip:
+				self.chat_message(f"ПУБЛИЧНЫЙ IP: {public_ip}:{external_port if external_port else port}")
+				self.chat_message("Для подключения по интернету используйте публичный IP")
+			else:
+				self.chat_message("ВНИМАНИЕ: Публичный IP не определен!")
+				self.chat_message("Попробуйте узнать свой IP на сайте 2ip.ru")
+			
+			if external_port and external_port != port:
+				self.chat_message(f"Внешний порт: {external_port} (отличается от внутреннего)")
+			
+			self.chat_message("=" * 50)
 			
 			return True
 			
 		except Exception as e:
 			self.chat_message(f"Не удалось запустить хост: {e}")
 			return False
-	
+
 	def connect_to_host(self, host_ip: str, port: int = 5555) -> bool:
 		"""Подключение к хосту"""
 		try:
 			self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-			self.socket.settimeout(0.1)
+			self.socket.settimeout(5.0)  # Увеличиваем таймаут для интернета
 			self.role = "Client"
 			self.running = True
 			self.host_address = (host_ip, port)
 			
-			# Отправляем несколько раз для надежности
-			self._send_packet({
-				"type": "handshake",
-				"player_id": self.player_id,
-				"name": f"Player_{self.player_id[:4]}",
-				"view_distance": self.view_distance,
-				"timestamp": time.time()
-			}, self.host_address)
+			self.chat_message(f"Подключаюсь к {host_ip}:{port}...")
+			
+			# Отправляем несколько раз для надежности (UDP может терять пакеты)
+			for i in range(5):
+				self._send_packet({
+					"type": "handshake",
+					"player_id": self.player_id,
+					"name": f"Player_{self.player_id[:4]}",
+					"view_distance": self.view_distance,
+					"timestamp": time.time()
+				}, self.host_address)
+				time.sleep(0.2)
 			
 			# Запускаем потоки
 			self.receive_thread = threading.Thread(target=self._receive_loop, daemon=True)
@@ -159,13 +219,13 @@ class NetworkManager:
 			self.heartbeat_thread = threading.Thread(target=self._heartbeat_loop, daemon=True)
 			self.heartbeat_thread.start()
 			
-			self.chat_message(f"Подключаюсь к хосту {host_ip}:{port}")
+			self.chat_message(f"Отправлены запросы на подключение к {host_ip}:{port}")
 			return True
 			
 		except Exception as e:
 			self.chat_message(f"Не удалось подключиться к хосту: {e}")
 			return False
-	
+
 	def start_local_host(self, port: int = 5555) -> bool:
 		"""Запуск как хоста (сервера)"""
 		try:

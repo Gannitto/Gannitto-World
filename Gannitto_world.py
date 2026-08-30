@@ -6526,14 +6526,15 @@ def multiplayer_settings_menu():
 		if start_game_button.get_pressed():
 			net = NetworkManager(Peer, chat_message, world.chunk_manager.view_distance)
 			if multiplayer_role == "Host":
-				net.start_local_host(5555)
-				# net.start_host(net.port, net.external_port)
+				# net.start_local_host(5555)
+				net.setup_upnp(net.port)
+				net.start_host(net.port, net.external_port)
 			else:
 				if not os.path.exists(path + "Cache/Multiplayer"):
 					os.mkdir(path + "Cache/Multiplayer")
 				world.chunk_manager.save_directory = path + "Cache/Multiplayer/"
-				net.connect_to_local_host("127.0.0.1", 5555)
-				# net.connect_to_host(net.host_ip, net.host_port)
+				# net.connect_to_local_host("127.0.0.1", 5555)
+				net.connect_to_host(net.host_ip, net.host_port)
 			start_game()
 
 		if alt_pressed: draw_key("ESC", 44, 108)
