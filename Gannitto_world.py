@@ -976,7 +976,7 @@ class BaseEnemy:
 		"""Движение к игроку с проверкой стен"""
 		dx = player.x - self.x
 		dy = player.y - self.y
-		distance = math.sqrt(dx**2 + dy**2)
+		distance = math.dist((self.x, self.y), (player.x, player.y))
 		
 		if distance > 0:
 			# Нормализуем вектор движения
@@ -1075,7 +1075,7 @@ class Slime(BaseEnemy):
 
 		"""Блуждание вокруг игрока"""
 
-		distance = math.sqrt((player.x - self.x) ** 2 + (player.y - self.y) ** 2)
+		distance = math.dist((self.x, self.y), (player.x, player.y))
 		if (distance < self.detection_range and 
 			self.attack_cooldown <= 0 and
 			random.random() < 0.02):  # 2% шанс начать атаку
@@ -1101,7 +1101,7 @@ class Slime(BaseEnemy):
 		# Движение к целевой точке
 		dx = target_x - self.x
 		dy = target_y - self.y
-		dist = math.sqrt(dx**2 + dy**2)
+		dist = math.dist((self.x, self.y), (target_x, target_y))
 		
 		if dist > 10:  # Если не достигли цели
 			move_x = dx / dist * self.speed
@@ -1136,7 +1136,7 @@ class Slime(BaseEnemy):
 		# Движение к цели
 		dx = self.target_x - self.x
 		dy = self.target_y - self.y
-		dist = math.sqrt(dx**2 + dy**2)
+		dist = math.dist((self.x, self.y), (self.target_x, self.target_y))
 		
 		if dist > 5:
 			# Движение к цели
@@ -1171,7 +1171,7 @@ class Slime(BaseEnemy):
 		# Движение обратно к начальной позиции
 		dx = self.start_x - self.x
 		dy = self.start_y - self.y
-		dist = math.sqrt(dx**2 + dy**2)
+		dist = math.dist((self.x, self.y), (self.start_x, self.start_y))
 		
 		if dist > 10:
 			move_x = dx / dist * self.retreat_speed
@@ -1271,7 +1271,7 @@ class Spider(BaseEnemy):
 		self.attack_cooldown = max(0, self.attack_cooldown - 1)
 		self.shoot_cooldown = max(0, self.shoot_cooldown - 1)
 
-		distance = math.sqrt((player.x - self.x) ** 2 + (player.y - self.y) ** 2)
+		distance = math.dist((self.x, self.y), (player.x, player.y))
 
 		match self.state:
 			case "Attacking": self.state = "Going towards player"
@@ -1292,7 +1292,7 @@ class Spider(BaseEnemy):
 			self.shoot_cooldown = self.shoot_charge_time
 			dx = player.x - self.x
 			dy = player.y - self.y
-			dist = math.sqrt(dx**2 + dy**2)
+			dist = math.dist((self.x, self.y), (player.x, player.y))
 			move_x = dx / dist * FPS * 1.5
 			move_y = dy / dist * FPS * 1.5
 			world.particles.append(Particle(self.x, self.y, pygame.transform.rotate(web_texture, -math.degrees(math.atan2(-move_y, move_x))), move_x, move_y, del_self_condition=lambda particle: (pygame.Rect(particle.x - 32, particle.y + 32, 64, 64).colliderect(pygame.Rect(player.x - 100, player.y + 100, 200, 200))), end_time=FPS*3)) # TODO наложить эффект замедления
@@ -1302,7 +1302,7 @@ class Spider(BaseEnemy):
 		
 		dx = player.x - self.x
 		dy = player.y - self.y
-		dist = math.sqrt(dx**2 + dy**2)
+		dist = math.dist((self.x, self.y), (player.x, player.y))
 
 		if dist <= self.detection_range:
 			if dist > 100:

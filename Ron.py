@@ -53,7 +53,7 @@ class Ron:
 	def move_towards_item(self, target_x, target_y, dt):
 		dx = target_x - self.x
 		dy = target_y - self.y
-		distance = (dx**2 + dy**2)**0.5
+		distance = math.dist((self.x, self.y), (target_x, target_y))
 		
 		if distance > self.PICKUP_RADIUS:
 			step = self.speed / dt * 30
@@ -84,9 +84,7 @@ class Ron:
 			if dx <= self.INTERACTION_RADIUS and dy <= self.INTERACTION_RADIUS:
 						
 				if self.home is None:
-					dx_to_player = self.player.x - item.x
-					dy_to_player = self.player.y - item.y
-					distance_to_player = (dx_to_player**2 + dy_to_player**2)**0.5
+					distance_to_player = math.dist((self.player.x, self.player.y), (item.x, item.y))
 				if self.home or distance_to_player <= self.PLAYER_RADIUS:
 					self.move_towards(dt, item.x, item.y, self.PICKUP_RADIUS)
 					return True
