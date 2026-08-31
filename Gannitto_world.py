@@ -2532,7 +2532,7 @@ class Vending_machine:
 		self.owner = Settings["User"][0]
 		self.image = Vending_machine_image
 
-settings_ui = SettingsUI(win, Settings, statistics, bigTextInfo, path)
+settings_ui = SettingsUI(win, Settings, statistics, bigTextInfo)
 
 # Загрузка команд
 
@@ -6455,9 +6455,7 @@ def multiplayer_settings_menu():
 	multiplayer_role = "Host"
 	release = False
 	does_lighten = False
-	input_text = ""
-	world_name_input = False
-	seed_input = False
+	max_bias = -settings_ui._set_positions(0, "Multiplayer settings menu", True) + 900
 
 	if create_world:
 		world.chunk_manager.generator.seed = random.randint(0, 2**31 - 1)
@@ -6468,8 +6466,9 @@ def multiplayer_settings_menu():
 		click = pygame.mouse.get_pressed()
 		keys = pygame.key.get_pressed()
 		release = False
+		events = pygame.event.get()
 
-		for event in pygame.event.get():
+		for event in events:
 
 			if event.type == pygame.QUIT:
 				win_darken(win)
@@ -6478,20 +6477,6 @@ def multiplayer_settings_menu():
 			elif event.type == pygame.MOUSEBUTTONUP:
 				if event.button == 1:
 					release = True
-
-			elif event.type == pygame.KEYDOWN and (world_name_input or seed_input):
-				if event.key == pygame.K_RETURN or len(input_text) == 50:
-					if world_name_input:
-						world_name_input = False
-					if seed_input:
-						if input_text != "":
-							world.chunk_manager.generator.seed = int(input_text)
-						seed_input = False
-					input_text = ""
-				elif event.key == pygame.K_BACKSPACE:
-					input_text = input_text[:-1]
-				elif not seed_input or event.unicode in "0123456789":
-					input_text += event.unicode
 			
 			if event.type == pygame.KEYUP:
 				
@@ -6506,6 +6491,8 @@ def multiplayer_settings_menu():
 		pygame.draw.rect(win, menu_color_light, (0, 0, Width, 103))
 		pygame.draw.line(win, menu_color_medium, (0, 103), (Width, 103), 8)
 		pygame.draw.line(win, menu_color_medium, (Width // 2, 0), (Width // 2, 103), 8)
+		settings_ui.handle_events(events, mouse_x, mouse_y, release, "Multiplayer settings menu")
+		settings_ui.draw("Multiplayer settings menu", win, Width, Height, 0, 0, False)
 		back_button.main()
 		if back_button.get_pressed():
 			win_darken(win)
@@ -6524,20 +6511,24 @@ def multiplayer_settings_menu():
 		start_game_button.main()
 
 		if start_game_button.get_pressed():
-			net = NetworkManager(Peer, chat_message, world.chunk_manager.view_distance)
+			net = NetworkManager(Peer, chat_message, world.chunk_manager.view_distance, Settings)
 			if multiplayer_role == "Host":
-				# net.start_local_host(5555)
-				net.setup_upnp(net.port)
-				net.start_host(net.port, net.external_port)
+				if Settings["Multiplayer"][0]:
+					net.start_host(Settings["Multiplayer"][1], Settings["Multiplayer"][2])
+				else:
+					net.start_local_host(Settings["Multiplayer"][1])
 			else:
 				if not os.path.exists(path + "Cache/Multiplayer"):
 					os.mkdir(path + "Cache/Multiplayer")
 				world.chunk_manager.save_directory = path + "Cache/Multiplayer/"
-				# net.connect_to_local_host("127.0.0.1", 5555)
-				net.connect_to_host(net.host_ip, net.host_port)
+				if Settings["Multiplayer"][0]:
+					net.connect_to_host(Settings["Multiplayer"][3], Settings["Multiplayer"][4])
+				else:
+					net.connect_to_local_host("127.0.0.1", Settings["Multiplayer"][1])
 			start_game()
 
 		if alt_pressed: draw_key("ESC", 44, 108)
+		animate_click(Settings, win, mouse_x, mouse_y)
 		win_fill(alpha=100 - Settings["Display"][0])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
 
 		if not does_lighten:

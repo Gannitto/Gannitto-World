@@ -3,13 +3,12 @@ from UI import ToggleButton, InputField, Button, PageManager
 
 class SettingsUI:
 
-	def __init__(self, win, settings, statistics, font, path):
+	def __init__(self, win, settings, statistics, font):
 
 		self.win = win
 		self.settings = settings
 		self.statistics = statistics
 		self.font = font
-		self.path = path
 		
 		# Создаем все элементы интерфейса
 		self.create_elements()
@@ -142,6 +141,44 @@ class SettingsUI:
 					lambda v: self.settings["Game"].__setitem__(1, v),
 					self.font
 				),
+			],
+		"Multiplayer settings menu": [
+				ToggleButton(
+					10, 0, "Соединение через интернет",
+					lambda: self.settings["Multiplayer"][0],
+					lambda v: self.settings["Multiplayer"].__setitem__(0, v),
+					self.font
+				),
+				ToggleButton(
+					10, 0, "Соединение по локальной сети",
+					lambda: not self.settings["Multiplayer"][0],
+					lambda v: self.settings["Multiplayer"].__setitem__(0, not v),
+					self.font
+				),
+				InputField(
+					10, 0, "Порт",
+					lambda: self.settings["Multiplayer"][1],
+					lambda v: self.settings["User"].__setitem__(1, v),
+					self.font, max_len=5
+				),
+				InputField(
+					10, 0, "Внешний порт",
+					lambda: self.settings["Multiplayer"][2],
+					lambda v: self.settings["Multiplayer"].__setitem__(2, v),
+					self.font, max_len=10
+				),
+				InputField(
+					10, 0, "Внешний IP хоста",
+					lambda: self.settings["Multiplayer"][3],
+					lambda v: self.settings["Multiplayer"].__setitem__(3, v),
+					self.font, can_write_text=True, max_len=15
+				),
+				InputField(
+					10, 0, "Порт хоста",
+					lambda: self.settings["Multiplayer"][4],
+					lambda v: self.settings["Multiplayer"].__setitem__(4, v),
+					self.font, max_len=10
+				)
 			]
 		}
 
@@ -175,15 +212,15 @@ class SettingsUI:
 				for element in current_elements:
 					element.handle_click(mouse_x, mouse_y, release)
 	
-	def draw(self, section, win, Width, Height, bias, max_bias):
+	def draw(self, section, win, Width, Height, bias, max_bias, show_settings_lines: bool = True):
 
 		self.draw_labels()
 		
 		# Отрисовка элементов текущей страницы
 		for element in self.elements[section]:
 			element.draw(self.win)
-	
-		self.show_settings_elements(win, Width, Height, bias, max_bias)
+		if show_settings_lines:
+			self.show_settings_elements(win, Width, Height, bias, max_bias)
 
 	def draw_labels(self):
 		# Отрисовка текстовых меток для элементов TODO

@@ -12,7 +12,7 @@ PROTOCOL_VERSION = 1
 class NetworkManager:
 	"""Основной класс для управления сетевым взаимодействием"""
 	
-	def __init__(self, Peer, chat_message, view_distance):
+	def __init__(self, Peer, chat_message, view_distance, settings):
 		self.role = "Disconnected"
 		self.socket: Optional[socket.socket] = None
 		self.running = False
@@ -22,20 +22,13 @@ class NetworkManager:
 		self.Peer = Peer
 		self.chat_message = chat_message
 		self.view_distance = view_distance
+		self.settings = settings["Multiplayer"]
 		self.last_heartbeat = time.time()
 		self.server_events = {"Game": []}
 		self.port = 5555
 		self.external_port = self.port
-		self.host_ip = "185.234.120.75"
+		self.host_ip = ""
 		self.host_port = 5555
-		
-		# Коллбэки для событий
-		self.callbacks = {
-			"on_peer_joined": None,
-			"on_peer_left": None,
-			"on_peer_moved": None,
-			"on_game_state": None
-		}
 		
 		# Потоки
 		self.receive_thread: Optional[threading.Thread] = None
@@ -105,13 +98,13 @@ class NetworkManager:
 				try:
 					# Пробрасываем порт
 					result = device.WANIPConn1.AddPortMapping(
-						NewRemoteHost='',
+						NewRemoteHost="",
 						NewExternalPort=port,
-						NewProtocol='UDP',
+						NewProtocol="UDP",
 						NewInternalPort=port,
 						NewInternalClient=self._get_local_ip(),
-						NewEnabled='1',
-						NewPortMappingDescription='GannittoWorld',
+						NewEnabled="1",
+						NewPortMappingDescription="GannittoWorld",
 						NewLeaseDuration=3600
 					)
 					self.chat_message(f"Порт {port} проброшен через UPnP")
@@ -127,6 +120,7 @@ class NetworkManager:
 	def start_host(self, port: int = 5555, external_port: int = None) -> bool:
 		"""Запуск как хоста (сервера)"""
 		try:
+			self.setup_upnp(port)
 			# Используем UDP
 			self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 			self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -547,9 +541,6 @@ class NetworkManager:
 					self.peers[pid].direction = pdata.get("direction")
 					self.peers[pid].changed_item = pdata.get("changed_item")
 					self.server_events[pid] = []
-					
-					if self.callbacks["on_peer_joined"]:
-						self.callbacks["on_peer_joined"](peer)
 						
 			case "peer_left":
 				# Кто-то отключился
@@ -830,10 +821,6 @@ class NetworkManager:
 				del self.peers[player_id]
 				self.chat_message(f"<<< Игрок {player_id} вышел{' (тайм-аут)' if time_out else ''}")
 		
-		# Вызываем коллбэк вне блокировки
-		if self.callbacks["on_peer_left"]:
-			self.callbacks["on_peer_left"](player_id)
-			
 		# Если мы хост, оповещаем всех
 		if self.role == "Host":
 			self._broadcast({
