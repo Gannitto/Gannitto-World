@@ -193,6 +193,7 @@ class NetworkManager:
 			self.host_address = (host_ip, port)
 			
 			self.chat_message(f"Подключаюсь к {host_ip}:{port}...")
+			print("Инициализированы сокеты и всякое такое")
 			
 			# Отправляем несколько раз для надежности (UDP может терять пакеты)
 			for i in range(5):
@@ -204,10 +205,12 @@ class NetworkManager:
 					"timestamp": time.time()
 				}, self.host_address)
 				time.sleep(0.2)
+				print(f"Отправлен хендшейк {i} (через UDP) ")
 			
 			# Запускаем потоки
 			self.receive_thread = threading.Thread(target=self._receive_loop, daemon=True)
 			self.receive_thread.start()
+			print("Запуск потоков")
 			
 			self.heartbeat_thread = threading.Thread(target=self._heartbeat_loop, daemon=True)
 			self.heartbeat_thread.start()
@@ -312,7 +315,7 @@ class NetworkManager:
 	
 	def _handle_packet_as_host(self, packet: Dict, addr: tuple):
 		"""Обработка пакетов на стороне хоста"""
-		print(packet)
+		print("Получен пакет:", packet)
 		packet_type = packet.get("type")
 		player_id = packet.get("player_id")
 		with self.lock:
@@ -503,7 +506,7 @@ class NetworkManager:
 
 	def _handle_packet_as_client(self, packet: Dict, addr: tuple):
 		"""Обработка пакетов на стороне клиента"""
-		print(packet)
+		print("Получен пакет: ", packet)
 		packet_type = packet.get("type")
 		match packet_type:
 			case "peer_list":
@@ -558,14 +561,17 @@ class NetworkManager:
 	def _send_packet(self, packet: Dict, address: tuple):
 		"""Отправка зашифрованного пакета"""
 		if not self.socket:
+			print("Не удалось отправить пакет, потому что сокет не инициализирован")
 			return False
 			
 		try:
 			data = json.dumps(packet).encode("utf-8")
 			encrypted = self._encrypt_data(data)
 			self.socket.sendto(encrypted, address)
+			print(f"Успешно отправлен 1 пакет на {address}")
 			return True
 		except Exception as e:
+			print(f"Ошибка отпарвки {e}")
 			self.chat_message(f"Ошибка отправки: {e}")
 			return False
 	
