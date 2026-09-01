@@ -3907,9 +3907,9 @@ def start_game():
 							chat_message(languages("<<< Команда " + Settings["User"][0] + f" получила ошибку {e}" + ". >>>", "<<< " + Settings["User"][0] + f"'s command got an {e}" + "error. >>>", ""))
 						else:
 							chat_message(languages("<<< Команда " + Settings["User"][0] + " была успешно исполнена. >>>", "<<< " + Settings["User"][0] + "'s command was successfully executed. >>>", ""))
-					elif input_text[0] == "/":
+					elif input_text != "" and input_text[0] == "/":
 						chat_message(command_system.execute(input_text))
-					else:
+					elif input_text != "":
 						if multiplayer:
 							message_text = f"{net.peers[net.player_id].name}: {input_text}"
 						else:
