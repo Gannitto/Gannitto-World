@@ -168,7 +168,7 @@ class SettingsUI:
 					self.font, max_len=10
 				),
 				InputField(
-					10, 0, "Внешний IP хоста",
+					10, 0, "IP хоста",
 					lambda: self.settings["Multiplayer"][3],
 					lambda v: self.settings["Multiplayer"].__setitem__(3, v),
 					self.font, can_write_text=True, max_len=15

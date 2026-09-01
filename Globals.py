@@ -17,7 +17,7 @@ default_settings = {
 		"Sound": [100, 100],
 		"Keys": ["a", "s", "w", "d", "e", "c", "TAB", "SPACE"],
 		"Game": [True, False],
-		"Multiplayer": [True, 5555, 5555, "", 5555]
+		"Multiplayer": [True, 5555, 5555, "127.0.0.1", 5555]
 		
 		}
 

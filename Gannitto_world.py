@@ -6511,7 +6511,7 @@ def multiplayer_settings_menu():
 		start_game_button.main()
 
 		if start_game_button.get_pressed():
-			net = NetworkManager(Peer, chat_message, world.chunk_manager.view_distance, Settings)
+			net = NetworkManager(Peer, chat_message, world.chunk_manager.view_distance)
 			if multiplayer_role == "Host":
 				if Settings["Multiplayer"][0]:
 					net.start_host(Settings["Multiplayer"][1], Settings["Multiplayer"][2])
@@ -6524,7 +6524,7 @@ def multiplayer_settings_menu():
 				if Settings["Multiplayer"][0]:
 					net.connect_to_host(Settings["Multiplayer"][3], Settings["Multiplayer"][4])
 				else:
-					net.connect_to_local_host("127.0.0.1", Settings["Multiplayer"][1])
+					net.connect_to_local_host(Settings["Multiplayer"][3], Settings["Multiplayer"][1])
 			start_game()
 
 		if alt_pressed: draw_key("ESC", 44, 108)

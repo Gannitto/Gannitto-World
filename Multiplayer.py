@@ -12,7 +12,7 @@ PROTOCOL_VERSION = 1
 class NetworkManager:
 	"""Основной класс для управления сетевым взаимодействием"""
 	
-	def __init__(self, Peer, chat_message, view_distance, settings):
+	def __init__(self, Peer, chat_message, view_distance):
 		self.role = "Disconnected"
 		self.socket: Optional[socket.socket] = None
 		self.running = False
@@ -22,7 +22,6 @@ class NetworkManager:
 		self.Peer = Peer
 		self.chat_message = chat_message
 		self.view_distance = view_distance
-		self.settings = settings["Multiplayer"]
 		self.last_heartbeat = time.time()
 		self.server_events = {"Game": []}
 		self.port = 5555
@@ -246,7 +245,7 @@ class NetworkManager:
 			# Запускаем поток проверки соединений
 			threading.Thread(target=self._heartbeat_loop, daemon=True).start()
 			
-			self.chat_message(f"Хост запущен на порту {port}")
+			self.chat_message(f"Хост запущен на IP {self._get_local_ip()} и порту {port}")
 			self.chat_message(f"Твой ID игрока: {self.player_id}")
 			return True
 			
