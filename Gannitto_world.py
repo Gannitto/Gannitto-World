@@ -1,3 +1,4 @@
+from numpy import invert
 import pygame
 import subprocess
 import pyperclip
@@ -3991,8 +3992,6 @@ def start_game():
 						player.changed_item = inventory.whole_inventory[changed_slot]
 						if player.changed_item is not None:
 							player.changed_item = player.changed_item.name
-						if multiplayer and not (inventory.whole_inventory[changed_slot] is None and inventory.whole_inventory[last_changed_slot] is None):
-							game_events.append({"event_type": "changed_item", "changed_item": player.changed_item})
 
 					if event.key == pygame.K_o and False:
 						world.mobs.append(Slime(player.x, player.y))
@@ -4059,10 +4058,6 @@ def start_game():
 									   end_time=0.5,
 									   end_command=lambda particle: (world.chunk_manager.get_chunk_at(particle.x, particle.y).items.append(Object(particle.special_flags, particle.x, particle.y, "Images/Items/" + particle.special_flags + ".png", pickable=True)), game_events.append({"event_type": "item_added", "item": world.chunk_manager.get_chunk_at(particle.x, particle.y).items[-1].__getstate__()})),
 									   special_flags=inventory.whole_inventory[changed_slot].name))
-							
-							
-							del x_bias_
-							del y_bias_
 						
 						inventory.reduce(changed_slot)
 
@@ -4474,6 +4469,11 @@ def start_game():
 								world.chunk_manager.get_chunk_at(object.x, object.y).items.append(Object("Punch", object.x, object.y, "Images/Items/Powder.png"))
 
 				# Отображение предметов
+				if inventory.whole_inventory[changed_slot] is None:
+					last_changed_item = None
+				else:
+					last_changed_item = inventory.whole_inventory[changed_slot].name
+
 				for item in world.visible_items:
 					item.main(player)
 					try_pick = True
@@ -4481,6 +4481,7 @@ def start_game():
 						world.particles.append(Particle(item.x, item.y, item.image, lambda particle: round(((player.x - particle.x) // 2) / 10 * 5), lambda particle: round(((player.y - particle.y) // 2) / 10 * 5), track_ticks=True, del_self_condition=lambda particle: abs(particle.x - player.x) < 30 and abs(particle.y - player.y) < 30, end_command=lambda particle: (inventory.increate(item.name), pygame.mixer.Sound.play(Pick_an_item))))
 						if multiplayer:
 							game_events.append({"event_type": "item_removed", "x": item.x, "y": item.y, "name": item.name})
+
 						world.chunk_manager.get_chunk_at(item.x, item.y).items.remove(item)
 						try_pick = False
 
@@ -6012,6 +6013,12 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 
 		if multiplayer:
 
+			if inventory.check_new_items(changed_slot):
+				if inventory.whole_inventory[changed_slot] is None:
+					player.changed_item = None
+				else:
+					player.changed_item = inventory.whole_inventory[changed_slot].name
+				game_events.append({"event_type": "changed_item", "changed_item": player.changed_item})
 			if len(game_events) != 0:
 				net.send_events(tuple(game_events))
 			for event in net.server_events["Game"]:
@@ -6121,8 +6128,8 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 							state["walls"] = new_walls
 							new_farmlands = [farmland.__getstate__() for _, farmland in state["farmlands"].items()]
 							state["farmlands"] = new_farmlands
-
-							net._send_packet({"type": "server_event", "event_type": "chunk", "player_id": "Game", "chunk_key": chunk_key, "chunk_state": state}, net.peers[event["player_id"]].address)
+							if event["player_id"] in net.peers:
+								net._send_packet({"type": "server_event", "event_type": "chunk", "player_id": "Game", "chunk_key": chunk_key, "chunk_state": state}, net.peers[event["player_id"]].address)
 
 					net.server_events["Game"].remove(event)
 			else:

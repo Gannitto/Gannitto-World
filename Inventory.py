@@ -136,6 +136,7 @@ class Inventory:
 		self.end_cell = 0
 		self.end_cell_inventory = 0
 		self.Split_items = False
+		self.last_changed_item = None
 	
 	def increate(self, name: str, amount: int=1):
 		
@@ -381,6 +382,17 @@ class Inventory:
 			self.whole_inventory[slot].amount -= amount
 		elif self.whole_inventory[slot].amount - amount == 0:
 			self.whole_inventory[slot] = None
+
+	def check_new_items(self, changed_slot):
+		new_item = False
+		if self.whole_inventory[changed_slot] is None:
+			new_changed_item = None
+		else:
+			new_changed_item = self.whole_inventory[changed_slot].name
+		if self.last_changed_item != new_changed_item:
+			new_item = True
+			self.last_changed_item = new_changed_item
+		return new_item
 
 inventory = Inventory()
 	

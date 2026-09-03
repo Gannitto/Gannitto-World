@@ -193,7 +193,7 @@ class NetworkManager:
 			self.host_address = (host_ip, port)
 			
 			self.chat_message(f"Подключаюсь к {host_ip}:{port}...")
-			print("Инициализированы сокеты и всякое такое")
+			# print("Инициализированы сокеты и всякое такое")
 			
 			# Отправляем несколько раз для надежности (UDP может терять пакеты)
 			for i in range(5):
@@ -205,12 +205,12 @@ class NetworkManager:
 					"timestamp": time.time()
 				}, self.host_address)
 				time.sleep(0.2)
-				print(f"Отправлен хендшейк {i} (через UDP) ")
+				# print(f"Отправлен хендшейк {i} (через UDP) ")
 			
 			# Запускаем потоки
 			self.receive_thread = threading.Thread(target=self._receive_loop, daemon=True)
 			self.receive_thread.start()
-			print("Запуск потоков")
+			# print("Запуск потоков")
 			
 			self.heartbeat_thread = threading.Thread(target=self._heartbeat_loop, daemon=True)
 			self.heartbeat_thread.start()
@@ -486,7 +486,7 @@ class NetworkManager:
 					
 						case "changed_item":
 							self.server_events[player_id].append(event)
-							exclude_ids = self.get_exclude_ids(self.peers[event.get("player_id")].x, self.peers[event.get("player_id")].y, player_id)
+							exclude_ids = self.get_exclude_ids(self.peers[player_id].x, self.peers[player_id].y, player_id)
 							self._broadcast({
 								"type": "server_event",
 								"event_type": "changed_item",
