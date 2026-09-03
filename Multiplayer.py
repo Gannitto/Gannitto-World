@@ -392,6 +392,27 @@ class NetworkManager:
 								"direction": event.get("direction")
 							}, exclude_ids)
 
+						case "player_tp":
+							self.server_events[player_id].append(event)
+							exclude_ids = self.get_exclude_ids(event.get("x"), event.get("y"), player_id)
+							self._broadcast({
+								"type": "server_event",
+								"event_type": "player_tp",
+								"player_id": player_id,
+								"x": event.get("x"),
+								"y": event.get("y"),
+								"direction": event.get("direction")
+							}, exclude_ids)
+
+						case "player_stopped":
+							self.server_events[player_id].append(event)
+							exclude_ids = self.get_exclude_ids(event.get("x"), event.get("y"), player_id)
+							self._broadcast({
+								"type": "server_event",
+								"event_type": "player_stopped",
+								"player_id": player_id,
+							}, exclude_ids)
+
 						case "object_added":
 							event["player_id"] = "Game"
 							self.server_events["Game"].append(event)
@@ -662,6 +683,25 @@ class NetworkManager:
 							"x": event.get("x"),
 							"y": event.get("y"),
 							"direction": event.get("direction")
+						}
+					case "player_tp":
+						exclude_ids = self.get_exclude_ids(event.get("x"), event.get("y"))
+						packet = {
+							"type": "server_event",
+							"event_type": "player_tp",
+							"player_id": self.player_id,
+							"x": event.get("x"),
+							"y": event.get("y"),
+							"direction": event.get("direction")
+						}
+					case "player_stopped":
+						exclude_ids = self.get_exclude_ids(event.get("x"), event.get("y"))
+						packet = {
+							"type": "server_event",
+							"event_type": "player_stopped",
+							"player_id": self.player_id,
+							"x": event.get("x"),
+							"y": event.get("y"),
 						}
 					case "ron_moved":
 						packet = {

@@ -2542,7 +2542,7 @@ def tp(x, y, player=player):
 	player.x = x
 	player.y = y
 	if multiplayer:
-		game_events.append({"event_type": "player_moved", "x": player.x, "y": player.y, "direction": player.direction})
+		game_events.append({"event_type": "player_tp", "x": player.x, "y": player.y, "direction": player.direction})
 		net.peers[net.player_id].x = player.x
 		net.peers[net.player_id].y = player.y
 		net.peers[net.player_id].direction = player.direction
@@ -4113,6 +4113,8 @@ def start_game():
 				net.peers[net.player_id].y = player.y
 				net.peers[net.player_id].direction = player.direction
 		else:
+			if player.is_moving:
+				game_events.append({"event_type": "player_stopped", "x": player.x, "y": player.y})
 			player.stop()
 		
 		# Обновляем анимацию
@@ -4611,22 +4613,26 @@ def start_game():
 				peers_copy = dict(net.peers.items())  # Создаем копию
 			for pid, peer in peers_copy.items():
 				if pid != net.player_id:
-					need_to_stop = True
 					if pid in net.server_events:
 						for event in net.server_events[pid]:
-							if event["event_type"] == "player_moved":
-								peer.x = event["x"]
-								peer.y = event["y"]
-								peer.direction = event["direction"]
-								peer.is_moving = True
-								need_to_stop = False
-							elif event["event_type"] == "changed_item":
-								peer.changed_item = event["changed_item"]
+							match event["event_type"]:
+								case "player_moved":
+									peer.x = event["x"]
+									peer.y = event["y"]
+									peer.direction = event["direction"]
+									peer.is_moving = True
+								case "player_tp":
+									peer.x = event["x"]
+									peer.y = event["y"]
+									peer.direction = event["direction"]
+								case "changed_item":
+									peer.changed_item = event["changed_item"]
+								case "player_stopped":
+									peer.stop()
 
 							net.server_events[pid].remove(event)
-					if need_to_stop:
-						peer.stop()
 					peer.render(win)
+					peer.update_animation(dt)
 
 		# Анимации Хиро
 
