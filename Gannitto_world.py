@@ -4833,6 +4833,8 @@ def start_game():
 						if slot is not None and slot.name == "Bullet":
 							inventory.reduce(item_index)
 							world.projectiles.append(Projectile(player.x, player.y, mouse_x, mouse_y, "Bullet"))
+							if multiplayer:
+								game_events.append({"event_type": "projectile_added", "x": player.x, "y": player.y, "mouse_x": mouse_x, "mouse_y": mouse_y, "projectile_type": "Bullet"})
 							bullet_num += 1
 							break
 					else:
@@ -4844,6 +4846,8 @@ def start_game():
 						if slot is not None and slot.name == "Arrow":
 							inventory.reduce(item_index)
 							world.projectiles.append(Projectile(player.x, player.y, mouse_x, mouse_y, "Arrow"))
+							if multiplayer:
+								game_events.append({"event_type": "projectile_added", "x": player.x, "y": player.y, "mouse_x": mouse_x, "mouse_y": mouse_y, "projectile_type": "Arrow"})
 							bullet_num += 1
 							break
 					else:
@@ -6087,6 +6091,9 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 						chunk = world.chunk_manager.get_chunk_at(*farmland_pos)
 						if chunk is not None:
 							chunk.farmlands[farmland_pos] = Farmland(*farmland_pos)
+
+					case "projectile_added":
+						world.projectiles.append(Projectile(event["x"], event["y"], event["mouse_x"], event["mouse_y"], event["projectile_type"]))
 
 					case "chat_message":
 						chat_message(event["message_text"])

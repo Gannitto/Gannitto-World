@@ -484,6 +484,20 @@ class NetworkManager:
 								"farmland_pos": event.get("farmland_pos")
 							}, exclude_ids)
 					
+						case "projectile_added":
+							event["player_id"] = "Game"
+							self.server_events["Game"].append(event)
+							self._broadcast({
+								"type": "server_event",
+								"event_type": "projectile_added",
+								"player_id": "Game",
+								"x": event.get("x"),
+								"y": event.get("y"),
+								"mouse_x": event.get("mouse_x"),
+								"mouse_y": event.get("mouse_y"),
+								"projectile_type": event.get("projectile_type")
+							}, player_id)
+					
 						case "changed_item":
 							self.server_events[player_id].append(event)
 							exclude_ids = self.get_exclude_ids(self.peers[player_id].x, self.peers[player_id].y, player_id)
@@ -733,6 +747,19 @@ class NetworkManager:
 							"event_type": "farmland_added",
 							"player_id": "Game",
 							"farmland_pos": event.get("farmland_pos")
+						}
+
+					case "projectile_added":
+						exclude_ids = [self.player_id]
+						packet = {
+							"type": "server_event",
+							"event_type": "projectile_added",
+							"player_id": "Game",
+							"x": event.get("x"),
+							"y": event.get("y"),
+							"mouse_x": event.get("mouse_x"),
+							"mouse_y": event.get("mouse_y"),
+							"projectile_type": event.get("projectile_type")
 						}
 
 					case "changed_item":
