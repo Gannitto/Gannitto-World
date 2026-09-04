@@ -6472,7 +6472,6 @@ def multiplayer_settings_menu():
 	start_game_button = Button(Width - 10 - bigTextInfo.size("Начать игру")[0], 150, bigTextInfo.render("Начать игру", True, menu_color_medium), bigTextInfo.render("Начать игру", True, menu_color_dark), alignment=True)
 
 	create_world = False
-	multiplayer_role = "Host"
 	release = False
 	does_lighten = False
 	max_bias = -settings_ui._set_positions(0, "Multiplayer settings menu", True) + 900
@@ -6563,9 +6562,10 @@ def multiplayer_settings_menu():
 
 def worlds():
 
-	global world_name, keys, alt_pressed, does_lighten, multiplayer
+	global world_name, keys, alt_pressed, does_lighten, multiplayer, multiplayer_role
 
 	create_new_world_button = Button(Width // 2, 130, textInfo.render(t("Create world"), True, menu_color_medium), textInfo.render(t("Create world"), True, menu_color_dark), alignment=True)
+	enter_another_game_button = Button(Width // 2, 130, textInfo.render("Подключиться в мир хоста", True, menu_color_medium), textInfo.render("Подключиться в мир хоста", True, menu_color_dark), alignment=True)
 	single_player_button = Button(Width // 4, 50, textInfo.render(t("Single play"), True, menu_color_medium), textInfo.render(t("Single play"), True, menu_color_dark), alignment=True)
 	multiplayer_button = Button(Width * 3 // 4, 50, textInfo.render(t("Multiplayer"), True, menu_color_medium), textInfo.render(t("Multiplayer"), True, menu_color_dark), alignment=True)
 	back_button = Button(-20, -20, pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Back.png"), (128, 128)), pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Back 2.png"), (128, 128)))
@@ -6662,6 +6662,7 @@ def worlds():
 						if release:
 							if multiplayer:
 								world_name = name_of_world
+								multiplayer_role = "Host"
 								win_darken(win)
 								multiplayer_settings_menu()
 							else:
@@ -6672,17 +6673,22 @@ def worlds():
 			pygame.draw.line(win, menu_color_medium, (0, 103), (Width, 103), 8)
 			pygame.draw.line(win, menu_color_medium, (Width // 2, 0), (Width // 2, 103), 8)
 			back_button.main()
-			create_new_world_button.main()
 			if multiplayer:
 				single_player_button.main()
 				if single_player_button.get_pressed():
 					multiplayer = False
 				win.blit(textInfo.render(t("Multiplayer"), True, menu_color_dark), (Width * 3 // 4 - textInfo.size(t("Multiplayer"))[0] // 2, 50 - textInfo.size(t("Multiplayer"))[1] // 2))
+				enter_another_game_button.main()
+				if enter_another_game_button.get_pressed():
+					multiplayer_role = "Client"
+					win_darken(win)
+					multiplayer_settings_menu()
 			else:
 				win.blit(textInfo.render(t("Single play"), True, menu_color_dark), (Width // 4 - textInfo.size(t("Single play"))[0] // 2, 50 - textInfo.size(t("Single play"))[1] // 2))
 				multiplayer_button.main()
 				if multiplayer_button.get_pressed():
 					multiplayer = True
+				create_new_world_button.main()
 
 		else:
 			text(f"""{t("Enter world name:")}
