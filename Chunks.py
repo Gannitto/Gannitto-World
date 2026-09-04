@@ -1,6 +1,8 @@
 import pygame
 import random
 from itertools import product
+
+from vnoise import Noise
 from NoiseGenerator import NoiseGenerator
 from Functions import win_fill, reverse_fill_area
 from Saver import save_chunk, load_chunk, delete_chunk, chunk_exists
@@ -242,7 +244,7 @@ class ChunkManager:
 		self.chunks = {}
 		self.loaded_chunks = set()
 		self.view_distance = 1
-		self.generator = NoiseGenerator()
+		self.generator = NoiseGenerator(random.randint(0, 2**31 - 1))
 		self.save_directory = ""
 		self.Object = Object # Класс объекта передаётся как аргумент чтобы избежать циклического импорта
 		self.world_rect_to_screen = world_rect_to_screen
@@ -468,3 +470,6 @@ class ChunkManager:
 		"""Удаляет сохраненный файл чанка (для перегенерации)"""
 		return delete_chunk(chunk_x, chunk_y, self.save_directory)
 
+	def update_seed(self):
+		seed = self.generator.seed
+		self.generator = NoiseGenerator(seed)

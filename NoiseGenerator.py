@@ -13,8 +13,8 @@ class WorldConfig:
 	
 class NoiseGenerator:
 
-	def __init__(self):
-		self.seed = random.randint(0, 2**31 - 1)
+	def __init__(self, seed):
+		self.seed = seed
 		self.config = WorldConfig()
 		
 		# Отдельные генераторы с разным сидом вместо параметра base
@@ -103,7 +103,4 @@ class NoiseGenerator:
 				cave_map[y][x] = value > 0
 
 		return cave_map
-
-
-generator = NoiseGenerator()
 
