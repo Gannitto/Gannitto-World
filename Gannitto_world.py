@@ -328,21 +328,21 @@ Random_box_3 = pygame.transform.scale(Random_box_3, (64, 64))
 Random_box_4 = pygame.image.load(path + "Images/Objects/Random Box 4.png")
 Random_box_4 = pygame.transform.scale(Random_box_4, (64, 64))
 
-Slime1 = pygame.image.load(path + "Images/Objects/Blue Slime 1.png")
+Slime1 = pygame.image.load(path + "Images/Mobs/Blue Slime 1.png")
 Slime1 = pygame.transform.scale(Slime1, (128, 128))
-Slime1_2 = pygame.image.load(path + "Images/Objects/Blue Slime 2.png")
+Slime1_2 = pygame.image.load(path + "Images/Mobs/Blue Slime 2.png")
 Slime1_2 = pygame.transform.scale(Slime1_2, (128, 128))
-Slime1_3 = pygame.image.load(path + "Images/Objects/Blue Slime 3.png")
+Slime1_3 = pygame.image.load(path + "Images/Mobs/Blue Slime 3.png")
 Slime1_3 = pygame.transform.scale(Slime1_3, (128, 128))
-Slime1_4 = pygame.image.load(path + "Images/Objects/Blue Slime 4.png")
+Slime1_4 = pygame.image.load(path + "Images/Mobs/Blue Slime 4.png")
 Slime1_4 = pygame.transform.scale(Slime1_4, (128, 128))
-Slime2 = pygame.image.load(path + "Images/Objects/Pink Slime 1.png")
+Slime2 = pygame.image.load(path + "Images/Mobs/Pink Slime 1.png")
 Slime2 = pygame.transform.scale(Slime2, (128, 128))
-Slime2_2 = pygame.image.load(path + "Images/Objects/Pink Slime 2.png")
+Slime2_2 = pygame.image.load(path + "Images/Mobs/Pink Slime 2.png")
 Slime2_2 = pygame.transform.scale(Slime2_2, (128, 128))
-Slime2_3 = pygame.image.load(path + "Images/Objects/Pink Slime 3.png")
+Slime2_3 = pygame.image.load(path + "Images/Mobs/Pink Slime 3.png")
 Slime2_3 = pygame.transform.scale(Slime2_3, (128, 128))
-Slime2_4 = pygame.image.load(path + "Images/Objects/Pink Slime 4.png")
+Slime2_4 = pygame.image.load(path + "Images/Mobs/Pink Slime 4.png")
 Slime2_4 = pygame.transform.scale(Slime2_4, (128, 128))
 
 
@@ -351,26 +351,15 @@ SLIME_TYPES = {
 	2: [Slime2, Slime2_2, Slime2_3, Slime2_4]
 }
 
-Butterfly1 = pygame.image.load(path + "Images/Objects/Butterfly 1 1.png")
+Butterfly1 = pygame.image.load(path + "Images/Mobs/Butterfly 1 1.png")
 Butterfly1 = pygame.transform.scale(Butterfly1, (32, 32))
-Butterfly1_2 = pygame.image.load(path + "Images/Objects/Butterfly 1 2.png")
+Butterfly1_2 = pygame.image.load(path + "Images/Mobs/Butterfly 1 2.png")
 Butterfly1_2 = pygame.transform.scale(Butterfly1_2, (32, 32))
-Butterfly1_3 = pygame.image.load(path + "Images/Objects/Butterfly 1 3.png")
+Butterfly1_3 = pygame.image.load(path + "Images/Mobs/Butterfly 1 3.png")
 Butterfly1_3 = pygame.transform.scale(Butterfly1_3, (32, 32))
 
 web_texture = pygame.transform.scale(pygame.image.load(path + "Images/Objects/Piece of web.png"), (128, 128))
 explosion_texture = pygame.transform.scale(pygame.image.load(path + "Images/Objects/Explosion.png"), (128, 128))
-
-Bacteria_walk_left = (
-
-	pygame.transform.scale(pygame.image.load(path + "Images/Objects/Bacteria 1.png"), (256, 512)),
-	pygame.transform.scale(pygame.image.load(path + "Images/Objects/Bacteria 2.png"), (256, 512)),
-	pygame.transform.scale(pygame.image.load(path + "Images/Objects/Bacteria 3.png"), (256, 512)),
-	pygame.transform.scale(pygame.image.load(path + "Images/Objects/Bacteria 4.png"), (256, 512)),
-	pygame.transform.scale(pygame.image.load(path + "Images/Objects/Bacteria 5.png"), (256, 512)),
-	pygame.transform.scale(pygame.image.load(path + "Images/Objects/Bacteria 6.png"), (256, 512))
-
-	)
 
 Screensaver2 = pygame.image.load(path + "Images/Screensavers/Screensaver 2.png")
 Screensaver2 = pygame.transform.scale(Screensaver2, (Height * 2, Height))
@@ -383,25 +372,25 @@ wall_images = {}
 
 for wall_type in wall_types:
 	wall_images[wall_type] = (
-		pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + wall_type + " 1.png"), (256, 256)),
-		pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + wall_type + " 2.png"), (256, 256)),
-		pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + wall_type + " 3.png"), (256, 256)),
-		pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + wall_type + " 4.png"), (256, 256)),
-		pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + wall_type + " 5.png"), (256, 256)),
-		pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + wall_type + " 6.png"), (256, 256)),
-		pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + wall_type + " 7.png"), (256, 256)),
-		pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + wall_type + " 8.png"), (256, 256)),
-		pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + wall_type + " 9.png"), (256, 256)),
-		pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + wall_type + " 10.png"), (256, 256)),
-		pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + wall_type + " 11.png"), (256, 256))
+		pygame.transform.scale(pygame.image.load(path + "Images/Walls/" + wall_type + "/1.png"), (256, 256)),
+		pygame.transform.scale(pygame.image.load(path + "Images/Walls/" + wall_type + "/2.png"), (256, 256)),
+		pygame.transform.scale(pygame.image.load(path + "Images/Walls/" + wall_type + "/3.png"), (256, 256)),
+		pygame.transform.scale(pygame.image.load(path + "Images/Walls/" + wall_type + "/4.png"), (256, 256)),
+		pygame.transform.scale(pygame.image.load(path + "Images/Walls/" + wall_type + "/5.png"), (256, 256)),
+		pygame.transform.scale(pygame.image.load(path + "Images/Walls/" + wall_type + "/6.png"), (256, 256)),
+		pygame.transform.scale(pygame.image.load(path + "Images/Walls/" + wall_type + "/7.png"), (256, 256)),
+		pygame.transform.scale(pygame.image.load(path + "Images/Walls/" + wall_type + "/8.png"), (256, 256)),
+		pygame.transform.scale(pygame.image.load(path + "Images/Walls/" + wall_type + "/9.png"), (256, 256)),
+		pygame.transform.scale(pygame.image.load(path + "Images/Walls/" + wall_type + "/10.png"), (256, 256)),
+		pygame.transform.scale(pygame.image.load(path + "Images/Walls/" + wall_type + "/11.png"), (256, 256))
 	)
 
 for door_type in door_types:
 	wall_images[door_type] = (
-		pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + door_type + " 1.png"), (256, 256)),
-		pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + door_type + " 2.png"), (256, 256)),
-		pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + door_type + " 1 Open.png"), (256, 256)),
-		pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + door_type + " 2 Open.png"), (256, 256))
+		pygame.transform.scale(pygame.image.load(path + "Images/Walls/" + door_type + "/1.png"), (256, 256)),
+		pygame.transform.scale(pygame.image.load(path + "Images/Walls/" + door_type + "/2.png"), (256, 256)),
+		pygame.transform.scale(pygame.image.load(path + "Images/Walls/" + door_type + "/1 Open.png"), (256, 256)),
+		pygame.transform.scale(pygame.image.load(path + "Images/Walls/" + door_type + "/2 Open.png"), (256, 256))
 	)
 
 farmland_images = (pygame.transform.scale(pygame.image.load(path + "Images/Objects/Farmland.png"), (128, 128)),)
@@ -1237,15 +1226,15 @@ class Spider(BaseEnemy):
 			HP=50,
 			speed=random.randint(10, 20),
 			animation_frames=[
-				pygame.transform.scale(pygame.image.load(path + "Images/Objects/Spider.png"), (256, 256)),
-				pygame.transform.scale(pygame.image.load(path + "Images/Objects/Spider 2.png"), (256, 256))]
+				pygame.transform.scale(pygame.image.load(path + "Images/Mobs/Spider.png"), (256, 256)),
+				pygame.transform.scale(pygame.image.load(path + "Images/Mobs/Spider 2.png"), (256, 256))]
 		)
 		
 		self.animation_images = {
-			"Left": pygame.transform.scale(pygame.image.load(path + "Images/Objects/Spider.png"), (256, 256)),
-			"Left attack": pygame.transform.scale(pygame.image.load(path + "Images/Objects/Spider attack.png"), (256, 256)),
-			"Right": pygame.transform.scale(pygame.image.load(path + "Images/Objects/Spider 2.png"), (256, 256)),
-			"Right attack": pygame.transform.scale(pygame.image.load(path + "Images/Objects/Spider 2 attack.png"), (256, 256))}
+			"Left": pygame.transform.scale(pygame.image.load(path + "Images/Mobs/Spider.png"), (256, 256)),
+			"Left attack": pygame.transform.scale(pygame.image.load(path + "Images/Mobs/Spider attack.png"), (256, 256)),
+			"Right": pygame.transform.scale(pygame.image.load(path + "Images/Mobs/Spider 2.png"), (256, 256)),
+			"Right attack": pygame.transform.scale(pygame.image.load(path + "Images/Mobs/Spider 2 attack.png"), (256, 256))}
 		
 		self.state = "Going towards player"
 
