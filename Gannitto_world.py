@@ -2532,7 +2532,7 @@ class Vending_machine:
 		self.owner = Settings["User"][0]
 		self.image = Vending_machine_image
 
-settings_ui = SettingsUI(win, Settings, statistics, bigTextInfo)
+settings_ui = SettingsUI()
 
 # Загрузка команд
 
@@ -2829,7 +2829,7 @@ def settings():
 			
 			# Обработка UI
 			settings_ui.handle_events(events, mouse_x, mouse_y, release, "Display")
-			settings_ui.draw("Display", win, Width, Height, bias, max_bias)
+			settings_ui.draw("Display", bias, max_bias)
 			
 			help_button.main(help)
 			win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Display 2.png"), (222, 64)), (10, 192))
@@ -3026,7 +3026,7 @@ def settings():
 			
 			# Обработка UI
 			settings_ui.handle_events(events, mouse_x, mouse_y, release, "User")
-			settings_ui.draw("User", win, Width, Height, bias, max_bias)
+			settings_ui.draw("User", bias, max_bias)
 			
 			help_button.main(help)
 			display_button.main(display)
@@ -3128,7 +3128,7 @@ def settings():
 			
 			# Обработка UI
 			settings_ui.handle_events(events, mouse_x, mouse_y, release, "Sound")
-			settings_ui.draw("Sound", win, Width, Height, bias, max_bias)
+			settings_ui.draw("Sound", bias, max_bias)
 			
 			help_button.main(help)
 			display_button.main(display)
@@ -3203,7 +3203,7 @@ def settings():
 			win.fill(menu_color_light)
 			
 			# Обработка UI
-			settings_ui.draw("Statistics", win, Width, Height, bias, max_bias)
+			settings_ui.draw("Statistics", bias, max_bias)
 			
 			help_button.main(help)
 			display_button.main(display)
@@ -3536,7 +3536,7 @@ def settings():
 			
 			# Обработка UI
 			settings_ui.handle_events(events, mouse_x, mouse_y, release, "Game")
-			settings_ui.draw("Game", win, Width, Height, bias, max_bias)
+			settings_ui.draw("Game", bias, max_bias)
 			
 			help_button.main(help)
 			display_button.main(display)
@@ -6314,7 +6314,7 @@ def edit_world():
 		
 		win.fill(menu_color_light)
 		settings_ui.handle_events(events, mouse_x, mouse_y, release, "World settings")
-		settings_ui.draw("World settings", win, Width, Height, 0, 0, False)
+		settings_ui.draw("World settings", show_settings_lines=False)
 
 		win.blit(bigTextInfo.render("x", True, menu_color_medium), (Width - 50, 15))
 		
@@ -6512,7 +6512,7 @@ def multiplayer_settings_menu():
 		pygame.draw.line(win, menu_color_medium, (0, 103), (Width, 103), 8)
 		pygame.draw.line(win, menu_color_medium, (Width // 2, 0), (Width // 2, 103), 8)
 		settings_ui.handle_events(events, mouse_x, mouse_y, release, "Multiplayer settings menu")
-		settings_ui.draw("Multiplayer settings menu", win, Width, Height, 0, 0, False)
+		settings_ui.draw("Multiplayer settings menu",show_settings_lines=False)
 		back_button.main()
 		if back_button.get_pressed():
 			win_darken(win)

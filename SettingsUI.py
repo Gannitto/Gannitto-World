@@ -1,15 +1,11 @@
 import pygame
-from UI import ToggleButton, InputField, Button, PageManager
+from UI import ToggleButton, InputField, Button
+from Globals import win, Settings, statistics, Width, Height
 
 class SettingsUI:
 
-	def __init__(self, win, settings, statistics, font):
+	def __init__(self):
 
-		self.win = win
-		self.settings = settings
-		self.statistics = statistics
-		self.font = font
-		
 		# Создаем все элементы интерфейса
 		self.create_elements()
 		
@@ -21,177 +17,161 @@ class SettingsUI:
 				
 				InputField(
 					400, 0, "Brightness",
-					lambda: self.settings["Display"][0],
-					lambda v: self.settings["Display"].__setitem__(0, v),
-					self.font, unit="%"
+					lambda: Settings["Display"][0],
+					lambda v: Settings["Display"].__setitem__(0, v),
+					unit="%"
 				),
 				InputField(
 					400, 0, "Inventory transparency",
-					lambda: self.settings["Display"][1],
-					lambda v: self.settings["Display"].__setitem__(1, v),
-					self.font, unit="%"
+					lambda: Settings["Display"][1],
+					lambda v: Settings["Display"].__setitem__(1, v),
+					unit="%"
 				),
 				InputField(
 					400, 0, "Distance",
-					lambda: self.settings["Display"][2],
-					lambda v: self.settings["Display"].__setitem__(2, v),
-					self.font, unit="%"
+					lambda: Settings["Display"][2],
+					lambda v: Settings["Display"].__setitem__(2, v),
+					unit="%"
 				),
 				ToggleButton(
 					400, 0, "Display hitboxes",
-					lambda: self.settings["Display"][3],
-					lambda v: self.settings["Display"].__setitem__(3, v),
-					self.font
+					lambda: Settings["Display"][3],
+					lambda v: Settings["Display"].__setitem__(3, v)
 				),
 				ToggleButton(
 					400, 0, "Shadows",
-					lambda: self.settings["Display"][4],
-					lambda v: self.settings["Display"].__setitem__(4, v),
-					self.font
+					lambda: Settings["Display"][4],
+					lambda v: Settings["Display"].__setitem__(4, v)
 				),
 				ToggleButton(
 					400, 0, "Inventory slots animation",
-					lambda: self.settings["Display"][5],
-					lambda v: self.settings["Display"].__setitem__(5, v),
-					self.font
+					lambda: Settings["Display"][5],
+					lambda v: Settings["Display"].__setitem__(5, v)
 				),
 				InputField(
 					400, 0, "FPS",
-					lambda: self.settings["Display"][6],
-					lambda v: self.settings["Display"].__setitem__(6, v),
-					self.font
+					lambda: Settings["Display"][6],
+					lambda v: Settings["Display"].__setitem__(6, v)
 				),
 				ToggleButton(
 					400, 0, "Mouse click display",
-					lambda: self.settings["Display"][7],
-					lambda v: self.settings["Display"].__setitem__(7, v),
-					self.font
+					lambda: Settings["Display"][7],
+					lambda v: Settings["Display"].__setitem__(7, v)
 				),
 				ToggleButton(
 					400, 0, "Description of the object on hover",
-					lambda: self.settings["Display"][8],
-					lambda v: self.settings["Display"].__setitem__(8, v),
-					self.font
+					lambda: Settings["Display"][8],
+					lambda v: Settings["Display"].__setitem__(8, v)
 				),
 				ToggleButton(
 					400, 0, "Dim screen when turned off",
-					lambda: self.settings["Display"][9],
-					lambda v: self.settings["Display"].__setitem__(9, v),
-					self.font
+					lambda: Settings["Display"][9],
+					lambda v: Settings["Display"].__setitem__(9, v)
 				),
 				ToggleButton(
 					400, 0, "Show intro",
-					lambda: self.settings["Display"][10],
-					lambda v: self.settings["Display"].__setitem__(10, v),
-					self.font
+					lambda: Settings["Display"][10],
+					lambda v: Settings["Display"].__setitem__(10, v)
 				)
 			],
 		"User": [
 				InputField(
 					400, 0, "Nickname",
-					lambda: self.settings["User"][0],
-					lambda v: self.settings["User"].__setitem__(0, v),
-					self.font, can_write_text=True, max_len=10
+					lambda: Settings["User"][0],
+					lambda v: Settings["User"].__setitem__(0, v),
+					can_write_text=True, max_len=10
 				)
 			],
 		"Sound": [
 				InputField(
 					400, 0, "Music volume",
-					lambda: self.settings["Sound"][0],
-					lambda v: self.settings["Sound"].__setitem__(0, min(v, 100)),
-					self.font, unit="%"
+					lambda: Settings["Sound"][0],
+					lambda v: Settings["Sound"].__setitem__(0, min(v, 100)),
+					unit="%"
 				),
 				InputField(
 					400, 0, "Sound volume",
-					lambda: self.settings["Sound"][1],
-					lambda v: self.settings["Sound"].__setitem__(1, min(v, 100)),
-					self.font, unit="%"
+					lambda: Settings["Sound"][1],
+					lambda v: Settings["Sound"].__setitem__(1, min(v, 100)),
+					unit="%"
 				)
 			],
 		"Statistics": [
 				InputField(
 					400, 0, "Visits to the game",
-					lambda: self.statistics[0],
-					lambda v: ...,
-					self.font
+					lambda: statistics[0],
+					lambda v: ...
 				),
 				InputField(
 					400, 0, "Hours played",
-					lambda: int(self.statistics[1]),
-					lambda v: ...,
-					self.font
+					lambda: int(statistics[1]),
+					lambda v: ...
 				),
 				InputField(
 					400, 0, "Trees felled",
-					lambda: self.statistics[2],
-					lambda v: ...,
-					self.font
+					lambda: statistics[2],
+					lambda v: ...
 				)
 				],
 		"Game": [
 				ToggleButton(
 					400, 0, "Automatically pick up items",
-					lambda: self.settings["Game"][0],
-					lambda v: self.settings["Game"].__setitem__(0, v),
-					self.font
+					lambda: Settings["Game"][0],
+					lambda v: Settings["Game"].__setitem__(0, v)
 				),
 				ToggleButton(
 					400, 0, "Telephone control",
-					lambda: self.settings["Game"][1],
-					lambda v: self.settings["Game"].__setitem__(1, v),
-					self.font
+					lambda: Settings["Game"][1],
+					lambda v: Settings["Game"].__setitem__(1, v)
 				),
 			],
 		"World settings": [
 				InputField(
 					50, 60, "World name",
-					lambda: self.settings["Edit world"][0],
-					lambda v: self.settings["Edit world"].__setitem__(0, v),
-					self.font, can_write_text=True, max_len=50
+					lambda: Settings["Edit world"][0],
+					lambda v: Settings["Edit world"].__setitem__(0, v),
+					can_write_text=True, max_len=50
 				),
 				ToggleButton(
 					50, 520, "God mode",
-					lambda: self.settings["Edit world"][1],
-					lambda v: self.settings["Edit world"].__setitem__(1, v),
-					self.font
+					lambda: Settings["Edit world"][1],
+					lambda v: Settings["Edit world"].__setitem__(1, v)
 				)
 			],
 		"Multiplayer settings menu": [
 				ToggleButton(
 					10, 0, "Соединение через интернет",
-					lambda: self.settings["Multiplayer"][0],
-					lambda v: self.settings["Multiplayer"].__setitem__(0, v),
-					self.font
+					lambda: Settings["Multiplayer"][0],
+					lambda v: Settings["Multiplayer"].__setitem__(0, v)
 				),
 				ToggleButton(
 					10, 0, "Соединение по локальной сети",
-					lambda: not self.settings["Multiplayer"][0],
-					lambda v: self.settings["Multiplayer"].__setitem__(0, not v),
-					self.font
+					lambda: not Settings["Multiplayer"][0],
+					lambda v: Settings["Multiplayer"].__setitem__(0, not v)
 				),
 				InputField(
 					10, 0, "Порт",
-					lambda: self.settings["Multiplayer"][1],
-					lambda v: self.settings["Multiplayer"].__setitem__(1, v),
-					self.font, max_len=5
+					lambda: Settings["Multiplayer"][1],
+					lambda v: Settings["Multiplayer"].__setitem__(1, v),
+					max_len=5
 				),
 				InputField(
 					10, 0, "Внешний порт",
-					lambda: self.settings["Multiplayer"][2],
-					lambda v: self.settings["Multiplayer"].__setitem__(2, v),
-					self.font, max_len=10
+					lambda: Settings["Multiplayer"][2],
+					lambda v: Settings["Multiplayer"].__setitem__(2, v),
+					max_len=10
 				),
 				InputField(
 					10, 0, "IP хоста",
-					lambda: self.settings["Multiplayer"][3],
-					lambda v: self.settings["Multiplayer"].__setitem__(3, v),
-					self.font, can_write_text=True, max_len=15
+					lambda: Settings["Multiplayer"][3],
+					lambda v: Settings["Multiplayer"].__setitem__(3, v),
+					can_write_text=True, max_len=15
 				),
 				InputField(
 					10, 0, "Порт хоста",
-					lambda: self.settings["Multiplayer"][4],
-					lambda v: self.settings["Multiplayer"].__setitem__(4, v),
-					self.font, max_len=10
+					lambda: Settings["Multiplayer"][4],
+					lambda v: Settings["Multiplayer"].__setitem__(4, v),
+					max_len=10
 				)
 			]
 		}
@@ -226,21 +206,21 @@ class SettingsUI:
 				for element in current_elements:
 					element.handle_click(mouse_x, mouse_y, release)
 	
-	def draw(self, section, win, Width, Height, bias, max_bias, show_settings_lines: bool = True):
+	def draw(self, section, bias: int = 0, max_bias: int = 0, show_settings_lines: bool = True):
 
 		self.draw_labels()
 		
 		# Отрисовка элементов текущей страницы
 		for element in self.elements[section]:
-			element.draw(self.win)
+			element.draw()
 		if show_settings_lines:
-			self.show_settings_elements(win, Width, Height, bias, max_bias)
+			self.show_settings_elements(bias, max_bias)
 
 	def draw_labels(self):
 		# Отрисовка текстовых меток для элементов TODO
 		pass
 
-	def show_settings_elements(self, win, Width, Height, bias, max_bias):
+	def show_settings_elements(self, bias, max_bias):
 		
 		pygame.draw.rect(win, (192, 203, 220), (0, 0, Width, 103))
 		pygame.draw.rect(win, (139, 155, 180), (-8, 100, 373, Height), 8)

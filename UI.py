@@ -2,7 +2,7 @@ import pygame
 import time
 from typing import Callable, Any, Optional
 from Translator import translator
-from Globals import cursor_speed
+from Globals import cursor_speed, bigTextInfo, win
 
 t = translator.get
 
@@ -31,25 +31,25 @@ class UIElement:
 class ToggleButton(UIElement):
 	"""Переключатель (вкл/выкл)"""
 	def __init__(self, x: int, y: int, label: str, get_value: Callable, set_value: Callable, 
-				 font, color=(139, 155, 180)):
+				 font=bigTextInfo, color=(139, 155, 180)):
 		self.get_value = get_value
 		self.set_value = set_value
 		self.font = font
 		self.color = color
 		super().__init__(x, y, 71, 71, label)
 	
-	def draw(self, surface: pygame.Surface):
+	def draw(self):
 
 		text_surface = self.font.render(t(self.label), True, self.color)
-		surface.blit(text_surface, (self.x, self.y + 10))
+		win.blit(text_surface, (self.x, self.y + 10))
 		
 		# Отрисовка рамки
-		pygame.draw.rect(surface, self.color, self.rect, 5)
+		pygame.draw.rect(win, self.color, self.rect, 5)
 		
 		# Отрисовка значения (✓ или x)
 		value = " ✓" if self.get_value() else " x"
 		text_surface = self.font.render(value, True, self.color)
-		surface.blit(text_surface, (self.x + self.label_width + 10, self.y + 10))
+		win.blit(text_surface, (self.x + self.label_width + 10, self.y + 10))
 	
 	def handle_click(self, mouse_x: int, mouse_y: int, release: bool) -> bool:
 		if super().handle_click(mouse_x, mouse_y, release):
@@ -59,7 +59,7 @@ class ToggleButton(UIElement):
 
 class InputField(UIElement):
 	"""Поле ввода текста или числа"""
-	def __init__(self, x: int, y: int, label: str, get_value: Callable, set_value: Callable, font, color=(139, 155, 180), width=None, unit="", can_write_text=False, max_len=3):
+	def __init__(self, x: int, y: int, label: str, get_value: Callable, set_value: Callable, font=bigTextInfo, color=(139, 155, 180), width=None, unit="", can_write_text=False, max_len=3):
 		self.get_value = get_value
 		self.set_value = set_value
 		self.font = font
@@ -74,13 +74,13 @@ class InputField(UIElement):
 		self.show_cursor = False
 		super().__init__(x, y, self.width, 71, label)
 	
-	def draw(self, surface: pygame.Surface):
+	def draw(self):
 
 		text_surface = self.font.render(t(self.label), True, self.color)
-		surface.blit(text_surface, (self.x, self.y + 10))
+		win.blit(text_surface, (self.x, self.y + 10))
 
 		# Отрисовка рамки
-		pygame.draw.rect(surface, self.color, self.rect, 5)
+		pygame.draw.rect(win, self.color, self.rect, 5)
 		
 		# Отрисовка значения или вводимого текста
 		if self.is_active:
@@ -94,21 +94,22 @@ class InputField(UIElement):
 			text = str(self.get_value())
 		
 		text_surface = self.font.render(text, True, self.color)
-		surface.blit(text_surface, (self.x + self.label_width + 10, self.y + 10))
+		win.blit(text_surface, (self.x + self.label_width + 10, self.y + 10))
 		
 		# Отрисовка знака для некоторых полей
 		if self.unit != "":
 			percent = self.font.render(self.unit, True, self.color)
-			surface.blit(percent, (self.x + self.label_width + self.width + 5, self.y + 10))
+			win.blit(percent, (self.x + self.label_width + self.width + 5, self.y + 10))
 	
 	def handle_click(self, mouse_x: int, mouse_y: int, release: bool) -> bool:
 		if super().handle_click(mouse_x, mouse_y, release):
 			self.is_active = not self.is_active
 			if self.is_active:
 				self.cursor_timer = time.time()
+				self.input_text = str(self.get_value())
 			elif self.input_text:
 				try:
-					self.set_value(int(self.input_text))
+					self.set_value(self.input_text)
 				except ValueError:
 					pass
 			return True
@@ -139,18 +140,18 @@ class InputField(UIElement):
 class Button(UIElement):
 	"""Обычная кнопка"""
 	def __init__(self, x: int, y: int, width: int, height: int, label: str, 
-				 callback: Callable, font, color=(139, 155, 180)):
+				 callback: Callable, font=bigTextInfo, color=(139, 155, 180)):
 		super().__init__(x, y, width, height)
 		self.label = label
 		self.callback = callback
 		self.font = font
 		self.color = color
 	
-	def draw(self, surface: pygame.Surface):
-		pygame.draw.rect(surface, self.color, self.rect, 2)
+	def draw(self):
+		pygame.draw.rect(self.color, self.rect, 2)
 		text_surface = self.font.render(t(self.label), True, self.color)
 		text_rect = text_surface.get_rect(center=self.rect.center)
-		surface.blit(text_surface, text_rect)
+		win.blit(text_surface, text_rect)
 	
 	def handle_click(self, mouse_x: int, mouse_y: int, release: bool) -> bool:
 		if super().handle_click(mouse_x, mouse_y, release):
@@ -158,17 +159,3 @@ class Button(UIElement):
 			return True
 		return False
 
-class PageManager:
-	"""Управление страницами настроек"""
-	def __init__(self, initial_page: int = 1, max_page: int = 3):
-		self.current_page = initial_page
-		self.max_page = max_page
-	
-	def next_page(self):
-		self.current_page = min(self.current_page + 1, self.max_page)
-	
-	def prev_page(self):
-		self.current_page = max(self.current_page - 1, 1)
-	
-	def get_page(self) -> int:
-		return self.current_page
