@@ -816,8 +816,6 @@ class Particle:
 		special_flags - Специальные флаги частицы, с помощью которых можно реализовать её механики
 		"""
 
-		self.calculated_variable = 0   # Эта переменная должна быть в самом начале обязательно
-
 		self.x = start_x
 		self.y = start_y
 
@@ -841,8 +839,6 @@ class Particle:
 		self.twisting_in_height = twisting_in_height
 		self.remove_particle_after_twisting = remove_particle_after_twisting
 
-		self.calculated_variable = 0
-		
 		self.track_ticks = track_ticks
 		self.ticks = -1
 
@@ -874,6 +870,7 @@ class Particle:
 	
 	def main(self, dt):
 		
+		self.dt = dt
 		if self.tick_command is not None:
 			self.tick_command(self)
 
@@ -913,7 +910,7 @@ class Particle:
 
 		if Settings["Display"][3]:
 			pygame.draw.rect(win, (0, 0, 0), (self.display_mode(self.x, self.y, self.w, self.h)[0], self.display_mode(self.x, self.y, self.w, self.h)[1], self.w, self.h), 3)
-	
+
 class BaseEnemy:
 	def __init__(self, x, y, HP, speed, animation_frames):
 		self.x = x
@@ -2523,6 +2520,61 @@ class Vending_machine:
 
 settings_ui = SettingsUI()
 
+def create_throw_particle(item_image, item_name):
+	
+	# Векторы направления
+	dir_map = {
+		"Down": (0, -1), "Up": (0, 1),
+		"Left": (-1, 0), "Right": (1, 0),
+		"Up-right": (1, 1), "Up-left": (-1, 1),
+		"Down-right": (1, -1), "Down-left": (-1, -1)
+	}
+	
+	dx, dy = dir_map.get(player.direction, (0, 1))
+	norm = math.sqrt(dx*dx + dy*dy)
+	if norm > 0:
+		dx, dy = dx/norm, dy/norm
+	
+	# Скорость
+	vx = dx * 2000
+	vy = dy * 2000
+	
+	# Состояние для физики
+	physics_state = {"vx": vx, "vy": vy, "start_x": player.x, "start_y": player.y}
+	
+	def tick_command(p):
+		dt = p.dt
+		p.x += physics_state["vx"] * dt
+		p.y += physics_state["vy"] * dt
+		physics_state["vx"] *= 0.0001 ** dt
+		physics_state["vy"] *= 0.0001 ** dt
+		print(physics_state)
+	
+	def del_condition(p):
+		# return abs(p.x - physics_state["start_x"]) > 200 or abs(p.y - physics_state["start_y"]) > 200
+		return abs(physics_state["vx"]) < 64 and abs(physics_state["vy"]) < 64
+	
+	def end_command(p):
+		chunk = world.chunk_manager.get_chunk_at(p.x, p.y)
+		obj = Object(p.special_flags, p.x, p.y, f"Images/Items/{p.special_flags}.png", pickable=True)
+		chunk.items.append(obj)
+		if multiplayer:
+			game_events.append({
+				"event_type": "item_added",
+				"item": obj.__getstate__()
+			})
+	
+	return Particle(
+		player.x, player.y,
+		item_image,
+		x_bias=0, y_bias=0,
+		end_time=None,
+		end_command=end_command,
+		special_flags=item_name,
+		tick_command=tick_command,
+		del_self_condition=del_condition
+	)
+
 # Загрузка команд
 
 def tp(x, y, player=player):
@@ -4014,41 +4066,7 @@ def start_game():
 						if Backrooms.InBackrooms:
 							backrooms_objects.append(Object(inventory.whole_inventory[changed_slot].name, player.x, player.y, "Images/Items/" + inventory.whole_inventory[changed_slot].name + ".png", special_flags="Item"))
 						else:
-							
-							match player.direction:
-								
-								case "Down":
-									x_bias_ = 0
-									y_bias_ = lambda particle: -(30 - particle.ticks * 2.5)
-								case "Up":
-									x_bias_ = 0
-									y_bias_ = lambda particle: (30 - particle.ticks * 2.5)
-								case "Left":
-									x_bias_ = lambda particle: -(30 - particle.ticks * 2.5)
-									y_bias_ = lambda particle: (15 - particle.ticks * 4)
-								case "Right":
-									x_bias_ = lambda particle: (30 - particle.ticks * 2.5)
-									y_bias_ = lambda particle: (15 - particle.ticks * 4)
-								case "Up-right":
-									x_bias_ = lambda particle: (30 - particle.ticks * 2.5)
-									y_bias_ = lambda particle: (30 - particle.ticks * 2.5)
-								case "Up-left":
-									x_bias_ = lambda particle: -(30 - particle.ticks * 2.5)
-									y_bias_ = lambda particle: (30 - particle.ticks * 2.5)
-								case "Down-right":
-									x_bias_ = lambda particle: (30 - particle.ticks * 2.5)
-									y_bias_ = lambda particle: -(30 - particle.ticks * 2.5)
-								case "Down-left":
-									x_bias_ = lambda particle: -(30 - particle.ticks * 2.5)
-									y_bias_ = lambda particle: -(30 - particle.ticks * 2.5)
-
-							world.particles.append(Particle(player.x, player.y,
-									   inventory.whole_inventory[changed_slot].image,
-									   x_bias_, y_bias_,
-									   track_ticks=True,
-									   end_time=0.5,
-									   end_command=lambda particle: (world.chunk_manager.get_chunk_at(particle.x, particle.y).items.append(Object(particle.special_flags, particle.x, particle.y, "Images/Items/" + particle.special_flags + ".png", pickable=True)), game_events.append({"event_type": "item_added", "item": world.chunk_manager.get_chunk_at(particle.x, particle.y).items[-1].__getstate__()})),
-									   special_flags=inventory.whole_inventory[changed_slot].name))
+							world.particles.append(create_throw_particle(inventory.whole_inventory[changed_slot].image, inventory.whole_inventory[changed_slot].name))
 						
 						inventory.reduce(changed_slot)
 
@@ -6536,18 +6554,18 @@ def multiplayer_settings_menu():
 					net.connect_to_local_host(Settings["Multiplayer"][3], Settings["Multiplayer"][1])
 				# connecting = True
 				# while connecting:
-				# 	mouse_x, mouse_y = pygame.mouse.get_pos()
-				# 	for event in pygame.event.get():
-				# 		if event.type == pygame.QUIT:
-				# 			win_darken(win)
-				# 			sys.exit()
-				# 	win.fill(menu_color_light)
-				# 	for event in net.server_events["Game"]:
-				# 		if event["event_type"] == "world_info":
-				# 			connecting = False
-				# 	animate_click(Settings, win, mouse_x, mouse_y)
-				# 	pygame.display.update()
-				# 	clock.tick(MAX_FPS)
+				#	mouse_x, mouse_y = pygame.mouse.get_pos()
+				#	for event in pygame.event.get():
+				#		if event.type == pygame.QUIT:
+				#			win_darken(win)
+				#			sys.exit()
+				#	win.fill(menu_color_light)
+				#	for event in net.server_events["Game"]:
+				#		if event["event_type"] == "world_info":
+				#			connecting = False
+				#	animate_click(Settings, win, mouse_x, mouse_y)
+				#	pygame.display.update()
+				#	clock.tick(MAX_FPS)
 			start_game()
 
 		if alt_pressed: draw_key("ESC", 44, 108)
