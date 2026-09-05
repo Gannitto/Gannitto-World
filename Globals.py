@@ -11,13 +11,14 @@ else:
 
 default_settings = {
 		
-		"Display": [100, 90, 0, False, True, True, 30, True, True, True, True],
+		"Display": [100, 90, 0, False, True, True, 60, True, True, True, True],
 		"Languages": ["English"],
 		"User": ["Player"],
 		"Sound": [100, 100],
 		"Keys": ["a", "s", "w", "d", "e", "c", "TAB", "SPACE"],
 		"Game": [True, False],
-		"Multiplayer": [True, 5555, 5555, "127.0.0.1", 5555]
+		"Multiplayer": [True, 5555, 5555, "127.0.0.1", 5555],
+		"Edit world": ["", False]
 		
 		}
 
@@ -27,6 +28,7 @@ except FileNotFoundError:
 	Settings = default_settings
 	Saver.save_objects(path + "Settings/Settings.save", Settings)
 
+cursor_speed = 0.7
 changed_slot = 0
 animation = [None, 0]
 craft_items_list = [None] * 7
@@ -111,6 +113,8 @@ clock = pygame.time.Clock()
 chat = []
 main_chat = []
 chat_tick = 0
+cursor_timer = 0
+show_cursor = False
 in_motherboard = None
 click = pygame.mouse.get_pressed()
 screen_rect = pygame.Rect((0, 0, Width, Height))

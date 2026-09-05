@@ -1,6 +1,8 @@
 import pygame
+import time
 from typing import Callable, Any, Optional
 from Translator import translator
+from Globals import cursor_speed
 
 t = translator.get
 
@@ -57,7 +59,7 @@ class ToggleButton(UIElement):
 
 class InputField(UIElement):
 	"""Поле ввода текста или числа"""
-	def __init__(self, x: int, y: int, label: str, get_value: Callable, set_value: Callable, font, color=(139, 155, 180), width: int = 120, unit="", can_write_text=False, max_len=3):
+	def __init__(self, x: int, y: int, label: str, get_value: Callable, set_value: Callable, font, color=(139, 155, 180), width=None, unit="", can_write_text=False, max_len=3):
 		self.get_value = get_value
 		self.set_value = set_value
 		self.font = font
@@ -67,7 +69,10 @@ class InputField(UIElement):
 		self.unit = unit
 		self.can_write_text = can_write_text
 		self.max_len = max_len
-		super().__init__(x, y, width, 71, label)
+		self.width = (font.size("a" * max_len)[0] + 20) or width
+		self.cursor_timer = 0
+		self.show_cursor = False
+		super().__init__(x, y, self.width, 71, label)
 	
 	def draw(self, surface: pygame.Surface):
 
@@ -80,13 +85,18 @@ class InputField(UIElement):
 		# Отрисовка значения или вводимого текста
 		if self.is_active:
 			text = self.input_text
+			if time.time() - self.cursor_timer >= cursor_speed:
+				self.cursor_timer = time.time()
+				self.show_cursor = not self.show_cursor
+			if self.show_cursor:
+				text += "|"
 		else:
 			text = str(self.get_value())
 		
 		text_surface = self.font.render(text, True, self.color)
 		surface.blit(text_surface, (self.x + self.label_width + 10, self.y + 10))
 		
-		# Отрисовка процента для некоторых полей
+		# Отрисовка знака для некоторых полей
 		if self.unit != "":
 			percent = self.font.render(self.unit, True, self.color)
 			surface.blit(percent, (self.x + self.label_width + self.width + 5, self.y + 10))
@@ -94,7 +104,9 @@ class InputField(UIElement):
 	def handle_click(self, mouse_x: int, mouse_y: int, release: bool) -> bool:
 		if super().handle_click(mouse_x, mouse_y, release):
 			self.is_active = not self.is_active
-			if not self.is_active and self.input_text:
+			if self.is_active:
+				self.cursor_timer = time.time()
+			elif self.input_text:
 				try:
 					self.set_value(int(self.input_text))
 				except ValueError:

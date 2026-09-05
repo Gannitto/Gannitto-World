@@ -3760,7 +3760,7 @@ objects_templates = {
 
 def start_game():
 	
-	global win, changed_slot, menu_open, multiplayer_menu_open, screenmode, inventory_open, hold_left, backrooms, text_color, bullet_num, craft_items_list, craft_amounts_list, craft_images_list, screenshot_num, mouse_x, mouse_y, item_settings_open, chat_tick, chat, main_chat, craft_list_open, craft_list_page, craft_list_offset, click, in_motherboard, world_name, color, multiplayer, animation, start_time, new_particles, inside_files, game, alt_pressed, player, world, FPS, MAX_FPS, screen_rect, time_index, game_events
+	global win, changed_slot, menu_open, multiplayer_menu_open, screenmode, inventory_open, hold_left, backrooms, text_color, bullet_num, craft_items_list, craft_amounts_list, craft_images_list, screenshot_num, mouse_x, mouse_y, item_settings_open, chat_tick, chat, main_chat, craft_list_open, craft_list_page, craft_list_offset, click, in_motherboard, world_name, color, multiplayer, animation, start_time, new_particles, inside_files, game, alt_pressed, player, world, FPS, MAX_FPS, screen_rect, time_index, game_events, show_cursor, cursor_timer
 
 	night_playing = False
 	input_text = ""
@@ -3953,8 +3953,10 @@ def start_game():
 						menu_open = not menu_open
 					if event.key == hot_keys["Open chat"]:
 						chat_input = True
+						cursor_timer = time.time()
 					if event.key == hot_keys["Execute command"]:
 						chat_input = True
+						cursor_timer = time.time()
 						input_text = "/"
 
 					if event.key == hot_keys["Close"]:
@@ -5823,8 +5825,14 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 		if chat_input:
 			win_fill()
 			win_fill(rect=(10, Height - 50, Width - 20, 40))
+			chat_text = input_text
+			if time.time() - cursor_timer >= cursor_speed:
+				cursor_timer = time.time()
+				show_cursor = not show_cursor
+			if show_cursor:
+				chat_text += "|"
 
-		text(input_text, 20, Height - 40)
+			text(chat_text, 20, Height - 40)
 		
 		if len(chat) != 0:
 
@@ -6241,6 +6249,8 @@ def edit_world():
 		game.difficulty = "norm"
 		player.god_mode = False
 		create_world = True
+	Settings["Edit world"][0] = world_name
+	Settings["Edit world"][1] = player.god_mode
 
 	input_text = ""
 	world_name_input = False
@@ -6260,10 +6270,16 @@ def edit_world():
 		click = pygame.mouse.get_pressed()
 		keys = pygame.key.get_pressed()
 		release = False
+		events = pygame.event.get()
 
-		for event in pygame.event.get():
+		for event in events:
 
 			if event.type == pygame.QUIT:
+				if not create_world:
+					os.rename(path + "Worlds/" + world_name, path + "Worlds/" + Settings["Edit world"][0])
+					world_name = Settings["Edit world"][0]
+					player.god_mode = Settings["Edit world"][1]
+					Saver.save_objects(path + "Worlds/" + world_name + "/Settings.save", [game.difficulty, player.god_mode])
 				win_darken(win)
 				sys.exit()
 				
@@ -6273,11 +6289,6 @@ def edit_world():
 
 			elif event.type == pygame.KEYDOWN and (world_name_input or seed_input):
 				if event.key == pygame.K_RETURN or len(input_text) == 50:
-					if world_name_input:
-						world_name_input = False
-						if input_text != "":
-							os.rename(path + "Worlds/" + world_name, path + "Worlds/" + input_text)
-							world_name = input_text
 					if seed_input:
 						if input_text != "":
 							world.chunk_manager.generator.seed = int(input_text)
@@ -6291,15 +6302,19 @@ def edit_world():
 			
 			if event.type == pygame.KEYUP:
 				
-				if event.key == hot_keys["Close"] and not create_world: Saver.save_objects(path + "Worlds/" + world_name + "/Settings.save", [game.difficulty, player.god_mode]); worlds()
+				if event.key == hot_keys["Close"] and not create_world:
+					os.rename(path + "Worlds/" + world_name, path + "Worlds/" + Settings["Edit world"][0])
+					world_name = Settings["Edit world"][0]
+					player.god_mode = Settings["Edit world"][1]
+					Saver.save_objects(path + "Worlds/" + world_name + "/Settings.save", [game.difficulty, player.god_mode])
+					worlds()
 				
 				if event.key == hot_keys["Show keys"]:
 					alt_pressed = not alt_pressed
 		
-		if bigTextInfo.size(t("World name"))[0] + 100 <= mouse_x <= bigTextInfo.size(t("World name"))[0] + 900 and 50 <= mouse_y <= 121 and release:
-			world_name_input = True
-		
 		win.fill(menu_color_light)
+		settings_ui.handle_events(events, mouse_x, mouse_y, release, "World settings")
+		settings_ui.draw("World settings", win, Width, Height, 0, 0, False)
 
 		win.blit(bigTextInfo.render("x", True, menu_color_medium), (Width - 50, 15))
 		
@@ -6309,16 +6324,13 @@ def edit_world():
 			
 			if pygame.mouse.get_pressed()[0]:
 				
-				if not create_world: Saver.save_objects(path + "Worlds/" + world_name + "/Settings.save", [game.difficulty, player.god_mode])
+				if not create_world:
+					os.rename(path + "Worlds/" + world_name, path + "Worlds/" + Settings["Edit world"][0])
+					world_name = Settings["Edit world"][0]
+					player.god_mode = Settings["Edit world"][1]
+					Saver.save_objects(path + "Worlds/" + world_name + "/Settings.save", [game.difficulty, player.god_mode])
 				worlds()
 
-		win.blit(bigTextInfo.render(t("World name"), True, menu_color_medium), (50, 60))
-		pygame.draw.rect(win, menu_color_medium, (bigTextInfo.size(t("World name"))[0] + 100, 50, 800, 71), 5)
-		if world_name_input:
-			win.blit(bigTextInfo.render(input_text, True, menu_color_medium), (bigTextInfo.size(t("World name"))[0] + 120, 60))
-		else:
-			win.blit(bigTextInfo.render(world_name, True, menu_color_medium), (bigTextInfo.size(t("World name"))[0] + 120, 60))
-			
 		win.blit(bigTextInfo.render(t("Game difficulty:"), True, menu_color_medium), (50, 150))
 
 		easy_but.main()
@@ -6353,18 +6365,6 @@ def edit_world():
 			case "skull":
 				win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Skull 2.png"), (132, 64)), (50, 410))
 
-		win.blit(bigTextInfo.render(t("God mode"), True, menu_color_medium), (50, 520))
-		
-		pygame.draw.rect(win, menu_color_medium, (bigTextInfo.size(t("God mode"))[0] + 60, 510, 71, 71), 5)
-		if player.god_mode:
-			win.blit(bigTextInfo.render(" ✓", True, menu_color_medium), (bigTextInfo.size(t("God mode"))[0] + 60, 520))
-			if bigTextInfo.size(t("God mode"))[0] + 60 <= mouse_x <= bigTextInfo.size(t("God mode"))[0] + 131 and 510 <= mouse_y <= 568 and release:
-				player.god_mode = False
-		else:
-			win.blit(bigTextInfo.render(" x", True, menu_color_medium), (bigTextInfo.size(t("God mode"))[0] + 60, 520))
-			if bigTextInfo.size(t("God mode"))[0] + 60 <= mouse_x <= bigTextInfo.size(t("God mode"))[0] + 131 and 510 <= mouse_y <= 568 and release:
-				player.god_mode = True
-
 		if create_world:
 			
 		
@@ -6382,6 +6382,8 @@ def edit_world():
 				
 				win.blit(bigTextInfo.render(t("Create world"), True, menu_color_dark), (Width - bigTextInfo.size(t("Create world"))[0] - 50, 150))
 				if release:
+					world_name = Settings["Edit world"][0]
+					player.god_mode = Settings["Edit world"][1]
 					win_darken(win)
 					start_game()
 		else:
@@ -6543,6 +6545,20 @@ def multiplayer_settings_menu():
 					net.connect_to_host(Settings["Multiplayer"][3], Settings["Multiplayer"][4])
 				else:
 					net.connect_to_local_host(Settings["Multiplayer"][3], Settings["Multiplayer"][1])
+				# connecting = True
+				# while connecting:
+				# 	mouse_x, mouse_y = pygame.mouse.get_pos()
+				# 	for event in pygame.event.get():
+				# 		if event.type == pygame.QUIT:
+				# 			win_darken(win)
+				# 			sys.exit()
+				# 	win.fill(menu_color_light)
+				# 	for event in net.server_events["Game"]:
+				# 		if event["event_type"] == "world_info":
+				# 			connecting = False
+				# 	animate_click(Settings, win, mouse_x, mouse_y)
+				# 	pygame.display.update()
+				# 	clock.tick(MAX_FPS)
 			start_game()
 
 		if alt_pressed: draw_key("ESC", 44, 108)
@@ -6554,7 +6570,7 @@ def multiplayer_settings_menu():
 			does_lighten = True
 		
 		pygame.display.update()
-		clock.tick(30)
+		clock.tick(MAX_FPS)
 
 
 # Меню миров

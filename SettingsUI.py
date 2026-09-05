@@ -142,6 +142,20 @@ class SettingsUI:
 					self.font
 				),
 			],
+		"World settings": [
+				InputField(
+					50, 60, "World name",
+					lambda: self.settings["Edit world"][0],
+					lambda v: self.settings["Edit world"].__setitem__(0, v),
+					self.font, can_write_text=True, max_len=50
+				),
+				ToggleButton(
+					50, 520, "God mode",
+					lambda: self.settings["Edit world"][1],
+					lambda v: self.settings["Edit world"].__setitem__(1, v),
+					self.font
+				)
+			],
 		"Multiplayer settings menu": [
 				ToggleButton(
 					10, 0, "Соединение через интернет",
@@ -158,7 +172,7 @@ class SettingsUI:
 				InputField(
 					10, 0, "Порт",
 					lambda: self.settings["Multiplayer"][1],
-					lambda v: self.settings["User"].__setitem__(1, v),
+					lambda v: self.settings["Multiplayer"].__setitem__(1, v),
 					self.font, max_len=5
 				),
 				InputField(
