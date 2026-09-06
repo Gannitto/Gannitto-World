@@ -2713,6 +2713,8 @@ def settings():
 		while True:
 
 			mouse_x, mouse_y = pygame.mouse.get_pos()
+			dt = clock.tick(MAX_FPS) / 1000.0
+
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
 					save()
@@ -2817,7 +2819,7 @@ def settings():
 				draw_key("<-", 425, Height - 168)
 				draw_key("->", Width - 74, Height - 168)
 
-			animate_click(Settings, win, mouse_x, mouse_y)
+			animate_click(dt, mouse_x, mouse_y)
 
 			win_fill(alpha=100 - Settings["Display"][0])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
 			
@@ -2826,14 +2828,14 @@ def settings():
 				does_lighten = True
 
 			pygame.display.update()
-			clock.tick(MAX_FPS)
 
 	def display():
 
 		global win, screenmode, Settings, alt_pressed, MAX_FPS
 
 		bias = 0
-		max_bias = -settings_ui._set_positions(bias, "Display", True) + 900
+		max_bias = -settings_ui._set_positions(bias, "Display", True)
+		max_bias = (max_bias + Height - 103) * max_bias > Height - 103
 
 		while True:
 			
@@ -2841,6 +2843,7 @@ def settings():
 			mouse_x, mouse_y = pygame.mouse.get_pos()
 			release = False
 			events = pygame.event.get()
+			dt = clock.tick(MAX_FPS) / 1000.0
 			
 			for event in events:
 				if event.type == pygame.QUIT:
@@ -2897,11 +2900,10 @@ def settings():
 				menu()
 				
 			# Анимация и эффекты
-			animate_click(Settings, win, mouse_x, mouse_y)
+			animate_click(dt, mouse_x, mouse_y)
 			win_fill(alpha=100 - Settings["Display"][0])
 			
 			pygame.display.update()
-			clock.tick(MAX_FPS)
 
 	def Languages():
 
@@ -2910,6 +2912,8 @@ def settings():
 		while True:
 			
 			mouse_x, mouse_y = pygame.mouse.get_pos()
+			dt = clock.tick(MAX_FPS) / 1000.0
+
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
 					save()
@@ -3014,7 +3018,7 @@ def settings():
 				draw_key("<-", 425, Height - 168)
 				draw_key("->", Width - 74, Height - 168)
 
-			animate_click(Settings, win, mouse_x, mouse_y)
+			animate_click(dt, mouse_x, mouse_y)
 			win_fill(alpha=100 - Settings["Display"][0])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
 
 			if not does_lighten:
@@ -3022,20 +3026,21 @@ def settings():
 				does_lighten = True
 
 			pygame.display.update()
-			clock.tick(MAX_FPS)
 
 	def User():
 
 		global win, screenmode, Settings, alt_pressed, MAX_FPS
 
 		bias = 0
-		max_bias = -settings_ui._set_positions(bias, "User", True) + 900
+		max_bias = -settings_ui._set_positions(bias, "User", True)
+		max_bias = (max_bias + Height - 103) * max_bias > Height - 103
 
 		while True:
 			
 			click = pygame.mouse.get_pressed()
 			mouse_x, mouse_y = pygame.mouse.get_pos()
 			release = False
+			dt = clock.tick(MAX_FPS) / 1000.0
 			
 			events = pygame.event.get()
 			
@@ -3094,25 +3099,25 @@ def settings():
 				menu()
 				
 			# Анимация и эффекты
-			animate_click(Settings, win, mouse_x, mouse_y)
+			animate_click(dt, mouse_x, mouse_y)
 			win_fill(alpha=100 - Settings["Display"][0])
 			
 			pygame.display.update()
-			clock.tick(MAX_FPS)
-
 
 	def Sound():
 
 		global win, screenmode, Settings, alt_pressed, MAX_FPS
 
 		bias = 0
-		max_bias = -settings_ui._set_positions(bias, "Sound", True) + 900
+		max_bias = -settings_ui._set_positions(bias, "Sound", True)
+		max_bias = (max_bias + Height - 103) * max_bias > Height - 103
 
 		while True:
 			
 			click = pygame.mouse.get_pressed()
 			mouse_x, mouse_y = pygame.mouse.get_pos()
 			release = False
+			dt = clock.tick(MAX_FPS) / 1000.0
 			
 			events = pygame.event.get()
 			
@@ -3196,24 +3201,25 @@ def settings():
 				menu()
 				
 			# Анимация и эффекты
-			animate_click(Settings, win, mouse_x, mouse_y)
+			animate_click(dt, mouse_x, mouse_y)
 			win_fill(alpha=100 - Settings["Display"][0])
 			
 			pygame.display.update()
-			clock.tick(MAX_FPS)
 
 	def Statistics():
 
 		global win, screenmode, Settings, alt_pressed, MAX_FPS
 
 		bias = 0
-		max_bias = -settings_ui._set_positions(bias, "Statistics", True) + 900
+		max_bias = -settings_ui._set_positions(bias, "Statistics", True)
+		max_bias = (max_bias + Height - 103) * max_bias > Height - 103
 
 		while True:
 			
 			click = pygame.mouse.get_pressed()
 			mouse_x, mouse_y = pygame.mouse.get_pos()
 			release = False
+			dt = clock.tick(MAX_FPS) / 1000.0
 			
 			events = pygame.event.get()
 			
@@ -3271,11 +3277,10 @@ def settings():
 				menu()
 				
 			# Анимация и эффекты
-			animate_click(Settings, win, mouse_x, mouse_y)
+			animate_click(dt, mouse_x, mouse_y)
 			win_fill(alpha=100 - Settings["Display"][0])
 			
 			pygame.display.update()
-			clock.tick(MAX_FPS)
 
 	def Keys():
 
@@ -3402,6 +3407,7 @@ def settings():
 			click = pygame.mouse.get_pressed()
 			mouse_x, mouse_y = pygame.mouse.get_pos()
 			release = False
+			dt = clock.tick(MAX_FPS) / 1000.0
 			
 			for event in pygame.event.get():
 
@@ -3523,7 +3529,7 @@ def settings():
 			if alt_pressed:
 				draw_key("ESC", 44, 108)
 
-			animate_click(Settings, win, mouse_x, mouse_y)
+			animate_click(dt, mouse_x, mouse_y)
 
 			win_fill(alpha=100 - Settings["Display"][0])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
 			
@@ -3532,20 +3538,21 @@ def settings():
 				does_lighten = True
 
 			pygame.display.update()
-			clock.tick(MAX_FPS)
 
 	def Game():
 
 		global win, screenmode, Settings, alt_pressed, MAX_FPS
 
 		bias = 0
-		max_bias = -settings_ui._set_positions(bias, "Game", True) + 900
+		max_bias = -settings_ui._set_positions(bias, "Game", True)
+		max_bias = (max_bias + Height - 103) * max_bias > Height - 103
 
 		while True:
 			
 			click = pygame.mouse.get_pressed()
 			mouse_x, mouse_y = pygame.mouse.get_pos()
 			release = False
+			dt = clock.tick(MAX_FPS) / 1000.0
 			
 			events = pygame.event.get()
 			
@@ -3604,11 +3611,10 @@ def settings():
 				menu()
 				
 			# Анимация и эффекты
-			animate_click(Settings, win, mouse_x, mouse_y)
+			animate_click(dt, mouse_x, mouse_y)
 			win_fill(alpha=100 - Settings["Display"][0])
 			
 			pygame.display.update()
-			clock.tick(MAX_FPS)
 	
 	win_darken(win)
 	help()
@@ -3660,6 +3666,7 @@ def change_a_character():
 		while True:
 
 			mouse_x, mouse_y = pygame.mouse.get_pos()
+			dt = clock.tick(MAX_FPS) / 1000.0
 
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
@@ -3730,7 +3737,7 @@ def change_a_character():
 				draw_key("<-", 425, Height - 168)
 				draw_key("->", Width - 74, Height - 168)
 
-			animate_click(Settings, win, mouse_x, mouse_y)
+			animate_click(dt, mouse_x, mouse_y)
 
 			win_fill(alpha=100 - Settings["Display"][0])
 			
@@ -3739,7 +3746,6 @@ def change_a_character():
 				does_lighten = True
 
 			pygame.display.update()
-			clock.tick(MAX_FPS)
 	
 	def pets():
 
@@ -3748,6 +3754,7 @@ def change_a_character():
 		while True:
 			
 			mouse_x, mouse_y = pygame.mouse.get_pos()
+			dt = clock.tick(MAX_FPS) / 1000.0
 
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
@@ -3781,7 +3788,7 @@ def change_a_character():
 
 			win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Pets 2.png"), (132, 64)), (10, 192))
 
-			animate_click(Settings, win, mouse_x, mouse_y)
+			animate_click(dt, mouse_x, mouse_y)
 
 			win_fill(alpha=100 - Settings["Display"][0])
 			
@@ -3790,7 +3797,6 @@ def change_a_character():
 				does_lighten = True
 			
 			pygame.display.update()
-			clock.tick(MAX_FPS)
 
 	characters()
 
@@ -4042,8 +4048,8 @@ def start_game():
 						if player.changed_item is not None:
 							player.changed_item = player.changed_item.name
 
-					if event.key == pygame.K_o and False:
-						world.mobs.append(Slime(player.x, player.y))
+					# if event.key == pygame.K_o and False:
+						# world.mobs.append(Slime(player.x, player.y))
 						# create_light_circle(world.chunk_manager, player.x, player.y, 10, 15)
 						# world.chunk_manager.chunks[(0, 0)].shadow_map.update({(0, 0): 0, (1, 0): 1, (2, 0): 2, (3, 0): 3, (4, 0): 4, (5, 0): 5, (6, 0): 6, (7, 0): 7, (8, 0): 8, (9, 0): 9, (10, 0): 10, (11, 0): 11, (12, 0): 12, (13, 0): 13, (14, 0): 14, (15, 0): 15})
 						# world.chunk_manager.chunks[(0, 0)].light_map.update({(0, 1): 0, (1, 1): 1, (2, 1): 2, (3, 1): 3, (4, 1): 4, (5, 1): 5, (6, 1): 6, (7, 1): 7, (8, 1): 8, (9, 1): 9, (10, 1): 10, (11, 1): 11, (12, 1): 12, (13, 1): 13, (14, 1): 14, (15, 1): 15})
@@ -4556,16 +4562,14 @@ def start_game():
 							else:
 								object.y -= 30
 		
-		if not Backrooms.InBackrooms and world.current_cave is None:
+		if not Backrooms.InBackrooms and world.current_cave is None and len(world.mobs) < 5:
 
 			if game_time.day_phase == "Night":
-				if random.randint(1, 800) == 1:
-					try: world.mobs.append(Spider(random.randint(player.x - Width, player.x + Width), random.randint(player.y - Height, player.y + Height)))
-					except:pass
+				if random.randint(1, int(dt * 50000000)) == 1:
+					world.mobs.append(Spider(player.x + random.randint(-Width, Width), player.y + random.randint(-Height, Height)))
 			else:
-				if random.randint(1, 800) == 1:
-					try: world.mobs.append(Slime(random.randint(player.x - Width, player.x + Width), random.randint(player.y - Height, player.y + Height)))
-					except:pass
+				if random.randint(1, int(dt * 10000000)) == 1:
+					world.mobs.append(Slime(player.x + random.randint(-Width, Width), player.y + random.randint(-Height, Height)))
 
 		for projectile in world.projectiles:
 			projectile.main()
@@ -6253,7 +6257,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 			pygame.display.update()
 			os.system("python " + path + "Plugin_creater.py")
 
-		animate_click(Settings, win, mouse_x, mouse_y)
+		animate_click(dt, mouse_x, mouse_y)
 
 		win_fill((200, 0, 0), 100 - Settings["Display"][0])
 
@@ -6506,7 +6510,8 @@ def multiplayer_settings_menu():
 	create_world = False
 	release = False
 	does_lighten = False
-	max_bias = -settings_ui._set_positions(0, "Multiplayer settings menu", True) + 900
+	max_bias = -settings_ui._set_positions(0, "Multiplayer settings menu", True)
+	max_bias = (max_bias + Height - 103) * max_bias > Height - 103
 
 	while True:
 		
@@ -6515,6 +6520,7 @@ def multiplayer_settings_menu():
 		keys = pygame.key.get_pressed()
 		release = False
 		events = pygame.event.get()
+		dt = clock.tick(MAX_FPS) / 1000.0
 
 		for event in events:
 
@@ -6584,13 +6590,13 @@ def multiplayer_settings_menu():
 				#	for event in net.server_events["Game"]:
 				#		if event["event_type"] == "world_info":
 				#			connecting = False
-				#	animate_click(Settings, win, mouse_x, mouse_y)
+				#	animate_click(dt, mouse_x, mouse_y)
 				#	pygame.display.update()
 				#	clock.tick(MAX_FPS)
 			start_game()
 
 		if alt_pressed: draw_key("ESC", 44, 108)
-		animate_click(Settings, win, mouse_x, mouse_y)
+		animate_click(dt, mouse_x, mouse_y)
 		win_fill(alpha=100 - Settings["Display"][0])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
 
 		if not does_lighten:
@@ -6598,7 +6604,6 @@ def multiplayer_settings_menu():
 			does_lighten = True
 		
 		pygame.display.update()
-		clock.tick(MAX_FPS)
 
 
 # Меню миров
@@ -6632,6 +6637,7 @@ def worlds():
 		mouse_x, mouse_y = pygame.mouse.get_pos()
 		click = pygame.mouse.get_pressed()
 		release = False
+		dt = clock.tick(MAX_FPS) / 1000.0
 
 		for event in pygame.event.get():
 
@@ -6739,7 +6745,7 @@ def worlds():
 			
 		if alt_pressed: draw_key("ESC", 44, 108)
 
-		animate_click(Settings, win, mouse_x, mouse_y)
+		animate_click(dt, mouse_x, mouse_y)
 
 		win_fill(alpha=100 - Settings["Display"][0])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
 		if not does_lighten:
@@ -6747,7 +6753,6 @@ def worlds():
 			does_lighten = True
 		
 		pygame.display.update()
-		clock.tick(30)
 
 
 
@@ -6770,6 +6775,7 @@ def menu():
 		mouse_x, mouse_y = pygame.mouse.get_pos()
 		click = pygame.mouse.get_pressed()
 		release = False
+		dt = clock.tick(MAX_FPS) / 1000.0
 
 		for event in pygame.event.get():
 
@@ -6849,7 +6855,7 @@ def menu():
 			win.blit(pygame.image.load(path + "Images/Rickrolling QR-code.png"), (Width // 2 - 100, Height // 2 - 200))
 			text(t("You can get other information from this QR code"), Width // 2, Height // 2 + 10, menu_color_medium, alignment=True)
 
-		animate_click(Settings, win, mouse_x, mouse_y)
+		animate_click(dt, mouse_x, mouse_y)
 
 		win_fill(alpha=100 - Settings["Display"][0])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
 
@@ -6858,7 +6864,6 @@ def menu():
 			does_lighten = True
 
 		pygame.display.update()
-		clock.tick(MAX_FPS)
 
 
 

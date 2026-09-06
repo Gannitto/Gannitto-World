@@ -251,23 +251,22 @@ mouse_click_images = (
 	 )
 
 mouse_click_image = None
+mouse_click_timer = None
 
-def animate_click(Settings, win, mouse_x, mouse_y):
+def animate_click(dt, mouse_x, mouse_y):
 
-	global mouse_click_image
+	global mouse_click_timer
 
 	if Settings["Display"][7]:
 
 		if pygame.mouse.get_pressed()[0] == 1:
-			mouse_click_image = 1
-		try:
-			win.blit(mouse_click_images[mouse_click_image - 1], (mouse_x - 64, mouse_y - 64))
-			if mouse_click_image == 5:
-				mouse_click_image = None
+			mouse_click_timer = 0
+		if mouse_click_timer is not None:
+			if mouse_click_timer >= 5:
+				mouse_click_timer = None
 			else:
-				mouse_click_image += 1
-		except TypeError:
-			pass
+				win.blit(mouse_click_images[int(mouse_click_timer)], (mouse_x - 64, mouse_y - 64))
+				mouse_click_timer += dt * 40
 
 def crack_surface(world, Particle, object, damage_level, scale=1):
 	
