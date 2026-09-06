@@ -1,6 +1,6 @@
 """Этот модуль содержит механику закулисья"""
 
-from random import *
+from random import randint
 import pygame
 pygame.init()
 

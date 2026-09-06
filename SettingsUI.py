@@ -124,6 +124,16 @@ class SettingsUI:
 					lambda: Settings["Game"][1],
 					lambda v: Settings["Game"].__setitem__(1, v)
 				),
+				InputField(
+					400, 0, "Mouse wheel sensitivity",
+					lambda: Settings["Game"][2],
+					lambda v: Settings["Game"].__setitem__(2, int(v))
+				),
+				InputField(
+					400, 0, "Cursor blink rate",
+					lambda: int(Settings["Game"][3] * 1000),
+					lambda v: Settings["Game"].__setitem__(3, int(v) / 1000)
+				)
 			],
 		"World settings": [
 				InputField(

@@ -16,7 +16,7 @@ default_settings = {
 		"User": ["Player"],
 		"Sound": [100, 100],
 		"Keys": ["a", "s", "w", "d", "e", "c", "TAB", "SPACE"],
-		"Game": [True, False],
+		"Game": [True, False, 100, 0.7],
 		"Multiplayer": [True, 5555, 5555, "127.0.0.1", 5555],
 		"Edit world": ["", False]
 		

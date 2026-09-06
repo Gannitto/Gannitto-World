@@ -2870,7 +2870,7 @@ def settings():
 							screenmode = "FULLSCREEN"
 
 				elif event.type == pygame.MOUSEWHEEL:
-					bias = max((min(bias + event.y * 100, 0)), max_bias)
+					bias = max((min(bias + event.y * Settings["Game"][2], 0)), max_bias)
 					settings_ui._set_positions(bias, "Display")
 			
 			# Очистка экрана
@@ -3069,7 +3069,7 @@ def settings():
 							screenmode = "FULLSCREEN"
 
 				elif event.type == pygame.MOUSEWHEEL:
-					bias = max((min(bias + event.y * 100, 0)), max_bias)
+					bias = max((min(bias + event.y * Settings["Game"][2], 0)), max_bias)
 					settings_ui._set_positions(bias, "User")
 			
 			# Очистка экрана
@@ -3171,7 +3171,7 @@ def settings():
 						Pick_an_item.set_volume(Settings["Sound"][1] / 100)
 
 				elif event.type == pygame.MOUSEWHEEL:
-					bias = max((min(bias + event.y * 100, 0)), max_bias)
+					bias = max((min(bias + event.y * Settings["Game"][2], 0)), max_bias)
 					settings_ui._set_positions(bias, "Sound")
 			
 			# Очистка экрана
@@ -3248,7 +3248,7 @@ def settings():
 							screenmode = "FULLSCREEN"
 
 				elif event.type == pygame.MOUSEWHEEL:
-					bias = max((min(bias + event.y * 100, 0)), max_bias)
+					bias = max((min(bias + event.y * Settings["Game"][2], 0)), max_bias)
 					settings_ui._set_positions(bias, "Statistics")
 			
 			# Очистка экрана
@@ -3581,7 +3581,7 @@ def settings():
 							screenmode = "FULLSCREEN"
 
 				elif event.type == pygame.MOUSEWHEEL:
-					bias = max((min(bias + event.y * 100, 0)), max_bias)
+					bias = max((min(bias + event.y * Settings["Game"][2], 0)), max_bias)
 					settings_ui._set_positions(bias, "Game")
 			
 			# Очистка экрана
@@ -3981,7 +3981,7 @@ def start_game():
 			
 			elif event.type == pygame.MOUSEWHEEL and not any((item_settings_open, ron.window[0], in_motherboard)):
 				if craft_list_open:
-					craft_list_offset = max((min(craft_list_offset + event.y * 100, 0)), craft_list_max_offset)
+					craft_list_offset = max((min(craft_list_offset + event.y * Settings["Game"][2], 0)), craft_list_max_offset)
 				else:
 					changed_slot += event.y
 					if changed_slot > 9: changed_slot = 0
@@ -5858,7 +5858,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 			win_fill()
 			win_fill(rect=(10, Height - 50, Width - 20, 40))
 			chat_text = input_text
-			if time.time() - cursor_timer >= cursor_speed:
+			if time.time() - cursor_timer >= Settings["Game"][3]:
 				cursor_timer = time.time()
 				show_cursor = not show_cursor
 			if show_cursor:
@@ -6649,7 +6649,7 @@ def worlds():
 				if event.button == 1:
 					release = True
 			elif event.type == pygame.MOUSEWHEEL:
-				bias = (min(bias + event.y * 100, 0))
+				bias = (min(bias + event.y * Settings["Game"][2], 0))
 
 			elif event.type == pygame.KEYDOWN and input_text is not None:
 				

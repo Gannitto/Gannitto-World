@@ -1,8 +1,6 @@
 import pygame
 import random
 from itertools import product
-
-from vnoise import Noise
 from NoiseGenerator import NoiseGenerator
 from Functions import win_fill, reverse_fill_area
 from Saver import save_chunk, load_chunk, delete_chunk, chunk_exists

@@ -2,7 +2,7 @@ import pygame
 import time
 from typing import Callable, Any, Optional
 from Translator import translator
-from Globals import cursor_speed, bigTextInfo, win
+from Globals import Settings, bigTextInfo, win
 
 t = translator.get
 
@@ -85,7 +85,7 @@ class InputField(UIElement):
 		# Отрисовка значения или вводимого текста
 		if self.is_active:
 			text = self.input_text
-			if time.time() - self.cursor_timer >= cursor_speed:
+			if time.time() - self.cursor_timer >= Settings["Game"][3]:
 				self.cursor_timer = time.time()
 				self.show_cursor = not self.show_cursor
 			if self.show_cursor:
