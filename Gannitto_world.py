@@ -495,6 +495,8 @@ class Player:
 		self.is_moving = False
 		self.rect = pygame.Rect(self.x - 25, self.y - 112, 50, 224)
 		self.hovered_object = None
+		self.started_break = False
+		self.breaking_object_info = None
 		self.breaking_object = None
 		self.changed_item = None
 		
@@ -700,6 +702,10 @@ class Object:
 			if self.breakable and pygame.mouse.get_pressed()[0]:
 
 				player.breaking_object = self
+				if not player.started_break and multiplayer:
+					game_events.append({"event_type": "object_started_breaking", "x": self.x, "y": self.y, "name": self.name})
+				player.started_break = True
+				player.breaking_object_info = (self.x, self.y, self.name)
 				self.breaked -= dt * 100
 				self.image = crack_surface(world, Particle, self, (self.max_break - self.breaked) // self.max_break, 8)
 
@@ -2548,7 +2554,6 @@ def create_throw_particle(item_image, item_name):
 		p.y += physics_state["vy"] * dt
 		physics_state["vx"] *= 0.0001 ** dt
 		physics_state["vy"] *= 0.0001 ** dt
-		print(physics_state)
 	
 	def del_condition(p):
 		# return abs(p.x - physics_state["start_x"]) > 200 or abs(p.y - physics_state["start_y"]) > 200
@@ -4025,6 +4030,7 @@ def start_game():
 							main_chat = []
 							chat_tick = 0
 							inventory.whole_inventory = [None] * 30
+							world_name = None
 							if multiplayer:
 								net.disconnect()
 							menu()
@@ -4479,6 +4485,12 @@ def start_game():
 								object.special_flags = 1
 								world.chunk_manager.get_chunk_at(object.x, object.y).items.append(Object("Punch", object.x, object.y, "Images/Items/Powder.png"))
 
+				if player.breaking_object is None and player.started_break:
+					player.started_break = False
+					if multiplayer:
+						game_events.append({"event_type": "object_stopped_breaking", "x": player.breaking_object_info[0], "y": player.breaking_object_info[1], "name": player.breaking_object_info[2]})
+					player.breaking_object_info = None
+
 				# Отображение предметов
 				if inventory.whole_inventory[changed_slot] is None:
 					last_changed_item = None
@@ -4638,10 +4650,19 @@ def start_game():
 									peer.changed_item = event["changed_item"]
 								case "player_stopped":
 									peer.stop()
+								case "object_started_breaking":
+									peer.breaking_object_info = (event["x"], event["y"], event["name"])
+								case "object_stopped_breaking":
+									peer.breaking_object_info = None
 
 							net.server_events[pid].remove(event)
 					peer.render(win)
 					peer.update_animation(dt)
+					if peer.breaking_object_info is not None:
+						for object in world.visible_objects:
+							if (object.x, object.y, object.name) == (*peer.breaking_object_info,):
+								object.image = crack_surface(world, Particle, object, (object.max_break - object.breaked) // object.max_break, 8)
+								break
 
 		# Анимации Хиро
 

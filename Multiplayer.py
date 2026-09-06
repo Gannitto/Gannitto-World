@@ -193,7 +193,6 @@ class NetworkManager:
 			self.host_address = (host_ip, port)
 			
 			self.chat_message(f"Подключаюсь к {host_ip}:{port}...")
-			# print("Инициализированы сокеты и всякое такое")
 			
 			# Отправляем несколько раз для надежности (UDP может терять пакеты)
 			for i in range(5):
@@ -205,12 +204,10 @@ class NetworkManager:
 					"timestamp": time.time()
 				}, self.host_address)
 				time.sleep(0.2)
-				# print(f"Отправлен хендшейк {i} (через UDP) ")
 			
 			# Запускаем потоки
 			self.receive_thread = threading.Thread(target=self._receive_loop, daemon=True)
 			self.receive_thread.start()
-			# print("Запуск потоков")
 			
 			self.heartbeat_thread = threading.Thread(target=self._heartbeat_loop, daemon=True)
 			self.heartbeat_thread.start()
@@ -437,6 +434,30 @@ class NetworkManager:
 								"name": event.get("name")
 							}, exclude_ids)
 
+						case "object_started_breaking":
+							self.server_events[player_id].append(event)
+							exclude_ids = self.get_exclude_ids(event.get("x"), event.get("y"), player_id)
+							self._broadcast({
+								"type": "server_event",
+								"event_type": "object_started_breaking",
+								"player_id": player_id,
+								"x": event.get("x"),
+								"y": event.get("y"),
+								"name": event.get("name")
+							}, exclude_ids)
+
+						case "object_stopped_breaking":
+							self.server_events[player_id].append(event)
+							exclude_ids = self.get_exclude_ids(event.get("x"), event.get("y"), player_id)
+							self._broadcast({
+								"type": "server_event",
+								"event_type": "object_stopped_breaking",
+								"player_id": player_id,
+								"x": event.get("x"),
+								"y": event.get("y"),
+								"name": event.get("name")
+							}, exclude_ids)
+
 						case "item_added":
 							event["player_id"] = "Game"
 							self.server_events["Game"].append(event)
@@ -541,7 +562,7 @@ class NetworkManager:
 
 	def _handle_packet_as_client(self, packet: Dict, addr: tuple):
 		"""Обработка пакетов на стороне клиента"""
-		print("Получен пакет: ", packet)
+		print("Получен пакет:", packet)
 		packet_type = packet.get("type")
 		match packet_type:
 			case "peer_list":
@@ -596,17 +617,15 @@ class NetworkManager:
 	def _send_packet(self, packet: Dict, address: tuple):
 		"""Отправка зашифрованного пакета"""
 		if not self.socket:
-			print("Не удалось отправить пакет, потому что сокет не инициализирован")
 			return False
 			
 		try:
 			data = json.dumps(packet).encode("utf-8")
 			encrypted = self._encrypt_data(data)
 			self.socket.sendto(encrypted, address)
-			print(f"Успешно отправлен 1 пакет на {address}")
+			print(f"Отправлен пакет: {packet}")
 			return True
 		except Exception as e:
-			print(f"Ошибка отпарвки {e}")
 			self.chat_message(f"Ошибка отправки: {e}")
 			return False
 	
@@ -728,6 +747,28 @@ class NetworkManager:
 							"type": "server_event",
 							"event_type": "object_removed",
 							"player_id": "Game",
+							"x": event.get("x"),
+							"y": event.get("y"),
+							"name": event.get("name")
+						}
+
+					case "object_started_breaking":
+						exclude_ids = self.get_exclude_ids(event.get("x"), event.get("y"), self.player_id)
+						packet = {
+							"type": "server_event",
+							"event_type": "object_started_breaking",
+							"player_id": self.player_id,
+							"x": event.get("x"),
+							"y": event.get("y"),
+							"name": event.get("name")
+						}
+
+					case "object_stopped_breaking":
+						exclude_ids = self.get_exclude_ids(event.get("x"), event.get("y"), self.player_id)
+						packet = {
+							"type": "server_event",
+							"event_type": "object_stopped_breaking",
+							"player_id": self.player_id,
 							"x": event.get("x"),
 							"y": event.get("y"),
 							"name": event.get("name")
