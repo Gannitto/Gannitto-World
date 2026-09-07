@@ -2030,62 +2030,23 @@ class Farmland:
 		self.rect = pygame.Rect(self.x - 64, self.y - 64, 128, 128)
 		self.images = farmland_images
 		self.image = self.images[0]
-		# self.update_neigboors()
-
 		self.plant = None
 		self.plant_growth_stage = 0
 		self.watered = False
-
-	def update_neigboors(self):
-
-		self.neigbords = []
-		for farmland in ((self.x - 128, self.y), (self.x + 128, self.y), (self.x, self.y - 128), (self.x, self.y + 128)):
-			if farmland in world.chunk_manager.get_chunk_at(*farmland).farmlands:
-				self.neigbords.append(farmland)
-		if len(self.neigbords) == 1:
-
-			if self.neigbords[0][0] == self.x:
-				self.image = self.images[1]
-			else:
-				self.image = self.images[0]
-
-		elif len(self.neigbords) == 2:
-
-			if self.neigbords[0][0] == self.x == self.neigbords[1][0]:
-				self.image = self.images[1]
-			elif self.neigbords[0][1] == self.y == self.neigbords[1][1]:
-				self.image = self.images[0]
-			elif (self.neigbords[0][0] == self.x - 256 and self.neigbords[1][1] == self.y + 256) or (self.neigbords[1][0] == self.x - 256 and self.neigbords[0][1] == self.y + 256):
-				self.image = self.images[2]
-			elif (self.neigbords[0][0] == self.x + 256 and self.neigbords[1][1] == self.y + 256) or (self.neigbords[1][0] == self.x + 256 and self.neigbords[0][1] == self.y + 256):
-				self.image = self.images[3]
-			elif (self.neigbords[0][0] == self.x + 256 and self.neigbords[1][1] == self.y - 256) or (self.neigbords[1][0] == self.x + 256 and self.neigbords[0][1] == self.y - 256):
-				self.image = self.images[4]
-			elif (self.neigbords[0][0] == self.x - 256 and self.neigbords[1][1] == self.y - 256) or (self.neigbords[1][0] == self.x - 256 and self.neigbords[0][1] == self.y - 256):
-				self.image = self.images[5]
-
-		elif len(self.neigbords) == 3:
-
-			if self.neigbords[0][1] != self.y + 256 and self.neigbords[1][1] != self.y + 256 and self.neigbords[2][1] != self.y + 256:
-				self.image = self.images[6]
-			if self.neigbords[0][1] != self.y - 256 and self.neigbords[1][1] != self.y - 256 and self.neigbords[2][1] != self.y - 256:
-				self.image = self.images[7]
-			if self.neigbords[0][0] != self.x + 256 and self.neigbords[1][0] != self.x + 256 and self.neigbords[2][0] != self.x + 256:
-				self.image = self.images[8]
-			if self.neigbords[0][0] != self.x - 256 and self.neigbords[1][0] != self.x - 256 and self.neigbords[2][0] != self.x - 256:
-				self.image = self.images[9]
-
-		elif len(self.neigbords) == 4:
-			self.image = self.images[10]
 		
 	def main(self, release):
 
-		if False and release and self.x + Width // 2 - player.x <= mouse_x <= self.x + Width // 2 - player.x + 256 and player.y - self.y + Height // 2 - 128 <= mouse_y <= player.y - self.y + Height // 2 + 128:
-			...
+		world_rect = world_rect_to_screen(self.x - 64, self.y + 64, 128, 128)
+		if release and pygame.Rect(world_rect).collidepoint((mouse_x, mouse_y)):
+			self.handle_click()
 		win.blit(self.image, world_to_screen(self.x, self.y, 256, 256))
 		if Settings["Display"][3]:
-			pygame.draw.rect(win, (0, 0, 0), world_rect_to_screen(self.x, self.y, 128, 128), 3)
+			pygame.draw.rect(win, (0, 0, 0), world_rect, 3)
 		
+	def handle_click(self):
+		# TODO тут будет обработка нажатий
+		pass
+	
 	def __getstate__(self):
 		
 		state = self.__dict__.copy()
@@ -3812,7 +3773,7 @@ objects_templates = {
 
 def start_game():
 	
-	global win, changed_slot, menu_open, multiplayer_menu_open, screenmode, inventory_open, hold_left, backrooms, text_color, bullet_num, craft_items_list, craft_amounts_list, craft_images_list, screenshot_num, mouse_x, mouse_y, item_settings_open, chat_tick, chat, main_chat, craft_list_open, craft_list_page, craft_list_offset, click, in_motherboard, world_name, color, multiplayer, animation, start_time, new_particles, inside_files, game, alt_pressed, player, world, FPS, MAX_FPS, screen_rect, time_index, game_events, show_cursor, cursor_timer
+	global win, changed_slot, menu_open, multiplayer_menu_open, screenmode, inventory_open, hold_left, backrooms, text_color, bullet_num, craft_items_list, craft_amounts_list, craft_images_list, screenshot_num, mouse_x, mouse_y, item_settings_open, chat_tick, chat, main_chat, craft_list_open, craft_list_page, craft_list_offset, craft_list_max_offset, click, in_motherboard, world_name, color, multiplayer, animation, start_time, new_particles, inside_files, game, alt_pressed, player, world, FPS, MAX_FPS, screen_rect, time_index, game_events, show_cursor, cursor_timer
 
 	night_playing = False
 	input_text = ""
@@ -3830,6 +3791,7 @@ def start_game():
 	dx = 0
 	dy = 0
 	release = False
+	craft_list_max_offset = (len(inventory.recipes) + 1) * -80 + Height
 
 	new_particles = []
 
