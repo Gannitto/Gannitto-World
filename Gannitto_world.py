@@ -394,6 +394,21 @@ for door_type in door_types:
 	)
 
 farmland_images = (pygame.transform.scale(pygame.image.load(path + "Images/Objects/Farmland.png"), (128, 128)),)
+plant_types = ("Wheat", "Cucumber", "Tomato", "Corn", "Onion")
+seed_types = {"Wheat seeds": "Wheat",
+			  "Cucumber seeds": "Cucumber",
+			  "Tomato seeds": "Tomato",
+			  "Corn seeds": "Corn",
+			  "Onion": "Onion"}
+
+plant_images = {}
+for plant_type in plant_types:
+	plant_images[plant_type] = (
+		pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + plant_type + " 1.png"), (128, 128)),
+		pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + plant_type + " 2.png"), (128, 128)),
+		pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + plant_type + " 3.png"), (128, 128)),
+		pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + plant_type + " 4.png"), (128, 128))
+	)
 
 textures = {
 
@@ -2040,12 +2055,26 @@ class Farmland:
 		if release and pygame.Rect(world_rect).collidepoint((mouse_x, mouse_y)):
 			self.handle_click()
 		win.blit(self.image, world_to_screen(self.x, self.y, 256, 256))
+		if self.plant is not None:
+			win.blit(plant_images[self.plant][self.plant_growth_stage], world_to_screen(self.x, self.y, 256, 256))
 		if Settings["Display"][3]:
 			pygame.draw.rect(win, (0, 0, 0), world_rect, 3)
 		
 	def handle_click(self):
-		# TODO тут будет обработка нажатий
-		pass
+		slot = inventory.whole_inventory[changed_slot]
+		if self.plant is None:
+			if slot is not None and slot.name in seed_types:
+				self.plant = seed_types[slot.name]
+				inventory.reduce(changed_slot)
+				# self.plant_growth_stage = 3
+		elif self.plant_growth_stage == 2:
+			if slot is not None and slot.name == "Water bucket":
+				inventory.reduce(changed_slot)
+				inventory.increate("Water bucket")
+				self.watered = True
+				pygame.mixer.Sound.play(pygame.mixer.Sound(path + "Sounds/Watering plants " + str(random.randint(1, 2)) + ".mp3"))
+		elif self.plant_growth_stage == 3:
+			pass
 	
 	def __getstate__(self):
 		
