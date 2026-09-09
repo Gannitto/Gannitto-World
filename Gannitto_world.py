@@ -2047,9 +2047,10 @@ class Farmland:
 		self.image = self.images[0]
 		self.plant = None
 		self.plant_growth_stage = 0
+		self.grow_timer = 0
 		self.watered = False
 		
-	def main(self, release):
+	def main(self, release, dt):
 
 		world_rect = world_rect_to_screen(self.x - 64, self.y + 64, 128, 128)
 		if release and pygame.Rect(world_rect).collidepoint((mouse_x, mouse_y)):
@@ -2057,6 +2058,13 @@ class Farmland:
 		win.blit(self.image, world_to_screen(self.x, self.y, 256, 256))
 		if self.plant is not None:
 			win.blit(plant_images[self.plant][self.plant_growth_stage], world_to_screen(self.x, self.y, 256, 256))
+			if self.plant_growth_stage != 3:
+				self.grow_timer -= dt
+			if self.grow_timer <= 0:
+				self.plant_growth_stage += 1
+				self.grow_timer = random.randint(2, 3)
+				if self.plant_growth_stage == 2 and not self.watered:
+					self.plant_growth_stage = 3
 		if Settings["Display"][3]:
 			pygame.draw.rect(win, (0, 0, 0), world_rect, 3)
 		
@@ -2066,15 +2074,26 @@ class Farmland:
 			if slot is not None and slot.name in seed_types:
 				self.plant = seed_types[slot.name]
 				inventory.reduce(changed_slot)
+				self.grow_timer = random.randint(2, 3)
 				# self.plant_growth_stage = 3
-		elif self.plant_growth_stage == 2:
+		elif self.plant_growth_stage == 1:
 			if slot is not None and slot.name == "Water bucket":
 				inventory.reduce(changed_slot)
 				inventory.increate("Water bucket")
 				self.watered = True
 				pygame.mixer.Sound.play(pygame.mixer.Sound(path + "Sounds/Watering plants " + str(random.randint(1, 2)) + ".mp3"))
+		elif self.plant_growth_stage == 2:
+			destroy_object(plant_images[self.plant][self.plant_growth_stage], self.x - 64, self.y + 64, world, Particle)
+			for _ in range(random.randint(1, 3)):
+				rand_x, rand_y = self.x - 64 + random.randint(-64, 64), self.y + 64 + random.randint(-64, 64)
+				world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object(self.plant, rand_x, rand_y, f"Images/Items/{self.plant}.png", pickable=True))
+			self.plant = None
+			self.plant_growth_stage = 0
+			self.watered = False
 		elif self.plant_growth_stage == 3:
-			pass
+			destroy_object(plant_images[self.plant][self.plant_growth_stage], self.x - 64, self.y + 64, world, Particle)
+			self.plant = None
+			self.plant_growth_stage = 0
 	
 	def __getstate__(self):
 		
@@ -4193,6 +4212,9 @@ def start_game():
 		
 		for mechanism in world.mechanisms:
 			mechanism.main()
+		
+		for farmland in world.visible_farmlands.values():
+			farmland.main(release, dt)
 
 		if not Backrooms.InBackrooms and world.current_cave is None:
 
@@ -4564,9 +4586,6 @@ def start_game():
 
 		for projectile in world.projectiles:
 			projectile.main()
-		
-		for farmland in world.visible_farmlands.values():
-			farmland.main(release)
 
 		for wall in world.visible_walls.values():
 			wall.main(release)
