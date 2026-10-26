@@ -19,8 +19,8 @@ from Chunks import ChunkManager
 from Inventory import inventory
 from Translator import translator
 from Cache import TextureCache
-from SettingsUI import SettingsUI
-from GameTime import GameTime
+from UISystem import UISystem
+from TimeSystem import TimeSystem
 from Commands import command_system
 from Globals import *
 from Light import create_light_circle, create_light_circle_with_falloff, remove_light_circle
@@ -187,7 +187,7 @@ def save(darken:bool=True, save_world_settings:bool=False):
 	"""
 
 	global player
-	Saver.save_objects(path + "Settings/Statistics.save", statistics)
+	Saver.save_objects(path + "Saves/Settings/Statistics.save", statistics)
 	
 	if world_name is not None:
 		
@@ -196,27 +196,27 @@ def save(darken:bool=True, save_world_settings:bool=False):
 			# TODO сохранение данных о других игроках
 		else:
 			
-			Saver.save_objects(path + "Worlds/" + world_name + "/Mobs.save", world.mobs)
-			Saver.save_objects(path + "Worlds/" + world_name + "/Info.save", [player.x, player.y, Backrooms.InBackrooms, Backrooms.Level, world.current_cave, player.speed, player.HP, start_time, ron.x, ron.y, ron.home, ron.inventory, world.chunk_manager.generator.seed, game_time.current_time])
-			Saver.save_objects(path + "Worlds/" + world_name + "/Inventory.save", inventory.whole_inventory)
-			Saver.save_objects(path + "Worlds/" + world_name + "/Resources.save", inventory.resources)
-			Saver.save_objects(path + "Worlds/" + world_name + "/Effects.save", player.effects)
+			Saver.save_objects(path + "Saves/Worlds/" + world_name + "/Mobs.save", world.mobs)
+			Saver.save_objects(path + "Saves/Worlds/" + world_name + "/Info.save", [player.x, player.y, Backrooms.InBackrooms, Backrooms.Level, world.current_cave, player.speed, player.HP, start_time, ron.x, ron.y, ron.home, ron.inventory, world.chunk_manager.generator.seed, time_system.current_time])
+			Saver.save_objects(path + "Saves/Worlds/" + world_name + "/Inventory.save", inventory.whole_inventory)
+			Saver.save_objects(path + "Saves/Worlds/" + world_name + "/Resources.save", inventory.resources)
+			Saver.save_objects(path + "Saves/Worlds/" + world_name + "/Effects.save", player.effects)
 
 			new_particles = []
 			particle_count = 1
 			for particle in new_particles:
 				if particle.save_particle:
-					pygame.image.save(particle.image, path + "Worlds/" + world_name +"/Images/Particle " + str(particle_count) + ".png")
-					particle.image_path = path + "Worlds/Images/Particle " + str(particle_count) + ".png"
+					pygame.image.save(particle.image, path + "Saves/Worlds/" + world_name +"/Images/Particle " + str(particle_count) + ".png")
+					particle.image_path = path + "Saves/Worlds/Images/Particle " + str(particle_count) + ".png"
 					particle_count += 1
 					new_particles.append(particle)
-			Saver.save_objects(path + "Worlds/" + world_name + "/Particles.save", new_particles)
+			Saver.save_objects(path + "Saves/Worlds/" + world_name + "/Particles.save", new_particles)
 			world.chunk_manager.save_all_loaded_chunks()
 				
 	if darken and Settings["Display"][9]:
 		win_darken(win)
 		
-	if save_world_settings: Saver.save_objects(path + "Worlds/" + world_name + "/Settings.save", [game.difficulty, player.god_mode])
+	if save_world_settings: Saver.save_objects(path + "Saves/Worlds/" + world_name + "/Settings.save", [game.difficulty, player.god_mode])
 
 # Применение настроек TODO
 
@@ -412,13 +412,13 @@ for plant_type in plant_types:
 
 textures = {
 
-	"Forest": pygame.transform.scale(pygame.image.load(path + "Images/Bioms/Forest.png"), (256, 256)),
-	"Desert": pygame.transform.scale(pygame.image.load(path + "Images/Bioms/Desert.png"), (256, 256)),
-	"Field": pygame.transform.scale(pygame.image.load(path + "Images/Bioms/Field.png"), (256, 256)),
-	"Taiga": pygame.transform.scale(pygame.image.load(path + "Images/Bioms/Taiga.png"), (256, 256)),
-	"Swamp": pygame.transform.scale(pygame.image.load(path + "Images/Bioms/Swamp.png"), (256, 256)),
-	"Backrooms 0": pygame.transform.scale(pygame.image.load(path + "Images/Bioms/Backrooms 0.png"), (256, 256)),
-	"Backrooms 0.2": pygame.transform.scale(pygame.image.load(path + "Images/Bioms/Backrooms 0.2.png"), (256, 256)),
+	"Forest": pygame.transform.scale(pygame.image.load(path + "Images/Biomes/Forest.png"), (256, 256)),
+	"Desert": pygame.transform.scale(pygame.image.load(path + "Images/Biomes/Desert.png"), (256, 256)),
+	"Field": pygame.transform.scale(pygame.image.load(path + "Images/Biomes/Field.png"), (256, 256)),
+	"Taiga": pygame.transform.scale(pygame.image.load(path + "Images/Biomes/Taiga.png"), (256, 256)),
+	"Swamp": pygame.transform.scale(pygame.image.load(path + "Images/Biomes/Swamp.png"), (256, 256)),
+	"Backrooms 0": pygame.transform.scale(pygame.image.load(path + "Images/Biomes/Backrooms 0.png"), (256, 256)),
+	"Backrooms 0.2": pygame.transform.scale(pygame.image.load(path + "Images/Biomes/Backrooms 0.2.png"), (256, 256)),
 	"Backrooms 1": pygame.transform.scale(pygame.Surface((256, 256)), (256, 256)),
 
 	}
@@ -2062,7 +2062,7 @@ class Farmland:
 				self.grow_timer -= dt
 			if self.grow_timer <= 0:
 				self.plant_growth_stage += 1
-				self.grow_timer = random.randint(2, 3)
+				self.grow_timer = random.randint(250, 350)
 				if self.plant_growth_stage == 2 and not self.watered:
 					self.plant_growth_stage = 3
 		if Settings["Display"][3]:
@@ -2074,7 +2074,7 @@ class Farmland:
 			if slot is not None and slot.name in seed_types:
 				self.plant = seed_types[slot.name]
 				inventory.reduce(changed_slot)
-				self.grow_timer = random.randint(2, 3)
+				self.grow_timer = random.randint(250, 350)
 				# self.plant_growth_stage = 3
 		elif self.plant_growth_stage == 1:
 			if slot is not None and slot.name == "Water bucket":
@@ -2424,7 +2424,7 @@ class World:
 								win.blit(biome_texture, (tile_screen_x, tile_screen_y))
 
 world = World()
-game_time = GameTime()
+time_system = TimeSystem()
 ron = Ron(world_to_screen, Projectile, player)
 
 class GameState:
@@ -2533,7 +2533,7 @@ class Vending_machine:
 		self.owner = Settings["User"][0]
 		self.image = Vending_machine_image
 
-settings_ui = SettingsUI()
+ui_system = UISystem()
 
 def create_throw_particle(item_image, item_name):
 	
@@ -2634,11 +2634,11 @@ command_system.commands = {
 		"kukusiki_hack": (kukusiki_hack, "Раскрывает код вселенной\n/kukusiki_hack"),
 		"tp": (tp, "Телепортация игрока на указанные координаты\n tp X Y"),
 		"give": (inventory.increate, "Выдача предмета в инвентарь\n give ПРЕДМЕТ КОЛИЧЕСТВО=1"),
-		"get_brightness": (game_time.get_brightness, "Получение текущей яркости днейвного цикла\n/get_brightness"),
-		"get_time_of_day": (game_time.get_time_of_day, "Получение текущего времени в 24-часовом формате\n/get_time_of_day"),
-		"set_time_speed": (game_time.set_time_speed, "Изменить скорость времени\n/time_scale МНОЖИТЕЛЬ"),
-		"reset_to_day": (game_time.reset_to_day, "Обнулить время до дня\n/reset_to_day"),
-		"skip_time": (game_time.skip_time, "Перемотать время вперёд\n/skip_time СЕКУНДЫ"),
+		"get_brightness": (time_system.get_brightness, "Получение текущей яркости днейвного цикла\n/get_brightness"),
+		"get_time_of_day": (time_system.get_time_of_day, "Получение текущего времени в 24-часовом формате\n/get_time_of_day"),
+		"set_time_speed": (time_system.set_time_speed, "Изменить скорость времени\n/time_scale МНОЖИТЕЛЬ"),
+		"reset_to_day": (time_system.reset_to_day, "Обнулить время до дня\n/reset_to_day"),
+		"skip_time": (time_system.skip_time, "Перемотать время вперёд\n/skip_time СЕКУНДЫ"),
 		"chat_message": (chat_message, "Вывести сообщение в чат\n/chat_message ТЕКСТ")
 
 		}
@@ -2742,7 +2742,7 @@ def settings():
 							screenmode = "FULLSCREEN"
 
 					if event.key == hot_keys["Close"]:
-						Saver.save_objects(path + "Settings/Settings.save", Settings)
+						Saver.save_objects(path + "Saves/Settings/Settings.save", Settings)
 						win_darken(win)
 						menu()
 
@@ -2753,7 +2753,7 @@ def settings():
 			show_reset_settings()
 			
 			if back_button.get_pressed():
-				Saver.save_objects(path + "Settings/Settings.save", Settings)
+				Saver.save_objects(path + "Saves/Settings/Settings.save", Settings)
 				win_darken(win)
 				menu()
 				
@@ -2843,7 +2843,7 @@ def settings():
 		global win, screenmode, Settings, alt_pressed, MAX_FPS
 
 		bias = 0
-		max_bias = -settings_ui._set_positions(bias, "Display", True)
+		max_bias = -ui_system._set_positions(bias, "Display", True)
 		max_bias = (max_bias + Height - 103) * max_bias > Height - 103
 
 		while True:
@@ -2856,7 +2856,7 @@ def settings():
 			
 			for event in events:
 				if event.type == pygame.QUIT:
-					Saver.save_objects(path + "Settings/Settings.save", Settings)
+					Saver.save_objects(path + "Saves/Settings/Settings.save", Settings)
 					save()
 					sys.exit()
 				
@@ -2867,7 +2867,7 @@ def settings():
 					if event.key == hot_keys["Show keys"]:
 						alt_pressed = not alt_pressed
 					if event.key == hot_keys["Close"]:
-						Saver.save_objects(path + "Settings/Settings.save", Settings)
+						Saver.save_objects(path + "Saves/Settings/Settings.save", Settings)
 						win_darken(win)
 						menu()
 					if event.key == hot_keys["Change screen"]:
@@ -2880,14 +2880,14 @@ def settings():
 
 				elif event.type == pygame.MOUSEWHEEL:
 					bias = max((min(bias + event.y * Settings["Game"][2], 0)), max_bias)
-					settings_ui._set_positions(bias, "Display")
+					ui_system._set_positions(bias, "Display")
 			
 			# Очистка экрана
 			win.fill(menu_color_light)
 			
 			# Обработка UI
-			settings_ui.handle_events(events, mouse_x, mouse_y, release, "Display")
-			settings_ui.draw("Display", bias, max_bias)
+			ui_system.handle_events(events, mouse_x, mouse_y, release, "Display")
+			ui_system.draw("Display", bias, max_bias)
 			
 			help_button.main(help)
 			win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Display 2.png"), (222, 64)), (10, 192))
@@ -2904,7 +2904,7 @@ def settings():
 				draw_key("ESC", 44, 108)
 
 			if back_button.get_pressed():
-				Saver.save_objects(path + "Settings/Settings.save", Settings)
+				Saver.save_objects(path + "Saves/Settings/Settings.save", Settings)
 				win_darken(win)
 				menu()
 				
@@ -2931,14 +2931,14 @@ def settings():
 					if event.key == hot_keys["Show keys"]:
 						alt_pressed = not alt_pressed
 					if event.key == hot_keys["Close"]:
-						Saver.save_objects(path + "Settings/Settings.save", Settings)
+						Saver.save_objects(path + "Saves/Settings/Settings.save", Settings)
 						win_darken(win)
 						menu()
 
 					if event.key == pygame.K_1:
 						Settings["Languages"][0] = "English"
 						translator.load_language("English")
-						for element_list in settings_ui.elements.values():
+						for element_list in ui_system.elements.values():
 							for element in element_list:
 								element.label_width = element.font.size(t(element.label))[0] + 10
 								element.rect = pygame.Rect(element.x + element.label_width, element.y, element.width, element.height)
@@ -2946,7 +2946,7 @@ def settings():
 					if event.key == pygame.K_2:
 						Settings["Languages"][0] = "Russian"
 						translator.load_language("Russian")
-						for element_list in settings_ui.elements.values():
+						for element_list in ui_system.elements.values():
 							for element in element_list:
 								element.label_width = element.font.size(t(element.label))[0] + 10
 								element.rect = pygame.Rect(element.x + element.label_width, element.y, element.width, element.height)
@@ -2954,7 +2954,7 @@ def settings():
 					if event.key == pygame.K_3:
 						Settings["Languages"][0] = "Kazach"
 						translator.load_language("Karach")
-						for element_list in settings_ui.elements.values():
+						for element_list in ui_system.elements.values():
 							for element in element_list:
 								element.label_width = element.font.size(t(element.label))[0] + 10
 								element.rect = pygame.Rect(element.x + element.label_width, element.y, element.width, element.height)
@@ -2972,7 +2972,7 @@ def settings():
 			pygame.draw.line(win, menu_color_medium, (307, 103), (Width, 103), 8)
 			back_button.main()
 			if back_button.get_pressed():
-				Saver.save_objects(path + "Settings/Settings.save", Settings)
+				Saver.save_objects(path + "Saves/Settings/Settings.save", Settings)
 				win_darken(win)
 				menu()
 			show_reset_settings()
@@ -2988,7 +2988,7 @@ def settings():
 			if english_button.get_pressed():
 				Settings["Languages"][0] = "English"
 				translator.load_language("English")
-				for element_list in settings_ui.elements.values():
+				for element_list in ui_system.elements.values():
 					for element in element_list:
 						element.label_width = element.font.size(t(element.label))[0] + 10
 						element.rect = pygame.Rect(element.x + element.label_width, element.y, element.width, element.height)
@@ -2997,7 +2997,7 @@ def settings():
 			if russian_button.get_pressed():
 				Settings["Languages"][0] = "Russian"
 				translator.load_language("Russian")
-				for element_list in settings_ui.elements.values():
+				for element_list in ui_system.elements.values():
 					for element in element_list:
 						element.label_width = element.font.size(t(element.label))[0] + 10
 						element.rect = pygame.Rect(element.x + element.label_width, element.y, element.width, element.height)
@@ -3006,7 +3006,7 @@ def settings():
 			if kazach_button.get_pressed():
 				Settings["Languages"][0] = "Kazach"
 				translator.load_language("Kazach")
-				for element_list in settings_ui.elements.values():
+				for element_list in ui_system.elements.values():
 					for element in element_list:
 						element.label_width = element.font.size(t(element.label))[0] + 10
 						element.rect = pygame.Rect(element.x + element.label_width, element.y, element.width, element.height)
@@ -3041,7 +3041,7 @@ def settings():
 		global win, screenmode, Settings, alt_pressed, MAX_FPS
 
 		bias = 0
-		max_bias = -settings_ui._set_positions(bias, "User", True)
+		max_bias = -ui_system._set_positions(bias, "User", True)
 		max_bias = (max_bias + Height - 103) * max_bias > Height - 103
 
 		while True:
@@ -3055,7 +3055,7 @@ def settings():
 			
 			for event in events:
 				if event.type == pygame.QUIT:
-					Saver.save_objects(path + "Settings/Settings.save", Settings)
+					Saver.save_objects(path + "Saves/Settings/Settings.save", Settings)
 					save()
 					sys.exit()
 				
@@ -3066,7 +3066,7 @@ def settings():
 					if event.key == hot_keys["Show keys"]:
 						alt_pressed = not alt_pressed
 					if event.key == hot_keys["Close"]:
-						Saver.save_objects(path + "Settings/Settings.save", Settings)
+						Saver.save_objects(path + "Saves/Settings/Settings.save", Settings)
 						win_darken(win)
 						menu()
 					if event.key == hot_keys["Change screen"]:
@@ -3079,14 +3079,14 @@ def settings():
 
 				elif event.type == pygame.MOUSEWHEEL:
 					bias = max((min(bias + event.y * Settings["Game"][2], 0)), max_bias)
-					settings_ui._set_positions(bias, "User")
+					ui_system._set_positions(bias, "User")
 			
 			# Очистка экрана
 			win.fill(menu_color_light)
 			
 			# Обработка UI
-			settings_ui.handle_events(events, mouse_x, mouse_y, release, "User")
-			settings_ui.draw("User", bias, max_bias)
+			ui_system.handle_events(events, mouse_x, mouse_y, release, "User")
+			ui_system.draw("User", bias, max_bias)
 			
 			help_button.main(help)
 			display_button.main(display)
@@ -3103,7 +3103,7 @@ def settings():
 				draw_key("ESC", 44, 108)
 
 			if back_button.get_pressed():
-				Saver.save_objects(path + "Settings/Settings.save", Settings)
+				Saver.save_objects(path + "Saves/Settings/Settings.save", Settings)
 				win_darken(win)
 				menu()
 				
@@ -3118,7 +3118,7 @@ def settings():
 		global win, screenmode, Settings, alt_pressed, MAX_FPS
 
 		bias = 0
-		max_bias = -settings_ui._set_positions(bias, "Sound", True)
+		max_bias = -ui_system._set_positions(bias, "Sound", True)
 		max_bias = (max_bias + Height - 103) * max_bias > Height - 103
 
 		while True:
@@ -3132,7 +3132,7 @@ def settings():
 			
 			for event in events:
 				if event.type == pygame.QUIT:
-					Saver.save_objects(path + "Settings/Settings.save", Settings)
+					Saver.save_objects(path + "Saves/Settings/Settings.save", Settings)
 					save()
 					sys.exit()
 				
@@ -3143,7 +3143,7 @@ def settings():
 					if event.key == hot_keys["Show keys"]:
 						alt_pressed = not alt_pressed
 					if event.key == hot_keys["Close"]:
-						Saver.save_objects(path + "Settings/Settings.save", Settings)
+						Saver.save_objects(path + "Saves/Settings/Settings.save", Settings)
 						win_darken(win)
 						menu()
 					if event.key == hot_keys["Change screen"]:
@@ -3181,14 +3181,14 @@ def settings():
 
 				elif event.type == pygame.MOUSEWHEEL:
 					bias = max((min(bias + event.y * Settings["Game"][2], 0)), max_bias)
-					settings_ui._set_positions(bias, "Sound")
+					ui_system._set_positions(bias, "Sound")
 			
 			# Очистка экрана
 			win.fill(menu_color_light)
 			
 			# Обработка UI
-			settings_ui.handle_events(events, mouse_x, mouse_y, release, "Sound")
-			settings_ui.draw("Sound", bias, max_bias)
+			ui_system.handle_events(events, mouse_x, mouse_y, release, "Sound")
+			ui_system.draw("Sound", bias, max_bias)
 			
 			help_button.main(help)
 			display_button.main(display)
@@ -3205,7 +3205,7 @@ def settings():
 				draw_key("ESC", 44, 108)
 
 			if back_button.get_pressed():
-				Saver.save_objects(path + "Settings/Settings.save", Settings)
+				Saver.save_objects(path + "Saves/Settings/Settings.save", Settings)
 				win_darken(win)
 				menu()
 				
@@ -3220,7 +3220,7 @@ def settings():
 		global win, screenmode, Settings, alt_pressed, MAX_FPS
 
 		bias = 0
-		max_bias = -settings_ui._set_positions(bias, "Statistics", True)
+		max_bias = -ui_system._set_positions(bias, "Statistics", True)
 		max_bias = (max_bias + Height - 103) * max_bias > Height - 103
 
 		while True:
@@ -3234,7 +3234,7 @@ def settings():
 			
 			for event in events:
 				if event.type == pygame.QUIT:
-					Saver.save_objects(path + "Settings/Settings.save", Settings)
+					Saver.save_objects(path + "Saves/Settings/Settings.save", Settings)
 					save()
 					sys.exit()
 				
@@ -3245,7 +3245,7 @@ def settings():
 					if event.key == hot_keys["Show keys"]:
 						alt_pressed = not alt_pressed
 					if event.key == hot_keys["Close"]:
-						Saver.save_objects(path + "Settings/Settings.save", Settings)
+						Saver.save_objects(path + "Saves/Settings/Settings.save", Settings)
 						win_darken(win)
 						menu()
 					if event.key == hot_keys["Change screen"]:
@@ -3258,13 +3258,13 @@ def settings():
 
 				elif event.type == pygame.MOUSEWHEEL:
 					bias = max((min(bias + event.y * Settings["Game"][2], 0)), max_bias)
-					settings_ui._set_positions(bias, "Statistics")
+					ui_system._set_positions(bias, "Statistics")
 			
 			# Очистка экрана
 			win.fill(menu_color_light)
 			
 			# Обработка UI
-			settings_ui.draw("Statistics", bias, max_bias)
+			ui_system.draw("Statistics", bias, max_bias)
 			
 			help_button.main(help)
 			display_button.main(display)
@@ -3281,7 +3281,7 @@ def settings():
 				draw_key("ESC", 44, 108)
 
 			if back_button.get_pressed():
-				Saver.save_objects(path + "Settings/Settings.save", Settings)
+				Saver.save_objects(path + "Saves/Settings/Settings.save", Settings)
 				win_darken(win)
 				menu()
 				
@@ -3421,7 +3421,7 @@ def settings():
 			for event in pygame.event.get():
 
 				if event.type == pygame.QUIT:
-					Saver.save_objects(path + "Settings/Hot keys.save", hot_keys)
+					Saver.save_objects(path + "Saves/Settings/Hot keys.save", hot_keys)
 					save()
 					sys.exit()
 				if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
@@ -3433,8 +3433,8 @@ def settings():
 						if looked_key is not None:
 							looked_key = None
 						else:
-							Saver.save_objects(path + "Settings/Settings.save", Settings)
-							Saver.save_objects(path + "Settings/Hot keys.save", hot_keys)
+							Saver.save_objects(path + "Saves/Settings/Settings.save", Settings)
+							Saver.save_objects(path + "Saves/Settings/Hot keys.save", hot_keys)
 							win_darken(win)
 							menu()
 
@@ -3452,8 +3452,8 @@ def settings():
 					looked_key = None
 					time.sleep(0.1)
 				else:
-					Saver.save_objects(path + "Settings/Settings.save", Settings)
-					Saver.save_objects(path + "Settings/Hot keys.save", hot_keys)
+					Saver.save_objects(path + "Saves/Settings/Settings.save", Settings)
+					Saver.save_objects(path + "Saves/Settings/Hot keys.save", hot_keys)
 					win_darken(win)
 					menu()
 				
@@ -3553,7 +3553,7 @@ def settings():
 		global win, screenmode, Settings, alt_pressed, MAX_FPS
 
 		bias = 0
-		max_bias = -settings_ui._set_positions(bias, "Game", True)
+		max_bias = -ui_system._set_positions(bias, "Game", True)
 		max_bias = (max_bias + Height - 103) * max_bias > Height - 103
 
 		while True:
@@ -3567,7 +3567,7 @@ def settings():
 			
 			for event in events:
 				if event.type == pygame.QUIT:
-					Saver.save_objects(path + "Settings/Settings.save", Settings)
+					Saver.save_objects(path + "Saves/Settings/Settings.save", Settings)
 					save()
 					sys.exit()
 				
@@ -3578,7 +3578,7 @@ def settings():
 					if event.key == hot_keys["Show keys"]:
 						alt_pressed = not alt_pressed
 					if event.key == hot_keys["Close"]:
-						Saver.save_objects(path + "Settings/Settings.save", Settings)
+						Saver.save_objects(path + "Saves/Settings/Settings.save", Settings)
 						win_darken(win)
 						menu()
 					if event.key == hot_keys["Change screen"]:
@@ -3591,14 +3591,14 @@ def settings():
 
 				elif event.type == pygame.MOUSEWHEEL:
 					bias = max((min(bias + event.y * Settings["Game"][2], 0)), max_bias)
-					settings_ui._set_positions(bias, "Game")
+					ui_system._set_positions(bias, "Game")
 			
 			# Очистка экрана
 			win.fill(menu_color_light)
 			
 			# Обработка UI
-			settings_ui.handle_events(events, mouse_x, mouse_y, release, "Game")
-			settings_ui.draw("Game", bias, max_bias)
+			ui_system.handle_events(events, mouse_x, mouse_y, release, "Game")
+			ui_system.draw("Game", bias, max_bias)
 			
 			help_button.main(help)
 			display_button.main(display)
@@ -3615,7 +3615,7 @@ def settings():
 				draw_key("ESC", 44, 108)
 
 			if back_button.get_pressed():
-				Saver.save_objects(path + "Settings/Settings.save", Settings)
+				Saver.save_objects(path + "Saves/Settings/Settings.save", Settings)
 				win_darken(win)
 				menu()
 				
@@ -3809,7 +3809,7 @@ def change_a_character():
 
 	characters()
 
-hot_keys = Saver.load_objects(path + "Settings/Hot keys.save")
+hot_keys = Saver.load_objects(path + "Saves/Settings/Hot keys.save")
 objects_templates = {
 		"Table": Object("Table", 0, 0, "Images/Objects/Table.png", (256, 256), is_solid=True, breakable_by_hammer=True),
 		"Wall table": Object("Wall table", 0, 0, "Images/Objects/Wall table.png", (256, 256), special_flags=1, is_solid=True, breakable_by_hammer=True),
@@ -3855,16 +3855,16 @@ def start_game():
 
 	# Загрузка данных мира
 	if not multiplayer or multiplayer_role == "Host":
-		world.chunk_manager.save_directory = path + "Worlds/" + world_name + "/Chunks/"
+		world.chunk_manager.save_directory = path + "Saves/Worlds/" + world_name + "/Chunks/"
 
-		if os.path.exists(path + "Worlds/" + world_name):
+		if os.path.exists(path + "Saves/Worlds/" + world_name):
 			
-			world.mobs = Saver.load_objects(path + "Worlds/" + world_name + "/Mobs.save")
-			player.x, player.y, Backrooms.InBackrooms, Backrooms.Level, world.current_cave, player.speed, player.HP, start_time, ron.x, ron.y, ron.home, ron.inventory, world.chunk_manager.generator.seed, game_time.current_time = Saver.load_objects(path + "Worlds/" + world_name + "/Info.save")
+			world.mobs = Saver.load_objects(path + "Saves/Worlds/" + world_name + "/Mobs.save")
+			player.x, player.y, Backrooms.InBackrooms, Backrooms.Level, world.current_cave, player.speed, player.HP, start_time, ron.x, ron.y, ron.home, ron.inventory, world.chunk_manager.generator.seed, time_system.current_time = Saver.load_objects(path + "Saves/Worlds/" + world_name + "/Info.save")
 			world.chunk_manager.update_seed()
-			game.difficulty, player.god_mode = Saver.load_objects(path + "Worlds/" + world_name + "/Settings.save")
-			inventory.whole_inventory = Saver.load_objects(path + "Worlds/" + world_name + "/Inventory.save")
-			player.effects = Saver.load_objects(path + "Worlds/" + world_name + "/Effects.save")
+			game.difficulty, player.god_mode = Saver.load_objects(path + "Saves/Worlds/" + world_name + "/Settings.save")
+			inventory.whole_inventory = Saver.load_objects(path + "Saves/Worlds/" + world_name + "/Inventory.save")
+			player.effects = Saver.load_objects(path + "Saves/Worlds/" + world_name + "/Effects.save")
 
 			if multiplayer:
 				net.peers[net.player_id].x = player.x
@@ -3873,8 +3873,8 @@ def start_game():
 			
 		else:
 
-			os.mkdir(path + "Worlds/" + world_name)
-			os.mkdir(path + "Worlds/" + world_name + "/Images")
+			os.mkdir(path + "Saves/Worlds/" + world_name)
+			os.mkdir(path + "Saves/Worlds/" + world_name + "/Images")
 
 			save(False, True)
 
@@ -3942,7 +3942,7 @@ def start_game():
 
 		FPS = int(clock.get_fps())
 		dt = clock.tick(MAX_FPS) / 1000.0
-		game_time.update(dt)
+		time_system.update(dt)
 		player.changed_item = inventory.whole_inventory[changed_slot]
 		if multiplayer:
 			game_events.clear()
@@ -4164,12 +4164,12 @@ def start_game():
 			else:
 				current_biome = None
 			world.render_loaded_chunks()
-			if game_time.day_phase == "Night" and not night_playing:
+			if time_system.day_phase == "Night" and not night_playing:
 				music_channel.stop()
 				music_channel.play(pygame.mixer.Sound(path + "Soundtracks/Night " + str(random.randint(1, 2)) + ".mp3"))
 				night_playing = True
 
-			elif not music_channel.get_busy() or (night_playing and game_time.day_phase != "Night"):
+			elif not music_channel.get_busy() or (night_playing and time_system.day_phase != "Night"):
 
 				night_playing = False
 				music_channel.stop()
@@ -4577,7 +4577,7 @@ def start_game():
 		
 		if not Backrooms.InBackrooms and world.current_cave is None and len(world.mobs) < 5:
 
-			if game_time.day_phase == "Night":
+			if time_system.day_phase == "Night":
 				if random.randint(1, int(dt * 50000000)) == 1:
 					world.mobs.append(Spider(player.x + random.randint(-Width, Width), player.y + random.randint(-Height, Height)))
 			else:
@@ -4964,7 +4964,7 @@ def start_game():
 
 		# 1 слой - естественный свет
 		if world.current_cave is None:
-			current_brightness = game_time.get_brightness()
+			current_brightness = time_system.get_brightness()
 			light_level = max((1 - current_brightness) * 200, 0)
 		else:
 			light_level = 180
@@ -5899,7 +5899,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 			enable_multiplayer = Button(Width // 2, Height // 2 - 30, bigTextInfo.render(t("Enable multiplayer"), True, menu_color_medium), bigTextInfo.render(t("Enable multiplayer"), True, menu_color_dark), alignment=True, info=t("Your IP-address - ") + socket.gethostbyname(socket.gethostname()))
 			enter_another_game = Button(Width // 2, Height // 2 + 30, bigTextInfo.render(t("Enter another game"), True, menu_color_medium), bigTextInfo.render(t("Enter another game"), True, menu_color_dark), alignment=True)
 			
-			pygame.image.save(win, path + "Cache/Win.png")
+			pygame.image.save(win, path + "Saves/Cache/Win.png")
 			win_darken(win)
 			a, b = True, None
 			animation_showed = False
@@ -5954,7 +5954,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 				clock.tick(MAX_FPS)
 
 			win_darken(win)
-			win_lighten(win, pygame.image.load(path + "Cache/Win.png"))
+			win_lighten(win, pygame.image.load(path + "Saves/Cache/Win.png"))
 
 			if b is not None:
 				
@@ -6165,7 +6165,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 					match event["event_type"]:
 						case "peer_joined":
 							net._send_packet({"type": "server_event", "player_id": "Game", "event_type": "world_info", "world_info": (
-								0, 0, False, 0, None, player.speed, player.HP, start_time, ron.x, ron.y, ron.home, ron.inventory, world.chunk_manager.generator.seed, game_time.current_time, game.difficulty
+								0, 0, False, 0, None, player.speed, player.HP, start_time, ron.x, ron.y, ron.home, ron.inventory, world.chunk_manager.generator.seed, time_system.current_time, game.difficulty
 								)}, event["address"])
 						case "get_chunk":
 							chunk_key = tuple(event["chunk_key"])
@@ -6201,7 +6201,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 				for event in net.server_events["Game"]:
 					match event["event_type"]:
 						case "world_info":
-							player.x, player.y, Backrooms.InBackrooms, Backrooms.Level, world.current_cave, player.speed, player.HP, start_time, ron.x, ron.y, ron.home, ron.inventory, world.chunk_manager.generator.seed, game_time.current_time, game.difficulty = event["world_info"]
+							player.x, player.y, Backrooms.InBackrooms, Backrooms.Level, world.current_cave, player.speed, player.HP, start_time, ron.x, ron.y, ron.home, ron.inventory, world.chunk_manager.generator.seed, time_system.current_time, game.difficulty = event["world_info"]
 							world.chunk_manager.update_seed()
 
 						case "ron_moved":
@@ -6286,7 +6286,7 @@ def edit_world():
 	does_lighten = False
 
 	try:
-		game.difficulty, player.god_mode = Saver.load_objects(path + "Worlds/" + world_name + "/Settings.save")
+		game.difficulty, player.god_mode = Saver.load_objects(path + "Saves/Worlds/" + world_name + "/Settings.save")
 	except:
 		game.difficulty = "norm"
 		player.god_mode = False
@@ -6318,10 +6318,10 @@ def edit_world():
 
 			if event.type == pygame.QUIT:
 				if not create_world:
-					os.rename(path + "Worlds/" + world_name, path + "Worlds/" + Settings["Edit world"][0])
+					os.rename(path + "Saves/Worlds/" + world_name, path + "Worlds/" + Settings["Edit world"][0])
 					world_name = Settings["Edit world"][0]
 					player.god_mode = Settings["Edit world"][1]
-					Saver.save_objects(path + "Worlds/" + world_name + "/Settings.save", [game.difficulty, player.god_mode])
+					Saver.save_objects(path + "Saves/Worlds/" + world_name + "/Settings.save", [game.difficulty, player.god_mode])
 				win_darken(win)
 				sys.exit()
 				
@@ -6345,18 +6345,18 @@ def edit_world():
 			if event.type == pygame.KEYUP:
 				
 				if event.key == hot_keys["Close"] and not create_world:
-					os.rename(path + "Worlds/" + world_name, path + "Worlds/" + Settings["Edit world"][0])
+					os.rename(path + "Saves/Worlds/" + world_name, path + "Worlds/" + Settings["Edit world"][0])
 					world_name = Settings["Edit world"][0]
 					player.god_mode = Settings["Edit world"][1]
-					Saver.save_objects(path + "Worlds/" + world_name + "/Settings.save", [game.difficulty, player.god_mode])
+					Saver.save_objects(path + "Saves/Worlds/" + world_name + "/Settings.save", [game.difficulty, player.god_mode])
 					worlds()
 				
 				if event.key == hot_keys["Show keys"]:
 					alt_pressed = not alt_pressed
 		
 		win.fill(menu_color_light)
-		settings_ui.handle_events(events, mouse_x, mouse_y, release, "World settings")
-		settings_ui.draw("World settings", show_settings_lines=False)
+		ui_system.handle_events(events, mouse_x, mouse_y, release, "World settings")
+		ui_system.draw("World settings", show_settings_lines=False)
 
 		win.blit(bigTextInfo.render("x", True, menu_color_medium), (Width - 50, 15))
 		
@@ -6367,10 +6367,10 @@ def edit_world():
 			if pygame.mouse.get_pressed()[0]:
 				
 				if not create_world:
-					os.rename(path + "Worlds/" + world_name, path + "Worlds/" + Settings["Edit world"][0])
+					os.rename(path + "Saves/Worlds/" + world_name, path + "Worlds/" + Settings["Edit world"][0])
 					world_name = Settings["Edit world"][0]
 					player.god_mode = Settings["Edit world"][1]
-					Saver.save_objects(path + "Worlds/" + world_name + "/Settings.save", [game.difficulty, player.god_mode])
+					Saver.save_objects(path + "Saves/Worlds/" + world_name + "/Settings.save", [game.difficulty, player.god_mode])
 				worlds()
 
 		win.blit(bigTextInfo.render(t("Game difficulty:"), True, menu_color_medium), (50, 150))
@@ -6465,7 +6465,7 @@ def edit_world():
 						yes_button.main()
 						if yes_button.get_pressed():   # Удалить выбранный мир
 							import shutil
-							shutil.rmtree(path + "Worlds/" + world_name)
+							shutil.rmtree(path + "Saves/Worlds/" + world_name)
 							del shutil
 							win_darken(win)
 							worlds()
@@ -6485,7 +6485,7 @@ def edit_world():
 				win.blit(bigTextInfo.render(t("Copy world"), True, menu_color_dark), (50, 600))
 				if release:
 					import shutil
-					shutil.copytree(path + "Worlds/" + world_name, path + "Worlds/" + world_name + t(" - copy"))
+					shutil.copytree(path + "Saves/Worlds/" + world_name, path + "Worlds/" + world_name + t(" - copy"))
 					del shutil
 					win_darken(win)
 					if create_world:
@@ -6499,7 +6499,7 @@ def edit_world():
 		win_fill(alpha=100 - Settings["Display"][0])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
 		
 		if not create_world:
-			Saver.save_objects(path + "Worlds/" + world_name + "/Settings.save", [game.difficulty, player.god_mode])
+			Saver.save_objects(path + "Saves/Worlds/" + world_name + "/Settings.save", [game.difficulty, player.god_mode])
 
 		if not does_lighten:
 			win_lighten(win)
@@ -6520,7 +6520,7 @@ def multiplayer_settings_menu():
 	create_world = False
 	release = False
 	does_lighten = False
-	max_bias = -settings_ui._set_positions(0, "Multiplayer settings menu", True)
+	max_bias = -ui_system._set_positions(0, "Multiplayer settings menu", True)
 	max_bias = (max_bias + Height - 103) * max_bias > Height - 103
 
 	while True:
@@ -6555,8 +6555,8 @@ def multiplayer_settings_menu():
 		pygame.draw.rect(win, menu_color_light, (0, 0, Width, 103))
 		pygame.draw.line(win, menu_color_medium, (0, 103), (Width, 103), 8)
 		pygame.draw.line(win, menu_color_medium, (Width // 2, 0), (Width // 2, 103), 8)
-		settings_ui.handle_events(events, mouse_x, mouse_y, release, "Multiplayer settings menu")
-		settings_ui.draw("Multiplayer settings menu",show_settings_lines=False)
+		ui_system.handle_events(events, mouse_x, mouse_y, release, "Multiplayer settings menu")
+		ui_system.draw("Multiplayer settings menu",show_settings_lines=False)
 		back_button.main()
 		if back_button.get_pressed():
 			win_darken(win)
@@ -6582,9 +6582,9 @@ def multiplayer_settings_menu():
 				else:
 					net.start_local_host(Settings["Multiplayer"][1])
 			else:
-				if not os.path.exists(path + "Cache/Multiplayer"):
-					os.mkdir(path + "Cache/Multiplayer")
-				world.chunk_manager.save_directory = path + "Cache/Multiplayer/"
+				if not os.path.exists(path + "Saves/Cache/Multiplayer"):
+					os.mkdir(path + "Saves/Cache/Multiplayer")
+				world.chunk_manager.save_directory = path + "Saves/Cache/Multiplayer/"
 				if Settings["Multiplayer"][0]:
 					net.connect_to_host(Settings["Multiplayer"][3], Settings["Multiplayer"][4])
 				else:
@@ -6635,7 +6635,7 @@ def worlds():
 	win_darken(win)
 
 	inside_folders = []	
-	for dirs, folder, files in os.walk(path + "Worlds/"):
+	for dirs, folder, files in os.walk(path + "Saves/Worlds/"):
 		inside_folders = folder
 		break
 

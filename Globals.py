@@ -23,10 +23,10 @@ default_settings = {
 		}
 
 try:
-	Settings = Saver.load_objects(path + "Settings/Settings.save")
+	Settings = Saver.load_objects(path + "Saves/Settings/Settings.save")
 except FileNotFoundError:
 	Settings = default_settings
-	Saver.save_objects(path + "Settings/Settings.save", Settings)
+	Saver.save_objects(path + "Saves/Settings/Settings.save", Settings)
 
 cursor_speed = 0.7
 changed_slot = 0
@@ -71,7 +71,7 @@ slot_animations = [[False, 15] for _ in range(30)]   # Используется 
 special_slot_animations = {"Craft list slot": [False, 0.6], "Game menu slot": [False, 0.6], "Menu slot": [False, 0.6], "Multiplayer slot": [False, 0.6], "Close slot": [False, 0.6], "Reference slot": [False, 0.6], "Close slot": [False, 0.6], "Split items slot": [False, 0.6], "Compact inventory slot": [False, 0.6]}   # Используется для анимации при наведении на слот, который выполняет какое-либо действие
 
 try:
-	statistics = Saver.load_objects(path + "Settings/Statistics.save")
+	statistics = Saver.load_objects(path + "Saves/Settings/Statistics.save")
 except FileNotFoundError:
 	statistics = [0, 0, 0]   # Заходы в игру, срублено деревьев
 
@@ -102,12 +102,12 @@ default_hot_keys = {
 
 try:
 	
-	hot_keys = Saver.load_objects(path + "Settings/Hot keys.save")
+	hot_keys = Saver.load_objects(path + "Saves/Settings/Hot keys.save")
 	
 except FileNotFoundError:
 	
 	hot_keys = default_hot_keys
-	Saver.save_objects(path + "Settings/Hot keys.save", hot_keys)
+	Saver.save_objects(path + "Saves/Settings/Hot keys.save", hot_keys)
 
 clock = pygame.time.Clock()
 chat = []

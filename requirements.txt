@@ -1,2 +1,6 @@
 pygame
 pyperclip
+upnpclient
+numpy
+pillow
+vnoise
