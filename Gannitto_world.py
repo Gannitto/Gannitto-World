@@ -361,17 +361,20 @@ Butterfly1_3 = pygame.transform.scale(Butterfly1_3, (32, 32))
 web_texture = pygame.transform.scale(pygame.image.load(path + "Images/Objects/Piece of web.png"), (128, 128))
 explosion_texture = pygame.transform.scale(pygame.image.load(path + "Images/Objects/Explosion.png"), (128, 128))
 
+bg_scale_factor = max(Width // 128, Height // 64)
+
 Screensaver2 = pygame.image.load(path + "Images/Screensavers/Screensaver 2.png")
-Screensaver2 = pygame.transform.scale(Screensaver2, (Height * 2, Height))
+Screensaver2 = pygame.transform.scale(Screensaver2, (Height * 128 // 64, Height))
 
 Heart = pygame.transform.scale(pygame.image.load(path + "Images/Heart.png"), (32, 32))
 
-wall_types = ("Wooden wall", "Brick wall", "Stone brick wall")
+wall_types = ("Wooden wall","Brick wall", "Stone brick wall")
 door_types = ("Wooden door",)
 wall_images = {}
 
 for wall_type in wall_types:
 	wall_images[wall_type] = (
+		pygame.transform.scale(pygame.image.load(path + "Images/Walls/" + wall_type + "/0.png"), (256, 256)),
 		pygame.transform.scale(pygame.image.load(path + "Images/Walls/" + wall_type + "/1.png"), (256, 256)),
 		pygame.transform.scale(pygame.image.load(path + "Images/Walls/" + wall_type + "/2.png"), (256, 256)),
 		pygame.transform.scale(pygame.image.load(path + "Images/Walls/" + wall_type + "/3.png"), (256, 256)),
@@ -382,7 +385,9 @@ for wall_type in wall_types:
 		pygame.transform.scale(pygame.image.load(path + "Images/Walls/" + wall_type + "/8.png"), (256, 256)),
 		pygame.transform.scale(pygame.image.load(path + "Images/Walls/" + wall_type + "/9.png"), (256, 256)),
 		pygame.transform.scale(pygame.image.load(path + "Images/Walls/" + wall_type + "/10.png"), (256, 256)),
-		pygame.transform.scale(pygame.image.load(path + "Images/Walls/" + wall_type + "/11.png"), (256, 256))
+		pygame.transform.scale(pygame.image.load(path + "Images/Walls/" + wall_type + "/11.png"), (256, 256)),
+		pygame.transform.scale(pygame.image.load(path + "Images/Walls/" + wall_type + "/12.png"), (256, 256)),
+		pygame.transform.scale(pygame.image.load(path + "Images/Walls/" + wall_type + "/13.png"), (256, 256))
 	)
 
 for door_type in door_types:
@@ -1907,7 +1912,7 @@ class Wall:
 		self.neigbords = []
 		self.is_door = is_door
 		self.open = False
-		self.rect = pygame.Rect(self.x - 128, self.y - 128, 256, 256)
+		self.rect = pygame.Rect(self.x - 24, self.y - 128, 48, 256)
 		self.images = wall_images[self.wall_type]
 
 		self.image = self.images[0]
@@ -1959,51 +1964,54 @@ class Wall:
 
 			if len(self.neigbords) == 1:
 
-				if self.neigbords[0][0] == self.x:
-					self.image = self.images[1]
-					self.rect = pygame.Rect(self.x - 24, self.y - 128, 48, 256)
+				if self.neigbords[0][0] < self.x:
+					self.image = self.images[3]
+					self.rect = pygame.Rect(self.x - 128, self.y - 128, 152, 256)
+				elif self.neigbords[0][0] > self.x:
+					self.image = self.images[4]
+					self.rect = pygame.Rect(self.x - 24, self.y - 128, 152, 256)
 				else:
-					self.image = self.images[0]
-					self.rect = pygame.Rect(self.x - 128, self.y - 128, 256, 256)
+					self.image = self.images[2]
+					self.rect = pygame.Rect(self.x - 24, self.y - 128, 48, 256)
 
 			elif len(self.neigbords) == 2:
 
 				if self.neigbords[0][0] == self.x == self.neigbords[1][0]:
-					self.image = self.images[1]
+					self.image = self.images[2]
 					self.rect = pygame.Rect(self.x - 24, self.y - 128, 48, 256)
 				elif self.neigbords[0][1] == self.y == self.neigbords[1][1]:
-					self.image = self.images[0]
+					self.image = self.images[1]
 					self.rect = pygame.Rect(self.x - 128, self.y - 128, 256, 256)
 				elif (self.neigbords[0][0] == self.x - 256 and self.neigbords[1][1] == self.y + 256) or (self.neigbords[1][0] == self.x - 256 and self.neigbords[0][1] == self.y + 256):
-					self.image = self.images[2]
+					self.image = self.images[5]
 					self.rect = pygame.Rect(self.x - 128, self.y - 128, 152, 256)
 				elif (self.neigbords[0][0] == self.x + 256 and self.neigbords[1][1] == self.y + 256) or (self.neigbords[1][0] == self.x + 256 and self.neigbords[0][1] == self.y + 256):
-					self.image = self.images[3]
+					self.image = self.images[6]
 					self.rect = pygame.Rect(self.x - 24, self.y - 128, 152, 256)
 				elif (self.neigbords[0][0] == self.x + 256 and self.neigbords[1][1] == self.y - 256) or (self.neigbords[1][0] == self.x + 256 and self.neigbords[0][1] == self.y - 256):
-					self.image = self.images[4]
+					self.image = self.images[7]
 					self.rect = pygame.Rect(self.x - 24, self.y - 128, 152, 256)
 				elif (self.neigbords[0][0] == self.x - 256 and self.neigbords[1][1] == self.y - 256) or (self.neigbords[1][0] == self.x - 256 and self.neigbords[0][1] == self.y - 256):
-					self.image = self.images[5]
+					self.image = self.images[8]
 					self.rect = pygame.Rect(self.x - 128, self.y - 128, 152, 256)
 
 			elif len(self.neigbords) == 3:
 
 				if self.neigbords[0][1] != self.y + 256 and self.neigbords[1][1] != self.y + 256 and self.neigbords[2][1] != self.y + 256:
-					self.image = self.images[6]
+					self.image = self.images[9]
 					self.rect = pygame.Rect(self.x - 128, self.y - 128, 256, 256)
 				if self.neigbords[0][1] != self.y - 256 and self.neigbords[1][1] != self.y - 256 and self.neigbords[2][1] != self.y - 256:
-					self.image = self.images[7]
+					self.image = self.images[10]
 					self.rect = pygame.Rect(self.x - 128, self.y - 128, 256, 256)
 				if self.neigbords[0][0] != self.x + 256 and self.neigbords[1][0] != self.x + 256 and self.neigbords[2][0] != self.x + 256:
-					self.image = self.images[8]
+					self.image = self.images[11]
 					self.rect = pygame.Rect(self.x - 128, self.y - 128, 152, 256)
 				if self.neigbords[0][0] != self.x - 256 and self.neigbords[1][0] != self.x - 256 and self.neigbords[2][0] != self.x - 256:
-					self.image = self.images[9]
+					self.image = self.images[12]
 					self.rect = pygame.Rect(self.x - 24, self.y - 128, 152, 256)
 
 			elif len(self.neigbords) == 4:
-				self.image = self.images[10]
+				self.image = self.images[12]
 				self.rect = pygame.Rect(self.x - 128, self.y - 128, 256, 256)
 		
 	def main(self, release):
