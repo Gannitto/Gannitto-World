@@ -2431,6 +2431,9 @@ class World:
 								tile_screen_y < Height):
 								win.blit(biome_texture, (tile_screen_x, tile_screen_y))
 
+					if chunk.transition_image is not None:
+						win.blit(chunk.transition_image, (bounds["x1"] - player.x + Width // 2, player.y - bounds["y2"] + Height // 2 + 256))
+
 world = World()
 time_system = TimeSystem()
 ron = Ron(world_to_screen, Projectile, player)

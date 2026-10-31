@@ -4,12 +4,16 @@ from itertools import product
 from NoiseGenerator import NoiseGenerator
 from Functions import win_fill, reverse_fill_area
 from Saver import save_chunk, load_chunk, delete_chunk, chunk_exists
-from Globals import win, Width, Height
+from Globals import win, Width, Height, path
 
 chunk_size = 2048
 tile_size = 256
 
-biomes = ["Desert", "Field", "Forest", "Swamp", "Taiga"]
+biomes = ("Desert", "Field", "Forest", "Swamp", "Taiga")
+
+biome_textures = {}
+for biome in biomes:
+	biome_textures[biome] = pygame.image.load(path + f"Images/Biomes/{biome}.png")
 
 structures = {
 
@@ -202,6 +206,17 @@ biomes_objects = {
 			
 		}
 
+transition_images_cache = {}
+neighbours_map = ((0, 1), (0, -1), (-1, 0), (1, 0))
+diagonal_neighbours_map = ((-1, 1), (1, 1), (-1, -1), (1, -1))
+
+dithering_overlays = (
+		pygame.transform.rotate(pygame.image.load(path + "Images/Dithering overlay.png"), 180).convert(),
+		pygame.image.load(path + "Images/Dithering overlay.png").convert(),
+		pygame.transform.rotate(pygame.image.load(path + "Images/Dithering overlay.png"), -90).convert(),
+		pygame.transform.rotate(pygame.image.load(path + "Images/Dithering overlay.png"), 90).convert()
+		)
+
 class Chunk:
 
 	def __init__(self, X, Y):
@@ -252,23 +267,26 @@ class ChunkManager:
 		for light_level in range(16):
 			self.light_surfaces[light_level] = pygame.Surface((64, 64), pygame.SRCALPHA)
 			self.light_surfaces[light_level].fill((255, 255, 255, 255 - light_level * 16)) #TODO сделать разные уровни освещения
+
+	def get_chunk_biome(self, x, y):
+
+		value = self.generator.get_biome_at(x, y)
+		index = int(value * len(biomes))
+		if index >= len(biomes):
+			index = len(biomes) - 1
+		return biomes[index]
 		
 	def generate_chunk(self, chunk: Chunk):
 
 		"""Генерация чанка"""
 		# bounds = chunk.get_world_bounds()
 	
-		value = self.generator.get_biome_at(chunk.x, chunk.y)
-		index = int(value * len(biomes))
-		if index >= len(biomes):
-			index = len(biomes) - 1
-		biome = biomes[index]
 		# Добавление некоторых игровых объектов через шум Перлина (будет в будущем)
 		# for x, y in product(range(int(bounds["x1"]), int(bounds["x2"]), tile_size), range(int(bounds["y1"]), int(bounds["y2"]), tile_size)):
 			# height = self.generator.get_height(x, y)
 			# if height > 0.5: ...
 
-		chunk.biome = biome
+		chunk.biome = self.get_chunk_biome(chunk.x, chunk.y)
 
 		# Генерация объектов в чанке
 		rng = random.Random((chunk.x * 100000 + chunk.y * 77777) ^ 0x9e3779b9)
@@ -405,6 +423,8 @@ class ChunkManager:
 						new_chunk = Chunk(chunk_x, chunk_y)
 					self.chunks[chunk_key] = new_chunk
 					self.chunks[chunk_key].is_loaded = True
+					self.get_chunk_neighbours(self.chunks[chunk_key]) # временно
+					self.generate_transition_image(self.chunks[chunk_key])
 
 			if chunk_key in self.chunks:
 				new_visible_chunks.add(chunk_key)
@@ -415,6 +435,8 @@ class ChunkManager:
 				if not chunk.is_generated:
 					self.generate_chunk(chunk)
 					chunk.is_loaded = True
+					self.get_chunk_neighbours(chunk)
+					self.generate_transition_image(chunk)
 
 		# Выгрузка чанков, которые больше не видны
 		chunks_to_unload = []
@@ -447,6 +469,52 @@ class ChunkManager:
 					shadow_surface.blit(self.light_surfaces[light], light_pos, special_flags=pygame.BLEND_RGBA_MULT)
 
 		win.blit(shadow_surface, (0, 0))
+
+	def get_chunk_neighbours(self, chunk):
+		chunk.neighbours = []
+		for bias in neighbours_map:
+			neighbour = (chunk.x + bias[0], chunk.y + bias[1])
+			if neighbour in self.chunks:
+				biome = self.chunks[neighbour].biome
+			else:
+				biome = self.get_chunk_biome(*neighbour)
+			if biome == chunk.biome:
+				chunk.neighbours.append(None)
+			else:
+				chunk.neighbours.append(biome)
+		chunk.neighbours = tuple(chunk.neighbours)
+		
+		chunk.diagonal_neighbours = []
+		# for bias in diagonal_neighbours_map:
+		# 	neighbour = (chunk.x + bias[0], chunk.y + bias[1])
+		# 	if neighbour in self.chunks:
+		# 		biome = self.chunks[neighbour].biome
+		# 	else:
+		# 		biome = self.get_chunk_biome(*neighbour)
+		# 	if biome == chunk.biome:
+		# 		chunk.diagonal_neighbours.append(None)
+		# 	else:
+		# 		chunk.diagonal_neighbours.append(biome)
+		chunk.diagonal_neighbours = (None, None, None, None)#tuple(chunk.diagonal_neighbours)
+
+	def generate_transition_image(self, chunk):
+		if chunk.neighbours == (None, None, None, None) and chunk.diagonal_neighbours == (None, None, None, None):
+			chunk.transition_image = None
+		elif (chunk.neighbours, chunk.diagonal_neighbours) in transition_images_cache:
+			chunk.transition_image = transition_images_cache[(chunk.neighbours, chunk.diagonal_neighbours)]
+		else:
+			image = pygame.Surface((256, 256))
+			image.set_colorkey((0, 0, 0))
+			for num, biome in enumerate(chunk.neighbours):
+				if biome is not None:
+					for x, y in product(range(256), range(256)):
+						if dithering_overlays[num].get_at((x, y)) == (0, 0, 0, 255):
+							image.set_at((x, y), biome_textures[biome].get_at((x % 32, y % 32)))
+			image = pygame.transform.scale(image, (2048, 2048)).convert_alpha()
+			# print(chunk.neighbours, chunk.diagonal_neighbours)
+			# pygame.image.save(dithering_overlays[2], path + f"Cache/{chunk.neighbours, chunk.diagonal_neighbours}image.png")
+			transition_images_cache[(chunk.neighbours, chunk.diagonal_neighbours)] = image
+			chunk.transition_image = image
 
 	def save_all_loaded_chunks(self):
 		"""Сохраняет все загруженные в данный момент чанки"""
