@@ -4547,6 +4547,9 @@ def start_game():
 							if multiplayer:
 								game_events.append({"event_type": "item_removed", "x": item.x, "y": item.y, "name": item.name})
 							world.chunk_manager.get_chunk_at(item.x, item.y).items.remove(item)
+						elif item.pickable and click[2] and inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name in ("Blue slime", "Pink slime"):
+							item.pickable = False
+							inventory.reduce(changed_slot)
 
 		elif len(Backrooms.objects) != 1:
 
