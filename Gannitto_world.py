@@ -2077,13 +2077,13 @@ class Farmland:
 			pygame.draw.rect(win, (0, 0, 0), world_rect, 3)
 		
 	def handle_click(self):
+
 		slot = inventory.whole_inventory[changed_slot]
 		if self.plant is None:
 			if slot is not None and slot.name in seed_types:
 				self.plant = seed_types[slot.name]
 				inventory.reduce(changed_slot)
 				self.grow_timer = random.randint(250, 350)
-				# self.plant_growth_stage = 3
 		elif self.plant_growth_stage == 1:
 			if slot is not None and slot.name == "Water bucket":
 				inventory.reduce(changed_slot)
@@ -2102,6 +2102,10 @@ class Farmland:
 			destroy_object(plant_images[self.plant][self.plant_growth_stage], self.x - 64, self.y + 64, world, Particle)
 			self.plant = None
 			self.plant_growth_stage = 0
+
+		if slot is not None and slot.name == "Stone shovel":
+			pygame.mixer.Sound.play(pygame.mixer.Sound(path + "Sounds/Dirt.mp3"))
+			del world.chunk_manager.get_chunk_at(self.x, self.y).farmlands[(self.x, self.y)]
 	
 	def __getstate__(self):
 		
@@ -2118,7 +2122,6 @@ class Farmland:
 		self.images = farmland_images
 		self.image = self.images[self.image]
 		self.rect = pygame.Rect(state["rect"][0], state["rect"][1], state["rect"][2], state["rect"][3])
-
 
 class Random_box:
 
@@ -5774,47 +5777,12 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 		if multiplayer and new_object is not None:
 			game_events.append({"event_type": "object_added", "object": new_object.__getstate__()})
 
-		# if build(build_tuple, Object("Farmland", 0, 0, "Images/Objects/Farmland.png", (128, 128), special_flags=1), "Stone hoe", get_item_from_inventory=0):
-		#	pygame.mixer.Sound.play(pygame.mixer.Sound(path + "Sounds/Dirt.mp3"))
-		# if inventory.whole_inventory[changed_slot] is None: a = ""
-		# else:
-		#	a = inventory.whole_inventory[changed_slot].name[:-6] if " seeds" in inventory.whole_inventory[changed_slot].name else inventory.whole_inventory[changed_slot].name
-		
-		# try: build(build_tuple, Particle(0, 0, pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + a + " 1.png"), (128, 128)), can_interfere_with_placing=True, end_time=random.randint(1, 3),
-		#			end_command="world.particles.append(Particle(particle.x, particle.y, pygame.transform.scale(pygame.image.load(path + 'Images/Objects/' + particle.special_flags[0] + ' 2.png'), (128, 128)), can_interfere_with_placing=True, end_time=random.randint(5, 10), save_particle=True, tick_command=particle.special_flags[1], tick_command_locals={'a': 0, 'b': 0}, tick_command_globals={'world_to_screen': world_to_screen, 'win_fill': win_fill, 'random': random}, tick_command_globals_in_the_end=('inventory', 'changed_slot'), end_command=particle.special_flags[3], end_command_globals={'random': random}, special_flags=particle.special_flags))", end_command_globals={"world.particles": world.particles, "Particle": Particle, "random": random, "world_to_screen": world_to_screen, "win_fill": win_fill}, save_particle=True, special_flags=[a, """
-# if self.special_flags[2]:
-	# a, b = world_to_screen(self.x, self.y, 128, 128)
-	# win_fill((255, 255, 255), 30, (a, b, 128, 128))
-	# if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Water bucket" and pygame.Rect(a, b, 128, 128).collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0]:
-		# inventory.reduce(changed_slot)
-		# inventory.increate("Bucket", 1)
-		# self.special_flags[2] = False
-		# pygame.mixer.Sound.play(pygame.mixer.Sound(path + "Sounds/Watering plants " + str(random.randint(1, 2)) + ".mp3"))""", True, """
-# if particle.special_flags[2]: world.particles.append(Particle(particle.x, particle.y, pygame.transform.scale(pygame.image.load(path + 'Images/Objects/' + particle.special_flags[0] + ' 4.png'), (128, 128)), can_interfere_with_placing=True, save_particle=True, del_self_condition=lambda particle: (click[0] and pygame.Rect(particle.x - player.x + Width // 2 - particle.image.get_width() // 2, player.y - particle.y + Height // 2 - particle.image.get_height() // 2, particle.w, particle.h).collidepoint(mouse_x, mouse_y)), end_command='pygame.mixer.Sound.play(pygame.mixer.Sound(path + "Sounds/Breaking.mp3"))'))
-# else: world.particles.append(Particle(particle.x, particle.y, pygame.transform.scale(pygame.image.load(path + 'Images/Objects/' + particle.special_flags[0] + ' 3.png'), (128, 128)), can_interfere_with_placing=True, save_particle=True, tick_command='''
-# if click[0] and pygame.Rect(self.display_mode(self.x, self.y, self.w, self.h)[0], self.display_mode(self.x, self.y, self.w, self.h)[1], self.w, self.h).collidepoint(mouse_x, mouse_y):
-	# for _ in range(random.randint(1, 3)):
-		# rand_x, rand_y = self.x + random.randint(-30, 30), self.y + random.randint(-30, 30)
-		# world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object(self.special_flags[0], rand_x, rand_y, "Images/Items/" + self.special_flags[0] + ".png"))
-	# if self.special_flags[0] == "Wheat":
-		# for _ in range(random.randint(0, 2)):
-		#	rand_x, rand_y = self.x + random.randint(-30, 30), self.y + random.randint(-30, 30)
-		#	world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Wheat seeds", rand_x, rand_y, "Images/Items/Wheat seeds.png"))
-	# ''', tick_command_globals={"random": random}, tick_command_globals_in_the_end=("Object", "world", "click", "x", "y", "Width", "Height", "mouse_x", "mouse_y"), del_self_condition=lambda particle: (click[0] and pygame.Rect(particle.x - player.x + Width // 2 - particle.image.get_width() // 2, player.y - particle.y + Height // 2 - particle.image.get_height() // 2, particle.w, particle.h).collidepoint(mouse_x, mouse_y)), special_flags=particle.special_flags))
-# """]),
-		#	 "Carrot,Onion,Tomato", "Seed", particle_to_build=True, needed_object="Farmland", remove_part=" seeds")
-		
-		# except: pass
-		#world.particles.append(Particle(particle.x, particle.y, pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + particle.special_flags[0] + " 2.png"), (128, 128)), end_time=random.randint(1, 3), save_particle=True, tick_command=particle.special_flags[1], end_command=particle.special_flags[3]))
-		
-		#world.particles.append(Particle(particle.x, particle.y, path + "Images/Objects/" + particle.special_flags[0] + " 3.png"))
-		
 		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Stone hoe":
 			
 			farmland_pos = (player.x + mouse_x - Width // 2) // 128 * 128 + 128, (player.y - mouse_y + Height // 2) // 128 * 128
 			draw_select_image(128, 128, player, mouse_x, mouse_y)
 
-			if click[0] and farmland_pos not in world.visible_farmlands and not check_collision(pygame.Rect(farmland_pos[0], farmland_pos[1], 256, 256), world, False):
+			if click[0] and farmland_pos not in world.visible_farmlands and not check_collision(pygame.Rect(farmland_pos[0] - 128, farmland_pos[1], 128, 128), world, False):
 				world.chunk_manager.get_chunk_at(*farmland_pos).farmlands[farmland_pos] = Farmland(farmland_pos[0], farmland_pos[1])
 				game_events.append({"event_type": "farmland_added", "farmland_pos": farmland_pos})
 
@@ -6161,6 +6129,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 						chunk = world.chunk_manager.get_chunk_at(*farmland_pos)
 						if chunk is not None:
 							chunk.farmlands[farmland_pos] = Farmland(*farmland_pos)
+							pygame.mixer.Sound.play(pygame.mixer.Sound(path + "Sounds/Dirt.mp3"))
 
 					case "projectile_added":
 						world.projectiles.append(Projectile(event["x"], event["y"], event["mouse_x"], event["mouse_y"], event["projectile_type"]))
