@@ -22,7 +22,8 @@ from Cache import TextureCache
 from UISystem import UISystem
 from TimeSystem import TimeSystem
 from Commands import command_system
-from Sound import *
+from Sound import play_sound, set_sound_volume, music_channel
+from InputSystem import InputSystem
 from Globals import *
 from Light import create_light_circle, create_light_circle_with_falloff, remove_light_circle
 
@@ -218,6 +219,8 @@ def save(darken:bool=True, save_world_settings:bool=False):
 		win_darken(win)
 		
 	if save_world_settings: Saver.save_objects(path + "Saves/Worlds/" + world_name + "/Settings.save", [game.difficulty, player.god_mode])
+
+input_system = InputSystem(text)
 
 # Применение настроек TODO
 
@@ -6562,7 +6565,7 @@ def worlds():
 	multiplayer_button = Button(Width * 3 // 4, 50, textInfo.render(t("Multiplayer"), True, menu_color_medium), textInfo.render(t("Multiplayer"), True, menu_color_dark), alignment=True)
 	back_button = Button(-20, -20, pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Back.png"), (128, 128)), pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Back 2.png"), (128, 128)))
 	page = 1
-	input_text = None
+	world_name_input = False
 	does_lighten = False
 	bias = 0
 
@@ -6582,8 +6585,8 @@ def worlds():
 		click = pygame.mouse.get_pressed()
 		release = False
 		dt = clock.tick(MAX_FPS) / 1000.0
-
-		for event in pygame.event.get():
+		events = pygame.event.get()
+		for event in events:
 
 			if event.type == pygame.QUIT:
 				win_darken(win)
@@ -6595,37 +6598,32 @@ def worlds():
 			elif event.type == pygame.MOUSEWHEEL:
 				bias = (min(bias + event.y * Settings["Game"][2], 0))
 
-			elif event.type == pygame.KEYDOWN and input_text is not None:
-				
-				if event.key == pygame.K_BACKSPACE:
-					input_text = input_text[:-1]
-				elif event.key == pygame.K_RETURN:
-					world_name = input_text
-					inventory.get_start_items()
-					ron.get_start_items()
-					win_darken(win)
-					edit_world()
-				else:
-					input_text += event.unicode
-
 			if event.type == pygame.KEYUP:
 				if event.key == hot_keys["Show keys"]:
 					alt_pressed = not alt_pressed
 				if event.key == hot_keys["Close"]:
-					if input_text is None:
+					if world_name_input:
+						input_system.stop_input()
+						world_name_input = False
+					else:
 						win_darken(win)
 						menu()
-					else:
-						input_text = None
 
 		win.fill(menu_color_light)
 
-		if input_text is None:
+		if world_name_input:
+			text(t("Enter world name:"), Width // 2, Height // 2 - 20, menu_color_medium, alignment=True)
+			if not input_system.inputting:
+				world_name = input_system.last_text
+				edit_world()
+		else:
 
 			if create_new_world_button.get_pressed():
-				input_text = ""
+				input_system.start_input("World name", Width // 2, Height // 2 + 20, text_alignment=True)
+				world_name_input = True
 			
 			if back_button.get_pressed():
+				input_system.stop_input()
 				win_darken(win)
 				menu()
 
@@ -6682,13 +6680,10 @@ def worlds():
 				if multiplayer_button.get_pressed():
 					multiplayer = True
 				create_new_world_button.main()
-
-		else:
-			text(f"""{t("Enter world name:")}
-{input_text}""", Width // 2, Height // 2 - 15, menu_color_medium, alignment=True)
-			
+		
+		input_system.handle_input(events)
 		if alt_pressed: draw_key("ESC", 44, 108)
-
+		
 		animate_click(dt, mouse_x, mouse_y)
 
 		win_fill(alpha=100 - Settings["Display"][0])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
