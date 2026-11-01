@@ -12,8 +12,13 @@ tile_size = 256
 biomes = ("Desert", "Field", "Forest", "Swamp", "Taiga")
 
 biome_textures = {}
+# big_biome_textures = {}
 for biome in biomes:
 	biome_textures[biome] = pygame.image.load(path + f"Images/Biomes/{biome}.png")
+	# temp_biome_surf = pygame.Surface((256, 256), pygame.SRCALPHA)
+	# for tx, ty in product(range(0, 256, 32), range(0, 256, 32)):
+	# 	temp_biome_surf.blit(biome_textures[biome], (tx, ty))
+	# big_biome_textures[biome] = temp_biome_surf
 
 structures = {
 
@@ -217,6 +222,12 @@ dithering_overlays = (
 		pygame.transform.rotate(pygame.image.load(path + "Images/Dithering overlay.png"), 90).convert()
 		)
 
+dithering_overlays_new = (
+		pygame.transform.rotate(pygame.image.load(path + "Images/Dithering overlay test.png"), 180).convert_alpha(),
+		pygame.image.load(path + "Images/Dithering overlay test.png").convert_alpha(),
+		pygame.transform.rotate(pygame.image.load(path + "Images/Dithering overlay test.png"), -90).convert_alpha(),
+		pygame.transform.rotate(pygame.image.load(path + "Images/Dithering overlay test.png"), 90).convert_alpha()
+		)
 class Chunk:
 
 	def __init__(self, X, Y):
@@ -424,7 +435,8 @@ class ChunkManager:
 					self.chunks[chunk_key] = new_chunk
 					self.chunks[chunk_key].is_loaded = True
 					self.get_chunk_neighbours(self.chunks[chunk_key]) # временно
-					self.generate_transition_image(self.chunks[chunk_key])
+					# self.generate_transition_image_new(self.chunks[chunk_key])
+					self.chunks[chunk_key].transition_image = None
 
 			if chunk_key in self.chunks:
 				new_visible_chunks.add(chunk_key)
@@ -436,7 +448,8 @@ class ChunkManager:
 					self.generate_chunk(chunk)
 					chunk.is_loaded = True
 					self.get_chunk_neighbours(chunk)
-					self.generate_transition_image(chunk)
+					# self.generate_transition_image_new(chunk)
+					chunk.transition_image = None
 
 		# Выгрузка чанков, которые больше не видны
 		chunks_to_unload = []
@@ -474,27 +487,22 @@ class ChunkManager:
 		chunk.neighbours = []
 		for bias in neighbours_map:
 			neighbour = (chunk.x + bias[0], chunk.y + bias[1])
-			if neighbour in self.chunks:
-				biome = self.chunks[neighbour].biome
-			else:
-				biome = self.get_chunk_biome(*neighbour)
-			if biome == chunk.biome:
-				chunk.neighbours.append(None)
-			else:
-				chunk.neighbours.append(biome)
+			nb_chunk = self.chunks.get(neighbour)
+			biome = nb_chunk.biome if nb_chunk else self.get_chunk_biome(*neighbour)
+			chunk.neighbours.append(None if biome == chunk.biome else biome)
 		chunk.neighbours = tuple(chunk.neighbours)
 		
 		chunk.diagonal_neighbours = []
 		# for bias in diagonal_neighbours_map:
-		# 	neighbour = (chunk.x + bias[0], chunk.y + bias[1])
-		# 	if neighbour in self.chunks:
-		# 		biome = self.chunks[neighbour].biome
-		# 	else:
-		# 		biome = self.get_chunk_biome(*neighbour)
-		# 	if biome == chunk.biome:
-		# 		chunk.diagonal_neighbours.append(None)
-		# 	else:
-		# 		chunk.diagonal_neighbours.append(biome)
+		#	neighbour = (chunk.x + bias[0], chunk.y + bias[1])
+		#	if neighbour in self.chunks:
+		#		biome = self.chunks[neighbour].biome
+		#	else:
+		#		biome = self.get_chunk_biome(*neighbour)
+		#	if biome == chunk.biome:
+		#		chunk.diagonal_neighbours.append(None)
+		#	else:
+		#		chunk.diagonal_neighbours.append(biome)
 		chunk.diagonal_neighbours = (None, None, None, None)#tuple(chunk.diagonal_neighbours)
 
 	def generate_transition_image(self, chunk):
@@ -515,6 +523,33 @@ class ChunkManager:
 			# pygame.image.save(dithering_overlays[2], path + f"Cache/{chunk.neighbours, chunk.diagonal_neighbours}image.png")
 			transition_images_cache[(chunk.neighbours, chunk.diagonal_neighbours)] = image
 			chunk.transition_image = image
+	def generate_transition_image_new(self, chunk):
+		"""Ускоренная генерация переходов без пиксельных циклов средствами Pygame"""
+		if chunk.neighbours == (None, None, None, None):
+			chunk.transition_image = None
+			return
+
+		cache_key = (chunk.neighbours, chunk.diagonal_neighbours)
+		if cache_key in transition_images_cache:
+			chunk.transition_image = transition_images_cache[cache_key]
+			return
+
+		# Создаем буферную поверхность разрешения маски (256x256)
+		# Использование SRCALPHA гарантирует поддержку прозрачности
+		base_surf = pygame.Surface((256, 256), pygame.SRCALPHA)
+
+		for num, biome in enumerate(chunk.neighbours):
+			if biome is not None:
+				biome_pattern = biome_textures[biome]
+				temp_biome_surf = pygame.Surface((256, 256), pygame.SRCALPHA)
+				for tx, ty in product(range(0, 256, 32), range(0, 256, 32)):
+					temp_biome_surf.blit(biome_pattern, (tx, ty))
+					mask = dithering_overlays_new[num]
+					temp_biome_surf.blit(mask, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+				base_surf.blit(temp_biome_surf, (0, 0))
+		final_image = pygame.transform.scale(base_surf, (2048, 2048)).convert_alpha()
+		transition_images_cache[cache_key] = final_image
+		chunk.transition_image = final_image
 
 	def save_all_loaded_chunks(self):
 		"""Сохраняет все загруженные в данный момент чанки"""

@@ -29,7 +29,7 @@ def shadow(
 	if not Settings["Display"][4]:
 		return surface
 	
-	cache_path = path + "Cache/"
+	cache_path = path + "/Saves/Cache/"
 	if not os.path.exists(cache_path):
 		os.mkdir(cache_path)
 	
