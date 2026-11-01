@@ -80,6 +80,11 @@ class UISystem:
 					lambda: Settings["User"][0],
 					lambda v: Settings["User"].__setitem__(0, v),
 					can_write_text=True, max_len=10
+				),
+				ToggleButton(
+					400, 0, "Developer mode",
+					lambda: Settings["User"][1],
+					lambda v: Settings["User"].__setitem__(1, v)
 				)
 			],
 		"Sound": [

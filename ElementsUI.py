@@ -2,9 +2,11 @@ import pygame
 import time
 from typing import Callable, Any, Optional
 from Translator import translator
-from Globals import Settings, bigTextInfo, win
+from Globals import Settings, bigTextInfo, win, path
 
 t = translator.get
+
+Button_click = pygame.mixer.Sound(path + "Sounds/Button Pressed.mp3")
 
 class UIElement:
 	"""Базовый класс для всех UI элементов"""
@@ -53,6 +55,7 @@ class ToggleButton(UIElement):
 	
 	def handle_click(self, mouse_x: int, mouse_y: int, release: bool) -> bool:
 		if super().handle_click(mouse_x, mouse_y, release):
+			pygame.mixer.Sound.play(Button_click)
 			self.set_value(not self.get_value())
 			return True
 		return False
@@ -103,6 +106,7 @@ class InputField(UIElement):
 	
 	def handle_click(self, mouse_x: int, mouse_y: int, release: bool) -> bool:
 		if super().handle_click(mouse_x, mouse_y, release):
+			pygame.mixer.Sound.play(Button_click)
 			self.is_active = not self.is_active
 			if self.is_active:
 				self.cursor_timer = time.time()

@@ -3976,10 +3976,10 @@ def start_game():
 			elif event.type == pygame.KEYDOWN and chat_input:
 				if event.key == pygame.K_RETURN:
 					chat_input = False
-					if input_text[0:2] == "/!" and player.god_mode:
+					if input_text[0:2] == "/!" and Settings["User"][1]:
 						try:
 							eval(input_text[2:])
-							# команды лучше не использовать, так как из-за eval возникает проблема безопасности
+							# Команды через eval - опасная штука, так что они доступны только в режиме разработчика
 						except Exception as e:
 							chat_message(languages("<<< Команда " + Settings["User"][0] + f" получила ошибку {e}" + ". >>>", "<<< " + Settings["User"][0] + f"'s command got an {e}" + "error. >>>", ""))
 						else:
@@ -6886,15 +6886,17 @@ def show_intro():
 		#	pygame.display.flip()
 		#	clock.tick(20)
 		pass
-
-	try:
+	if Settings["User"][1]:
 		menu()
-	except Exception as e:
-		music_channel.stop()
-		pygame.mixer.Sound.stop(Backrooms_lamps)
-		if multiplayer:
-			net.disconnect()
-		show_error_window(e)
+	else:
+		try:
+			menu()
+		except Exception as e:
+			music_channel.stop()
+			pygame.mixer.Sound.stop(Backrooms_lamps)
+			if multiplayer:
+				net.disconnect()
+			show_error_window(e)
 
 if __name__ == "__main__":
 	show_intro()

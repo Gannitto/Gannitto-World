@@ -13,7 +13,7 @@ default_settings = {
 		
 		"Display": [100, 90, 0, False, True, True, 60, True, True, True, True],
 		"Languages": ["English"],
-		"User": ["Player"],
+		"User": ["Player", False],
 		"Sound": [100, 100],
 		"Keys": ["a", "s", "w", "d", "e", "c", "TAB", "SPACE"],
 		"Game": [True, False, 100, 0.7],
