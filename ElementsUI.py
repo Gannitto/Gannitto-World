@@ -3,7 +3,7 @@ import time
 from typing import Callable, Any, Optional
 from Translator import translator
 from Globals import Settings, bigTextInfo, win, path
-from Sound import Button_click, play_sound
+from Sound import play_sound
 
 t = translator.get
 
@@ -54,7 +54,7 @@ class ToggleButton(UIElement):
 	
 	def handle_click(self, mouse_x: int, mouse_y: int, release: bool) -> bool:
 		if super().handle_click(mouse_x, mouse_y, release):
-			play_sound(Button_click)
+			play_sound("Button click")
 			self.set_value(not self.get_value())
 			return True
 		return False

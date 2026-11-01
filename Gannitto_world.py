@@ -1657,7 +1657,7 @@ class Button:
 				if self.is_pressed and hovered:
 					if current_time - self.last_trigger_time > self.cooldown * 1000:
 						if self.sound:
-							play_sound(Button_click)
+							play_sound("Button click")
 						self.last_trigger_time = current_time
 						self.is_activated = True
 
@@ -2065,7 +2065,7 @@ class Farmland:
 				inventory.reduce(changed_slot)
 				inventory.increate("Water bucket")
 				self.watered = True
-				play_sound(pygame.mixer.Sound(path + "Sounds/Watering plants " + str(random.randint(1, 2)) + ".mp3"))
+				play_sound("Watering plants ", 2)
 		elif self.plant_growth_stage == 2:
 			destroy_object(plant_images[self.plant][self.plant_growth_stage], self.x - 64, self.y + 64, world, Particle)
 			for _ in range(random.randint(1, 3)):
@@ -2080,7 +2080,7 @@ class Farmland:
 			self.plant_growth_stage = 0
 
 		if slot is not None and slot.name == "Stone shovel":
-			play_sound(pygame.mixer.Sound(path + "Sounds/Dirt.mp3"))
+			play_sound("Dirt")
 			del world.chunk_manager.get_chunk_at(self.x, self.y).farmlands[(self.x, self.y)]
 	
 	def __getstate__(self):
@@ -4005,7 +4005,6 @@ def start_game():
 							inventory_open = False
 						else:
 							music_channel.stop()
-							pygame.mixer.Sound.stop(Backrooms_lamps)
 							statistics[1] += (time.time() - start_time) / 3600
 							save()
 							world.chunk_manager.chunks = {}
@@ -4037,7 +4036,6 @@ def start_game():
 
 					if event.key == hot_keys["Help"]:
 						music_channel.stop()
-						pygame.mixer.Sound.stop(Backrooms_lamps)
 						statistics[1] += (time.time() - start_time) / 3600
 						save(False)
 						settings()
@@ -4157,23 +4155,23 @@ def start_game():
 						
 					case "Taiga":
 						music_channel.queue(pygame.mixer.Sound(path + "Soundtracks/Taiga " + str(random.randint(1, 1)) + ".mp3"))
-						
-			elif not chat_input and any((keys[hot_keys["Move left"]], keys[hot_keys["Move right"]], keys[hot_keys["Move up"]], keys[hot_keys["Move down"]], Settings["Game"][1] and any((left_b.get_pressed(), up_b.get_pressed(), down_b.get_pressed(), right_b.get_pressed())))) and random.randint(1, 10) == 1:
+
+			if player.animation_timer == 0 and (player.frame_index % 6 == 2 or player.frame_index % 6 == 5):
 
 				if world.current_cave is not None:
-					play_sound(random.choice((Cave_walking1, Cave_walking2, Cave_walking3)), maxtime=1000)
+					play_sound("Cave walking", 3)
 
 				elif current_biome in ("Forest", "Field"):
-					play_sound(random.choice((Grass_walking1, Grass_walking2, Grass_walking3)), maxtime=1000)
+					play_sound("Grass walking", 3)
 
 				elif current_biome == "Desert":
-					play_sound(random.choice((Sand_walking1, Sand_walking2, Sand_walking3)), maxtime=1000)
+					play_sound("Sand walking", 3)
 
 				elif current_biome == "Taiga":
-					play_sound(random.choice((Snow_walking1, Snow_walking2, Snow_walking3)), maxtime=1000)
+					play_sound("Snow walking", 3)
 
 				elif current_biome == "Swamp":
-					play_sound(random.choice((Swamp_walking1, Swamp_walking2, Swamp_walking3)), maxtime=1000)
+					play_sound("Swamp walking", 3)
 
 		else:
 
@@ -4201,7 +4199,7 @@ def start_game():
 				x = 0
 				y = 0
 
-				play_sound(Backrooms_lamps, -1)
+				play_sound("1", loops=-1)
 				pygame.mixer.music.set_volume(0.5)
 
 				aaa = 100
@@ -4231,7 +4229,7 @@ def start_game():
 				room.main(player.x, player.y)
 
 			if random.randint(1, 1000) == 1:
-				play_sound(Backrooms_rand_sound_1)
+				play_sound("Random sound 1")
 			
 			match Backrooms.Level:
 
@@ -4282,9 +4280,6 @@ def start_game():
 				Backrooms.get_rooms(player.x // 2000, player.y // 2000)
 
 			if aa == 3 and keys[hot_keys["Noclip in backrooms"]] and random.randint(1, 30) == 30:
-
-				if Backrooms.Level == 0:
-					pygame.mixer.Sound.stop(Backrooms_lamps)
 
 				AA = 100
 				Backrooms.Level = random.choice(next_levels)
@@ -4364,7 +4359,7 @@ def start_game():
 								object.image = pygame.transform.scale(object.image, (256, 256))
 
 								if random.randint(1, 15) == 1:
-									play_sound(random.choice((Stone_breaking1, Stone_breaking2)))
+									play_sound("Stone breaking", 2)
 
 								if object.special_flags == -1:
 									world.current_cave.objects.remove(object)
@@ -4393,7 +4388,7 @@ def start_game():
 								object.image = pygame.transform.scale(object.image, (256, 256))
 
 								if random.randint(1, 15) == 1:
-									play_sound(random.choice((Stone_breaking1, Stone_breaking2)))
+									play_sound("Stone breaking", 2)
 
 								if object.special_flags == -1:
 									world.current_cave.objects.remove(object)
@@ -4490,7 +4485,7 @@ def start_game():
 					item.main(player)
 					try_pick = True
 					if item.pickable and Settings["Game"][0] and player.x - 150 < item.x < player.x + 150 and player.y - 150 < item.y < player.y + 150:
-						world.particles.append(Particle(item.x, item.y, item.image, lambda particle: round(((player.x - particle.x) // 2) / 10 * 5), lambda particle: round(((player.y - particle.y) // 2) / 10 * 5), track_ticks=True, del_self_condition=lambda particle: abs(particle.x - player.x) < 30 and abs(particle.y - player.y) < 30, end_command=lambda particle: (inventory.increate(item.name), play_sound(Pick_an_item))))
+						world.particles.append(Particle(item.x, item.y, item.image, lambda particle: round(((player.x - particle.x) // 2) / 10 * 5), lambda particle: round(((player.y - particle.y) // 2) / 10 * 5), track_ticks=True, del_self_condition=lambda particle: abs(particle.x - player.x) < 30 and abs(particle.y - player.y) < 30, end_command=lambda particle: (inventory.increate(item.name), play_sound("Pick an item"))))
 						if multiplayer:
 							game_events.append({"event_type": "item_removed", "x": item.x, "y": item.y, "name": item.name})
 
@@ -4501,7 +4496,7 @@ def start_game():
 						mouse_object = t("Click to pick the ") + t("Item name " + item.name)
 						
 						if click[0]:
-							world.particles.append(Particle(item.x, item.y, item.image, lambda particle: round(((player.x - particle.x) // 2) / 10 * 5), lambda particle: round(((player.y - particle.y) // 2) / 10 * 5), track_ticks=True, del_self_condition=lambda particle: abs(particle.x - player.x) < 30 and abs(particle.y - player.y) < 30, end_command=lambda particle: (inventory.increate(particle.special_flags), play_sound(Pick_an_item)), special_flags=item.name))
+							world.particles.append(Particle(item.x, item.y, item.image, lambda particle: round(((player.x - particle.x) // 2) / 10 * 5), lambda particle: round(((player.y - particle.y) // 2) / 10 * 5), track_ticks=True, del_self_condition=lambda particle: abs(particle.x - player.x) < 30 and abs(particle.y - player.y) < 30, end_command=lambda particle: (inventory.increate(particle.special_flags), play_sound("Pick an item")), special_flags=item.name))
 									
 							if multiplayer:
 								game_events.append({"event_type": "item_removed", "x": item.x, "y": item.y, "name": item.name})
@@ -5742,7 +5737,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 				world.chunk_manager.get_chunk_at(*farmland_pos).farmlands[farmland_pos] = Farmland(farmland_pos[0], farmland_pos[1])
 				game_events.append({"event_type": "farmland_added", "farmland_pos": farmland_pos})
 
-				play_sound(pygame.mixer.Sound(path + "Sounds/Dirt.mp3"))
+				play_sound("Dirt")
 				# for farmland in (((farmland_pos[0] - 128, farmland_pos[1]), (farmland_pos[0] + 128, farmland_pos[1]), (farmland_pos[0], farmland_pos[1] - 128), (farmland_pos[0], farmland_pos[1] + 128))):
 				#	if farmland in world.visible_farmlands:
 				#		world.visible_farmlands[farmland].update_neigboors()
@@ -6085,7 +6080,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 						chunk = world.chunk_manager.get_chunk_at(*farmland_pos)
 						if chunk is not None:
 							chunk.farmlands[farmland_pos] = Farmland(*farmland_pos)
-							play_sound(pygame.mixer.Sound(path + "Sounds/Dirt.mp3"))
+							play_sound("Dirt")
 
 					case "projectile_added":
 						world.projectiles.append(Projectile(event["x"], event["y"], event["mouse_x"], event["mouse_y"], event["projectile_type"]))
@@ -6849,7 +6844,6 @@ def show_intro():
 			menu()
 		except Exception as e:
 			music_channel.stop()
-			pygame.mixer.Sound.stop(Backrooms_lamps)
 			if multiplayer:
 				net.disconnect()
 			show_error_window(e)
