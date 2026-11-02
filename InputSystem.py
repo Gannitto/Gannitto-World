@@ -4,7 +4,7 @@ import pyperclip
 import re
 from Globals import win, menu_color_medium, Settings
 from Functions import text
-# TODO допустимые символы, максимальная длина
+
 pygame.key.set_repeat(500, 50) 
 
 class InputSystem:
@@ -67,7 +67,7 @@ class InputSystem:
 		self.text_max_width = 0
 		self.text_max_height = 0
 		self.text_space_between_strings = 10
-		self.only_numbers = True
+		self.only_numbers = False
 		self.max_len = -1
 
 	def _find_word_start(self):
@@ -75,16 +75,13 @@ class InputSystem:
 		if self.cursor_position == 0:
 			return 0
 		
-		# Берем текст слева от курсора
+		# Текст слева от курсора
 		left_text = self.input_text[:self.cursor_position]
 		
 		# Пропускаем пробелы непосредственно перед курсором
 		stripped = left_text.rstrip()
 		if not stripped:
 			return 0
-			
-		# Находим границу между пробелом и словом (или начало строки)
-		# Ищет последний переход от пробельного символа к непробельному
 		matches = list(re.finditer(r"\s\S", stripped))
 		if matches:
 			return matches[-1].start() + 1
@@ -204,3 +201,4 @@ class InputSystem:
 				self.cursor_position += len(clipboard_text)
 
 input_system = InputSystem()
+

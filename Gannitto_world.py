@@ -15,10 +15,10 @@ import Saver
 from Multiplayer import NetworkManager
 from Functions import *
 from Build import build, check_build_objects, draw_select_image, draw_select_image_arbitrarily
-from Chunks import ChunkManager
+from Chunks import ChunkManager, biomes
 from Inventory import inventory
 from Translator import translator
-from Cache import TextureCache
+from Cache import load
 from UISystem import UISystem
 from TimeSystem import TimeSystem
 from Commands import command_system
@@ -127,44 +127,44 @@ statistics[0] += 1
 pygame.display.set_icon(pygame.image.load(path + "Images/Icon.png"))
 pygame.display.set_caption("Gannitto World")
 
-arrow_down = pygame.transform.scale(pygame.image.load(path + "Images/DOWN.png"), (64, 64))
-arrow_left = pygame.transform.scale(pygame.image.load(path + "Images/LEFT.png"), (64, 64))
-arrow_right = pygame.transform.scale(pygame.image.load(path + "Images/RIGHT.png"), (64, 64))
-arrow_up = pygame.transform.scale(pygame.image.load(path + "Images/UP.png"), (64, 64))
+arrow_down = load(path + "Images/DOWN.png", 64, convert_alpha=False)
+arrow_left = load(path + "Images/LEFT.png", 64, convert_alpha=False)
+arrow_right = load(path + "Images/RIGHT.png", 64, convert_alpha=False)
+arrow_up = load(path + "Images/UP.png", 64, convert_alpha=False)
 
-Inventory_slot = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Inventory slot.png"), (64, 64))
-Changed_inventory_slot = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Inventory slot 2.png"), (64, 64))
+Inventory_slot = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Inventory slot.png"), (64, 64)).convert_alpha()
+Changed_inventory_slot = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Inventory slot 2.png"), (64, 64)).convert_alpha()
 
-Craft_list_inventory_slot = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Craft list slot.png"), (64, 64))
-Changed_craft_list_inventory_slot = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Craft list slot 2.png"), (64, 64))
+Craft_list_inventory_slot = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Craft list slot.png"), (64, 64)).convert_alpha()
+Changed_craft_list_inventory_slot = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Craft list slot 2.png"), (64, 64)).convert_alpha()
 
-Object_inventory_slot = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Object inventory slot 2.png"), (64, 64))
+Object_inventory_slot = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Object inventory slot 2.png"), (64, 64)).convert_alpha()
 
-Tool_inventory_slot = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Tool inventory slot 2.png"), (64, 64))
+Tool_inventory_slot = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Tool inventory slot 2.png"), (64, 64)).convert_alpha()
 
-Split_items1 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Split items.png"), (64, 64))
-Split_items2 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Split items 2.png"), (64, 64))
+Split_items1 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Split items.png"), (64, 64)).convert_alpha()
+Split_items2 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Split items 2.png"), (64, 64)).convert_alpha()
 
-Compact_inventory1 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Compact inventory.png"), (64, 64))
-Compact_inventory2 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Compact inventory 2.png"), (64, 64))
+Compact_inventory1 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Compact inventory.png"), (64, 64)).convert_alpha()
+Compact_inventory2 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Compact inventory 2.png"), (64, 64)).convert_alpha()
 
-Craft_list_slot1 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Craft list slot.png"), (64, 64))
-Craft_list_slot2 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Craft list slot 2.png"), (64, 64))
+Craft_list_slot1 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Craft list slot.png"), (64, 64)).convert_alpha()
+Craft_list_slot2 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Craft list slot 2.png"), (64, 64)).convert_alpha()
 
-Game_menu_slot1 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Game menu slot.png"), (64, 64))
-Game_menu_slot2 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Game menu slot 2.png"), (64, 64))
+Game_menu_slot1 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Game menu slot.png"), (64, 64)).convert_alpha()
+Game_menu_slot2 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Game menu slot 2.png"), (64, 64)).convert_alpha()
 
-Menu_slot1 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Menu slot.png"), (64, 64))
-Menu_slot2 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Menu slot 2.png"), (64, 64))
+Menu_slot1 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Menu slot.png"), (64, 64)).convert_alpha()
+Menu_slot2 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Menu slot 2.png"), (64, 64)).convert_alpha()
 
-Multiplayer_slot1 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Multiplayer slot.png"), (64, 64))
-Multiplayer_slot2 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Multiplayer slot 2.png"), (64, 64))
+Multiplayer_slot1 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Multiplayer slot.png"), (64, 64)).convert_alpha()
+Multiplayer_slot2 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Multiplayer slot 2.png"), (64, 64)).convert_alpha()
 
-Close_slot1 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Close slot.png"), (64, 64))
-Close_slot2 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Close slot 2.png"), (64, 64))
+Close_slot1 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Close slot.png"), (64, 64)).convert_alpha()
+Close_slot2 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Close slot 2.png"), (64, 64)).convert_alpha()
 
-Reference_slot1 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Reference slot.png"), (64, 64))
-Reference_slot2 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Reference slot 2.png"), (64, 64))
+Reference_slot1 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Reference slot.png"), (64, 64)).convert_alpha()
+Reference_slot2 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Reference slot 2.png"), (64, 64)).convert_alpha()
 
 Inventory_slot.set_alpha(Settings["Display"][1])
 Changed_inventory_slot.set_alpha(Settings["Display"][1])
@@ -189,84 +189,55 @@ Close_slot2.set_alpha(Settings["Display"][1])
 Reference_slot1.set_alpha(Settings["Display"][1])
 Reference_slot2.set_alpha(Settings["Display"][1])
 
-Portal_1 = pygame.image.load(path + "Images/Objects/Portal 1.png")
-Portal_1 = pygame.transform.scale(Portal_1, (128, 256))
-Portal_2 = pygame.image.load(path + "Images/Objects/Portal 2.png")
-Portal_2 = pygame.transform.scale(Portal_2, (128, 256))
+Portal_1 = load(path + "Images/Objects/Portal 1.png", 128, 256)
+Portal_2 = load(path + "Images/Objects/Portal 2.png", 128, 256)
 
-Vending_machine_image = pygame.transform.scale(pygame.image.load(path + "Images/Objects/Vending machine.png"), (304, 560))
+Vending_machine_image = load(path + "Images/Objects/Vending machine.png", 304, 560)
 
-Wire_1 = pygame.image.load(path + "Images/Objects/Wire 1.png")
-Wire_1 = pygame.transform.scale(Wire_1, (64, 64))
-Wire_2 = pygame.image.load(path + "Images/Objects/Wire 2.png")
-Wire_2 = pygame.transform.scale(Wire_2, (64, 64))
-Wire_3 = pygame.image.load(path + "Images/Objects/Wire 3.png")
-Wire_3 = pygame.transform.scale(Wire_3, (64, 64))
-Wire_4 = pygame.image.load(path + "Images/Objects/Wire 4.png")
-Wire_4 = pygame.transform.scale(Wire_4, (64, 64))
-Wire_5 = pygame.image.load(path + "Images/Objects/Wire 5.png")
-Wire_5 = pygame.transform.scale(Wire_5, (64, 64))
-Wire_6 = pygame.image.load(path + "Images/Objects/Wire 6.png")
-Wire_6 = pygame.transform.scale(Wire_6, (64, 64))
-Wire_7 = pygame.image.load(path + "Images/Objects/Wire 7.png")
-Wire_7 = pygame.transform.scale(Wire_7, (64, 64))
-Wire_8 = pygame.image.load(path + "Images/Objects/Wire 8.png")
-Wire_8 = pygame.transform.scale(Wire_8, (64, 64))
-Wire_9 = pygame.image.load(path + "Images/Objects/Wire 9.png")
-Wire_9 = pygame.transform.scale(Wire_9, (64, 64))
-Wire_10 = pygame.image.load(path + "Images/Objects/Wire 10.png")
-Wire_10 = pygame.transform.scale(Wire_10, (64, 64))
-Wire_11 = pygame.image.load(path + "Images/Objects/Wire 11.png")
-Wire_11 = pygame.transform.scale(Wire_11, (64, 64))
+Wire_1 = load(path + "Images/Objects/Wire 1.png", 64)
+Wire_2 = load(path + "Images/Objects/Wire 2.png", 64)
+Wire_3 = load(path + "Images/Objects/Wire 3.png", 64)
+Wire_4 = load(path + "Images/Objects/Wire 4.png", 64)
+Wire_5 = load(path + "Images/Objects/Wire 5.png", 64)
+Wire_6 = load(path + "Images/Objects/Wire 6.png", 64)
+Wire_7 = load(path + "Images/Objects/Wire 7.png", 64)
+Wire_8 = load(path + "Images/Objects/Wire 8.png", 64)
+Wire_9 = load(path + "Images/Objects/Wire 9.png", 64)
+Wire_10 = load(path + "Images/Objects/Wire 10.png", 64)
+Wire_11 = load(path + "Images/Objects/Wire 11.png", 64)
 
-Random_box_1 = pygame.image.load(path + "Images/Objects/Random Box 1.png")
-Random_box_1 = pygame.transform.scale(Random_box_1, (64, 64))
-Random_box_2 = pygame.image.load(path + "Images/Objects/Random Box 2.png")
-Random_box_2 = pygame.transform.scale(Random_box_2, (64, 64))
-Random_box_3 = pygame.image.load(path + "Images/Objects/Random Box 3.png")
-Random_box_3 = pygame.transform.scale(Random_box_3, (64, 64))
-Random_box_4 = pygame.image.load(path + "Images/Objects/Random Box 4.png")
-Random_box_4 = pygame.transform.scale(Random_box_4, (64, 64))
+Random_box_1 = load(path + "Images/Objects/Random Box 1.png", 64)
+Random_box_2 = load(path + "Images/Objects/Random Box 2.png", 64)
+Random_box_3 = load(path + "Images/Objects/Random Box 3.png", 64)
+Random_box_4 = load(path + "Images/Objects/Random Box 4.png", 64)
 
-Slime1 = pygame.image.load(path + "Images/Mobs/Blue Slime 1.png")
-Slime1 = pygame.transform.scale(Slime1, (128, 128))
-Slime1_2 = pygame.image.load(path + "Images/Mobs/Blue Slime 2.png")
-Slime1_2 = pygame.transform.scale(Slime1_2, (128, 128))
-Slime1_3 = pygame.image.load(path + "Images/Mobs/Blue Slime 3.png")
-Slime1_3 = pygame.transform.scale(Slime1_3, (128, 128))
-Slime1_4 = pygame.image.load(path + "Images/Mobs/Blue Slime 4.png")
-Slime1_4 = pygame.transform.scale(Slime1_4, (128, 128))
-Slime2 = pygame.image.load(path + "Images/Mobs/Pink Slime 1.png")
-Slime2 = pygame.transform.scale(Slime2, (128, 128))
-Slime2_2 = pygame.image.load(path + "Images/Mobs/Pink Slime 2.png")
-Slime2_2 = pygame.transform.scale(Slime2_2, (128, 128))
-Slime2_3 = pygame.image.load(path + "Images/Mobs/Pink Slime 3.png")
-Slime2_3 = pygame.transform.scale(Slime2_3, (128, 128))
-Slime2_4 = pygame.image.load(path + "Images/Mobs/Pink Slime 4.png")
-Slime2_4 = pygame.transform.scale(Slime2_4, (128, 128))
-
+Slime1 = load(path + "Images/Mobs/Blue Slime 1.png", 128)
+Slime1_2 = load(path + "Images/Mobs/Blue Slime 2.png", 128)
+Slime1_3 = load(path + "Images/Mobs/Blue Slime 3.png", 128)
+Slime1_4 = load(path + "Images/Mobs/Blue Slime 4.png", 128)
+Slime2 = load(path + "Images/Mobs/Pink Slime 1.png", 128)
+Slime2_2 = load(path + "Images/Mobs/Pink Slime 2.png", 128)
+Slime2_3 = load(path + "Images/Mobs/Pink Slime 3.png", 128)
+Slime2_4 = load(path + "Images/Mobs/Pink Slime 4.png", 128)
 
 SLIME_TYPES = {
 	1: [Slime1, Slime1_2, Slime1_3, Slime1_4],
 	2: [Slime2, Slime2_2, Slime2_3, Slime2_4]
 }
 
-Butterfly1 = pygame.image.load(path + "Images/Mobs/Butterfly 1 1.png")
-Butterfly1 = pygame.transform.scale(Butterfly1, (32, 32))
-Butterfly1_2 = pygame.image.load(path + "Images/Mobs/Butterfly 1 2.png")
-Butterfly1_2 = pygame.transform.scale(Butterfly1_2, (32, 32))
-Butterfly1_3 = pygame.image.load(path + "Images/Mobs/Butterfly 1 3.png")
-Butterfly1_3 = pygame.transform.scale(Butterfly1_3, (32, 32))
+Butterfly1 = load(path + "Images/Mobs/Butterfly 1 1.png", 32)
+Butterfly1_2 = load(path + "Images/Mobs/Butterfly 1 2.png", 32)
+Butterfly1_3 = load(path + "Images/Mobs/Butterfly 1 3.png", 32)
 
-web_texture = pygame.transform.scale(pygame.image.load(path + "Images/Objects/Piece of web.png"), (128, 128))
-explosion_texture = pygame.transform.scale(pygame.image.load(path + "Images/Objects/Explosion.png"), (128, 128))
+web_texture = load(path + "Images/Objects/Piece of web.png", 128)
+explosion_texture = load(path + "Images/Objects/Explosion.png", 128)
+cave_texture = load(path + "Images/Objects/Cave.png", 128)
+drop_texture = load(path + "Images/Objects/Drop.png", 64)
 
 bg_scale_factor = max(Width // 128, Height // 64)
+Screensaver2 = load(path + "Images/Screensavers/Screensaver 2.png", Height * 128 // 64, Height, False)
 
-Screensaver2 = pygame.image.load(path + "Images/Screensavers/Screensaver 2.png")
-Screensaver2 = pygame.transform.scale(Screensaver2, (Height * 128 // 64, Height))
-
-Heart = pygame.transform.scale(pygame.image.load(path + "Images/Heart.png"), (32, 32))
+Heart = load(path + "Images/Heart.png", 32)
 
 wall_types = ("Wooden wall","Brick wall", "Stone brick wall")
 door_types = ("Wooden door",)
@@ -274,74 +245,67 @@ wall_images = {}
 
 for wall_type in wall_types:
 	wall_images[wall_type] = (
-		pygame.transform.scale(pygame.image.load(path + "Images/Walls/" + wall_type + "/0.png"), (256, 256)),
-		pygame.transform.scale(pygame.image.load(path + "Images/Walls/" + wall_type + "/1.png"), (256, 256)),
-		pygame.transform.scale(pygame.image.load(path + "Images/Walls/" + wall_type + "/2.png"), (256, 256)),
-		pygame.transform.scale(pygame.image.load(path + "Images/Walls/" + wall_type + "/3.png"), (256, 256)),
-		pygame.transform.scale(pygame.image.load(path + "Images/Walls/" + wall_type + "/4.png"), (256, 256)),
-		pygame.transform.scale(pygame.image.load(path + "Images/Walls/" + wall_type + "/5.png"), (256, 256)),
-		pygame.transform.scale(pygame.image.load(path + "Images/Walls/" + wall_type + "/6.png"), (256, 256)),
-		pygame.transform.scale(pygame.image.load(path + "Images/Walls/" + wall_type + "/7.png"), (256, 256)),
-		pygame.transform.scale(pygame.image.load(path + "Images/Walls/" + wall_type + "/8.png"), (256, 256)),
-		pygame.transform.scale(pygame.image.load(path + "Images/Walls/" + wall_type + "/9.png"), (256, 256)),
-		pygame.transform.scale(pygame.image.load(path + "Images/Walls/" + wall_type + "/10.png"), (256, 256)),
-		pygame.transform.scale(pygame.image.load(path + "Images/Walls/" + wall_type + "/11.png"), (256, 256)),
-		pygame.transform.scale(pygame.image.load(path + "Images/Walls/" + wall_type + "/12.png"), (256, 256)),
-		pygame.transform.scale(pygame.image.load(path + "Images/Walls/" + wall_type + "/13.png"), (256, 256))
+		load(path + "Images/Walls/" + wall_type + "/0.png", 256),
+		load(path + "Images/Walls/" + wall_type + "/1.png", 256),
+		load(path + "Images/Walls/" + wall_type + "/2.png", 256),
+		load(path + "Images/Walls/" + wall_type + "/3.png", 256),
+		load(path + "Images/Walls/" + wall_type + "/4.png", 256),
+		load(path + "Images/Walls/" + wall_type + "/5.png", 256),
+		load(path + "Images/Walls/" + wall_type + "/6.png", 256),
+		load(path + "Images/Walls/" + wall_type + "/7.png", 256),
+		load(path + "Images/Walls/" + wall_type + "/8.png", 256),
+		load(path + "Images/Walls/" + wall_type + "/9.png", 256),
+		load(path + "Images/Walls/" + wall_type + "/10.png", 256),
+		load(path + "Images/Walls/" + wall_type + "/11.png", 256),
+		load(path + "Images/Walls/" + wall_type + "/12.png", 256),
+		load(path + "Images/Walls/" + wall_type + "/13.png", 256)
 	)
 
 for door_type in door_types:
 	wall_images[door_type] = (
-		pygame.transform.scale(pygame.image.load(path + "Images/Walls/" + door_type + "/1.png"), (256, 256)),
-		pygame.transform.scale(pygame.image.load(path + "Images/Walls/" + door_type + "/2.png"), (256, 256)),
-		pygame.transform.scale(pygame.image.load(path + "Images/Walls/" + door_type + "/1 Open.png"), (256, 256)),
-		pygame.transform.scale(pygame.image.load(path + "Images/Walls/" + door_type + "/2 Open.png"), (256, 256))
+		load(path + "Images/Walls/" + door_type + "/1.png", 256),
+		load(path + "Images/Walls/" + door_type + "/2.png", 256),
+		load(path + "Images/Walls/" + door_type + "/1 Open.png", 256),
+		load(path + "Images/Walls/" + door_type + "/2 Open.png", 256)
 	)
 
-farmland_images = (pygame.transform.scale(pygame.image.load(path + "Images/Objects/Farmland.png"), (128, 128)),)
+farmland_images = (load(path + "Images/Objects/Farmland.png", 128),)
 plant_types = ("Wheat", "Cucumber", "Tomato", "Corn", "Onion")
-seed_types = {"Wheat seeds": "Wheat",
-			  "Cucumber seeds": "Cucumber",
-			  "Tomato seeds": "Tomato",
-			  "Corn seeds": "Corn",
-			  "Onion": "Onion"}
+seed_types = {
+		"Wheat seeds": "Wheat",
+		"Cucumber seeds": "Cucumber",
+		"Tomato seeds": "Tomato",
+		"Corn seeds": "Corn",
+		"Onion": "Onion"
+		}
 
 plant_images = {}
 for plant_type in plant_types:
 	plant_images[plant_type] = (
-		pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + plant_type + " 1.png"), (128, 128)),
-		pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + plant_type + " 2.png"), (128, 128)),
-		pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + plant_type + " 3.png"), (128, 128)),
-		pygame.transform.scale(pygame.image.load(path + "Images/Objects/" + plant_type + " 4.png"), (128, 128))
+		load(path + "Images/Objects/" + plant_type + " 1.png", 128),
+		load(path + "Images/Objects/" + plant_type + " 2.png", 128),
+		load(path + "Images/Objects/" + plant_type + " 3.png", 128),
+		load(path + "Images/Objects/" + plant_type + " 4.png", 128)
 	)
 
-textures = {
-
-	"Forest": pygame.transform.scale(pygame.image.load(path + "Images/Biomes/Forest.png"), (256, 256)),
-	"Desert": pygame.transform.scale(pygame.image.load(path + "Images/Biomes/Desert.png"), (256, 256)),
-	"Field": pygame.transform.scale(pygame.image.load(path + "Images/Biomes/Field.png"), (256, 256)),
-	"Taiga": pygame.transform.scale(pygame.image.load(path + "Images/Biomes/Taiga.png"), (256, 256)),
-	"Swamp": pygame.transform.scale(pygame.image.load(path + "Images/Biomes/Swamp.png"), (256, 256)),
-	"Backrooms 0": pygame.transform.scale(pygame.image.load(path + "Images/Biomes/Backrooms 0.png"), (256, 256)),
-	"Backrooms 0.2": pygame.transform.scale(pygame.image.load(path + "Images/Biomes/Backrooms 0.2.png"), (256, 256)),
-	"Backrooms 1": pygame.transform.scale(pygame.Surface((256, 256)), (256, 256)),
-
-	}
+biome_textures = {}
+for biome in biomes:
+	biome_textures[biome] = load(path + f"Images/Biomes/{biome}.png", 256)
 
 Backrooms_portal_images = (
-	pygame.transform.scale(pygame.image.load(path + "Images/Objects/Backrooms portal 1.png"), (256, 256)),
-	pygame.transform.scale(pygame.image.load(path + "Images/Objects/Backrooms portal 2.png"), (256, 256)),
-	pygame.transform.scale(pygame.image.load(path + "Images/Objects/Backrooms portal 3.png"), (256, 256)),
-	pygame.transform.scale(pygame.image.load(path + "Images/Objects/Backrooms portal 4.png"), (256, 256)),
-	pygame.transform.scale(pygame.image.load(path + "Images/Objects/Backrooms portal 5.png"), (256, 256)),
-	pygame.transform.scale(pygame.image.load(path + "Images/Objects/Backrooms portal 6.png"), (256, 256)),
-	pygame.transform.scale(pygame.image.load(path + "Images/Objects/Backrooms portal 7.png"), (256, 256)),
-	pygame.transform.scale(pygame.image.load(path + "Images/Objects/Backrooms portal 8.png"), (256, 256)),
-	pygame.transform.scale(pygame.image.load(path + "Images/Objects/Backrooms portal 9.png"), (256, 256)),
-	pygame.transform.scale(pygame.image.load(path + "Images/Objects/Backrooms portal 10.png"), (256, 256))
+	load(path + "Images/Objects/Backrooms portal 1.png", 256),
+	load(path + "Images/Objects/Backrooms portal 2.png", 256),
+	load(path + "Images/Objects/Backrooms portal 3.png", 256),
+	load(path + "Images/Objects/Backrooms portal 4.png", 256),
+	load(path + "Images/Objects/Backrooms portal 5.png", 256),
+	load(path + "Images/Objects/Backrooms portal 6.png", 256),
+	load(path + "Images/Objects/Backrooms portal 7.png", 256),
+	load(path + "Images/Objects/Backrooms portal 8.png", 256),
+	load(path + "Images/Objects/Backrooms portal 9.png", 256),
+	load(path + "Images/Objects/Backrooms portal 10.png", 256)
 )
 
-no_file_texture = pygame.transform.scale(pygame.image.load(path + "Images/No-file texture.png"), (64, 64))
+no_file_texture = load(path + "Images/No-file texture.png", 64, convert_alpha=False)
 
 colors = {
 	"Normal": (39, 155, 80),
@@ -377,7 +341,7 @@ class Player:
 			frames = []
 			for frame_num in range(1, 7):
 				path_to_image = f"{path}Images/Players/Hiro/Normal/{direction}/{frame_num}.png"
-				frames.append(pygame.transform.scale(pygame.image.load(path_to_image), (256, 256)))	
+				frames.append(load(path_to_image, 256))	
 			self.animations[direction] = frames
 
 		# Игровые параметры
@@ -565,9 +529,9 @@ class Object:
 
 		if image is None:
 			if add_path:
-				self.image = TextureCache.get(path + image_path, scale)
+				self.image = load(path + image_path, *scale)
 			else:
-				self.image = TextureCache.get(image_path, scale)
+				self.image = load(image_path, *scale)
 		else:
 			self.image = pygame.transform.scale(image, (scale[0], scale[1]))
 
@@ -657,9 +621,9 @@ class Object:
 		
 		self.__dict__.update(state)
 		if self.add_path:
-			self.image = TextureCache.get(path + self.image_path, self.scale)
+			self.image = load(path + self.image_path, *self.scale)
 		else:
-			self.image = TextureCache.get(self.image_path, self.scale)
+			self.image = load(self.image_path, *self.scale)
 
 		self.rect = pygame.Rect(state["rect"][0], state["rect"][1], state["rect"][2], state["rect"][3])
 
@@ -767,7 +731,7 @@ class Particle:
 	def __setstate__(self, state):
 		
 		self.__dict__.update(state)
-		self.image = pygame.transform.scale(pygame.image.load(self.image_path), (self.w, self.h))
+		self.image = load(self.image_path, self.w, self.h)
 	
 	def main(self, dt):
 		
@@ -827,9 +791,9 @@ class BaseEnemy:
 		self.detection_range = 1000
 		self.attack_range = 200
 		
-	def update(self, player, world):
+	def update(self, player, world, dt):
 		"""Обновляет состояние моба"""
-		self._update_animation()
+		self._update_animation(dt)
 		self._update_state(player, world)
 		self._update_position(world)
 		
@@ -1117,53 +1081,56 @@ class Spider(BaseEnemy):
 
 		self.name = "Spider"
 		self.direction = "Right"
+		self.x = x
+		self.y = y
 		self.rect = pygame.Rect(self.x - 50, self.y - 50, 100, 100)
 		
 		super().__init__(
 			x=x, y=y,
 			HP=50,
-			speed=random.randint(10, 20),
+			speed=random.randint(500, 1000),
 			animation_frames=[
-				pygame.transform.scale(pygame.image.load(path + "Images/Mobs/Spider.png"), (256, 256)),
-				pygame.transform.scale(pygame.image.load(path + "Images/Mobs/Spider 2.png"), (256, 256))]
+				load(path + "Images/Mobs/Spider.png", 256),
+				load(path + "Images/Mobs/Spider 2.png", 256)]
 		)
 		
 		self.animation_images = {
-			"Left": pygame.transform.scale(pygame.image.load(path + "Images/Mobs/Spider.png"), (256, 256)),
-			"Left attack": pygame.transform.scale(pygame.image.load(path + "Images/Mobs/Spider attack.png"), (256, 256)),
-			"Right": pygame.transform.scale(pygame.image.load(path + "Images/Mobs/Spider 2.png"), (256, 256)),
-			"Right attack": pygame.transform.scale(pygame.image.load(path + "Images/Mobs/Spider 2 attack.png"), (256, 256))}
+				"Left": load(path + "Images/Mobs/Spider.png", 256),
+				"Left attack": load(path + "Images/Mobs/Spider attack.png", 256),
+				"Right": load(path + "Images/Mobs/Spider 2.png", 256),
+				"Right attack": load(path + "Images/Mobs/Spider 2 attack.png", 256)
+				}
 		
 		self.state = "Going towards player"
 
 		# Параметры атаки
 		self.attack_cooldown = 0
-		self.attack_charge_time = 0.5 * FPS
+		self.attack_charge_time = 1
 		self.attack_range = 150  # Дистанция атаки
 		self.shoot_range = 900
 		self.shoot_cooldown = 0
-		self.shoot_charge_time = FPS * 3
-		self.shoot_prepare_charge_time = FPS * 0.5
+		self.shoot_charge_time = 3
+		self.shoot_prepare_charge_time = 0.5
 		self.shoot_charge_timer = 0
 		self.detection_range = 1000	# Дистанция обнаружения
 		
 		# Флаг урона
 		self.damage_dealt = False
 	
-	def update(self, player, world):
+	def update(self, player, world, dt):
 
 		if self.HP < 16 and self.speed < 8:
 			self.speed += 10  # Ускорение при низком HP
 		
-		self.attack_cooldown = max(0, self.attack_cooldown - 1)
-		self.shoot_cooldown = max(0, self.shoot_cooldown - 1)
+		self.attack_cooldown = max(0, self.attack_cooldown - dt)
+		self.shoot_cooldown = max(0, self.shoot_cooldown - dt)
 
 		distance = math.dist((self.x, self.y), (player.x, player.y))
 
 		match self.state:
 			case "Attacking": self.state = "Going towards player"
 			case "Prepare shoot": self._handle_prepare_shoot(player, world)
-			case "Going towards player": self._handle_go_towards_player(player, world)
+			case "Going towards player": self._handle_go_towards_player(player, world, dt)
 		
 	def _handle_prepare_shoot(self, player, world):
 		"""Подготовка к атаке паутиной (прицеливание)"""
@@ -1180,12 +1147,12 @@ class Spider(BaseEnemy):
 			dx = player.x - self.x
 			dy = player.y - self.y
 			dist = math.dist((self.x, self.y), (player.x, player.y))
-			move_x = dx / dist * FPS * 1.5
-			move_y = dy / dist * FPS * 1.5
-			world.particles.append(Particle(self.x, self.y, pygame.transform.rotate(web_texture, -math.degrees(math.atan2(-move_y, move_x))), move_x, move_y, del_self_condition=lambda particle: (pygame.Rect(particle.x - 32, particle.y + 32, 64, 64).colliderect(pygame.Rect(player.x - 100, player.y + 100, 200, 200))), end_time=FPS*3)) # TODO наложить эффект замедления
+			move_x = dx / dist * 100
+			move_y = dy / dist * 100
+			world.particles.append(Particle(self.x, self.y, pygame.transform.rotate(web_texture, -math.degrees(math.atan2(-move_y, move_x))), move_x, move_y, del_self_condition=lambda particle: (pygame.Rect(particle.x - 32, particle.y + 32, 64, 64).colliderect(pygame.Rect(player.x - 100, player.y + 100, 200, 200))), end_time=1)) # TODO наложить эффект замедления
 			self.state = "Attacking"
 
-	def _handle_go_towards_player(self, player, world):
+	def _handle_go_towards_player(self, player, world, dt):
 		
 		dx = player.x - self.x
 		dy = player.y - self.y
@@ -1194,8 +1161,8 @@ class Spider(BaseEnemy):
 		if dist <= self.detection_range:
 			if dist > 100:
 				# Движение к цели
-				move_x = dx / dist * self.speed
-				move_y = dy / dist * self.speed
+				move_x = dx / dist * self.speed * dt
+				move_y = dy / dist * self.speed * dt
 				if not self._check_collision(self.x + move_x, self.y, world):
 					self.x += move_x
 					if move_x > 0: self.direction = "Right"
@@ -1222,7 +1189,7 @@ class Spider(BaseEnemy):
 	def _check_collision(self, x, y, world):
 		"""Проверка столкновения со стенами"""
 		self.rect = pygame.Rect(x - 50, y - 50, 100, 100)
-		return check_collision(self.rect)
+		return check_collision(self.rect, world)
 		
 	def draw(self, player, show_hitbox=False):
 		"""Отрисовка паука"""
@@ -1250,14 +1217,15 @@ class Spider(BaseEnemy):
 		
 		self.__dict__.update(state)
 		self.animation_frames=(
-			pygame.transform.scale(pygame.image.load(path + "Images/Objects/Spider.png"), (256, 256)),
-			pygame.transform.scale(pygame.image.load(path + "Images/Objects/Spider 2.png"), (256, 256))
+			load(path + "Images/Mobs/Spider.png", 256),
+			load(path + "Images/Mobs/Spider 2.png", 256)
 		)
 		self.animation_images = {
-			"Left": pygame.transform.scale(pygame.image.load(path + "Images/Objects/Spider.png"), (256, 256)),
-			"Left attack": pygame.transform.scale(pygame.image.load(path + "Images/Objects/Spider attack.png"), (256, 256)),
-			"Right": pygame.transform.scale(pygame.image.load(path + "Images/Objects/Spider 2.png"), (256, 256)),
-			"Right attack": pygame.transform.scale(pygame.image.load(path + "Images/Objects/Spider 2 attack.png"), (256, 256))}
+				"Left": load(path + "Images/Mobs/Spider.png", 256),
+				"Left attack": load(path + "Images/Mobs/Spider attack.png", 256),
+				"Right": load(path + "Images/Mobs/Spider 2.png", 256),
+				"Right attack": load(path + "Images/Mobs/Spider 2 attack.png", 256)
+				}
 
 class ButterflyEnemy:
 
@@ -1354,8 +1322,7 @@ class Projectile:
 		self.angle = math.atan2(Height / 2 - mouse_y, Width / 2 - mouse_x)
 		self.x_vel = math.cos(self.angle) * 100
 		self.y_vel = math.sin(self.angle) * 100
-		self.image = pygame.transform.rotate(pygame.transform.scale(pygame.image.load(path + "Images/Items/" + type + ".png"),
-																	(64, 64)), math.atan2(mouse_x - Width / 2, mouse_y - Height / 2) * 180 / math.pi + 180)
+		self.image = pygame.transform.rotate(load(path + "Images/Items/" + type + ".png", 64), math.atan2(mouse_x - Width / 2, mouse_y - Height / 2) * 180 / math.pi + 180)
 		self.end_time = int(time.time()) + 3
 
 	def main(self):
@@ -1393,8 +1360,7 @@ class ExplodingProjectile:
 		self.angle = math.atan2(Height / 2 - mouse_y, Width / 2 - mouse_x)
 		self.x_vel = math.cos(self.angle) * 50
 		self.y_vel = math.sin(self.angle) * 50
-		self.image = pygame.transform.rotate(pygame.transform.scale(pygame.image.load(path + "Images/Items/" + type + ".png"),
-																	(64, 64)), math.atan2(mouse_x - Width / 2, mouse_y - Height / 2) * 180 / math.pi + 180)
+		self.image = pygame.transform.rotate(load(path + "Images/Items/" + type + ".png", 64), math.atan2(mouse_x - Width / 2, mouse_y - Height / 2) * 180 / math.pi + 180)
 		self.dist_x = abs(target_pos[0] - self.x)
 		self.dist_y = abs(target_pos[1] - self.y)
 
@@ -1729,8 +1695,6 @@ class Wire:
 
 			win.blit(textInfo.render(self.condition, True, (0, 0, 0)), (self.x * 64 + Width // 2 - player.x, player.y - self.y * 64 + Height // 2 - 16))
 			win.blit(self.image, (self.x * 64 + Width // 2 - player.x, player.y - self.y * 64 + Height // 2 - 16))
-		else:
-			...#win.blit(pygame.transform.scale(self.image, (18.75, 18.75)), (Width // 2 + 300 + self.x * 18.75, 0 - Height // 2 + self.y * 18.75 + 18.75 * 2 + 9.4))
 
 class Lever:
 
@@ -1772,7 +1736,6 @@ class Lever:
 			else:
 				self.image = self.image1
 				self.condition = None
-			time.sleep(0.15)
 
 		win.blit(self.image, (self.x * 64 + Width // 2 - player.x, player.y - self.y * 64 + Height // 2 - 16))
 
@@ -2115,9 +2078,7 @@ class LogicGate:
 		elif self.neigbords_none != 0:
 			self.condition = None
 		
-		if self.in_motherboard:
-			...#win.blit(self.image, (self.x * 64 + Width // 2 - player.x, player.y - self.y * 64 + Height // 2 - 16))
-		else:
+		if not self.in_motherboard:
 			win.blit(self.image, (self.x * 64 + Width // 2 - player.x, player.y - self.y * 64 + Height // 2 - 16))
 
 class Motherboard:
@@ -2224,9 +2185,7 @@ class Motherboard:
 		
 		self.get_pressed()
 
-		if self.in_motherboard:
-			...#win.blit(self.image, (self.x * 64 + Width // 2 - player.x, player.y - self.y * 64 + Height // 2 - 16))
-		else:
+		if not self.in_motherboard:
 			win.blit(self.image, (self.x * 64 + Width // 2 - player.x, player.y - self.y * 64 + Height // 2 - 16))
 
 	def get_pressed(self):
@@ -2235,8 +2194,6 @@ class Motherboard:
 		if self.in_motherboard is None:
 			if self.x * 64 + Width // 2 - player.x <= mouse_x <= self.x * 64 + Width // 2 - player.x + 64 and player.y - self.y * 64 + Height // 2 - 16 <= mouse_y <= player.y - self.y * 64 + Height // 2 - 16 + 64 and in_motherboard is None and click[0]:
 				in_motherboard = self
-		else:
-			...
 
 class World:
 
@@ -2292,7 +2249,7 @@ class World:
 					bounds["y2"] > player.y - Height // 2 and 
 					bounds["y1"] < player.y + Height):
 					
-					biome_texture = textures.get(chunk.biome)
+					biome_texture = biome_textures.get(chunk.biome)
 					if biome_texture:
 						# Смещение чанка относительно игрока
 						offset_x = bounds["x1"] - player.x + Width // 2
@@ -2337,7 +2294,7 @@ class Cave:
 		self.h = 128
 		self.own_width = w
 		self.own_height = h
-		self.image = pygame.transform.scale(pygame.image.load(path + "Images/Objects/Cave.png"), (128, 128))
+		self.image = cave_texture
 		self.objects = []
 		self.seed = (int(self.x) * 888888 + int(self.y) * 425269) ^ 0x9e3779b9
 		self.noise = world.chunk_manager.generator.get_cave_noise(self.seed)
@@ -2384,7 +2341,7 @@ class Cave:
 	def __setstate__(self, state):
 		
 		self.__dict__.update(state)
-		self.image = pygame.transform.scale(pygame.image.load(path + "Images/Objects/Cave.png"), (128, 128))
+		self.image = cave_texture
 
 class Portal:
 
@@ -2652,7 +2609,7 @@ def settings():
 			page = min(page, 2)
 
 			win.blit(bigTextInfo.render(str(page), True, menu_color_medium), ((Width - 415) // 2 + 391, Height - 96))
-			win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Help 2.png"), (132, 64)), (10, 117))
+			win.blit(load(path + "Images/Buttons/Help 2.png", 132, 64), (10, 117))
 			display_button.main(display)
 			languages_button.main(Languages)
 			user_button.main(User)
@@ -2700,13 +2657,13 @@ def settings():
 				win.blit(textInfo.render(languages("идут 7 слотов для предметов. Если положить предмет в первый, то", "for items. If you put an item in the first one, then the second one is", "7 элемент ұясы бар. Егер объектіні біріншіге қойсақ, онда"), True, menu_color_medium), (385, 449))
 				win.blit(textInfo.render(languages("разблокируется второй, потом третий, и так далее.", "unlocked, then the third, and so on.", "екіншісі құлыптан босатылады, содан кейін үшінші және т.б."), True, menu_color_medium), (385, 479))
 				win.blit(Changed_inventory_slot, (385, 509))
-				win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Items/Furnace.png"), (64, 64)), (385, 509))
+				win.blit(load(path + "Images/Items/Furnace.png", 64), (385, 509))
 				win.blit(Changed_inventory_slot, (465, 509))
 				win.blit(Inventory_slot, (545, 509))
-				win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Items/Clay.png"), (64, 64)), (545, 509))
+				win.blit(load(path + "Images/Items/Clay.png", 64), (545, 509))
 				win.blit(Inventory_slot, (625, 509))
 				win.blit(Changed_inventory_slot, (1185, 509))
-				win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Items/Brick.png"), (64, 64)), (1185, 509))
+				win.blit(load(path + "Images/Items/Brick.png", 64), (1185, 509))
 				win.blit(textInfo.render(languages("   Если положить определённую комбинацию предметов, то можно будет", "	 If you put a certain combination of items, then you can", "Егер сіз элементтердің белгілі бір комбинациясын қойсаңыз, онда сіз жасай аласыз"), True, menu_color_medium), (385, 599))
 				win.blit(textInfo.render(languages("получить что-либо. Например, если поставить печь и положить глину в ячейки", "get something. For example, if you put a furnace and put clay in the cells of", "бірдеңе алу. Мысалы, пешті қойып, ұяшықтарға балшық салсаңыз"), True, menu_color_medium), (385, 629))
 				win.blit(textInfo.render(languages("крафта, то можно будет получить кирпич, а чтобы его получить, нажми.", "crafting, you can get a brick, and to get it, click.", "қолөнер, сіз кірпіш алуға болады, және оны алу үшін басыңыз."), True, menu_color_medium), (385, 659))
@@ -2780,7 +2737,7 @@ def settings():
 			ui_system.draw("Display", bias, max_bias)
 			
 			help_button.main(help)
-			win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Display 2.png"), (222, 64)), (10, 192))
+			win.blit(load(path + "Images/Buttons/Display 2.png", 222, 64), (10, 192))
 			languages_button.main(Languages)
 			user_button.main(User)
 			sound_button.main(Sound)
@@ -2904,7 +2861,7 @@ def settings():
 			win.blit(bigTextInfo.render(str(page), True, menu_color_medium), ((Width - 415) // 2 + 391, Height - 96))
 			help_button.main(help)
 			display_button.main(display)
-			win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Languages 2.png"), (272, 64)), (10, 267))
+			win.blit(load(path + "Images/Buttons/Languages 2.png", 272, 64), (10, 267))
 			user_button.main(User)
 			sound_button.main(Sound)
 			statistics_button.main(Statistics)
@@ -2981,7 +2938,7 @@ def settings():
 			help_button.main(help)
 			display_button.main(display)
 			languages_button.main(Languages)
-			win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/User 2.png"), (132, 64)), (10, 342))
+			win.blit(load(path + "Images/Buttons/User 2.png", 132, 64), (10, 342))
 			sound_button.main(Sound)
 			statistics_button.main(Statistics)
 			keys_button.main(Keys)
@@ -3064,7 +3021,7 @@ def settings():
 			display_button.main(display)
 			languages_button.main(Languages)
 			user_button.main(User)
-			win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Sound 2.png"), (160, 64)), (10, 417))
+			win.blit(load(path + "Images/Buttons/Sound 2.png", 160, 64), (10, 417))
 			statistics_button.main(Statistics)
 			keys_button.main(Keys)
 			game_button.main(Game)
@@ -3141,7 +3098,7 @@ def settings():
 			languages_button.main(Languages)
 			user_button.main(User)
 			sound_button.main(Sound)
-			win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Statistics 2.png"), (300, 64)), (10, 492))
+			win.blit(load(path + "Images/Buttons/Statistics 2.png", 300, 64), (10, 492))
 			keys_button.main(Keys)
 			game_button.main(Game)
 			back_button.main()
@@ -3320,7 +3277,6 @@ def settings():
 			if back_button.get_pressed():
 				if looked_key is not None:
 					looked_key = None
-					time.sleep(0.1)
 				else:
 					Saver.save_objects(path + "Saves/Settings/Settings.save", Settings)
 					Saver.save_objects(path + "Saves/Settings/Hot keys.save", hot_keys)
@@ -3338,7 +3294,7 @@ def settings():
 			user_button.main(User)
 			sound_button.main(Sound)
 			statistics_button.main(Statistics)
-			win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Keys 2.png"), (132, 64)), (10, 567))
+			win.blit(load(path + "Images/Buttons/Keys 2.png", 132, 64), (10, 567))
 			game_button.main(Game)
 			
 			littleTextInfo = pygame.font.Font(path + "Font.ttf", 8)
@@ -3477,7 +3433,7 @@ def settings():
 			sound_button.main(Sound)
 			statistics_button.main(Statistics)
 			keys_button.main(Keys)
-			win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Game 2.png"), (132, 64)), (10, 642))
+			win.blit(load(path + "Images/Buttons/Game 2.png", 132, 64), (10, 642))
 			back_button.main()
 			show_reset_settings()
 			
@@ -3592,7 +3548,7 @@ def change_a_character():
 			if back_button.get_pressed():
 				win_darken(win)
 				menu()
-			win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Character 2.png"), (278, 64)), (10, 120))
+			win.blit(load(path + "Images/Buttons/Character 2.png", 278, 64), (10, 120))
 			pets_button.main(pets)
 			
 			page_back_button.main()
@@ -3665,7 +3621,7 @@ def change_a_character():
 
 			character_button.main(characters)
 
-			win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Pets 2.png"), (132, 64)), (10, 192))
+			win.blit(load(path + "Images/Buttons/Pets 2.png", 132, 64), (10, 192))
 
 			animate_click(dt, mouse_x, mouse_y)
 
@@ -3691,7 +3647,7 @@ objects_templates = {
 
 def start_game():
 	
-	global win, changed_slot, menu_open, multiplayer_menu_open, screenmode, inventory_open, hold_left, backrooms, text_color, bullet_num, craft_items_list, craft_amounts_list, craft_images_list, screenshot_num, mouse_x, mouse_y, item_settings_open, chat_tick, chat, main_chat, chat_open, craft_list_open, craft_list_page, craft_list_offset, craft_list_max_offset, click, in_motherboard, world_name, color, multiplayer, animation, start_time, new_particles, inside_files, game, alt_pressed, player, world, FPS, MAX_FPS, screen_rect, time_index, game_events, show_cursor, cursor_timer
+	global win, changed_slot, menu_open, multiplayer_menu_open, screenmode, inventory_open, hold_left, backrooms, text_color, bullet_num, craft_items_list, craft_amounts_list, craft_images_list, screenshot_num, mouse_x, mouse_y, item_settings_open, chat_tick, chat, main_chat, chat_open, craft_list_open, craft_list_page, craft_list_offset, craft_list_max_offset, click, in_motherboard, world_name, color, multiplayer, animation, start_time, new_particles, game, alt_pressed, player, world, FPS, MAX_FPS, screen_rect, time_index, game_events, show_cursor, cursor_timer
 
 	night_playing = False
 	bigTextInfo = pygame.font.Font(path + "Font.ttf", 36)
@@ -3745,15 +3701,16 @@ def start_game():
 			os.mkdir(path + "Saves/Worlds/" + world_name + "/Images")
 
 			save(False, True)
-
-		inside_files = []
-		for dirs, folder, files in os.walk(os.path.dirname(path) + "/Plugins/"):
-			inside_files = files
+		
+		# Старая система плагинов, которая уже толком не работает. От неё нужно отказываться в пользу модов (которые ещё не созданы)
+		plugins = []
+		for _, _, files in os.walk(os.path.dirname(path) + "/Plugins/"):
+			plugins = files
 			break
 		
-		for file in inside_files:
+		for plugin in plugins:
 
-			for i in Saver.load_objects(path + "" + file):
+			for i in Saver.load_objects(path + "" + plugin):
 
 				match i[0]:
 
@@ -3776,7 +3733,7 @@ def start_game():
 					case "Object":
 
 						try:
-							a = Object(i[1], i[3], i[4], i[2], (pygame.image.load(i[2]).get_width(), pygame.image.load(i[2]).get_height()), special_flags=i[5], add_path=False)
+							a = Object(i[1], i[3], i[4], i[2], (load(i[2]).get_width(), load(i[2]).get_height()), special_flags=i[5], add_path=False)
 						except FileNotFoundError:
 							a = Object(i[1], i[3], i[4], "Images/No-file texture.png", special_flags=i[5])
 						b = True
@@ -3895,8 +3852,8 @@ def start_game():
 						if player.changed_item is not None:
 							player.changed_item = player.changed_item.name
 
-					# if event.key == pygame.K_o and False:
-						# world.mobs.append(Slime(player.x, player.y))
+					if event.key == pygame.K_o and Settings["User"][1]:
+						world.mobs.append(Spider(player.x, player.y))
 						# create_light_circle(world.chunk_manager, player.x, player.y, 10, 15)
 						# world.chunk_manager.chunks[(0, 0)].shadow_map.update({(0, 0): 0, (1, 0): 1, (2, 0): 2, (3, 0): 3, (4, 0): 4, (5, 0): 5, (6, 0): 6, (7, 0): 7, (8, 0): 8, (9, 0): 9, (10, 0): 10, (11, 0): 11, (12, 0): 12, (13, 0): 13, (14, 0): 14, (15, 0): 15})
 						# world.chunk_manager.chunks[(0, 0)].light_map.update({(0, 1): 0, (1, 1): 1, (2, 1): 2, (3, 1): 3, (4, 1): 4, (5, 1): 5, (6, 1): 6, (7, 1): 7, (8, 1): 8, (9, 1): 9, (10, 1): 10, (11, 1): 11, (12, 1): 12, (13, 1): 13, (14, 1): 14, (15, 1): 15})
@@ -3944,20 +3901,6 @@ def start_game():
 				craft_items_list, craft_amounts_list, craft_images_list = inventory.set_end_cell(mouse_x, mouse_y, craft_items_list, craft_amounts_list, craft_images_list)
 				hold_left = False
 
-		inside_files = []
-
-		for dirs, folder, files in os.walk(os.path.dirname(path) + "/Plugins/"):
-			inside_files = files
-			break
-		
-		for file in inside_files:
-			for i in Saver.load_objects(path + "" + file):
-				if i[0] == "Command" and i[2] == "2":
-					try:
-						eval(i[1])
-					except:
-						pass
-		
 		keys = pygame.key.get_pressed()
 
 		if not chat_open:
@@ -4085,9 +4028,9 @@ def start_game():
 
 			match Backrooms.Level:
 				case 0:
-					...#win.fill((120, 100, 40))
+					win.fill((120, 100, 40))
 				case 0.2:
-					...#win.fill((170, 60, 50))
+					win.fill((170, 60, 50))
 				case 1:
 					win.fill((100, 100, 100))
 				case 2:
@@ -4195,7 +4138,7 @@ def start_game():
 				
 				pygame.draw.rect(win, (100, 100, 100), (world.current_cave.own_width // 2 * -1 - player.x + Width // 2, player.y - world.current_cave.own_height // 2 + Height // 2, world.current_cave.own_width, world.current_cave.own_height))
 				world.current_cave.render()
-				win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Objects/Cave.png"), (128, 128)), (0 - player.x + Width // 2 - world.current_cave.w // 2, player.y - 0 + Height // 2 - world.current_cave.h // 2))
+				win.blit(cave_texture, (0 - player.x + Width // 2 - world.current_cave.w // 2, player.y - 0 + Height // 2 - world.current_cave.h // 2))
 
 				for object in world.current_cave.objects:
 
@@ -4283,16 +4226,12 @@ def start_game():
 					if object.get_left_pressed():
 
 						if object.name == "Pond":
-
-							if object.special_flags[0] == 0:
-								...
-							elif inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Bucket":
+							if object.special_flags[0] != 0 and inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Bucket":
 
 								inventory.reduce(changed_slot)
 
 								inventory.increate("Water bucket")
 								object.special_flags[0] -= 1
-								time.sleep(0.15)
 			
 							if object.special_flags[1] != 0 and inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Stone shovel" and object.get_left_pressed() and random.randint(1, 30) == 1:
 								rand_x, rand_y = object.x +random.randint(-128, 128), object.y + random.randint(-128, 128)
@@ -4313,7 +4252,7 @@ def start_game():
 						
 						try:
 							object.image_path = path + "Images/Objects/Dandelion " + str(int(object.image_path[-5]) + 1) + ".png"
-							object.image = pygame.transform.scale(pygame.image.load(object.image_path), (64, 64))
+							object.image = load(object.image_path, 64)
 						except:
 							world.chunk_manager.get_chunk_at(object.x, object.y).objects.remove(object)
 
@@ -4322,9 +4261,9 @@ def start_game():
 							for _ in range(5):
 
 								if random.randint(1, 5) == 1:
-									world.particles.append(Particle(object.x, object.y, pygame.transform.scale(pygame.image.load(path + "Images/Items/Dandelion seed.png"), (32, 32)), random.randint(-30, 30), random.randint(-30, 30), end_time=5, end_command=lambda particle: (world.chunk_manager.get_chunk_at(particle.x, particle.y).items.append(Object("Dandelion", particle.x, particle.y, "Images/Objects/Dandelion 1.png")))))
+									world.particles.append(Particle(object.x, object.y, load(path + "Images/Items/Dandelion seed.png", 32), random.randint(-30, 30), random.randint(-30, 30), end_time=5, end_command=lambda particle: (world.chunk_manager.get_chunk_at(particle.x, particle.y).items.append(Object("Dandelion", particle.x, particle.y, "Images/Objects/Dandelion 1.png")))))
 								else:
-									world.particles.append(Particle(object.x, object.y, pygame.transform.scale(pygame.image.load(path + "Images/Items/Dandelion seed.png"), (32, 32)), random.randint(-30, 30), random.randint(-30, 30), end_time=5))
+									world.particles.append(Particle(object.x, object.y, load(path + "Images/Items/Dandelion seed.png", 32), random.randint(-30, 30), random.randint(-30, 30), end_time=5))
 
 					if object.name == "Punch" and False:
 
@@ -4332,7 +4271,7 @@ def start_game():
 							if object.special_flags < 11:
 								object.special_flags += 1
 								if object.special_flags > 6:
-									object.image = pygame.image.load(path + "Images/Objects/Punch " + str(object.special_flags - 5) + ".png")
+									object.image = load(path + "Images/Objects/Punch " + str(object.special_flags - 5) + ".png")
 							else:
 								object.special_flags = 1
 								world.chunk_manager.get_chunk_at(object.x, object.y).items.append(Object("Punch", object.x, object.y, "Images/Items/Powder.png"))
@@ -4777,7 +4716,7 @@ def start_game():
 			case "Rain":
 				offset = random.randint(-10, 10)
 				for _ in range(15):
-					world.particles.append(Particle(random.randint(1, Width), -50, pygame.transform.scale(pygame.image.load(path + "Images/Objects/Drop.png"), (64, 64)),  x_bias=random.randint(-5, 5) + offset, y_bias=random.randint(30, 40), display_mode=lambda X, Y, w, h: (X, Y), end_y=Height, end_zone=30))
+					world.particles.append(Particle(random.randint(1, Width), -50, drop_texture,  x_bias=random.randint(-5, 5) + offset, y_bias=random.randint(30, 40), display_mode=lambda X, Y, w, h: (X, Y), end_y=Height, end_zone=30))
 
 		# Отображение частиц
 
@@ -5087,11 +5026,11 @@ def start_game():
 			down_b.main()
 			right_b.main()
 			if inventory_open:
-				win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Slots/Open inventory slot.png"), (64, 64)), (890, 10))
+				win.blit(load(path + "Images/Slots/Open inventory slot.png", 64), (890, 10))
 				if 890 <= mouse_x <= 954 and 10 <= mouse_y <= 74 and click[0]:
 					inventory_open = False
 			else:
-				win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Slots/Open inventory slot.png"), (64, 64)), (810, 10))
+				win.blit(load(path + "Images/Slots/Open inventory slot.png", 64), (810, 10))
 				if 810 <= mouse_x <= 874 and 10 <= mouse_y <= 74 and click[0]:
 					inventory_open = True
 		
@@ -5738,12 +5677,12 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 				win.fill(menu_color_light)
 
 				if mouse_x <= 128 and mouse_y <= 128:
-					win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Back 2.png"), (128, 128)), (0, 0))
+					win.blit(load(path + "Images/Buttons/Back 2.png", 128), (0, 0))
 					if release:
 						multiplayer_menu_open = False
 						
 				else:
-					win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Back.png"), (128, 128)), (0, 0))
+					win.blit(load(path + "Images/Buttons/Back.png", 128), (0, 0))
 
 				pygame.draw.rect(win, menu_color_dark, (0, 0, Width, Height), 10)
 				pygame.draw.rect(win, menu_color_medium, (10, 10, Width - 20, Height - 20), 10)
@@ -5875,7 +5814,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 			text(item_text, mouse_x + 20, mouse_y + 20, color=(0, 150, 0), max_width=Width // 3)
 			
 			if inventory.whole_inventory[inventory.start_cell].type == "Food":
-				win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Heart.png"), (64, 64)), (mouse_x + 20, mouse_y + text_height - 84))
+				win.blit(Heart, (mouse_x + 20, mouse_y + text_height - 84))
 				win.blit(textInfo.render(str(inventory.whole_inventory[inventory.start_cell].special_info), True, text_color), (mouse_x + 52 - textInfo.size(str(inventory.whole_inventory[inventory.start_cell].special_info))[0] // 2, mouse_y + text_height - 59))
 			
 			win.blit(inventory.whole_inventory[inventory.start_cell].image, (mouse_x - 32, mouse_y - 32))
@@ -6130,7 +6069,8 @@ def edit_world():
 
 			if event.type == pygame.QUIT:
 				if not create_world:
-					os.rename(path + "Saves/Worlds/" + world_name, path + "Worlds/" + Settings["Edit world"][0])
+					if world_name != Settings["Edit world"][0]:
+						os.rename(path + "Saves/Worlds/" + world_name, path + "Worlds/" + Settings["Edit world"][0])
 					world_name = Settings["Edit world"][0]
 					player.god_mode = Settings["Edit world"][1]
 					Saver.save_objects(path + "Saves/Worlds/" + world_name + "/Settings.save", [game.difficulty, player.god_mode])
@@ -6157,7 +6097,8 @@ def edit_world():
 			if event.type == pygame.KEYUP:
 				
 				if event.key == hot_keys["Close"] and not create_world:
-					os.rename(path + "Saves/Worlds/" + world_name, path + "Worlds/" + Settings["Edit world"][0])
+					if world_name != Settings["Edit world"][0]:
+						os.rename(path + "Saves/Worlds/" + world_name, path + "Worlds/" + Settings["Edit world"][0])
 					world_name = Settings["Edit world"][0]
 					player.god_mode = Settings["Edit world"][1]
 					Saver.save_objects(path + "Saves/Worlds/" + world_name + "/Settings.save", [game.difficulty, player.god_mode])
@@ -6203,21 +6144,21 @@ def edit_world():
 		if skull_but.get_pressed():
 			game.difficulty = "skull"
 
-		win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Modes/" + game.difficulty + ".png"), (548, 274)), (232, 200))
+		win.blit(load(path + "Images/Modes/" + game.difficulty + ".png", 548, 274), (232, 200))
 		
 		match game.difficulty:
 			
 			case "easy":
-				win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Easy 2.png"), (132, 64)), (50, 200))
+				win.blit(load(path + "Images/Buttons/Easy 2.png", 132, 64), (50, 200))
 				
 			case "norm":
-				win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Norm 2.png"), (132, 64)), (50, 270))
+				win.blit(load(path + "Images/Buttons/Norm 2.png", 132, 64), (50, 270))
 				
 			case "hard":
-				win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Hard 2.png"), (132, 64)), (50, 340))
+				win.blit(load(path + "Images/Buttons/Hard 2.png", 132, 64), (50, 340))
 				
 			case "skull":
-				win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Skull 2.png"), (132, 64)), (50, 410))
+				win.blit(load(path + "Images/Buttons/Skull 2.png", 132, 64), (50, 410))
 
 		if create_world:
 			
@@ -6324,7 +6265,7 @@ def multiplayer_settings_menu():
 	
 	global alt_pressed, does_lighten, multiplayer_role, net
 
-	back_button = Button(-20, -20, pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Back.png"), (128, 128)), pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Back 2.png"), (128, 128)))
+	back_button = Button(-20, -20, load(path + "Images/Buttons/Back.png", 128), load(path + "Images/Buttons/Back 2.png", 128))
 	host_button = Button(Width // 4, 50, textInfo.render("Хост (в твой мир заходят игроки)", True, menu_color_medium), textInfo.render("Хост (в твой мир заходят игроки)", True, menu_color_dark), alignment=True)
 	client_button = Button(Width * 3 // 4, 50, textInfo.render("Клиент (ты заходишь в мир хоста)", True, menu_color_medium), textInfo.render("Клиент (ты заходишь в мир хоста)", True, menu_color_dark), alignment=True)
 	start_game_button = Button(Width - 10 - bigTextInfo.size("Начать игру")[0], 150, bigTextInfo.render("Начать игру", True, menu_color_medium), bigTextInfo.render("Начать игру", True, menu_color_dark), alignment=True)
@@ -6438,7 +6379,7 @@ def worlds():
 	enter_another_game_button = Button(Width // 2, 130, textInfo.render("Подключиться в мир хоста", True, menu_color_medium), textInfo.render("Подключиться в мир хоста", True, menu_color_dark), alignment=True)
 	single_player_button = Button(Width // 4, 50, textInfo.render(t("Single play"), True, menu_color_medium), textInfo.render(t("Single play"), True, menu_color_dark), alignment=True)
 	multiplayer_button = Button(Width * 3 // 4, 50, textInfo.render(t("Multiplayer"), True, menu_color_medium), textInfo.render(t("Multiplayer"), True, menu_color_dark), alignment=True)
-	back_button = Button(-20, -20, pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Back.png"), (128, 128)), pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Back 2.png"), (128, 128)))
+	back_button = Button(-20, -20, load(path + "Images/Buttons/Back.png", 128), load(path + "Images/Buttons/Back 2.png", 128, 128))
 	page = 1
 	world_name_input = False
 	does_lighten = False
@@ -6513,7 +6454,7 @@ def worlds():
 					win.blit(textInfo.render(name_of_world, True, menu_color_medium), (50, text_y))
 
 					if 50 + textInfo.size(name_of_world)[0] <= mouse_x <= 82 + textInfo.size(name_of_world)[0] and text_y <= mouse_y <= text_y + 32:
-						win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Edit 2.png"), (32, 32)), (50 + textInfo.size(name_of_world)[0], text_y))
+						win.blit(load(path + "Images/Buttons/Edit 2.png", 32), (50 + textInfo.size(name_of_world)[0], text_y))
 						if release:
 							world_name = name_of_world
 							win_darken(win)
@@ -6523,7 +6464,7 @@ def worlds():
 
 						win.blit(textInfo.render(name_of_world, True, menu_color_dark), (50, text_y))
 						
-						win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Edit.png"), (32, 32)), (50 + textInfo.size(name_of_world)[0], text_y))
+						win.blit(load(path + "Images/Buttons/Edit.png", 32), (50 + textInfo.size(name_of_world)[0], text_y))
 						
 						if release:
 							if multiplayer:
@@ -6632,7 +6573,7 @@ def menu():
 		
 		text(version, 5, Height - 30, (255, 255, 255))
 
-		win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Discord logo.png"), (108, 81)), (Width - 90, Height - 80))
+		win.blit(load(path + "Images/Discord logo.png", 108, 81), (Width - 90, Height - 80))
 		if mouse_x > Width - 70 and mouse_y > Height - 80:
 			win_fill()
 			if click[0]:
@@ -6642,13 +6583,13 @@ def menu():
 				break
 			
 		if Width - 140 < mouse_x < Width - 76 and Height - 70 < mouse_y < Height - 6:
-			win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/More 2.png"), (64, 64)), (Width - 140, Height - 70))
+			win.blit(pygame.transform.scale(load(path + "Images/Buttons/More 2.png"), 64), (Width - 140, Height - 70))
 
 			if release:
 				more_menu_open = not more_menu_open
 				
 		else:
-			win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/More.png"), (64, 64)), (Width - 140, Height - 70))
+			win.blit(load(path + "Images/Buttons/More.png", 64), (Width - 140, Height - 70))
 
 		if more_menu_open:
 			
@@ -6656,17 +6597,17 @@ def menu():
 			pygame.draw.rect(win, menu_color_dark, (100, 100, Width - 200, Height - 200), 10)
 			pygame.draw.rect(win, menu_color_medium, (110, 110, Width - 220, Height - 220), 10)
 			
-			win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Telegram logo.png"), (100, 100)), (200, Height // 2 + 50))
+			win.blit(load(path + "Images/Telegram logo.png", 100), (200, Height // 2 + 50))
 			text("Telegram\n@Gannitto", 250, Height // 2 + 180, menu_color_medium, alignment=True)
 			
-			win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Discord logo.png"), (200, 150)), (Width // 2 - 100, Height // 2 + 30))
+			win.blit(load(path + "Images/Discord logo.png", 200, 150), (Width // 2 - 100, Height // 2 + 30))
 			text("Discord\nGannitto#0694", Width // 2, Height // 2 + 180, menu_color_medium, alignment=True)
 			
-			win.blit(pygame.transform.scale(pygame.image.load(path + "Images/Gmail logo.png"), (100, 100)), (Width - 300, Height // 2 + 50))
+			win.blit(load(path + "Images/Gmail logo.png", 100, 100), (Width - 300, Height // 2 + 50))
 			text("Gmail", Width - 250, Height // 2 + 180, menu_color_medium, alignment=True)
 			text("danilaserezhin@gmail.com", Width - 250, Height // 2 + 200, menu_color_medium, 16, True)
 			
-			win.blit(pygame.image.load(path + "Images/Rickrolling QR-code.png"), (Width // 2 - 100, Height // 2 - 200))
+			win.blit(load(path + "Images/Rickrolling QR-code.png"), (Width // 2 - 100, Height // 2 - 200))
 			text(t("You can get other information from this QR code"), Width // 2, Height // 2 + 10, menu_color_medium, alignment=True)
 
 		animate_click(dt, mouse_x, mouse_y)

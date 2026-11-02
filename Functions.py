@@ -243,11 +243,11 @@ def show_error_window(error_message: str):
 			sys.exit()
 
 mouse_click_images = (
-	 pygame.transform.scale(pygame.image.load(path + "Images/Mouse click 1.png"), (128, 128)),
-	 pygame.transform.scale(pygame.image.load(path + "Images/Mouse click 2.png"), (128, 128)),
-	 pygame.transform.scale(pygame.image.load(path + "Images/Mouse click 3.png"), (128, 128)),
-	 pygame.transform.scale(pygame.image.load(path + "Images/Mouse click 4.png"), (128, 128)),
-	 pygame.transform.scale(pygame.image.load(path + "Images/Mouse click 5.png"), (128, 128))
+	 pygame.transform.scale(pygame.image.load(path + "Images/Mouse click 1.png"), (128, 128)).convert_alpha(),
+	 pygame.transform.scale(pygame.image.load(path + "Images/Mouse click 2.png"), (128, 128)).convert_alpha(),
+	 pygame.transform.scale(pygame.image.load(path + "Images/Mouse click 3.png"), (128, 128)).convert_alpha(),
+	 pygame.transform.scale(pygame.image.load(path + "Images/Mouse click 4.png"), (128, 128)).convert_alpha(),
+	 pygame.transform.scale(pygame.image.load(path + "Images/Mouse click 5.png"), (128, 128)).convert_alpha()
 	 )
 
 mouse_click_image = None
