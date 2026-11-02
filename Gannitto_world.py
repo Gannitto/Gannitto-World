@@ -2494,6 +2494,7 @@ def chat_message(message: str, send_to_peers: bool = False):
 	"""Отправляет сообщение в чат"""
 	global chat_tick
 	chat.append(message)
+	main_chat.append(message)
 	chat_tick = len(message) // 1.5 * FPS
 	if multiplayer and send_to_peers:
 		game_events.append({"event_type": "chat_message", "message_text": message})
@@ -3690,11 +3691,9 @@ objects_templates = {
 
 def start_game():
 	
-	global win, changed_slot, menu_open, multiplayer_menu_open, screenmode, inventory_open, hold_left, backrooms, text_color, bullet_num, craft_items_list, craft_amounts_list, craft_images_list, screenshot_num, mouse_x, mouse_y, item_settings_open, chat_tick, chat, main_chat, craft_list_open, craft_list_page, craft_list_offset, craft_list_max_offset, click, in_motherboard, world_name, color, multiplayer, animation, start_time, new_particles, inside_files, game, alt_pressed, player, world, FPS, MAX_FPS, screen_rect, time_index, game_events, show_cursor, cursor_timer
+	global win, changed_slot, menu_open, multiplayer_menu_open, screenmode, inventory_open, hold_left, backrooms, text_color, bullet_num, craft_items_list, craft_amounts_list, craft_images_list, screenshot_num, mouse_x, mouse_y, item_settings_open, chat_tick, chat, main_chat, chat_open, craft_list_open, craft_list_page, craft_list_offset, craft_list_max_offset, click, in_motherboard, world_name, color, multiplayer, animation, start_time, new_particles, inside_files, game, alt_pressed, player, world, FPS, MAX_FPS, screen_rect, time_index, game_events, show_cursor, cursor_timer
 
 	night_playing = False
-	input_text = ""
-	chat_input = False
 	bigTextInfo = pygame.font.Font(path + "Font.ttf", 36)
 	aaa = 0
 	AA = 0
@@ -3815,8 +3814,8 @@ def start_game():
 		player.changed_item = inventory.whole_inventory[changed_slot]
 		if multiplayer:
 			game_events.clear()
-
-		for event in pygame.event.get():
+		events = pygame.event.get()
+		for event in events:
 			
 			if event.type == pygame.QUIT:
 				statistics[1] += (time.time() - start_time) / 3600
@@ -3828,35 +3827,6 @@ def start_game():
 			elif event.type == pygame.MOUSEBUTTONUP:
 				if event.button == 1:
 					release = True
-			elif event.type == pygame.KEYDOWN and chat_input:
-				if event.key == pygame.K_RETURN:
-					chat_input = False
-					if input_text[0:2] == "/!" and Settings["User"][1]:
-						try:
-							eval(input_text[2:])
-							# Команды через eval - опасная штука, так что они доступны только в режиме разработчика
-						except Exception as e:
-							chat_message(languages("<<< Команда " + Settings["User"][0] + f" получила ошибку {e}" + ". >>>", "<<< " + Settings["User"][0] + f"'s command got an {e}" + "error. >>>", ""))
-						else:
-							chat_message(languages("<<< Команда " + Settings["User"][0] + " была успешно исполнена. >>>", "<<< " + Settings["User"][0] + "'s command was successfully executed. >>>", ""))
-					elif input_text != "" and input_text[0] == "/":
-						chat_message(command_system.execute(input_text))
-					elif input_text != "":
-						if multiplayer:
-							message_text = f"{net.peers[net.player_id].name}: {input_text}"
-						else:
-							message_text = f"{Settings['User'][0]}: {input_text}"
-						chat_message(message_text, True)
-
-					input_text = ""
-				elif event.key == pygame.K_BACKSPACE:
-					input_text = input_text[:-1]
-				elif event.key == pygame.K_v and pygame.key.get_mods() & pygame.KMOD_CTRL:
-					clipboard_text = pyperclip.paste()
-					if clipboard_text:
-						input_text += clipboard_text
-				elif len(input_text) <= 500:
-					input_text += event.unicode
 			
 			elif event.type == pygame.MOUSEWHEEL and not any((item_settings_open, ron.window[0], in_motherboard)):
 				if craft_list_open:
@@ -3867,10 +3837,10 @@ def start_game():
 					if changed_slot < 0: changed_slot = 9
 
 			if event.type == pygame.KEYUP:
-				if chat_input:
+				if chat_open:
 					if event.key == hot_keys["Close"]:
-						input_text = ""
-						chat_input = False
+						chat_open = False
+						input_system.stop_input()
 				else:
 					if event.key == hot_keys["Show keys"]:
 						alt_pressed = not alt_pressed
@@ -3883,12 +3853,11 @@ def start_game():
 					if event.key == hot_keys["Menu"]:
 						menu_open = not menu_open
 					if event.key == hot_keys["Open chat"]:
-						chat_input = True
-						cursor_timer = time.time()
+						chat_open = True
+						input_system.start_input("Chat", 20, Height - 40, (255, 255, 255))
 					if event.key == hot_keys["Execute command"]:
-						chat_input = True
-						cursor_timer = time.time()
-						input_text = "/"
+						chat_open = True
+						input_system.start_input("Chat", 20, Height - 40, (255, 255, 255), input_text="/")
 
 					if event.key == hot_keys["Close"]:
 	
@@ -3991,7 +3960,7 @@ def start_game():
 		
 		keys = pygame.key.get_pressed()
 
-		if not chat_input:
+		if not chat_open:
 
 			if keys[hot_keys["Move left"]]: dx = -1
 			if keys[hot_keys["Move right"]]: dx = 1
@@ -4740,7 +4709,7 @@ def start_game():
 			win.blit(Inventory_slot, (Width - 370, Height - 74))
 			win.blit(inventory.whole_inventory[changed_slot].image, (Width - 370, Height - 74))
 		
-		if (inventory.whole_inventory[changed_slot] is not None and (use_item_pressed or (click[0] and Settings["Game"][1]))) and not chat_input:
+		if (inventory.whole_inventory[changed_slot] is not None and (use_item_pressed or (click[0] and Settings["Game"][1]))) and not chat_open:
 
 			match inventory.whole_inventory[changed_slot].name:
 
@@ -4872,7 +4841,7 @@ def start_game():
 
 		# Меню на клавише TAB
 
-		if keys[hot_keys["TAB menu"]] and not chat_input:
+		if keys[hot_keys["TAB menu"]] and not chat_open:
 
 			radius = 0	 # Расстояние, на котором кнопки находятся относительно центра экрана
 			display_speed = 7	# Скорость отдаления кнопок от центра экрана
@@ -5696,33 +5665,43 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 			# text(mouse_object, Width - textInfo.size(mouse_object)[0] - 10, 10)
 			win.blit(textInfo.render(mouse_object, True, text_color), (Width - textInfo.size(mouse_object)[0] - 10, 10))
 		
-		if chat_input:
+		if chat_open:
 			win_fill()
 			win_fill(rect=(10, Height - 50, Width - 20, 40))
-			chat_text = input_text
-			if time.time() - cursor_timer >= Settings["Game"][3]:
-				cursor_timer = time.time()
-				show_cursor = not show_cursor
-			if show_cursor:
-				chat_text += "|"
+			if not input_system.inputting:
 
-			text(chat_text, 20, Height - 40)
+				chat_open = False
+				if input_system.last_text[0:2] == "/!" and Settings["User"][1]:
+					try:
+						eval(input_system.last_text[2:])
+						# Команды через eval - опасная штука, так что они доступны только в режиме разработчика
+					except Exception as e:
+						chat_message(languages("<<< Команда " + Settings["User"][0] + f" получила ошибку {e}" + ". >>>", "<<< " + Settings["User"][0] + f"'s command got an {e}" + "error. >>>", ""))
+					else:
+						chat_message(languages("<<< Команда " + Settings["User"][0] + " была успешно исполнена. >>>", "<<< " + Settings["User"][0] + "'s command was successfully executed. >>>", ""))
+				elif input_system.last_text != "" and input_system.last_text[0] == "/":
+					chat_message(command_system.execute(input_system.last_text))
+				elif input_system.last_text != "":
+					if multiplayer:
+						message_text = f"{net.peers[net.player_id].name}: {input_system.last_text}"
+					else:
+						message_text = f"{Settings['User'][0]}: {input_system.last_text}"
+					chat_message(message_text, True)
 		
 		if len(chat) != 0:
 
 			if chat_tick == 0:
-				main_chat.append(chat[0])
 				chat.remove(chat[0])
 				try:
 					chat_tick = len(chat[0]) // 1.5 * FPS
 				except: pass
 			
-			reversed_chat = chat.copy()
-			reversed_chat.reverse()
-			message_y = 80
-			for message in reversed_chat:
-				message_y += get_text_height(message)
-				text(message, 10, Height - message_y)
+		reversed_chat = main_chat.copy() if chat_open else chat.copy()
+		reversed_chat.reverse()
+		message_y = 80
+		for message in reversed_chat:
+			message_y += get_text_height(message)
+			text(message, 10, Height - message_y)
 		
 		chat_tick = max(0, chat_tick - 1)
 		
@@ -6088,7 +6067,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 				pygame.display.update()
 			time.sleep(0.1)
 			
-		if keys[hot_keys["Plugin manager"]] and not chat_input:
+		if keys[hot_keys["Plugin manager"]] and not chat_open:
 			
 			win = pygame.display.set_mode((0, 0), pygame.RESIZABLE)
 
@@ -6099,9 +6078,9 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 			win.blit(textInfo.render(t("The gameplay will continue, when you close the plugin creator"), True, menu_color_medium), ((Width - textInfo.size(t("The gameplay will continue, when you close the plugin creator"))[0]) // 2, Height // 2 - 32))
 			pygame.display.update()
 			os.system("python " + path + "Plugin_creater.py")
-
+		
+		input_system.handle_input(events)
 		animate_click(dt, mouse_x, mouse_y)
-
 		win_fill((200, 0, 0), 100 - Settings["Display"][0])
 
 		pygame.display.update()
