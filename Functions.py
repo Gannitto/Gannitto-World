@@ -9,6 +9,7 @@ import numpy as np
 from itertools import product
 from PIL import Image
 from Globals import MAX_FPS, Width, Height, path, win, clock, Settings, bigTextInfo, text_color
+from Cache import load
 
 changed_language = "Russian"
 def languages(Russian: str, English: str, Kazach: str) -> str:
@@ -35,7 +36,7 @@ def shadow(
 	
 	cache_file = cache_path + name + ".png"
 	if os.path.exists(cache_file):
-		return pygame.image.load(cache_file)
+		return load(cache_file, surface.get_width(), surface.get_height())
 	# Конвертируем pygame surface в PIL Image
 	width, height = surface.get_width(), surface.get_height()
 	
@@ -135,7 +136,7 @@ def win_darken(win: pygame.Surface, screen: pygame.Surface=None, duration: float
 		screen = win.copy()
 	
 	start_time = time.time()
-	total_alpha = 300  # Максимальная темнота
+	total_alpha = 255  # Максимальная темнота
 	current_alpha = 0
 	
 	while current_alpha < total_alpha:
@@ -243,11 +244,11 @@ def show_error_window(error_message: str):
 			sys.exit()
 
 mouse_click_images = (
-	 pygame.transform.scale(pygame.image.load(path + "Images/Mouse click 1.png"), (128, 128)).convert_alpha(),
-	 pygame.transform.scale(pygame.image.load(path + "Images/Mouse click 2.png"), (128, 128)).convert_alpha(),
-	 pygame.transform.scale(pygame.image.load(path + "Images/Mouse click 3.png"), (128, 128)).convert_alpha(),
-	 pygame.transform.scale(pygame.image.load(path + "Images/Mouse click 4.png"), (128, 128)).convert_alpha(),
-	 pygame.transform.scale(pygame.image.load(path + "Images/Mouse click 5.png"), (128, 128)).convert_alpha()
+	 load(path + "Images/Mouse click 1.png", 128),
+	 load(path + "Images/Mouse click 2.png", 128),
+	 load(path + "Images/Mouse click 3.png", 128),
+	 load(path + "Images/Mouse click 4.png", 128),
+	 load(path + "Images/Mouse click 5.png", 128)
 	 )
 
 mouse_click_image = None
@@ -294,11 +295,15 @@ def crack_surface(world, Particle, object, damage_level, scale=1):
 			if 0 <= x < w and 0 <= y < h:
 				r, g, b, _ = result.get_at((x * scale, y * scale))
 				dark = int(40 + 120 * damage_level)
-				pixels[x * scale : (x + 1) * scale, y * scale : (y + 1) * scale] = (max(0, r-dark), max(0, g-dark), max(0, b-dark))
-			
+				r, g, b, a = result.get_at((x * scale, y * scale))
+				dark = int(40 + 120 * damage_level)
+				new_color = (max(0, r - dark), max(0, g - dark), max(0, b - dark), a)
+				pixels[x * scale : (x + 1) * scale, y * scale : (y + 1) * scale] = new_color
+
 			x += random.choice([-1, 0, 1])
 			y += random.choice([-1, 0, 1])
 	
+	pixels.close()
 	del pixels
 	
 	return result

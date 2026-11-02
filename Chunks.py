@@ -4,21 +4,11 @@ from itertools import product
 from NoiseGenerator import NoiseGenerator
 from Functions import win_fill, reverse_fill_area
 from Saver import save_chunk, load_chunk, delete_chunk, chunk_exists
+from Assets import biomes, biome_textures
 from Globals import win, Width, Height, path
 
 chunk_size = 2048
 tile_size = 256
-
-biomes = ("Desert", "Field", "Forest", "Swamp", "Taiga")
-
-biome_textures = {}
-# big_biome_textures = {}
-for biome in biomes:
-	biome_textures[biome] = pygame.image.load(path + f"Images/Biomes/{biome}.png")
-	# temp_biome_surf = pygame.Surface((256, 256), pygame.SRCALPHA)
-	# for tx, ty in product(range(0, 256, 32), range(0, 256, 32)):
-	# 	temp_biome_surf.blit(biome_textures[biome], (tx, ty))
-	# big_biome_textures[biome] = temp_biome_surf
 
 structures = {
 

@@ -119,3 +119,9 @@ show_cursor = False
 in_motherboard = None
 click = pygame.mouse.get_pressed()
 screen_rect = pygame.Rect((0, 0, Width, Height))
+colors = {
+	"Normal": (39, 155, 80),
+	"Normal2": (0, 255, 0),
+	"Backrooms": (100, 100, 0),
+	"Backrooms2": (100, 80, 0)
+}

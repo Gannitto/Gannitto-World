@@ -15,7 +15,7 @@ import Saver
 from Multiplayer import NetworkManager
 from Functions import *
 from Build import build, check_build_objects, draw_select_image, draw_select_image_arbitrarily
-from Chunks import ChunkManager, biomes
+from Chunks import ChunkManager
 from Inventory import inventory
 from Translator import translator
 from Cache import load
@@ -24,6 +24,7 @@ from TimeSystem import TimeSystem
 from Commands import command_system
 from Sound import play_sound, set_sound_volume, music_channel
 from InputSystem import input_system
+from Assets import *
 from Globals import *
 from Light import create_light_circle, create_light_circle_with_falloff, remove_light_circle
 
@@ -34,7 +35,6 @@ pygame.init()
 
 Карта кода:
 
-Текстуры
 Классы
 Загрузка команд
 Кнопки в меню
@@ -120,199 +120,10 @@ def save(darken:bool=True, save_world_settings:bool=False):
 
 # Применение настроек TODO
 
-# Текстуры
-
 statistics[0] += 1
 
 pygame.display.set_icon(pygame.image.load(path + "Images/Icon.png"))
 pygame.display.set_caption("Gannitto World")
-
-arrow_down = load(path + "Images/DOWN.png", 64, convert_alpha=False)
-arrow_left = load(path + "Images/LEFT.png", 64, convert_alpha=False)
-arrow_right = load(path + "Images/RIGHT.png", 64, convert_alpha=False)
-arrow_up = load(path + "Images/UP.png", 64, convert_alpha=False)
-
-Inventory_slot = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Inventory slot.png"), (64, 64)).convert_alpha()
-Changed_inventory_slot = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Inventory slot 2.png"), (64, 64)).convert_alpha()
-
-Craft_list_inventory_slot = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Craft list slot.png"), (64, 64)).convert_alpha()
-Changed_craft_list_inventory_slot = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Craft list slot 2.png"), (64, 64)).convert_alpha()
-
-Object_inventory_slot = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Object inventory slot 2.png"), (64, 64)).convert_alpha()
-
-Tool_inventory_slot = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Tool inventory slot 2.png"), (64, 64)).convert_alpha()
-
-Split_items1 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Split items.png"), (64, 64)).convert_alpha()
-Split_items2 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Split items 2.png"), (64, 64)).convert_alpha()
-
-Compact_inventory1 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Compact inventory.png"), (64, 64)).convert_alpha()
-Compact_inventory2 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Compact inventory 2.png"), (64, 64)).convert_alpha()
-
-Craft_list_slot1 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Craft list slot.png"), (64, 64)).convert_alpha()
-Craft_list_slot2 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Craft list slot 2.png"), (64, 64)).convert_alpha()
-
-Game_menu_slot1 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Game menu slot.png"), (64, 64)).convert_alpha()
-Game_menu_slot2 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Game menu slot 2.png"), (64, 64)).convert_alpha()
-
-Menu_slot1 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Menu slot.png"), (64, 64)).convert_alpha()
-Menu_slot2 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Menu slot 2.png"), (64, 64)).convert_alpha()
-
-Multiplayer_slot1 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Multiplayer slot.png"), (64, 64)).convert_alpha()
-Multiplayer_slot2 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Multiplayer slot 2.png"), (64, 64)).convert_alpha()
-
-Close_slot1 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Close slot.png"), (64, 64)).convert_alpha()
-Close_slot2 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Close slot 2.png"), (64, 64)).convert_alpha()
-
-Reference_slot1 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Reference slot.png"), (64, 64)).convert_alpha()
-Reference_slot2 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Reference slot 2.png"), (64, 64)).convert_alpha()
-
-Inventory_slot.set_alpha(Settings["Display"][1])
-Changed_inventory_slot.set_alpha(Settings["Display"][1])
-Craft_list_inventory_slot.set_alpha(Settings["Display"][1])
-Changed_craft_list_inventory_slot.set_alpha(Settings["Display"][1])
-Object_inventory_slot.set_alpha(Settings["Display"][1])
-Tool_inventory_slot.set_alpha(Settings["Display"][1])
-Split_items1.set_alpha(Settings["Display"][1])
-Split_items2.set_alpha(Settings["Display"][1])
-Compact_inventory1.set_alpha(Settings["Display"][1])
-Compact_inventory2.set_alpha(Settings["Display"][1])
-Craft_list_slot1.set_alpha(Settings["Display"][1])
-Craft_list_slot2.set_alpha(Settings["Display"][1])
-Game_menu_slot1.set_alpha(Settings["Display"][1])
-Game_menu_slot2.set_alpha(Settings["Display"][1])
-Menu_slot1.set_alpha(Settings["Display"][1])
-Menu_slot2.set_alpha(Settings["Display"][1])
-Multiplayer_slot1.set_alpha(Settings["Display"][1])
-Multiplayer_slot2.set_alpha(Settings["Display"][1])
-Close_slot1.set_alpha(Settings["Display"][1])
-Close_slot2.set_alpha(Settings["Display"][1])
-Reference_slot1.set_alpha(Settings["Display"][1])
-Reference_slot2.set_alpha(Settings["Display"][1])
-
-Portal_1 = load(path + "Images/Objects/Portal 1.png", 128, 256)
-Portal_2 = load(path + "Images/Objects/Portal 2.png", 128, 256)
-
-Vending_machine_image = load(path + "Images/Objects/Vending machine.png", 304, 560)
-
-Wire_1 = load(path + "Images/Objects/Wire 1.png", 64)
-Wire_2 = load(path + "Images/Objects/Wire 2.png", 64)
-Wire_3 = load(path + "Images/Objects/Wire 3.png", 64)
-Wire_4 = load(path + "Images/Objects/Wire 4.png", 64)
-Wire_5 = load(path + "Images/Objects/Wire 5.png", 64)
-Wire_6 = load(path + "Images/Objects/Wire 6.png", 64)
-Wire_7 = load(path + "Images/Objects/Wire 7.png", 64)
-Wire_8 = load(path + "Images/Objects/Wire 8.png", 64)
-Wire_9 = load(path + "Images/Objects/Wire 9.png", 64)
-Wire_10 = load(path + "Images/Objects/Wire 10.png", 64)
-Wire_11 = load(path + "Images/Objects/Wire 11.png", 64)
-
-Random_box_1 = load(path + "Images/Objects/Random Box 1.png", 64)
-Random_box_2 = load(path + "Images/Objects/Random Box 2.png", 64)
-Random_box_3 = load(path + "Images/Objects/Random Box 3.png", 64)
-Random_box_4 = load(path + "Images/Objects/Random Box 4.png", 64)
-
-Slime1 = load(path + "Images/Mobs/Blue Slime 1.png", 128)
-Slime1_2 = load(path + "Images/Mobs/Blue Slime 2.png", 128)
-Slime1_3 = load(path + "Images/Mobs/Blue Slime 3.png", 128)
-Slime1_4 = load(path + "Images/Mobs/Blue Slime 4.png", 128)
-Slime2 = load(path + "Images/Mobs/Pink Slime 1.png", 128)
-Slime2_2 = load(path + "Images/Mobs/Pink Slime 2.png", 128)
-Slime2_3 = load(path + "Images/Mobs/Pink Slime 3.png", 128)
-Slime2_4 = load(path + "Images/Mobs/Pink Slime 4.png", 128)
-
-SLIME_TYPES = {
-	1: [Slime1, Slime1_2, Slime1_3, Slime1_4],
-	2: [Slime2, Slime2_2, Slime2_3, Slime2_4]
-}
-
-Butterfly1 = load(path + "Images/Mobs/Butterfly 1 1.png", 32)
-Butterfly1_2 = load(path + "Images/Mobs/Butterfly 1 2.png", 32)
-Butterfly1_3 = load(path + "Images/Mobs/Butterfly 1 3.png", 32)
-
-web_texture = load(path + "Images/Objects/Piece of web.png", 128)
-explosion_texture = load(path + "Images/Objects/Explosion.png", 128)
-cave_texture = load(path + "Images/Objects/Cave.png", 128)
-drop_texture = load(path + "Images/Objects/Drop.png", 64)
-
-bg_scale_factor = max(Width // 128, Height // 64)
-Screensaver2 = load(path + "Images/Screensavers/Screensaver 2.png", Height * 128 // 64, Height, False)
-
-Heart = load(path + "Images/Heart.png", 32)
-
-wall_types = ("Wooden wall","Brick wall", "Stone brick wall")
-door_types = ("Wooden door",)
-wall_images = {}
-
-for wall_type in wall_types:
-	wall_images[wall_type] = (
-		load(path + "Images/Walls/" + wall_type + "/0.png", 256),
-		load(path + "Images/Walls/" + wall_type + "/1.png", 256),
-		load(path + "Images/Walls/" + wall_type + "/2.png", 256),
-		load(path + "Images/Walls/" + wall_type + "/3.png", 256),
-		load(path + "Images/Walls/" + wall_type + "/4.png", 256),
-		load(path + "Images/Walls/" + wall_type + "/5.png", 256),
-		load(path + "Images/Walls/" + wall_type + "/6.png", 256),
-		load(path + "Images/Walls/" + wall_type + "/7.png", 256),
-		load(path + "Images/Walls/" + wall_type + "/8.png", 256),
-		load(path + "Images/Walls/" + wall_type + "/9.png", 256),
-		load(path + "Images/Walls/" + wall_type + "/10.png", 256),
-		load(path + "Images/Walls/" + wall_type + "/11.png", 256),
-		load(path + "Images/Walls/" + wall_type + "/12.png", 256),
-		load(path + "Images/Walls/" + wall_type + "/13.png", 256)
-	)
-
-for door_type in door_types:
-	wall_images[door_type] = (
-		load(path + "Images/Walls/" + door_type + "/1.png", 256),
-		load(path + "Images/Walls/" + door_type + "/2.png", 256),
-		load(path + "Images/Walls/" + door_type + "/1 Open.png", 256),
-		load(path + "Images/Walls/" + door_type + "/2 Open.png", 256)
-	)
-
-farmland_images = (load(path + "Images/Objects/Farmland.png", 128),)
-plant_types = ("Wheat", "Cucumber", "Tomato", "Corn", "Onion")
-seed_types = {
-		"Wheat seeds": "Wheat",
-		"Cucumber seeds": "Cucumber",
-		"Tomato seeds": "Tomato",
-		"Corn seeds": "Corn",
-		"Onion": "Onion"
-		}
-
-plant_images = {}
-for plant_type in plant_types:
-	plant_images[plant_type] = (
-		load(path + "Images/Objects/" + plant_type + " 1.png", 128),
-		load(path + "Images/Objects/" + plant_type + " 2.png", 128),
-		load(path + "Images/Objects/" + plant_type + " 3.png", 128),
-		load(path + "Images/Objects/" + plant_type + " 4.png", 128)
-	)
-
-biome_textures = {}
-for biome in biomes:
-	biome_textures[biome] = load(path + f"Images/Biomes/{biome}.png", 256)
-
-Backrooms_portal_images = (
-	load(path + "Images/Objects/Backrooms portal 1.png", 256),
-	load(path + "Images/Objects/Backrooms portal 2.png", 256),
-	load(path + "Images/Objects/Backrooms portal 3.png", 256),
-	load(path + "Images/Objects/Backrooms portal 4.png", 256),
-	load(path + "Images/Objects/Backrooms portal 5.png", 256),
-	load(path + "Images/Objects/Backrooms portal 6.png", 256),
-	load(path + "Images/Objects/Backrooms portal 7.png", 256),
-	load(path + "Images/Objects/Backrooms portal 8.png", 256),
-	load(path + "Images/Objects/Backrooms portal 9.png", 256),
-	load(path + "Images/Objects/Backrooms portal 10.png", 256)
-)
-
-no_file_texture = load(path + "Images/No-file texture.png", 64, convert_alpha=False)
-
-colors = {
-	"Normal": (39, 155, 80),
-	"Normal2": (0, 255, 0),
-	"Backrooms": (100, 100, 0),
-	"Backrooms2": (100, 80, 0)
-}
 
 
 
@@ -869,14 +680,14 @@ class Slime(BaseEnemy):
 	
 	def __init__(self, x, y):
 
-		slime_type = random.choice((1, 2))
+		slime_type = random.choice(slime_types)
 		self.name = "Slime"
 		
 		super().__init__(
 			x=x, y=y,
 			HP=50,
 			speed=random.randint(10, 20),
-			animation_frames=SLIME_TYPES[slime_type]
+			animation_frames=slime_images[slime_type]
 		)
 		
 		self.slime_type = slime_type
@@ -1073,7 +884,7 @@ class Slime(BaseEnemy):
 	def __setstate__(self, state):
 		
 		self.__dict__.update(state)
-		self.animation_frames = SLIME_TYPES[self.slime_type]
+		self.animation_frames = slime_images[self.slime_type]
 
 class Spider(BaseEnemy):
 	
@@ -1235,7 +1046,7 @@ class ButterflyEnemy:
 		self.x = mob_x
 		self.y = mob_y
 		self.rand_mob = random.randint(1, 2)
-		self.animation_images = [Butterfly1, Butterfly1_2, Butterfly1_3, Butterfly1_2]
+		self.animation_images = butterfly_images
 		self.HP = 10
 		self.animation_count = -1
 		self.reset_offset = 0
@@ -1585,7 +1396,7 @@ class Wire:
 			self.x = (mouse_x - Width // 2 - 300) // 18.75
 			self.y = (mouse_y + Width // 2 - 300) // 18.75
 		self.condition = "Off"
-		self.image = Wire_1
+		self.image = wire_images[0]
 		self.neigbords = []
 		self.neigbords_on = 0
 		self.neigbords_none = 0
@@ -1651,38 +1462,38 @@ class Wire:
 		if len(self.neigbords) == 1:
 
 			if self.neigbords[0].x == self.x:
-				self.image = Wire_2
+				self.image = wire_images[1]
 			else:
-				self.image = Wire_1
+				self.image = wire_images[0]
 
 		elif len(self.neigbords) == 2:
 
 			if self.neigbords[0].x == self.x == self.neigbords[1].x:
-				self.image = Wire_2
+				self.image = wire_images[1]
 			elif self.neigbords[0].y == self.y == self.neigbords[1].y:
-				self.image = Wire_1
+				self.image = wire_images[0]
 			elif (self.neigbords[0].x == self.x - 1 and self.neigbords[1].y == self.y + 1) or (self.neigbords[1].x == self.x - 1 and self.neigbords[0].y == self.y + 1):
-				self.image = Wire_3
+				self.image = wire_images[2]
 			elif (self.neigbords[0].x == self.x + 1 and self.neigbords[1].y == self.y + 1) or (self.neigbords[1].x == self.x + 1 and self.neigbords[0].y == self.y + 1):
-				self.image = Wire_4
+				self.image = wire_images[3]
 			elif (self.neigbords[0].x == self.x + 1 and self.neigbords[1].y == self.y - 1) or (self.neigbords[1].x == self.x + 1 and self.neigbords[0].y == self.y - 1):
-				self.image = Wire_5
+				self.image = wire_images[4]
 			elif (self.neigbords[0].x == self.x - 1 and self.neigbords[1].y == self.y - 1) or (self.neigbords[1].x == self.x - 1 and self.neigbords[0].y == self.y - 1):
-				self.image = Wire_6
+				self.image = wire_images[5]
 
 		elif len(self.neigbords) == 3:
 
 			if self.neigbords[0].y != self.y + 1 and self.neigbords[1].y != self.y + 1 and self.neigbords[2].y != self.y + 1:
-				self.image = Wire_7
+				self.image = wire_images[6]
 			if self.neigbords[0].y != self.y - 1 and self.neigbords[1].y != self.y - 1 and self.neigbords[2].y != self.y - 1:
-				self.image = Wire_8
+				self.image = wire_images[7]
 			if self.neigbords[0].x != self.x + 1 and self.neigbords[1].x != self.x + 1 and self.neigbords[2].x != self.x + 1:
-				self.image = Wire_9
+				self.image = wire_images[8]
 			if self.neigbords[0].x != self.x - 1 and self.neigbords[1].x != self.x - 1 and self.neigbords[2].x != self.x - 1:
-				self.image = Wire_10
+				self.image = wire_images[9]
 
 		if len(self.neigbords) == 4:
-			self.image = Wire_11
+			self.image = wire_images[10]
 
 		if self.neigbords_on != 0 and self.condition == "Off":
 			self.condition = "On"
@@ -1969,7 +1780,7 @@ class Random_box:
 		self.y = (player.y - mouse_y + Height // 2) // 64
 
 		self.on = False
-		self.image = Random_box_1
+		self.image = random_box_images[0]
 		self.neigbords = []
 		self.neigbords_on = 0
 		self.num = len(world.mechanisms)
@@ -1991,15 +1802,15 @@ class Random_box:
 		if len(self.neigbords) == 1:
 
 			if self.neigbords[0].x == self.x - 1:
-				self.image = Random_box_2
+				self.image = random_box_images[1]
 			else:
-				self.image = Random_box_3
+				self.image = random_box_images[2]
 
 		elif len(self.neigbords) == 2:
-			self.image = Random_box_4
+			self.image = random_box_images[3]
 
 		else:
-			self.image = Random_box_1
+			self.image = random_box_images[0]
 		
 		win.blit(self.image, (self.x * 64 + Width // 2 - player.x, player.y - self.y * 64 + Height // 2 - 16))
 
@@ -2010,7 +1821,7 @@ class LogicGate:
 		self.x = (player.x + mouse_x - Width // 2) // 64
 		self.y = (player.y - mouse_y + Height // 2) // 64
 
-		self.image = Wire_11
+		self.image = wire_images[10]
 		self.neigbords = []
 		self.neigbords_on = 0
 		self.num = len(world.mechanisms)
@@ -2040,36 +1851,36 @@ class LogicGate:
 		if len(self.neigbords) == 1:
 
 			if self.neigbords[0].x == self.x:
-				self.image = Wire_2
+				self.image = wire_images[1]
 			else:
-				self.image = Wire_1
+				self.image = wire_images[0]
 
 		elif len(self.neigbords) == 2:
 			if self.neigbords[0].x == self.x == self.neigbords[1].x:
-				self.image = Wire_2
+				self.image = wire_images[1]
 			elif self.neigbords[0].y == self.y == self.neigbords[1].y:
-				self.image = Wire_1
+				self.image = wire_images[0]
 			elif (self.neigbords[0].x == self.x - 1 and self.neigbords[1].y == self.y + 1) or (self.neigbords[1].x == self.x - 1 and self.neigbords[0].y == self.y + 1):
-				self.image = Wire_3
+				self.image = wire_images[2]
 			elif (self.neigbords[0].x == self.x + 1 and self.neigbords[1].y == self.y + 1) or (self.neigbords[1].x == self.x + 1 and self.neigbords[0].y == self.y + 1):
-				self.image = Wire_4
+				self.image = wire_images[3]
 			elif (self.neigbords[0].x == self.x + 1 and self.neigbords[1].y == self.y - 1) or (self.neigbords[1].x == self.x + 1 and self.neigbords[0].y == self.y - 1):
-				self.image = Wire_5
+				self.image = wire_images[4]
 			elif (self.neigbords[0].x == self.x - 1 and self.neigbords[1].y == self.y - 1) or (self.neigbords[1].x == self.x - 1 and self.neigbords[0].y == self.y - 1):
-				self.image = Wire_6
+				self.image = wire_images[5]
 
 		elif len(self.neigbords) == 3:
 			if self.neigbords[0].y != self.y + 1 and self.neigbords[1].y != self.y + 1 and self.neigbords[2].y != self.y + 1:
-				self.image = Wire_7
+				self.image = wire_images[6]
 			if self.neigbords[0].y != self.y - 1 and self.neigbords[1].y != self.y - 1 and self.neigbords[2].y != self.y - 1:
-				self.image = Wire_8
+				self.image = wire_images[7]
 			if self.neigbords[0].x != self.x + 1 and self.neigbords[1].x != self.x + 1 and self.neigbords[2].x != self.x + 1:
-				self.image = Wire_9
+				self.image = wire_images[8]
 			if self.neigbords[0].x != self.x - 1 and self.neigbords[1].x != self.x - 1 and self.neigbords[2].x != self.x - 1:
-				self.image = Wire_10
+				self.image = wire_images[9]
 
 		if len(self.neigbords) == 4:
-			self.image = Wire_11
+			self.image = wire_images[10]
 
 		if self.neigbords_on != 0 and self.condition == "Off":
 			self.condition = "On"
