@@ -3,6 +3,7 @@ import time
 from typing import Callable, Any, Optional
 from Translator import translator
 from Globals import Settings, bigTextInfo, win, path
+from InputSystem import input_system
 from Sound import play_sound
 
 t = translator.get
@@ -85,18 +86,10 @@ class InputField(UIElement):
 		pygame.draw.rect(win, self.color, self.rect, 5)
 		
 		# Отрисовка значения или вводимого текста
-		if self.is_active:
-			text = self.input_text
-			if time.time() - self.cursor_timer >= Settings["Game"][3]:
-				self.cursor_timer = time.time()
-				self.show_cursor = not self.show_cursor
-			if self.show_cursor:
-				text += "|"
-		else:
+		if not self.is_active:
 			text = str(self.get_value())
-		
-		text_surface = self.font.render(text, True, self.color)
-		win.blit(text_surface, (self.x + self.label_width + 10, self.y + 10))
+			text_surface = self.font.render(text, True, self.color)
+			win.blit(text_surface, (self.x + self.label_width + 10, self.y + 10))
 		
 		# Отрисовка знака для некоторых полей
 		if self.unit != "":
@@ -105,40 +98,40 @@ class InputField(UIElement):
 	
 	def handle_click(self, mouse_x: int, mouse_y: int, release: bool) -> bool:
 		if super().handle_click(mouse_x, mouse_y, release):
-			play_sound(Button_click)
+			play_sound("Button click")
 			self.is_active = not self.is_active
 			if self.is_active:
-				self.cursor_timer = time.time()
 				self.input_text = str(self.get_value())
-			elif self.input_text:
-				try:
-					self.set_value(self.input_text)
-				except ValueError:
-					pass
+				input_system.start_input(self.label + " Input Field", self.x + self.label_width + 10, self.y + 10, text_size=36, only_numbers = not self.can_write_text, max_len=self.max_len, input_text=str(self.get_value()))
+			else:
+				input_system.stop_input()
+				self.input_text = input_system.last_text
+				if self.input_text:
+					try:
+						self.set_value(self.input_text)
+					except ValueError:
+						pass
 			return True
 		return False
 	
-	def handle_keyboard(self, event):
+	def handle_keyboard(self, events):
 		if not self.is_active:
 			return False
-		
-		if event.type == pygame.KEYDOWN:
-			if event.key == pygame.K_RETURN:
-				self.is_active = False
-				if self.input_text:
-					try:
-						self.set_value(self.input_text if self.can_write_text else int(self.input_text))
-					except ValueError:
-						pass
-				self.input_text = ""
-				return True
-			elif event.key == pygame.K_BACKSPACE:
-				self.input_text = self.input_text[:-1]
-				return True
-			elif (self.can_write_text or event.unicode in "0123456789") and len(self.input_text) < self.max_len:
-				self.input_text += event.unicode
-				return True
-		return False
+		input_system.handle_input(events)
+		self.input_text = input_system.last_text
+		if not input_system.inputting:
+			self.is_active = False
+			if self.input_text:
+				try:
+					self.set_value(self.input_text if self.can_write_text else int(self.input_text))
+				except ValueError:
+					pass
+			self.input_text = ""
+
+	def update_text_pos(self):
+		if not self.is_active:
+			return
+		input_system.text_y = self.y + 10
 
 class Button(UIElement):
 	"""Обычная кнопка"""

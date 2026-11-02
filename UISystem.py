@@ -198,6 +198,8 @@ class UISystem:
 			y += 80
 			element.y = start_y + bias + y
 			element.rect.y = start_y + bias + y
+			if hasattr(element, "handle_keyboard") and element.is_active:
+				element.update_text_pos()
 
 		if get_max_bias:
 			return y
@@ -208,13 +210,11 @@ class UISystem:
 		"""Обработка событий"""
 
 		current_elements = self.elements[section]
+		for element in current_elements:
+			if hasattr(element, "handle_keyboard"):
+				element.handle_keyboard(events)
 		
 		for event in events:
-			# Обработка клавиатуры для всех input полей
-			if event.type == pygame.KEYDOWN:
-				for element in current_elements:
-					if hasattr(element, "handle_keyboard"):
-						element.handle_keyboard(event)
 			
 			# Обработка кликов
 			if event.type == pygame.MOUSEBUTTONUP and event.button == 1:

@@ -3,12 +3,12 @@ import time
 import pyperclip
 import re
 from Globals import win, menu_color_medium, Settings
-
+from Functions import text
+# TODO допустимые символы, максимальная длина
 pygame.key.set_repeat(500, 50) 
 
 class InputSystem:
-	def __init__(self, text):
-		self.text = text
+	def __init__(self):
 		self.input_text = ""
 		self.stop_input()
 		
@@ -23,13 +23,16 @@ class InputSystem:
 				 text_surface=win,
 				 text_max_width=0,
 				 text_max_height=0,
-				 text_space_between_strings=10
+				 text_space_between_strings=10,
+				 only_numbers=False,
+				 max_len=-1,
+				 input_text=""
 				 ):
 
-		self.input_text = ""
+		self.input_text = input_text
 		self.inputting = True
 		self.input_name = input_name
-		self.cursor_position = 0
+		self.cursor_position = len(input_text)
 		self.cursor_timer = time.time()
 		self.show_cursor = False
 		self.text_x = text_x
@@ -42,6 +45,8 @@ class InputSystem:
 		self.text_max_width = text_max_width
 		self.text_max_height = text_max_height
 		self.text_space_between_strings = text_space_between_strings
+		self.only_numbers = only_numbers
+		self.max_len = max_len
 
 	def stop_input(self):
 
@@ -62,6 +67,8 @@ class InputSystem:
 		self.text_max_width = 0
 		self.text_max_height = 0
 		self.text_space_between_strings = 10
+		self.only_numbers = True
+		self.max_len = -1
 
 	def _find_word_start(self):
 		"""Ищет индекс начала слова слева от курсора (для Ctrl+Left и Ctrl+Backspace)"""
@@ -88,23 +95,19 @@ class InputSystem:
 		if self.cursor_position >= len(self.input_text):
 			return len(self.input_text)
 			
-		# Берем текст справа от курсора
 		right_text = self.input_text[self.cursor_position:]
-		
-		# Пропускаем пробелы непосредственно перед следующим словом
 		stripped = right_text.lstrip()
 		if not stripped:
 			return len(self.input_text)
 			
-		# Находим первый пробел после букв в правой части
 		match = re.search(r"\s", stripped)
 		if match:
-			# Складываем: текущая позиция + сколько скипнули пробелов + длина слова до пробела
 			spaces_skipped = len(right_text) - len(stripped)
 			return self.cursor_position + spaces_skipped + match.start()
 		return len(self.input_text)
 
 	def handle_input(self, events):
+
 		if self.inputting:
 			current_time = time.time() * 1000
 
@@ -120,7 +123,7 @@ class InputSystem:
 
 				elif event.type == pygame.TEXTINPUT:
 					# Игнорируем ввод текста, если зажат Ctrl (чтобы при Ctrl+V или Ctrl+Backspace не вводились символы "v" и т.д.)
-					if not (pygame.key.get_mods() & pygame.KMOD_CTRL):
+					if not (pygame.key.get_mods() & pygame.KMOD_CTRL) and (self.max_len == -1 or len(self.input_text) < self.max_len) and (not self.only_numbers or event.text in "0123456789"):
 						self.input_text = self.input_text[:self.cursor_position] + event.text + self.input_text[self.cursor_position:]
 						self.cursor_position += len(event.text)
 
@@ -136,10 +139,10 @@ class InputSystem:
 			if time.time() - self.cursor_timer >= Settings["Game"][3]:
 				self.cursor_timer = time.time()
 				self.show_cursor = not self.show_cursor
-			text = self.input_text
+			result_text = self.input_text
 			if self.show_cursor:
-				text = text[:self.cursor_position] + "|" + text[self.cursor_position:]
-			self.text(text, self.text_x, self.text_y, self.text_color, self.text_size, self.text_alignment, self.text_letter_spacing, self.text_surface, self.text_max_width, self.text_max_height, False, self.text_space_between_strings)
+				result_text = result_text[:self.cursor_position] + "|" + result_text[self.cursor_position:]
+			text(result_text, self.text_x, self.text_y, self.text_color, self.text_size, self.text_alignment, self.text_letter_spacing, self.text_surface, self.text_max_width, self.text_max_height, False, self.text_space_between_strings)
 
 	def trigger_key_action(self, key):
 		"""Вспомогательный метод для выполнения действия клавиши"""
@@ -193,6 +196,11 @@ class InputSystem:
 		elif key == pygame.K_v and ctrl_pressed:
 			clipboard_text = pyperclip.paste()
 			if clipboard_text:
+				if self.only_numbers:
+					clipboard_text = re.sub(r"\D", "", clipboard_text)
+				if self.max_len != -1 and len(self.input_text) + len(clipboard_text) >= self.max_len:
+					clipboard_text = clipboard_text[:self.max_len - len(self.input_text)]
 				self.input_text = self.input_text[:self.cursor_position] + clipboard_text + self.input_text[self.cursor_position:]
 				self.cursor_position += len(clipboard_text)
 
+input_system = InputSystem()

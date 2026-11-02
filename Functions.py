@@ -8,7 +8,7 @@ import pygame.surfarray as surfarray
 import numpy as np
 from itertools import product
 from PIL import Image
-from Globals import MAX_FPS, Width, Height, path, win, clock, Settings, bigTextInfo
+from Globals import MAX_FPS, Width, Height, path, win, clock, Settings, bigTextInfo, text_color
 
 changed_language = "Russian"
 def languages(Russian: str, English: str, Kazach: str) -> str:
@@ -305,3 +305,107 @@ def crack_surface(world, Particle, object, damage_level, scale=1):
 
 def destroy_object(image, x, y, world, Particle):
 	world.particles.append(Particle(x, y, image, y_bias=-image.get_height() / 4, twisting_in_height=image.get_height() / 16, increased_transparency=20))
+
+
+def text(
+		text: str,
+		text_x: int,
+		text_y: int,
+		color: tuple=text_color,
+		size: int=20,
+		alignment: bool=False,
+		letter_spasing: int=10,
+		surface: pygame.Surface=win,
+		max_width: int=0,
+		max_height: int=0,
+		return_surface: bool=False,
+		space_between_strings: int=10
+		):
+	
+	"""
+	Выводит текст на экран
+	Аргументы:
+	text - Сам текст
+	text_x, text_y - Координаты текста
+	color - Цвет текста
+	size - Размер шрифта
+	alignment - Выравнивание текста по центру
+	letter_spasing - Размер пробела
+	surface - Поверхность, на которой будет текст
+	max_width - Максимальная длина текста
+	return_surface - Выводить ли текст на экран или методом return
+	"""
+	
+	pos = (text_x, text_y)
+	text = text.replace("\t\t", "")
+	X, Y = pos
+	
+	if max_width == 0:
+		max_width = surface.get_size()[0] - 10
+	if max_height == 0:
+		max_height = surface.get_size()[1] - 10
+
+	all_text_surface = pygame.Surface((max_width, max_height), pygame.SRCALPHA)
+
+	temp_font = pygame.font.Font(path + "Font.ttf", size)
+
+	for line in (word.split(" ") for word in text.splitlines()):
+		
+		line_surface = pygame.Surface((max_width, size), pygame.SRCALPHA)
+		TextX = 0
+
+		for word in line:
+
+			word_surface = temp_font.render(word, True, color)
+			word_width, word_height = word_surface.get_size()
+			if TextX + word_width >= max_width:
+				surface.blit(line_surface, (X - TextX // 2 if alignment else X, Y))
+				line_surface = pygame.Surface((max_width, size), pygame.SRCALPHA)
+				TextX = 0
+				Y += word_height + space_between_strings
+			
+			line_surface.blit(word_surface, (TextX, 0))
+			TextX += word_width + letter_spasing
+
+		if return_surface:
+			all_text_surface.blit(line_surface, (X - TextX // 2 if alignment else X, Y))
+		else:
+			surface.blit(line_surface, (X - TextX // 2 if alignment else X, Y))
+		Y += word_height + space_between_strings
+
+	return all_text_surface
+
+def get_text_height(
+		text: str,
+		size: int=20,
+		letter_spasing: int=10,
+		max_width: int=0,
+		space_between_strings: int=10
+		) -> int:
+	
+	"""
+	Возвращает ширину текста
+	Аргументы:
+	text - Сам текст
+	size - Размер шрифта
+	letter_spasing - Размер пробела
+	max_width - Максимальная длина текста
+	space_between_strings - Расстояние между строками
+	"""
+	
+	text = text.replace("\t\t", "")
+	tempTextInfo = pygame.font.Font(path + "Font.ttf", size)
+	text_height = 0
+
+	for line in (word.split(" ") for word in text.splitlines()):
+		TextX = 0
+		text_height += size - 2 + space_between_strings
+		for word in line:
+			word_width = tempTextInfo.size(word)[0]
+			if TextX + word_width >= Width // 3:
+				TextX = 0
+				text_height += size - 2 + space_between_strings
+			TextX += word_width + 10
+
+	return text_height
+
