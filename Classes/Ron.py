@@ -1,0 +1,131 @@
+import pygame
+import os
+import math
+from random import randint
+from Globals import path, Width, Height, win
+from Functions import shadow
+from Classes.Projectile import Projectile
+
+class Ron:
+
+	def __init__(self, world_to_screen, player):
+
+		self.x = 0
+		self.y = 0
+		self.home = (0, 0)
+		self.direction = "Down"
+		self.costum = 0
+		self.window = [False, 0]
+		self.images = {"Down": pygame.transform.scale(pygame.image.load(path + "Images/Players/Ron/Normal/Down/1.png"), (256, 256))}
+		self.inventory = {"Bow": 0, "Arrow": 0, "Stick": 0, "Iron ingot": 0}
+		self.speed = 50
+		self.INTERACTION_RADIUS = 400
+		self.PICKUP_RADIUS = 32
+		self.PLAYER_RADIUS = 512
+		self.world_to_screen = world_to_screen
+		self.player = player
+
+	def show(self):
+		win.blit(shadow(self.images[self.direction], "Ron " + self.direction), self.world_to_screen(self.x, self.y, 256, 256))
+	
+	def move_towards(self, dt, target_x, target_y, radius):
+
+		"""Обобщенный метод движения к цели"""
+
+		if target_x < self.x: dx = -1
+		if target_x > self.x: dx = 1
+		if target_y < self.y: dy = -1
+		if target_y > self.y: dy = 1
+		
+		if abs(self.x - target_x) < radius:
+			dx = 0
+		if abs(self.y - target_y) < radius:
+			dy = 0
+
+		if abs(dx) == 1 and abs(dy) == 1:
+			dx *= 0.7
+			dy *= 0.7
+		
+		self.x += self.speed * dt * 30 * dx
+		self.y += self.speed * dt * 30 * dy
+		return dx == 0 and dy == 0
+
+	def move_towards_item(self, target_x, target_y, dt):
+		dx = target_x - self.x
+		dy = target_y - self.y
+		distance = math.dist((self.x, self.y), (target_x, target_y))
+		
+		if distance > self.PICKUP_RADIUS:
+			step = self.speed / dt * 30
+			if abs(dx) > self.PICKUP_RADIUS:
+				self.x += step if dx > 0 else -step
+			if abs(dy) > self.PICKUP_RADIUS:
+				self.y += step if dy > 0 else -step
+			return True
+		return False
+
+	def check_items(self, world, dt):
+		"""Проверяет и подбирает предметы вокруг Рона"""
+		target = self.home if self.home is not None else None
+
+		for item in world.visible_items[:]:  # Копия списка для безопасного удаления
+			if item.name not in ("Arrow", "Stick", "Iron ingot"):
+				continue
+				
+			dx = abs(self.x - item.x)
+			dy = abs(self.y - item.y)
+			
+			# Если предмет в радиусе подбора
+			if dx <= self.PICKUP_RADIUS and dy <= self.PICKUP_RADIUS:
+				self._pickup_item(item, world)
+				return True
+			
+			# Если предмет в радиусе взаимодействия
+			if dx <= self.INTERACTION_RADIUS and dy <= self.INTERACTION_RADIUS:
+						
+				if self.home is None:
+					distance_to_player = math.dist((self.player.x, self.player.y), (item.x, item.y))
+				if self.home or distance_to_player <= self.PLAYER_RADIUS:
+					self.move_towards(dt, item.x, item.y, self.PICKUP_RADIUS)
+					return True
+		
+		return False
+
+	def _pickup_item(self, item, world):
+		"""Подбирает предмет"""
+		self.inventory[item.name] += 1
+		chunk = world.chunk_manager.get_chunk_at(item.x, item.y)
+		if chunk and item in chunk.items:
+			chunk.items.remove(item)
+	
+	def check_mobs(self, world, dt):
+		"""Проверяет мобов и атакует при возможности"""
+		if self.inventory["Arrow"] <= 0:
+			return
+		if randint(1, int(dt * 10000)) != 1:  # Шанс атаки
+			return
+		
+		for mob in world.mobs:
+			if not ((abs(self.x - mob.x) <= Width // 2 and abs(self.y - mob.y) <= Height // 2)):
+				continue
+				
+			if mob.name in ("Slime", "Spider"):
+				world.projectiles.append(Projectile(self.x, self.y, mob.x - self.x + Width // 2 - 64, self.y - mob.y + Height // 2 - 32, "Arrow"))
+				return
+	
+	def update(self, world, dt, moving=True):
+
+		if moving:
+			if self.home is None:
+				self.move_towards(dt, self.player.x, self.player.y, self.PLAYER_RADIUS)
+			self.check_items(world, dt)
+			self.check_mobs(world, dt)
+		self.show()
+
+	def get_start_items(self):
+
+		"""Выдаёт Рону в инвентарь начальные предметы"""
+
+		self.inventory["Bow"] = 1
+		self.inventory["Arrow"] = 99
+

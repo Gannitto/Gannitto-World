@@ -10,7 +10,6 @@ import socket
 import sys
 import os
 import Backrooms
-from Ron import Ron
 import Saver
 from Multiplayer import NetworkManager
 from Functions import *
@@ -26,7 +25,7 @@ from Sound import play_sound, set_sound_volume, music_channel
 from InputSystem import input_system
 from Assets import *
 from Globals import *
-from Classes import Player, World, Object, Particle, Slime, Spider, Butterfly
+from Classes import Player, Peer, World, Object, Particle, Slime, Spider, Butterfly, Projectile, ExplodingProjectile, Wall, Farmland, Wire, Lever, Motherboard, Ron
 from Light import create_light_circle, create_light_circle_with_falloff, remove_light_circle
 
 pygame.init()
@@ -136,130 +135,9 @@ world_rect_to_screen = lambda X, Y, W, H, player=player: (X - player.x + Width /
 world = World(world_rect_to_screen)
 time_system = TimeSystem()
 
-class Peer(Player):
 
-	def __init__(self, id: str, address: tuple, name: str, last_seen: float, X: int = 0, Y: int = 0, view_distance: int = 1):
-		super().__init__()
-		self.address = address
-		self.name = name
-		self.last_seen = last_seen
-		self.x = X
-		self.y = Y
-		self.view_distance = view_distance
-	
-	def render(self, screen):
-		"""Отрисовывает игрока на экране"""
-		frames = self.animations[self.direction]
-		screen.blit(shadow(self.image, f"Player {self.direction} {self.frame_index % len(frames)}"), world_to_screen(self.x, self.y, 256, 256))
-		if self.changed_item is not None and self.direction != "Up":
-			changed_item_x = 0
-			changed_item_y = 0
-			match self.direction:
-				case "Down":
-					changed_item_x = -80
-					changed_item_y = 0
-				case "Left":
-					changed_item_x = -84
-					changed_item_y = 0
-				case "Right":
-					changed_item_x = -20
-					changed_item_y = 0
-			win.blit(inventory.resources[self.changed_item].image, world_to_screen(self.x + changed_item_x + 128, self.y + changed_item_y - 128, 256, 256))
-		text_x, text_y = world_to_screen(self.x + 128, self.y + 32, 256, 256)
-		text(self.name, text_x, text_y, (255, 255, 255), alignment=True)
-		
-		if Settings["Display"][3]:
-			self.rect = pygame.Rect(self.x - 25, self.y - 112, 50, 224)
-			pygame.draw.rect(screen, (0, 255, 0), world_rect_to_screen(self.x, self.y, 256, 256), 2)
-			pygame.draw.rect(win, (0, 0, 0), (self.rect[0] - self.x + Width // 2, self.y - self.rect[1] - self.rect[3] + Height // 2, self.rect[2], self.rect[3]), 3)
-
-class Projectile:
-
-	def __init__(self, X: int, Y: int, mouse_x, mouse_y, type: str):
-		
-		"""
-		Снаряд, который непрерывно летит в заданном направлении
-		X - Координата x
-		Y - Координата y
-		mouse_x - x мыши
-		mouse_y - y мыши
-		type - Тип патрона, например стрела
-		"""
-
-		self.x = X
-		self.y = Y
-
-		self.angle = math.atan2(Height / 2 - mouse_y, Width / 2 - mouse_x)
-		self.x_vel = math.cos(self.angle) * 100
-		self.y_vel = math.sin(self.angle) * 100
-		self.image = pygame.transform.rotate(load(path + "Images/Items/" + type + ".png", 64), math.atan2(mouse_x - Width / 2, mouse_y - Height / 2) * 180 / math.pi + 180)
-		self.end_time = int(time.time()) + 3
-
-	def main(self):
-
-		"""Показывает снаряд"""
-
-		self.x -= int(self.x_vel)
-		self.y += int(self.y_vel)
-		
-		win.blit(self.image, world_to_screen(self.x, self.y, 64, 64))
-
-		if Settings["Display"][3]:
-			pygame.draw.rect(win, (0, 0, 0), world_rect_to_screen(self.x, self.y, 64, 64), 3)
-		if time.time() >= self.end_time:
-			world.projectiles.remove(self)
-
-class ExplodingProjectile:
-
-	def __init__(self, X: int, Y: int, mouse_x: int, mouse_y: int, type: str, target_pos: tuple):
-		
-		"""
-		Снаряд, который летит до заданной точки и потом взрывается
-		X - Координата x
-		Y - Координата y
-		mouse_x - x мыши
-		mouse_y - y мыши
-		type - Тип патрона, например граната
-		"""
-
-		self.x = X
-		self.y = Y
-		self.start_x = X
-		self.start_y = Y
-
-		self.angle = math.atan2(Height / 2 - mouse_y, Width / 2 - mouse_x)
-		self.x_vel = math.cos(self.angle) * 50
-		self.y_vel = math.sin(self.angle) * 50
-		self.image = pygame.transform.rotate(load(path + "Images/Items/" + type + ".png", 64), math.atan2(mouse_x - Width / 2, mouse_y - Height / 2) * 180 / math.pi + 180)
-		self.dist_x = abs(target_pos[0] - self.x)
-		self.dist_y = abs(target_pos[1] - self.y)
-
-	def main(self):
-
-		"""Показывает снаряд"""
-
-		self.x -= int(self.x_vel)
-		self.y += int(self.y_vel)
-		
-		rect = self.image.get_rect()
-		rect_rotated = pygame.transform.rotate(self.image, -10)
-		rect_copy = rect.copy()
-		rect_copy.center = rect_rotated.get_rect().center
-		self.image = rect_rotated.subsurface(rect_copy).copy()
-
-		win.blit(self.image, world_to_screen(self.x, self.y, 64, 64))
-
-		if Settings["Display"][3]:
-			pygame.draw.rect(win, (0, 0, 0), world_rect_to_screen(self.x, self.y, 64, 64), 3)
-		if abs(self.x - self.start_x) > self.dist_x or abs(self.y - self.start_y) > self.dist_y:
-			radius = 20
-			for _ in range(150):
-				angle = random.uniform(0, 2 * math.pi)
-				radius -= 0.1
-				world.particles.append(Particle(self.x, self.y, explosion_texture.copy(), x_bias=radius * math.cos(angle), y_bias=radius * math.sin(angle), increased_transparency=30, end_time=0.3))
-			world.projectiles.remove(self)
-
-ron = Ron(world_to_screen, Projectile, player)
+ui_system = UISystem()
+ron = Ron(world_to_screen, player)
 
 class Button:
 
@@ -425,648 +303,6 @@ class Button:
 			self.image = self.image1
 			return False
 
-class BackroomsPortal:
-
-	def __init__(self, X: int, Y: int):
-
-		self.image = 0
-		self.rect = Backrooms_portal_images[0].get_rect()
-		self.x = X
-		self.y = Y
-
-	def main(self):
-
-		win.blit(Backrooms_portal_images[self.image], (self.x - player.x + Width // 2 - 128, player.y - self.y + Height // 2 - 128))
-
-		self.image += 1
-		if self.image == 10:
-			self.image = 0
-
-		if Settings["Display"][3]:
-			pygame.draw.rect(win, (0, 0, 0), (self.x - player.x + Width // 2 - 128, player.y - self.y + Height // 2 - 128, 256, 256), 3)
-
-class Wire:
-
-	def __init__(self, in_motherboard):
-
-		self.in_motherboard = in_motherboard
-		if self.in_motherboard is None:
-			self.x = (player.x + mouse_x - Width // 2) // 64
-			self.y = (player.y - mouse_y + Height // 2) // 64
-		else:
-			self.x = (mouse_x - Width // 2 - 300) // 18.75
-			self.y = (mouse_y + Width // 2 - 300) // 18.75
-		self.condition = "Off"
-		self.image = wire_images[0]
-		self.neigbords = []
-		self.neigbords_on = 0
-		self.neigbords_none = 0
-		self.num = len(world.mechanisms)
-	
-	def main(self):
-
-		self.neigbords = []
-		self.neigbords_on = 0
-		self.neigbords_none = 0
-
-		if self.in_motherboard is None:
-			for mechanism in world.mechanisms:
-				if mechanism.__class__ in (Wire, Lever, Motherboard):
-					if ((mechanism.x == self.x and mechanism.y in (self.y + 1, self.y - 1)) or (mechanism.x in (self.x - 1, self.x + 1) and mechanism.y == self.y)) and mechanism.num != self.num:
-
-						self.neigbords.append(mechanism)
-						if mechanism.__class__ == Motherboard:
-
-							if mechanism.left_condition == "On" and mechanism.x >= self.x:
-								self.neigbords_on += 1
-							if mechanism.left_condition is None and mechanism.x >= self.x:
-								self.neigbords_none += 1
-						else:
-
-							if mechanism.condition == "On":
-								self.neigbords_on += 1
-							elif mechanism.condition is None:
-								self.neigbords_none += 1
-
-				elif mechanism.__class__ == Random_box:
-
-					if mechanism.x - self.x in (1, -1) and mechanism.y == self.y and mechanism.num != self.num:
-
-						self.neigbords.append(mechanism)
-
-						if mechanism.condition == "On":
-							self.neigbords_on += 1
-						elif mechanism.condition is None:
-							self.condition = None
-
-		else:
-
-			for mechanism in in_motherboard.objects:
-
-				if mechanism.__class__ in (Wire, Lever, Motherboard):
-					if ((mechanism.x == self.x and mechanism.y in (self.y + 1, self.y - 1)) or (mechanism.x in (self.x - 1, self.x + 1) and mechanism.y == self.y)) and mechanism.num != self.num:
-						self.neigbords.append(mechanism)
-						if mechanism.condition == "On":
-							self.neigbords_on += 1
-						elif mechanism.condition is None:
-							self.neigbords_none += 1
-
-				elif mechanism.__class__ == Random_box:
-
-					if mechanism.x - self.x in (1, -1) and mechanism.y == self.y and mechanism.num != self.num:
-						self.neigbords.append(mechanism)
-						if mechanism.condition == "On":
-							self.neigbords_on += 1
-						elif mechanism.condition is None:
-							self.condition = None
-
-		if len(self.neigbords) == 1:
-
-			if self.neigbords[0].x == self.x:
-				self.image = wire_images[1]
-			else:
-				self.image = wire_images[0]
-
-		elif len(self.neigbords) == 2:
-
-			if self.neigbords[0].x == self.x == self.neigbords[1].x:
-				self.image = wire_images[1]
-			elif self.neigbords[0].y == self.y == self.neigbords[1].y:
-				self.image = wire_images[0]
-			elif (self.neigbords[0].x == self.x - 1 and self.neigbords[1].y == self.y + 1) or (self.neigbords[1].x == self.x - 1 and self.neigbords[0].y == self.y + 1):
-				self.image = wire_images[2]
-			elif (self.neigbords[0].x == self.x + 1 and self.neigbords[1].y == self.y + 1) or (self.neigbords[1].x == self.x + 1 and self.neigbords[0].y == self.y + 1):
-				self.image = wire_images[3]
-			elif (self.neigbords[0].x == self.x + 1 and self.neigbords[1].y == self.y - 1) or (self.neigbords[1].x == self.x + 1 and self.neigbords[0].y == self.y - 1):
-				self.image = wire_images[4]
-			elif (self.neigbords[0].x == self.x - 1 and self.neigbords[1].y == self.y - 1) or (self.neigbords[1].x == self.x - 1 and self.neigbords[0].y == self.y - 1):
-				self.image = wire_images[5]
-
-		elif len(self.neigbords) == 3:
-
-			if self.neigbords[0].y != self.y + 1 and self.neigbords[1].y != self.y + 1 and self.neigbords[2].y != self.y + 1:
-				self.image = wire_images[6]
-			if self.neigbords[0].y != self.y - 1 and self.neigbords[1].y != self.y - 1 and self.neigbords[2].y != self.y - 1:
-				self.image = wire_images[7]
-			if self.neigbords[0].x != self.x + 1 and self.neigbords[1].x != self.x + 1 and self.neigbords[2].x != self.x + 1:
-				self.image = wire_images[8]
-			if self.neigbords[0].x != self.x - 1 and self.neigbords[1].x != self.x - 1 and self.neigbords[2].x != self.x - 1:
-				self.image = wire_images[9]
-
-		if len(self.neigbords) == 4:
-			self.image = wire_images[10]
-
-		if self.neigbords_on != 0 and self.condition == "Off":
-			self.condition = "On"
-		if self.condition is None:
-			self.condition = "Off"
-		elif self.neigbords_none != 0:
-			self.condition = None
-		
-		if self.in_motherboard is None:
-
-			win.blit(textInfo.render(self.condition, True, (0, 0, 0)), (self.x * 64 + Width // 2 - player.x, player.y - self.y * 64 + Height // 2 - 16))
-			win.blit(self.image, (self.x * 64 + Width // 2 - player.x, player.y - self.y * 64 + Height // 2 - 16))
-
-class Lever:
-
-	def __init__(self, in_motherboard):
-
-		self.in_motherboard = in_motherboard
-		self.x = (player.x + mouse_x - Width // 2) // 64
-		self.y = (player.y - mouse_y + Height // 2) // 64
-		self.condition = False
-		self.image1 = pygame.transform.scale(pygame.image.load(path + "Images/Objects/Lever 1.png"), (64, 64))
-		self.image2 = pygame.transform.scale(pygame.image.load(path + "Images/Objects/Lever 2.png"), (64, 64))
-		self.image = self.image1
-		self.neigbords = []
-		self.num = len(world.mechanisms)
-
-	def main(self):
-
-		global click, mouse_x, mouse_y
-
-		click = pygame.mouse.get_pressed()
-		mouse_x, mouse_y = pygame.mouse.get_pos()
-		self.neigbords = []
-
-		for mechanism in world.mechanisms:
-
-			if mechanism.__class__ == Wire:
-				if ((mechanism.x == self.x and mechanism.y in (self.y + 1, self.y - 1)) or (mechanism.x in (self.x - 1, self.x + 1) and mechanism.y == self.y)) and mechanism.num != self.num:
-					self.neigbords.append(mechanism)
-
-			elif mechanism.__class__ == Random_box:
-				if mechanism.x - self.x in (1, -1) and mechanism.y == self.y and mechanism.num != self.num:
-					self.neigbords.append(mechanism)
-
-		if click[0] and self.x * 64 + Width // 2 - player.x <= mouse_x <= self.x * 64 + Width // 2 - player.x + 64 and player.y - self.y * 64 + Height // 2 - 16 <= mouse_y <= player.y - self.y * 64 + Height // 2 - 16 + 64:
-
-			if self.image == self.image1:
-				self.image = self.image2
-				self.condition = "On"
-			else:
-				self.image = self.image1
-				self.condition = None
-
-		win.blit(self.image, (self.x * 64 + Width // 2 - player.x, player.y - self.y * 64 + Height // 2 - 16))
-
-class Wall:
-
-	def __init__(self, wall_type: str, X, Y, is_door: bool=False):
-
-		self.x = X
-		self.y = Y
-
-		self.wall_type = wall_type
-		self.neigbords = []
-		self.is_door = is_door
-		self.open = False
-		self.rect = pygame.Rect(self.x - 24, self.y - 128, 48, 256)
-		self.images = wall_images[self.wall_type]
-
-		self.image = self.images[0]
-		self.update_neigboors()
-
-	def update_neigboors(self):
-
-		self.neigbords = []
-		for wall in ((self.x - 256, self.y), (self.x + 256, self.y), (self.x, self.y - 256), (self.x, self.y + 256)):
-			chunk = world.chunk_manager.get_chunk_at(*wall)
-			if chunk is not None and wall in chunk.walls:
-				self.neigbords.append(wall)
-
-		if self.is_door:
-
-			if len(self.neigbords) == 0:
-				if self.open:
-					self.image = self.images[2]
-				else:
-					self.image = self.images[0]
-
-			if len(self.neigbords) == 1:
-
-				if self.neigbords[0][0] == self.x:
-					if self.open:
-						self.image = self.images[3]
-					else:
-						self.image = self.images[1]
-				else:
-					if self.open:
-						self.image = self.images[2]
-					else:
-						self.image = self.images[0]
-
-			elif len(self.neigbords) == 2:
-
-				if self.neigbords[0][0] == self.x == self.neigbords[1][0]:
-					if self.open:
-						self.image = self.images[3]
-					else:
-						self.image = self.images[1]
-				elif self.neigbords[0][1] == self.y == self.neigbords[1][1]:
-					if self.open:
-						self.image = self.images[2]
-					else:
-						self.image = self.images[0]
-
-		else:
-
-			if len(self.neigbords) == 1:
-
-				if self.neigbords[0][0] < self.x:
-					self.image = self.images[3]
-					self.rect = pygame.Rect(self.x - 128, self.y - 128, 152, 256)
-				elif self.neigbords[0][0] > self.x:
-					self.image = self.images[4]
-					self.rect = pygame.Rect(self.x - 24, self.y - 128, 152, 256)
-				else:
-					self.image = self.images[2]
-					self.rect = pygame.Rect(self.x - 24, self.y - 128, 48, 256)
-
-			elif len(self.neigbords) == 2:
-
-				if self.neigbords[0][0] == self.x == self.neigbords[1][0]:
-					self.image = self.images[2]
-					self.rect = pygame.Rect(self.x - 24, self.y - 128, 48, 256)
-				elif self.neigbords[0][1] == self.y == self.neigbords[1][1]:
-					self.image = self.images[1]
-					self.rect = pygame.Rect(self.x - 128, self.y - 128, 256, 256)
-				elif (self.neigbords[0][0] == self.x - 256 and self.neigbords[1][1] == self.y + 256) or (self.neigbords[1][0] == self.x - 256 and self.neigbords[0][1] == self.y + 256):
-					self.image = self.images[5]
-					self.rect = pygame.Rect(self.x - 128, self.y - 128, 152, 256)
-				elif (self.neigbords[0][0] == self.x + 256 and self.neigbords[1][1] == self.y + 256) or (self.neigbords[1][0] == self.x + 256 and self.neigbords[0][1] == self.y + 256):
-					self.image = self.images[6]
-					self.rect = pygame.Rect(self.x - 24, self.y - 128, 152, 256)
-				elif (self.neigbords[0][0] == self.x + 256 and self.neigbords[1][1] == self.y - 256) or (self.neigbords[1][0] == self.x + 256 and self.neigbords[0][1] == self.y - 256):
-					self.image = self.images[7]
-					self.rect = pygame.Rect(self.x - 24, self.y - 128, 152, 256)
-				elif (self.neigbords[0][0] == self.x - 256 and self.neigbords[1][1] == self.y - 256) or (self.neigbords[1][0] == self.x - 256 and self.neigbords[0][1] == self.y - 256):
-					self.image = self.images[8]
-					self.rect = pygame.Rect(self.x - 128, self.y - 128, 152, 256)
-
-			elif len(self.neigbords) == 3:
-
-				if self.neigbords[0][1] != self.y + 256 and self.neigbords[1][1] != self.y + 256 and self.neigbords[2][1] != self.y + 256:
-					self.image = self.images[9]
-					self.rect = pygame.Rect(self.x - 128, self.y - 128, 256, 256)
-				if self.neigbords[0][1] != self.y - 256 and self.neigbords[1][1] != self.y - 256 and self.neigbords[2][1] != self.y - 256:
-					self.image = self.images[10]
-					self.rect = pygame.Rect(self.x - 128, self.y - 128, 256, 256)
-				if self.neigbords[0][0] != self.x + 256 and self.neigbords[1][0] != self.x + 256 and self.neigbords[2][0] != self.x + 256:
-					self.image = self.images[11]
-					self.rect = pygame.Rect(self.x - 128, self.y - 128, 152, 256)
-				if self.neigbords[0][0] != self.x - 256 and self.neigbords[1][0] != self.x - 256 and self.neigbords[2][0] != self.x - 256:
-					self.image = self.images[12]
-					self.rect = pygame.Rect(self.x - 24, self.y - 128, 152, 256)
-
-			elif len(self.neigbords) == 4:
-				self.image = self.images[12]
-				self.rect = pygame.Rect(self.x - 128, self.y - 128, 256, 256)
-		
-	def main(self, release):
-		screen_x, screen_y = world_to_screen(self.x, self.y, 256, 256)
-		if self.is_door and release and screen_x <= mouse_x <= screen_x + 256 and screen_y <= mouse_y <= screen_y + 256:
-			self.open = not self.open
-			self.update_neigboors()
-			if multiplayer:
-				game_events.append({"event_type": "wall_interaction", "wall_pos": (self.x, self.y)})
-		win.blit(self.image, world_to_screen(self.x, self.y, 256, 256))
-		if Settings["Display"][3]:
-			pygame.draw.rect(win, (0, 0, 0), world_rect_to_screen(self.rect[0] + self.rect[2] // 2, self.rect[1] + self.rect[3] // 2, self.rect[2], self.rect[3]), 3)
-		
-	def __getstate__(self):
-		
-		state = self.__dict__.copy()
-		state["image"] = self.images.index(self.image)
-		del state["images"]
-		rect = state["rect"]
-		state["rect"] = (rect[0], rect[1], rect[2], rect[3])
-		return state
-
-	def __setstate__(self, state):
-		
-		self.__dict__.update(state)
-		self.images = wall_images[self.wall_type]
-		self.image = self.images[self.image]
-
-		self.rect = pygame.Rect(state["rect"][0], state["rect"][1], state["rect"][2], state["rect"][3])
-
-class Farmland:
-
-	def __init__(self, X, Y):
-
-		self.x = X
-		self.y = Y
-
-		self.neigbords = []
-		self.rect = pygame.Rect(self.x - 64, self.y - 64, 128, 128)
-		self.images = farmland_images
-		self.image = self.images[0]
-		self.plant = None
-		self.plant_growth_stage = 0
-		self.grow_timer = 0
-		self.watered = False
-		
-	def main(self, release, dt):
-
-		world_rect = world_rect_to_screen(self.x - 64, self.y + 64, 128, 128)
-		if release and pygame.Rect(world_rect).collidepoint((mouse_x, mouse_y)):
-			self.handle_click()
-		win.blit(self.image, world_to_screen(self.x, self.y, 256, 256))
-		if self.plant is not None:
-			win.blit(plant_images[self.plant][self.plant_growth_stage], world_to_screen(self.x, self.y, 256, 256))
-			if self.plant_growth_stage != 3:
-				self.grow_timer -= dt
-			if self.grow_timer <= 0:
-				self.plant_growth_stage += 1
-				self.grow_timer = random.randint(250, 350)
-				if self.plant_growth_stage == 2 and not self.watered:
-					self.plant_growth_stage = 3
-		if Settings["Display"][3]:
-			pygame.draw.rect(win, (0, 0, 0), world_rect, 3)
-		
-	def handle_click(self):
-
-		slot = inventory.whole_inventory[changed_slot]
-		if self.plant is None:
-			if slot is not None and slot.name in seed_types:
-				self.plant = seed_types[slot.name]
-				inventory.reduce(changed_slot)
-				self.grow_timer = random.randint(250, 350)
-		elif self.plant_growth_stage == 1:
-			if slot is not None and slot.name == "Water bucket":
-				inventory.reduce(changed_slot)
-				inventory.increate("Water bucket")
-				self.watered = True
-				play_sound("Watering plants ", 2)
-		elif self.plant_growth_stage == 2:
-			destroy_object(plant_images[self.plant][self.plant_growth_stage], self.x - 64, self.y + 64, world, Particle)
-			for _ in range(random.randint(1, 3)):
-				rand_x, rand_y = self.x - 64 + random.randint(-64, 64), self.y + 64 + random.randint(-64, 64)
-				world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object(self.plant, rand_x, rand_y, f"Images/Items/{self.plant}.png", pickable=True))
-			self.plant = None
-			self.plant_growth_stage = 0
-			self.watered = False
-		elif self.plant_growth_stage == 3:
-			destroy_object(plant_images[self.plant][self.plant_growth_stage], self.x - 64, self.y + 64, world, Particle)
-			self.plant = None
-			self.plant_growth_stage = 0
-
-		if slot is not None and slot.name == "Stone shovel":
-			play_sound("Dirt")
-			del world.chunk_manager.get_chunk_at(self.x, self.y).farmlands[(self.x, self.y)]
-	
-	def __getstate__(self):
-		
-		state = self.__dict__.copy()
-		state["image"] = self.images.index(self.image)
-		del state["images"]
-		rect = state["rect"]
-		state["rect"] = (rect[0], rect[1], rect[2], rect[3])
-		return state
-
-	def __setstate__(self, state):
-		
-		self.__dict__.update(state)
-		self.images = farmland_images
-		self.image = self.images[self.image]
-		self.rect = pygame.Rect(state["rect"][0], state["rect"][1], state["rect"][2], state["rect"][3])
-
-class Random_box:
-
-	def __init__(self, in_motherboard):
-		
-		self.x = (player.x + mouse_x - Width // 2) // 64
-		self.y = (player.y - mouse_y + Height // 2) // 64
-
-		self.on = False
-		self.image = random_box_images[0]
-		self.neigbords = []
-		self.neigbords_on = 0
-		self.num = len(world.mechanisms)
-		self.in_motherboard = in_motherboard
-	
-	def main(self):
-
-		self.neigbords = []
-		self.neigbords_on = 0
-
-		for mechanism in world.mechanisms:
-
-			if mechanism.y == self.y and mechanism.x - self.x in (1, -1) and mechanism.num != self.num:
-
-				self.neigbords.append(mechanism)
-				if mechanism.on:
-					self.neigbords_on += 1
-		
-		if len(self.neigbords) == 1:
-
-			if self.neigbords[0].x == self.x - 1:
-				self.image = random_box_images[1]
-			else:
-				self.image = random_box_images[2]
-
-		elif len(self.neigbords) == 2:
-			self.image = random_box_images[3]
-
-		else:
-			self.image = random_box_images[0]
-		
-		win.blit(self.image, (self.x * 64 + Width // 2 - player.x, player.y - self.y * 64 + Height // 2 - 16))
-
-class LogicGate:
-
-	def __init__(self, in_motherboard):
-
-		self.x = (player.x + mouse_x - Width // 2) // 64
-		self.y = (player.y - mouse_y + Height // 2) // 64
-
-		self.image = wire_images[10]
-		self.neigbords = []
-		self.neigbords_on = 0
-		self.num = len(world.mechanisms)
-		self.in_motherboard = in_motherboard
-	
-	def main(self):
-
-		self.neigbords = []
-		self.neigbords_on = 0
-
-		for mechanism in world.mechanisms:
-
-			if mechanism.__class__ in (Wire, Lever):
-
-				if ((mechanism.x == self.x and mechanism.y in (self.y + 1, self.y - 1)) or (mechanism.x in (self.x - 1, self.x + 1) and mechanism.y == self.y)) and mechanism.num != self.num:
-					self.neigbords.append(mechanism)
-					if mechanism.condition == "On":
-						self.neigbords_on += 1
-
-			elif mechanism.__class__ == Random_box:
-
-				if mechanism.x - self.x in (1, -1) and mechanism.y == self.y and mechanism.num != self.num:
-					self.neigbords.append(mechanism)
-					if mechanism.condition == "On":
-						self.neigbords_on += 1
-
-		if len(self.neigbords) == 1:
-
-			if self.neigbords[0].x == self.x:
-				self.image = wire_images[1]
-			else:
-				self.image = wire_images[0]
-
-		elif len(self.neigbords) == 2:
-			if self.neigbords[0].x == self.x == self.neigbords[1].x:
-				self.image = wire_images[1]
-			elif self.neigbords[0].y == self.y == self.neigbords[1].y:
-				self.image = wire_images[0]
-			elif (self.neigbords[0].x == self.x - 1 and self.neigbords[1].y == self.y + 1) or (self.neigbords[1].x == self.x - 1 and self.neigbords[0].y == self.y + 1):
-				self.image = wire_images[2]
-			elif (self.neigbords[0].x == self.x + 1 and self.neigbords[1].y == self.y + 1) or (self.neigbords[1].x == self.x + 1 and self.neigbords[0].y == self.y + 1):
-				self.image = wire_images[3]
-			elif (self.neigbords[0].x == self.x + 1 and self.neigbords[1].y == self.y - 1) or (self.neigbords[1].x == self.x + 1 and self.neigbords[0].y == self.y - 1):
-				self.image = wire_images[4]
-			elif (self.neigbords[0].x == self.x - 1 and self.neigbords[1].y == self.y - 1) or (self.neigbords[1].x == self.x - 1 and self.neigbords[0].y == self.y - 1):
-				self.image = wire_images[5]
-
-		elif len(self.neigbords) == 3:
-			if self.neigbords[0].y != self.y + 1 and self.neigbords[1].y != self.y + 1 and self.neigbords[2].y != self.y + 1:
-				self.image = wire_images[6]
-			if self.neigbords[0].y != self.y - 1 and self.neigbords[1].y != self.y - 1 and self.neigbords[2].y != self.y - 1:
-				self.image = wire_images[7]
-			if self.neigbords[0].x != self.x + 1 and self.neigbords[1].x != self.x + 1 and self.neigbords[2].x != self.x + 1:
-				self.image = wire_images[8]
-			if self.neigbords[0].x != self.x - 1 and self.neigbords[1].x != self.x - 1 and self.neigbords[2].x != self.x - 1:
-				self.image = wire_images[9]
-
-		if len(self.neigbords) == 4:
-			self.image = wire_images[10]
-
-		if self.neigbords_on != 0 and self.condition == "Off":
-			self.condition = "On"
-		if self.condition is None:
-			self.condition = "Off"
-		elif self.neigbords_none != 0:
-			self.condition = None
-		
-		if not self.in_motherboard:
-			win.blit(self.image, (self.x * 64 + Width // 2 - player.x, player.y - self.y * 64 + Height // 2 - 16))
-
-class Motherboard:
-
-	def __init__(self, in_motherboard):
-
-		self.x = (player.x + mouse_x - Width // 2) // 64
-		self.y = (player.y - mouse_y + Height // 2) // 64
-
-		self.condition = "Off"
-		self.image = pygame.transform.scale(pygame.image.load(path + "Images/Objects/Motherboard.png"), (64, 64))
-		self.neigbords = []
-		self.neigbords_on = 0
-		self.neigbords_none = 0
-		self.num = len(world.mechanisms)
-		self.in_motherboard = in_motherboard
-		self.objects = [None] * 1024
-		self.objects_left = []
-		self.objects_left_xy = []
-		self.left_condition = "Off"
-		self.objects_right = []
-		self.objects_right_xy = []
-		self.right_condition = "Off"
-		self.objects_up = []
-		self.objects_up_xy = []
-		self.up_condition = "Off"
-		self.objects_down = []
-		self.objects_down_xy = []
-		self.down_condition = "Off"
-	
-	def main(self):
-
-		self.neigbords = []
-		self.neigbords_on = 0
-		self.neigbords_none = 0
-
-		self.objects_left = []
-		self.objects_left_xy = []
-		self.objects_right = []
-		self.objects_right_xy = []
-		self.objects_up = []
-		self.objects_up_xy = []
-		self.objects_down = []
-		self.objects_down_xy = []
-
-		for mechanism in world.mechanisms:
-
-			if mechanism.__class__ in (Wire, Lever, Motherboard):
-
-				if ((mechanism.x == self.x and mechanism.y in (self.y + 1, self.y - 1)) or (mechanism.x in (self.x - 1, self.x + 1) and mechanism.y == self.y)) and mechanism.num != self.num:
-					self.neigbords.append(mechanism)
-					if mechanism.condition == "On" and mechanism.x <= self.x and self.left_condition == "Off":
-						self.left_condition = "On"
-					elif mechanism.condition is None and mechanism.x <= self.x:
-						self.left_condition = None
-
-			elif mechanism.__class__ == Random_box:
-
-				if mechanism.x - self.x in (1, -1) and mechanism.y == self.y and mechanism.num != self.num:
-					self.neigbords.append(mechanism)
-					if mechanism.condition == "On":
-						self.neigbords_on += 1
-					elif mechanism.condition is None:
-						self.condition = None
-
-		for i in self.objects:
-
-			if i is not None:
-
-				if i.x + 32 == 0:
-
-					self.objects_left.append(i.condition)
-					self.objects_left_xy.append(i)
-				
-				elif i.x == -1:
-					self.objects_right.append(i.condition)
-					self.objects_right_xy.append(i)
-
-				if i.y == 21:
-
-					self.objects_up.append(i.condition)
-					self.objects_up_xy.append(i)
-
-				elif i.y == 52:
-
-					self.objects_down.append(i.condition)
-					self.objects_down_xy.append(i)
-					
-		if (any(self.objects_left) and self.left_condition == "Off") or self.left_condition == "On":
-
-			self.left_condition = "On"
-
-			for i in self.objects_left_xy:
-				if self.objects[self.objects.index(i)].condition == "Off":
-					self.objects[self.objects.index(i)].condition = "On"
-
-		if self.left_condition is None:
-			self.left_condition = "Off"
-
-		elif None in self.objects_left:
-			self.left_condition = None
-			for i in self.objects_left_xy:
-				self.objects[self.objects.index(i)].condition = None
-		
-		self.get_pressed()
-
-		if not self.in_motherboard:
-			win.blit(self.image, (self.x * 64 + Width // 2 - player.x, player.y - self.y * 64 + Height // 2 - 16))
-
-	def get_pressed(self):
-		global in_motherboard, mouse_x, mouse_y, click
-		mouse_x, mouse_y = pygame.mouse.get_pos()
-		if self.in_motherboard is None:
-			if self.x * 64 + Width // 2 - player.x <= mouse_x <= self.x * 64 + Width // 2 - player.x + 64 and player.y - self.y * 64 + Height // 2 - 16 <= mouse_y <= player.y - self.y * 64 + Height // 2 - 16 + 64 and in_motherboard is None and click[0]:
-				in_motherboard = self
-
 class GameState:
 
 	def __init__(self):
@@ -1077,94 +313,6 @@ class GameState:
 		self.shadow_surface.fill((0, 0, 0, 90))
 
 game = GameState()
-
-class Cave:
-
-	def __init__(self, cave_x, cave_y, w, h):
-
-		self.x = cave_x
-		self.y = cave_y
-		self.w = 128
-		self.h = 128
-		self.own_width = w
-		self.own_height = h
-		self.image = cave_texture
-		self.objects = []
-		self.seed = (int(self.x) * 888888 + int(self.y) * 425269) ^ 0x9e3779b9
-		self.noise = world.chunk_manager.generator.get_cave_noise(self.seed)
-		self.generate()
-
-	def generate(self):
-
-		# for _ in range(self.own_width // 100 + random.randint(-10, 10)):
-		#	self.objects.append(Object("Stone", random.randint(self.own_width // 2 * -1, self.own_width // 2), random.randint(self.own_height // 2 * -1, self.own_height // 2), "Images/Items/Stone.png"))
-			
-		# for _ in range(self.own_width // 300 + random.randint(-10, 10)):
-		#	self.objects.append(Object("Iron ore", random.randint(self.own_width // 2 * -1, self.own_width // 2), random.randint(self.own_height // 2 * -1, self.own_height // 2), "Images/Objects/Iron ore.png", (256, 256), special_flags=100, is_solid=True))
-
-		# for _ in range(self.own_width // 300 + random.randint(-10, 10)):
-		#	self.objects.append(Object("Gold ore", random.randint(self.own_width // 2 * -1, self.own_width // 2), random.randint(self.own_height // 2 * -1, self.own_height // 2), "Images/Objects/Gold ore.png", (256, 256), special_flags=100, is_solid=True))
-		self.cave_map = world.chunk_manager.generator.generate_cave(self.noise, self.own_width, self.own_height)
-
-	def main(self):
-
-		if player.x - Width // 2 <= self.x <= player.x + Width // 2 and player.y - Height // 2 <= self.y + Height // 2:
-			win.blit(self.image, (self.x - player.x + Width // 2 - self.w // 2, player.y - self.y + Height // 2 - self.h // 2))
-		
-	def get_in(self):
-
-		global mouse_x, mouse_y
-		mouse_x, mouse_y = pygame.mouse.get_pos()
-		if self.x <= player.x <= self.x + 128 and self.y <= player.y <= self.y + 128 and self.x - player.x + Width // 2 - self.w // 2 <= mouse_x <= self.x - player.x + Width // 2 - self.w // 2 + 128 and player.y - self.y + Height // 2 - self.h // 2 <= mouse_y <= player.y - self.y + Height // 2 - self.h // 2 + 128 and pygame.mouse.get_pressed()[0]:
-			return self
-		else:
-			return None
-
-	def render(self):
-		for Y in range(self.own_height // 64):
-			for X in range(self.own_width // 64):
-				if self.cave_map[Y][X]:
-					pygame.draw.rect(win, (50, 50, 50), world_rect_to_screen(X * 64 - self.own_width // 2, Y * 64 - self.own_height // 2, 64, 64))
-		
-	def __getstate__(self):
-		
-		state = self.__dict__.copy()
-		del state["image"]
-		return state
-
-	def __setstate__(self, state):
-		
-		self.__dict__.update(state)
-		self.image = cave_texture
-
-class Portal:
-
-	def __init__(self):
-
-		self.x = (player.x + mouse_x - Width // 2) // 128
-		self.y = (player.y + mouse_y - Height // 2) // 256
-		a = False
-		for object in world.visible_objects:
-			if object.__class__ == Portal and (self.x, self.y) != (object.x, object.y):
-				a = True
-		if a:
-			self.image = Portal_2
-		else:
-			self.image = Portal_1
-
-	def main(self):
-
-		global player
-
-		for object in world.visible_objects:
-			if object.__class__ == Portal and (self.x, self.y) != (object.x, object.y):
-				if self.x * 128 <= player.x <= self.x * 128 + 128 and self.y * 256 - 256 <= player.y <= self.y * 256:
-					player.x = object.x * 128
-					player.y = object.y * 256 - 257
-		
-		win.blit(self.image, (self.x * 128 + Width // 2 - player.x, player.y - self.y * 256 + Height // 2))
-
-ui_system = UISystem()
 
 def create_throw_particle(item_image, item_name):
 	
@@ -2637,12 +1785,8 @@ def start_game():
 						if player.changed_item is not None:
 							player.changed_item = player.changed_item.name
 
-					if event.key == pygame.K_o and Settings["User"][1]:
-						world.mobs.append(Spider(player.x, player.y))
-						# create_light_circle(world.chunk_manager, player.x, player.y, 10, 15)
-						# world.chunk_manager.chunks[(0, 0)].shadow_map.update({(0, 0): 0, (1, 0): 1, (2, 0): 2, (3, 0): 3, (4, 0): 4, (5, 0): 5, (6, 0): 6, (7, 0): 7, (8, 0): 8, (9, 0): 9, (10, 0): 10, (11, 0): 11, (12, 0): 12, (13, 0): 13, (14, 0): 14, (15, 0): 15})
-						# world.chunk_manager.chunks[(0, 0)].light_map.update({(0, 1): 0, (1, 1): 1, (2, 1): 2, (3, 1): 3, (4, 1): 4, (5, 1): 5, (6, 1): 6, (7, 1): 7, (8, 1): 8, (9, 1): 9, (10, 1): 10, (11, 1): 11, (12, 1): 12, (13, 1): 13, (14, 1): 14, (15, 1): 15})
-
+					# if event.key == pygame.K_o and Settings["User"][1]:
+						# world.mobs.append(Spider(player.x, player.y))
 
 					if event.key == hot_keys["Help"]:
 						music_channel.stop()
@@ -2775,10 +1919,10 @@ def start_game():
 				win.blit(textures["Backrooms " + str(Backrooms.Level)], (Width - player.x % 256 + i * 256, player.y % 256 + ii * 256))
 		
 		for mechanism in world.mechanisms:
-			mechanism.main()
+			mechanism.main(world, player)
 		
 		for farmland in world.visible_farmlands.values():
-			farmland.main(release, dt)
+			farmland.main(release, dt, world_to_screen, world_rect_to_screen, mouse_x, mouse_y, world, inventory, changed_slot)
 
 		if not Backrooms.InBackrooms and world.current_cave is None:
 
@@ -3145,10 +2289,10 @@ def start_game():
 					world.mobs.append(Slime(player.x + random.randint(-Width, Width), player.y + random.randint(-Height, Height)))
 
 		for projectile in world.projectiles:
-			projectile.main()
+			projectile.main(world, world_to_screen, world_rect_to_screen)
 
 		for wall in world.visible_walls.values():
-			wall.main(release)
+			wall.main(release, world_to_screen, world_rect_to_screen, mouse_x, mouse_y, multiplayer, game_events)
 		
 		if not Backrooms.InBackrooms and world.current_cave is None:
 
@@ -3230,7 +2374,7 @@ def start_game():
 									peer.breaking_object_info = None
 
 							net.server_events[pid].remove(event)
-					peer.render(win)
+					peer.render(win, world_to_screen, world_rect_to_screen)
 					peer.update_animation(dt)
 					if peer.breaking_object_info is not None:
 						for object in world.visible_objects:
@@ -4236,7 +3380,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 				
 					if a:
 						inventory.reduce(changed_slot)
-						world.mechanisms.append(Wire(None))
+						world.mechanisms.append(Wire(player, world, mouse_x, mouse_y, None))
 			else:
 				a = True
 				if click[0]:
@@ -4247,7 +3391,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 				
 					if a and Width // 2 - 300 <= mouse_x <= Width // 2 + 300 and  Height // 2 - 310 <= mouse_y < Height // 2 + 290:
 						inventory.reduce(changed_slot)
-						in_motherboard.objects[(mouse_x - Width // 2 - 300) // 19 + ((mouse_y + Width // 2 - 300) // 19 - 19) * 32] = (Wire(in_motherboard))
+						in_motherboard.objects[(mouse_x - Width // 2 - 300) // 19 + ((mouse_y + Width // 2 - 300) // 19 - 19) * 32] = (Wire(player, world, mouse_x, mouse_y, in_motherboard))
 
 		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Lever":
 
@@ -4262,7 +3406,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 				
 				if a:
 					inventory.reduce(changed_slot)
-					world.mechanisms.append(Lever(None))
+					world.mechanisms.append(Lever(Player, world, mouse_x, mouse_y, None))
 
 		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Wrench":
 
@@ -4304,7 +3448,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 				
 				if a:
 					inventory.reduce(changed_slot)
-					world.mechanisms.append(Motherboard(None))
+					world.mechanisms.append(Motherboard(player, world, mouse_x, mouse_y, None))
 		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Portal gun":
 
 			draw_select_image(128, 256, player, mouse_x, mouse_y)
@@ -4340,7 +3484,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 			draw_select_image(256, 256, player, mouse_x, mouse_y)
 
 			if click[0] and wall_pos not in world.visible_walls and not check_collision(pygame.Rect(wall_pos[0], wall_pos[1], 256, 256), world, False, False):
-				world.chunk_manager.get_chunk_at(*wall_pos).walls[wall_pos] = Wall(inventory.whole_inventory[changed_slot].name, wall_pos[0], wall_pos[1])
+				world.chunk_manager.get_chunk_at(*wall_pos).walls[wall_pos] = Wall(world, inventory.whole_inventory[changed_slot].name, wall_pos[0], wall_pos[1])
 				for wall in (((wall_pos[0] - 256, wall_pos[1]), (wall_pos[0] + 256, wall_pos[1]), (wall_pos[0], wall_pos[1] - 256), (wall_pos[0], wall_pos[1] + 256))):
 					if wall in world.visible_walls:
 						world.visible_walls[wall].update_neigboors()
@@ -4354,7 +3498,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 			draw_select_image(256, 256, player, mouse_x, mouse_y)
 
 			if click[0] and wall_pos not in world.visible_walls and not check_collision(pygame.Rect(wall_pos[0], wall_pos[1], 256, 256), world, False, False):
-				world.chunk_manager.get_chunk_at(*wall_pos).walls[wall_pos] = Wall(inventory.whole_inventory[changed_slot].name, wall_pos[0], wall_pos[1], True)
+				world.chunk_manager.get_chunk_at(*wall_pos).walls[wall_pos] = Wall(world, inventory.whole_inventory[changed_slot].name, wall_pos[0], wall_pos[1], True)
 				for wall in (((wall_pos[0] - 256, wall_pos[1]), (wall_pos[0] + 256, wall_pos[1]), (wall_pos[0], wall_pos[1] - 256), (wall_pos[0], wall_pos[1] + 256))):
 					if wall in world.visible_walls:
 						world.visible_walls[wall].update_neigboors()
@@ -4655,7 +3799,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 						chunk = world.chunk_manager.get_chunk_at(wall["x"], wall["y"])
 						if chunk is not None:
 							wall_pos = (wall["x"], wall["y"])
-							chunk.walls[wall_pos] = Wall(wall["wall_type"], wall["x"], wall["y"], wall["is_door"])
+							chunk.walls[wall_pos] = Wall(world, wall["wall_type"], wall["x"], wall["y"], wall["is_door"])
 							chunk.walls[wall_pos].__setstate__(wall)
 							for wall in (((wall_pos[0] - 256, wall_pos[1]), (wall_pos[0] + 256, wall_pos[1]), (wall_pos[0], wall_pos[1] - 256), (wall_pos[0], wall_pos[1] + 256))):
 								if wall in world.visible_walls:
@@ -4768,7 +3912,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 							
 							new_walls = {}
 							for wall in chunk.walls:
-								new_walls[(wall["x"], wall["y"])] = Wall(wall["wall_type"], wall["x"], wall["y"])
+								new_walls[(wall["x"], wall["y"])] = Wall(world, wall["wall_type"], wall["x"], wall["y"])
 								new_walls[(wall["x"], wall["y"])].__setstate__(wall)
 							chunk.walls = new_walls
 
