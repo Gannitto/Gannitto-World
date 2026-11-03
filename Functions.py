@@ -4,7 +4,9 @@ import os
 import time
 import pygame
 import random
+import math
 import pygame.surfarray as surfarray
+from subprocess import check_output
 import numpy as np
 from itertools import product
 from PIL import Image
@@ -311,6 +313,59 @@ def crack_surface(world, Particle, object, damage_level, scale=1):
 def destroy_object(image, x, y, world, Particle):
 	world.particles.append(Particle(x, y, image, y_bias=-image.get_height() / 4, twisting_in_height=image.get_height() / 16, increased_transparency=20))
 
+def create_throw_particle(Object, Particle, player, world, multiplayer, game_events, item_image, item_name):
+	
+	# Векторы направления
+	dir_map = {
+		"Down": (0, -1), "Up": (0, 1),
+		"Left": (-1, 0), "Right": (1, 0),
+		"Up-right": (1, 1), "Up-left": (-1, 1),
+		"Down-right": (1, -1), "Down-left": (-1, -1)
+	}
+	
+	dx, dy = dir_map.get(player.direction, (0, 1))
+	norm = math.sqrt(dx*dx + dy*dy)
+	if norm > 0:
+		dx, dy = dx/norm, dy/norm
+	
+	# Скорость
+	vx = dx * 2000
+	vy = dy * 2000
+	
+	# Состояние для физики
+	physics_state = {"vx": vx, "vy": vy, "start_x": player.x, "start_y": player.y}
+	
+	def tick_command(p):
+		dt = p.dt
+		p.x += physics_state["vx"] * dt
+		p.y += physics_state["vy"] * dt
+		physics_state["vx"] *= 0.0001 ** dt
+		physics_state["vy"] *= 0.0001 ** dt
+	
+	def del_condition(p):
+		# return abs(p.x - physics_state["start_x"]) > 200 or abs(p.y - physics_state["start_y"]) > 200
+		return abs(physics_state["vx"]) < 64 and abs(physics_state["vy"]) < 64
+	
+	def end_command(p):
+		chunk = world.chunk_manager.get_chunk_at(p.x, p.y)
+		obj = Object(p.special_flags, p.x, p.y, f"Images/Items/{p.special_flags}.png", pickable=True)
+		chunk.items.append(obj)
+		if multiplayer:
+			game_events.append({
+				"event_type": "item_added",
+				"item": obj.__getstate__()
+			})
+	
+	return Particle(
+		player.x, player.y,
+		item_image,
+		x_bias=0, y_bias=0,
+		end_time=None,
+		end_command=end_command,
+		special_flags=item_name,
+		tick_command=tick_command,
+		del_self_condition=del_condition
+	)
 
 def text(
 		text: str,
@@ -433,4 +488,11 @@ def check_projectiles_collision(rect: pygame.Rect, world, remove_projectile=True
 				world.projectiles.remove(projectile)
 			return True
 	return False
+
+def get_build_number():
+	try:
+		build_num = int(check_output(("git", "rev-list", "--count", "HEAD"), text=True).strip())
+	except:
+		build_num = "Error"
+	return build_num
 

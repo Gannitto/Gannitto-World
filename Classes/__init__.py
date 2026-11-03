@@ -11,4 +11,5 @@ from Classes.Farmland import Farmland
 from Classes.Cave import Cave
 from Classes.Mechanisms import Wire, Lever, RandomBox, LogicGate, Motherboard
 from Classes.Ron import Ron
+from Classes.Button import Button
 

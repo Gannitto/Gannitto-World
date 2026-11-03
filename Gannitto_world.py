@@ -1,5 +1,4 @@
 import pygame
-import subprocess
 import pyperclip
 from pathlib import Path
 import time
@@ -25,7 +24,7 @@ from Sound import play_sound, set_sound_volume, music_channel
 from InputSystem import input_system
 from Assets import *
 from Globals import *
-from Classes import Player, Peer, World, Object, Particle, Slime, Spider, Butterfly, Projectile, ExplodingProjectile, Wall, Farmland, Wire, Lever, Motherboard, Ron
+from Classes import Player, Peer, World, Object, Particle, Slime, Spider, Butterfly, Projectile, ExplodingProjectile, Wall, Farmland, Wire, Lever, Motherboard, Ron, Button
 from Light import create_light_circle, create_light_circle_with_falloff, remove_light_circle
 
 pygame.init()
@@ -70,13 +69,6 @@ pygame.init()
 
 translator.load_language(Settings["Languages"][0])
 t = translator.get
-
-def get_build_number():
-	try:
-		build_num = int(subprocess.check_output(("git", "rev-list", "--count", "HEAD"), text=True).strip())
-	except:
-		build_num = "Error"
-	return build_num
 
 def save(darken:bool=True, save_world_settings:bool=False):
 
@@ -134,174 +126,8 @@ world_to_screen = lambda X, Y, W, H, player=player: (X - player.x + Width // 2 -
 world_rect_to_screen = lambda X, Y, W, H, player=player: (X - player.x + Width // 2 - W // 2, player.y - Y + Height // 2 - H // 2, W, H)
 world = World(world_rect_to_screen)
 time_system = TimeSystem()
-
-
 ui_system = UISystem()
 ron = Ron(world_to_screen, player)
-
-class Button:
-
-	def __init__(self, X: int, Y: int, image1: pygame.Surface, image2: pygame.Surface, surface=win, alignment=False, sound=True, cooldown=0.15, info=None, action=None):
-
-		"""
-		Кнопка.
-		Аргементы:
-		x - Координата x, на которой появится кнопка
-		y - Координата y, на которой появится кнопка
-		image1 - Изображение кнопки
-		image2 - Изображение кнопки, когда на неё навели
-		surface - Плоскость, на которой появится кнопка
-		aligment - Выравнивание кнопки по центру своих координат
-		sound - Будет ли раздаваться звук при нажатии на кнопку, или нет
-		cooldown - Задержка в секундах между срабатываниями (защита от спама)
-		info - Текст всплывающей подсказки
-		action - Функция, которая выполняется после нажатия
-		"""
-
-		self.w = image1.get_width()
-		self.h = image2.get_height()
-
-		self.x = X
-		self.y = Y
-
-		self.image = image1
-		self.image1 = image1
-		self.image2 = image2
-
-		self.surface = surface
-		self.alignment = alignment
-
-		self.sound = sound
-		self.cooldown = cooldown
-
-		self.info = info
-		self.hold = 0
-		self.info_y = 0
-		self.info_speed = 3
-		self.info_forward = True
-		self.info_back = False
-
-		self.action = action
-
-		self.is_pressed = False
-		self.is_activated = False
-		self.last_trigger_time = 0
-	
-	def main(self, action=None):
-
-		"""Главная функция кнопки, которая её показывает и работает с её механикой"""
-
-		mouse_x, mouse_y = pygame.mouse.get_pos()
-		click = pygame.mouse.get_pressed()
-		current_time = pygame.time.get_ticks()
-		
-		if self.info_back:
-
-			if self.info_y <= 0:
-				self.info_back = False
-				self.info_y = 0
-				self.info_speed = 3
-				self.info_forward = True
-			else:
-				self.info_speed += 2
-				self.info_y -= self.info_speed
-
-		elif self.hold > 20:
-
-			if self.info_y < 60:
-				self.info_speed += 7
-				self.info_y += self.info_speed
-
-			elif self.info_y < 100 and self.info_forward:
-				self.info_speed -= 4
-				self.info_y += self.info_speed
-
-			elif 100 < self.info_y < 130:
-				self.info_y -= self.info_speed // 4
-				self.info_forward = False
-
-		if self.info is not None and self.info_y != 0:
-
-			if self.alignment:
-				pygame.draw.rect(self.surface, menu_color_medium, (self.x - textInfo.size(self.info)[0] // 2 - 5, self.y - self.h / 2 - self.info_y - 5, textInfo.size(self.info)[0] + 10, 28))
-				self.surface.blit(textInfo.render(self.info, True, menu_color_medium, menu_color_light), (self.x - textInfo.size(self.info)[0] // 2, self.y - self.h / 2 - self.info_y))
-			else:
-				pygame.draw.rect(self.surface, menu_color_medium, (self.x - self.w // 2 - textInfo.size(self.info)[0] // 2 - 5, self.y - self.h / 2 - self.info_y - 5, textInfo.size(self.info)[0] + 10, 28))
-				self.surface.blit(textInfo.render(self.info, True, menu_color_medium, menu_color_light), (self.x - self.w // 2 - textInfo.size(self.info)[0] // 2, self.y - self.info_y))
-
-		hovered = self.alignment and (self.x - self.w / 2 < mouse_x < self.x + self.w / 2 and self.y - self.h / 2 < mouse_y < self.y + self.h / 2) or not self.alignment and (self.x < mouse_x < self.x + self.w and self.y < mouse_y < self.y + self.h)
-		if hovered:
-
-			self.image = self.image2
-			self.hold += 1
-
-			#if self.info_back:   # Очень необычная механика
-
-			#	self.info_speed += 2
-			#	self.info_y -= self.info_speed
-
-			#elif self.hold > 50:
-
-			#	if self.info_y < 50:
-			#		self.info_speed += 4
-			#		self.info_y += self.info_speed
-
-			#	elif self.info_y >= 50 and self.info_forward:
-			#		self.info_speed -= 5
-			#		self.info_y += self.info_speed
-
-			#	elif 27 < self.info_y < 30:
-			#		self.info_y -= self.info_speed // 3
-			#		self.info_forward = False
-			
-			#if self.alignment:
-			#	self.surface.blit(bigTextInfo.render(self.info, True, (139, 105, 180)), (self.x - bigTextInfo.size(self.info)[0] // 2, self.y - self.h / 2 - self.info_y))
-			#else:
-			#	self.surface.blit(bigTextInfo.render(self.info, True, (139, 105, 180)), (self.x - self.w // 2 - bigTextInfo.size(self.info)[0] // 2, self.y - self.info_y))
-
-		else:
-
-			self.image = self.image1
-			self.hold = 0
-			if self.info_y > 0: self.info_back = True
-
-		if hovered and click[0]:
-			self.is_pressed = True
-		else:
-			if not click[0]:
-				if self.is_pressed and hovered:
-					if current_time - self.last_trigger_time > self.cooldown * 1000:
-						if self.sound:
-							play_sound("Button click")
-						self.last_trigger_time = current_time
-						self.is_activated = True
-
-						if self.action is not None:
-							self.action()
-						if action is not None:
-							action()
-		
-		if not click[0]:
-			self.is_pressed = False
-		
-		if self.alignment:
-			self.surface.blit(self.image, (self.x - self.w / 2, self.y - self.h / 2))
-		else:
-			self.surface.blit(self.image, (self.x, self.y))
-
-	def get_pressed(self) -> bool:
-
-		"Проверяет, нажата ли кнопка. Устаревший метод, оставлен для совместимости"
-
-		mouse_x, mouse_y = pygame.mouse.get_pos()
-		click = pygame.mouse.get_pressed()
-		if self.alignment and (self.x - self.w / 2 < mouse_x < self.x + self.w / 2 and self.y - self.h / 2 < mouse_y < self.y + self.h / 2) or not self.alignment and (self.x < mouse_x < self.x + self.w and self.y < mouse_y < self.y + self.h):
-			self.image = self.image2
-			if click[0]:
-				return True
-		else:
-			self.image = self.image1
-			return False
 
 class GameState:
 
@@ -314,59 +140,6 @@ class GameState:
 
 game = GameState()
 
-def create_throw_particle(item_image, item_name):
-	
-	# Векторы направления
-	dir_map = {
-		"Down": (0, -1), "Up": (0, 1),
-		"Left": (-1, 0), "Right": (1, 0),
-		"Up-right": (1, 1), "Up-left": (-1, 1),
-		"Down-right": (1, -1), "Down-left": (-1, -1)
-	}
-	
-	dx, dy = dir_map.get(player.direction, (0, 1))
-	norm = math.sqrt(dx*dx + dy*dy)
-	if norm > 0:
-		dx, dy = dx/norm, dy/norm
-	
-	# Скорость
-	vx = dx * 2000
-	vy = dy * 2000
-	
-	# Состояние для физики
-	physics_state = {"vx": vx, "vy": vy, "start_x": player.x, "start_y": player.y}
-	
-	def tick_command(p):
-		dt = p.dt
-		p.x += physics_state["vx"] * dt
-		p.y += physics_state["vy"] * dt
-		physics_state["vx"] *= 0.0001 ** dt
-		physics_state["vy"] *= 0.0001 ** dt
-	
-	def del_condition(p):
-		# return abs(p.x - physics_state["start_x"]) > 200 or abs(p.y - physics_state["start_y"]) > 200
-		return abs(physics_state["vx"]) < 64 and abs(physics_state["vy"]) < 64
-	
-	def end_command(p):
-		chunk = world.chunk_manager.get_chunk_at(p.x, p.y)
-		obj = Object(p.special_flags, p.x, p.y, f"Images/Items/{p.special_flags}.png", pickable=True)
-		chunk.items.append(obj)
-		if multiplayer:
-			game_events.append({
-				"event_type": "item_added",
-				"item": obj.__getstate__()
-			})
-	
-	return Particle(
-		player.x, player.y,
-		item_image,
-		x_bias=0, y_bias=0,
-		end_time=None,
-		end_command=end_command,
-		special_flags=item_name,
-		tick_command=tick_command,
-		del_self_condition=del_condition
-	)
 
 # Загрузка команд
 
@@ -1810,7 +1583,7 @@ def start_game():
 						if Backrooms.InBackrooms:
 							backrooms_objects.append(Object(inventory.whole_inventory[changed_slot].name, player.x, player.y, "Images/Items/" + inventory.whole_inventory[changed_slot].name + ".png", special_flags="Item"))
 						else:
-							world.particles.append(create_throw_particle(inventory.whole_inventory[changed_slot].image, inventory.whole_inventory[changed_slot].name))
+							world.particles.append(create_throw_particle(Object, Particle, player, world, multiplayer, game_events, inventory.whole_inventory[changed_slot].image, inventory.whole_inventory[changed_slot].name))
 						
 						inventory.reduce(changed_slot)
 
