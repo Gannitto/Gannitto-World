@@ -3,7 +3,7 @@ from typing import List, Tuple
 
 class CommandSystem:
 
-	def __init__(self, player, multiplayer, game_events, net, chat, main_chat, FPS, inventory, time_system):
+	def __init__(self, player, multiplayer, game_events, net, chat, main_chat, FPS, inventory, time_system, chat_tick):
 		self.player = player
 		self.multiplayer = multiplayer
 		self.game_events = game_events
@@ -13,6 +13,7 @@ class CommandSystem:
 		self.FPS = FPS
 		self.inventory = inventory
 		self.time_system = time_system
+		self.chat_tick = chat_tick
 		self.init_commands()
 	
 	def parse_command(self, command_text: str) -> Tuple[str, List[str]]:
@@ -78,10 +79,9 @@ class CommandSystem:
 
 	def chat_message(self, message: str, send_to_peers: bool = False):
 		"""Отправляет сообщение в чат"""
-		global chat_tick
 		self.chat.append(message)
 		self.main_chat.append(message)
-		chat_tick = len(message) // 1.5 * self.FPS #TODO заменить FPS на dt
+		self.chat_tick = len(message) // 1.5 * self.FPS #TODO заменить FPS на dt
 		if self.multiplayer and send_to_peers:
 			self.game_events.append({"event_type": "chat_message", "message_text": message})
 

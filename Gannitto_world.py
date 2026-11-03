@@ -128,7 +128,7 @@ world = World(world_rect_to_screen)
 time_system = TimeSystem()
 ui_system = UISystem()
 ron = Ron(world_to_screen, player)
-command_system = CommandSystem(player, multiplayer, game_events, net, chat, main_chat, FPS, inventory, time_system)
+command_system = CommandSystem(player, multiplayer, game_events, net, chat, main_chat, FPS, inventory, time_system, chat_tick)
 
 class GameState:
 
