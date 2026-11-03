@@ -414,3 +414,23 @@ def get_text_height(
 
 	return text_height
 
+def check_collision(rect: pygame.Rect, world, only_solid=True, check_walls=True):
+	"""Проверяет столкновение с твёрдыми объектами"""
+	if check_walls:
+		for wall in world.visible_walls.values():
+			if (not wall.is_door or not wall.open) and rect.colliderect(wall.rect):
+				return True
+	for object in world.visible_objects:
+		if (not only_solid or object.is_solid) and rect.colliderect(object.rect):
+			return True
+	return False
+
+def check_projectiles_collision(rect: pygame.Rect, world, remove_projectile=True):
+
+	for projectile in world.projectiles:
+		if rect.collidepoint((projectile.x, projectile.y)):
+			if remove_projectile:
+				world.projectiles.remove(projectile)
+			return True
+	return False
+
