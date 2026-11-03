@@ -26,6 +26,7 @@ from Sound import play_sound, set_sound_volume, music_channel
 from InputSystem import input_system
 from Assets import *
 from Globals import *
+from Classes import Player, World, Object, Particle
 from Light import create_light_circle, create_light_circle_with_falloff, remove_light_circle
 
 pygame.init()
@@ -129,127 +130,11 @@ pygame.display.set_caption("Gannitto World")
 
 # Классы
 
-class Player:
-
-	def __init__(self, X=0, Y=0):
-
-		self.x = X
-		self.y = Y
-		self.speed = 50
-		
-		# Анимация
-		self.direction = "Down"
-		self.frame_index = 0
-		self.animation_speed = 0.05  # Скорость анимации (секунды между кадрами)
-		self.animation_timer = 0
-		self.move_timer = 0
-		self.costum = 0
-		directions = ("Down", "Up", "Left", "Right", "Down-left", "Down-right", "Up-left", "Up-right")
-		self.animations = {}
-		
-		for direction in directions:
-
-			frames = []
-			for frame_num in range(1, 7):
-				path_to_image = f"{path}Images/Players/Hiro/Normal/{direction}/{frame_num}.png"
-				frames.append(load(path_to_image, 256))	
-			self.animations[direction] = frames
-
-		# Игровые параметры
-		self.HP = 100
-		self.HP_TICK = 90
-		self.HP_animation_tick = 0
-		self.effects = []
-		self.god_mode = False
-		self.pass_through_walls = False # TODO
-		self.is_moving = False
-		self.rect = pygame.Rect(self.x - 25, self.y - 112, 50, 224)
-		self.hovered_object = None
-		self.started_break = False
-		self.breaking_object_info = None
-		self.breaking_object = None
-		self.changed_item = None
-		
-		# Текущий спрайт
-		self.image = self.get_current_frame()
-		
-	def get_current_frame(self):
-		"""Возвращает текущий кадр анимации"""
-		frames = self.animations[self.direction]
-		return frames[self.frame_index % len(frames)]
-	
-	def update_animation(self, dt):
-		"""Обновляет анимацию на основе времени"""
-		if self.is_moving:
-			self.animation_timer += dt
-			
-			# Если прошло достаточно времени, кадр меняется
-			if self.animation_timer >= self.animation_speed:
-				self.animation_timer = 0
-				self.frame_index += 1
-		
-		self.image = self.get_current_frame()
-
-	def collides_with_walls(self):
-		"""Проверяет, пересекается ли игрок с какой-либо стеной."""
-		if self.pass_through_walls:
-			return False
-		self.rect = pygame.Rect(self.x - 25, self.y - 112, 50, 224)
-		return check_collision(self.rect, world)
-
-	def move(self, dx, dy, dt):
-		"""Двигает игрока и обновляет направление"""
-
-		self.is_moving = True
-
-		# Обновление позиции
-
-		self.x += dx * self.speed * dt * 30
-		if self.collides_with_walls():
-			self.x -= dx * self.speed * dt * 30
-
-		self.y += dy * self.speed * dt * 30
-		if self.collides_with_walls():
-			self.y -= dy * self.speed * dt * 30
-		
-		# Определение направления
-		if dx > 0 and dy == 0:
-			self.direction = "Right"
-		elif dx < 0 and dy == 0:
-			self.direction = "Left"
-		elif dy > 0 and dx == 0:
-			self.direction = "Up"
-		elif dy < 0 and dx == 0:
-			self.direction = "Down"
-		elif dx > 0 and dy > 0:
-			self.direction = "Up-right"
-		elif dx < 0 and dy > 0:
-			self.direction = "Up-left"
-		elif dx > 0 and dy < 0:
-			self.direction = "Down-right"
-		elif dx < 0 and dy < 0:
-			self.direction = "Down-left"
-	
-	def stop(self):
-		"""Останавливает движение"""
-		self.is_moving = False
-		self.frame_index = 0
-		self.animation_timer = 0
-		self.move_timer = 0
-	
-	def render(self, screen):
-		"""Отрисовывает игрока на экране"""
-		frames = self.animations[self.direction]
-		screen.blit(shadow(self.image, f"Player {self.direction} {self.frame_index % len(frames)}"), (Width / 2 - 128, Height / 2 - 128))
-		
-		if Settings["Display"][3]:
-			self.rect = pygame.Rect(self.x - 25, self.y - 112, 50, 224)
-			pygame.draw.rect(screen, (0, 255, 0), (Width / 2 - 128, Height / 2 - 128, 256, 256), 2)
-			pygame.draw.rect(win, (0, 0, 0), (self.rect[0] - self.x + Width // 2, self.y - self.rect[1] - self.rect[3] + Height // 2, self.rect[2], self.rect[3]), 3)
-
 player = Player()
 world_to_screen = lambda X, Y, W, H, player=player: (X - player.x + Width // 2 - W // 2, player.y - Y + Height // 2 - H // 2)
 world_rect_to_screen = lambda X, Y, W, H, player=player: (X - player.x + Width // 2 - W // 2, player.y - Y + Height // 2 - H // 2, W, H)
+world = World(world_rect_to_screen)
+time_system = TimeSystem()
 
 class Peer(Player):
 
@@ -287,305 +172,6 @@ class Peer(Player):
 			self.rect = pygame.Rect(self.x - 25, self.y - 112, 50, 224)
 			pygame.draw.rect(screen, (0, 255, 0), world_rect_to_screen(self.x, self.y, 256, 256), 2)
 			pygame.draw.rect(win, (0, 0, 0), (self.rect[0] - self.x + Width // 2, self.y - self.rect[1] - self.rect[3] + Height // 2, self.rect[2], self.rect[3]), 3)
-
-
-class Object:
-
-	def __init__(self,
-			  name: str,
-			  object_x: int,
-			  object_y: int,
-			  image_path: str,
-			  scale: tuple[int, int] = (64, 64),
-			  image = None,
-			  special_flags: str = None,
-			  add_path=True,
-			  start_time=None,
-			  is_solid=False,
-			  rect=(),
-			  pickable=False,
-			  breakable=False,
-			  max_break=1,
-			  breakable_by_hammer=False,
-			  drop_items=()):
-
-		"""
-		Класс основного объекта игры. Такого, как например дерево.
-		Аргументы:
-		name - Имя объекта
-		object_x - X объекта
-		object_y - Y объекта
-		image_path - Путь к изображению объекта
-		scale - На сколько нужно изменить размер изображения объекта
-		image - Изображение объекта
-		special_flags - Специальные флаги объекта
-		add_path - Добавлять ли путь до папки игры к путю до изображения
-		start_time - Время, когда был создан объект
-		rect - Хитбокс объекта
-		pickable - Можно ли подобрать объект
-		breakable - Можно ли сломать объект
-		max_break - Сколько нужно ударов чтобы сломать
-		breakable_by_hammer - Можно ли моментально сломать объект молотом
-		drop_items - Предметы, которые дропаются из объекта (название, мин количество, макс количество)
-		"""
-
-		if start_time is None:
-			self.start_time = time.time()
-		else:
-			self.start_time = start_time
-
-		self.name = name
-		self.x = object_x
-		self.y = object_y
-
-		if image is None:
-			if add_path:
-				self.image = load(path + image_path, *scale)
-			else:
-				self.image = load(image_path, *scale)
-		else:
-			self.image = pygame.transform.scale(image, (scale[0], scale[1]))
-
-		self.image_path = image_path
-		self.w = self.image.get_width()
-		self.h = self.image.get_height()
-		self.special_flags = special_flags
-		self.add_path = add_path
-		self.scale = scale
-		self.is_solid = is_solid
-		self.pickable = pickable
-		self.breakable = breakable
-		self.max_break = max_break
-		self.breaked = max_break
-		self.breakable_by_hammer = breakable_by_hammer
-		self.drop_items = drop_items
-
-		if rect == ():
-			self.rect = pygame.Rect(self.x - self.w / 2, self.y - self.h / 2, self.w, self.h)
-		else:
-			self.rect = pygame.Rect(rect[0] + self.x, rect[1] + self.y, rect[2], rect[3])
-	
-	def main(self, dt):
-
-		if player.hovered_object is None and self.get_hovered():
-			player.hovered_object = self
-			if self.breakable and pygame.mouse.get_pressed()[0]:
-
-				player.breaking_object = self
-				if not player.started_break and multiplayer:
-					game_events.append({"event_type": "object_started_breaking", "x": self.x, "y": self.y, "name": self.name})
-				player.started_break = True
-				player.breaking_object_info = (self.x, self.y, self.name)
-				self.breaked -= dt * 100
-				self.image = crack_surface(world, Particle, self, (self.max_break - self.breaked) // self.max_break, 8)
-
-				if self.breaked < 1:
-
-					destroy_object(self.image, self.x, self.y, world, Particle)
-					if multiplayer:
-						game_events.append({"event_type": "object_removed", "x": self.x, "y": self.y, "name": self.name})
-					world.chunk_manager.get_chunk_at(self.x, self.y).objects.remove(self)
-					
-					statistics[2] += 1
-					for item_name, min_amount, max_amount in self.drop_items:
-						for _ in range(random.randint(min_amount, max_amount)):
-							rand_x, rand_y = self.x + random.randint(-self.w // 2, self.w // 2), self.y + random.randint(-self.h // 2, self.h // 2)
-							world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object(item_name, rand_x, rand_y, f"Images/Items/{item_name}.png", pickable=True))
-					return
-
-		if player.x - Width // 2 - self.w // 2 <= self.x <= player.x + Width // 2 + self.w // 2 and player.y - Height // 2 <= player.y + Height // 2:
-			win.blit(self.image, world_to_screen(self.x, self.y, self.w, self.h, player))
-		if Settings["Display"][3]:
-			pygame.draw.rect(win, (0, 0, 0), (*world_to_screen(self.rect[0] + self.w // 2, self.rect[1] + self.h // 2, self.rect[2], self.rect[3], player), self.rect[2], self.rect[3]), 3)
-
-	def get_left_pressed(self):
-
-		click = pygame.mouse.get_pressed()
-		if click[0] and self.x - player.x + Width // 2 - self.image.get_width() // 2 <= mouse_x <= self.x - player.x + Width // 2 + self.w // 2 and player.y - self.y + Height // 2 - self.h // 2 <= mouse_y <= player.y - self.y + Height // 2 + self.h // 2:
-			return True
-		else:
-			return False
-
-	def get_right_pressed(self):
-
-		click = pygame.mouse.get_pressed()
-		if click[2] == 1 and self.x - player.x + Width // 2 - self.image.get_width() // 2 <= mouse_x <= self.x - player.x + Width // 2 + self.w // 2 and player.y - self.y + Height // 2 - self.h // 2 <= mouse_y <= player.y - self.y + Height // 2 + self.h // 2:
-			return True
-		else:
-			return False
-
-	def get_hovered(self):
-		return pygame.Rect((*world_to_screen(self.rect[0] + self.w // 2, self.rect[1] + self.h // 2, self.rect[2], self.rect[3], player), self.rect[2], self.rect[3])).collidepoint(pygame.mouse.get_pos())
-
-	def copy(self):
-		return Object(self.name, self.x, self.y, self.image_path, self.scale, self.image, self.special_flags, self.add_path, self.start_time, self.is_solid, self.rect, self.is_solid, self.breakable, self.max_break, self.breakable_by_hammer, self.drop_items)
-	
-	def __getstate__(self):
-		
-		state = self.__dict__.copy()
-		del state["image"]
-		rect = state["rect"]
-		state["rect"] = (rect[0], rect[1], rect[2], rect[3])
-		return state
-
-	def __setstate__(self, state):
-		
-		self.__dict__.update(state)
-		if self.add_path:
-			self.image = load(path + self.image_path, *self.scale)
-		else:
-			self.image = load(self.image_path, *self.scale)
-
-		self.rect = pygame.Rect(state["rect"][0], state["rect"][1], state["rect"][2], state["rect"][3])
-
-class Particle:
-
-	def __init__(self,
-				 start_x: int=0,
-				 start_y: int=0,
-				 image: pygame.Surface=no_file_texture.copy(),
-				 x_bias=0, y_bias=0,
-				 rotate: int=None,
-				 display_mode=world_to_screen,
-				 tick_command=None,
-				 increased_transparency: int=0,
-				 twisting_in_width: int=0, twisting_in_height: int=0,
-				 remove_particle_after_twisting: bool=True,
-				 track_ticks: bool=False,
-				 del_self_condition=None,
-				 can_interfere_with_placing: bool=False,
-				 save_particle: bool=False,
-				 save_start_time: bool=True,
-				 start_time: float|None=None,
-				 end_x: int=None, end_y: int=None,
-				 end_zone: int=0, end_time: float=None,
-				 end_command=None,
-				 special_flags: list=[]):
-
-		"""
-		Частицы, с помощью которых можно сделать много всего
-		
-		Аргументы:
-		start_x - Координата X, где появится частица
-		start_y - Координата Y, где появится частица
-		image - Изображение частицы, по умолчанию иконка файла без текстуры
-		x_bias - Смещение по оси X
-		y_bias - Смещение по оси Y
-		rotate - Поворот частцы на каждом тике
-		display_mode - Режим отображения частицы
-		tick_command - Код, который будет срабатывать при каждом тике часлицы
-		increased_transparency - Число, на которое будет уменьшаться прозрачность частицы, если нужно
-		twisting_in_width - Сжимает изображение цастицы по длине
-		twisting_in_height - Сжимает изображение частицы по ширине
-		remove_particle_after_twisting - Удалить частицу после после полного скручивания
-		track_ticks - Слитать ли каждый тик в переменную ticks после создания частицы
-		del_self_condition - Условие, при котором удалится частица
-		can_interfere_with_placing - Может ли частица мешать ставить объекты
-		save_particle - Сохранять ли частицу после выхода из мира
-		save_start_time - Сохранять ли параметр start_time после выхода из мира, если включён save_particle
-		start_time - Время создания частицы. По умолчанию выставляется автоматически
-		end_x - Координата X, при достижении которой частица пропадёт
-		end_y - Координата Y, при достижении которой частица пропадёт
-		end_zone - Если нужно, чтобы частица пропадала, когда она находится не именно на end_x и/или end_y, а на определённом растоянии или ближе, то можно использовать end_zone. За это расстояние этот аргумент и отвечает.
-		end_time - Время, после которого частица пропадает
-		end_command - Команда, которая будет срабатывать после удаления частицы
-		special_flags - Специальные флаги частицы, с помощью которых можно реализовать её механики
-		"""
-
-		self.x = start_x
-		self.y = start_y
-
-		self.image = image
-		self.w = self.image.get_width()
-		self.h = self.image.get_height()
-		self.x_bias = x_bias
-		self.y_bias = y_bias
-		self.rotate = rotate
-		self.display_mode = display_mode
-		
-		self.tick_command = tick_command
-
-		self.special_flags = special_flags
-		self.increased_transparency = increased_transparency
-		if self.increased_transparency > 0:
-			self.image = self.image.convert_alpha()
-		self.can_interfere_with_placing = can_interfere_with_placing
-		
-		self.twisting_in_width = twisting_in_width
-		self.twisting_in_height = twisting_in_height
-		self.remove_particle_after_twisting = remove_particle_after_twisting
-
-		self.track_ticks = track_ticks
-		self.ticks = -1
-
-		self.del_self_condition = del_self_condition
-		
-		self.save_particle = save_particle
-		self.save_start_time = start_time
-
-		self.end_x = end_x
-		self.end_y = end_y
-		self.end_zone = end_zone
-		self.end_time = end_time
-		self.end_command = end_command
-
-		self.start_time = time.time()
-
-		self.w, self.h = self.image.get_size()
-	
-	def __getstate__(self):
-		
-		state = self.__dict__.copy()
-		del state["image"]
-		return state
-
-	def __setstate__(self, state):
-		
-		self.__dict__.update(state)
-		self.image = load(self.image_path, self.w, self.h)
-	
-	def main(self, dt):
-		
-		self.dt = dt
-		if self.tick_command is not None:
-			self.tick_command(self)
-
-		if self.track_ticks: self.ticks += 1
-		if self.increased_transparency != 0:
-			self.image.set_alpha(self.image.get_alpha() - self.increased_transparency * dt * 25)
-		
-		if self.twisting_in_width or self.twisting_in_height:
-			try:
-				self.image = pygame.transform.scale(
-						self.image,
-						(self.image.get_width() - self.twisting_in_width * dt * 100,
-						self.image.get_height() - self.twisting_in_height * dt * 100)
-						)
-			except:
-				if self.remove_particle_after_twisting:
-					if self.end_command is not None: self.end_command(self)
-					world.particles.remove(self)
-					return
-		if self.x_bias:
-			self.x += dt * 25 * self.x_bias if self.x_bias.__class__ in (int, float) else self.x_bias(self)
-		if self.y_bias:
-			self.y += dt * 25 * self.y_bias if self.y_bias.__class__ in (int, float) else self.y_bias(self)
-
-		if self.rotate is not None:
-			image_rect = self.image.get_rect()
-			rotated_image = pygame.transform.rotate(self.image, self.rotate)
-			rect_copy = image_rect.copy()
-			rect_copy.center = rotated_image.get_rect().center
-			self.image = rotated_image.subsurface(rect_copy).copy()
-			
-		if (self.end_x is not None and self.end_y is None and self.end_x - self.end_zone <= self.x <= self.end_x + self.end_zone) or (self.end_y is not None and self.end_x is None and self.end_y - self.end_zone <= self.y <= self.end_y + self.end_zone) or (self.end_x is not None and self.end_y is not None and self.end_x - self.end_zone <= self.x <= self.end_x + self.end_zone and self.end_y - self.end_zone <= self.y <= self.end_y + self.end_zone):
-			if self.end_command is not None: self.end_command(self)
-			world.particles.remove(self)
-
-		win.blit(self.image, (self.display_mode(self.x, self.y, self.w, self.h)))
-
-		if Settings["Display"][3]:
-			pygame.draw.rect(win, (0, 0, 0), (self.display_mode(self.x, self.y, self.w, self.h)[0], self.display_mode(self.x, self.y, self.w, self.h)[1], self.w, self.h), 3)
 
 class BaseEnemy:
 	def __init__(self, x, y, HP, speed, animation_frames):
@@ -1199,6 +785,8 @@ class ExplodingProjectile:
 				radius -= 0.1
 				world.particles.append(Particle(self.x, self.y, explosion_texture.copy(), x_bias=radius * math.cos(angle), y_bias=radius * math.sin(angle), increased_transparency=30, end_time=0.3))
 			world.projectiles.remove(self)
+
+ron = Ron(world_to_screen, Projectile, player)
 
 class Button:
 
@@ -2006,84 +1594,6 @@ class Motherboard:
 			if self.x * 64 + Width // 2 - player.x <= mouse_x <= self.x * 64 + Width // 2 - player.x + 64 and player.y - self.y * 64 + Height // 2 - 16 <= mouse_y <= player.y - self.y * 64 + Height // 2 - 16 + 64 and in_motherboard is None and click[0]:
 				in_motherboard = self
 
-class World:
-
-	def __init__(self):
-
-		self.chunk_manager = ChunkManager(Object, world_rect_to_screen)
-		self.current_cave = None
-
-		self.visible_objects = []
-		self.visible_items = []
-		self.visible_walls = {}
-		self.visible_farmlands = {}
-		self.visible_caves = []
-
-		self.mobs = []
-		self.particles = []
-		self.mechanisms = []
-		self.projectiles = []
-		
-	def update(self):
-		# if not multiplayer or multiplayer_role == "Host":
-		chunks_to_get = self.chunk_manager.update_visible_chunks(player.x, player.y, multiplayer and multiplayer_role == "Client")
-		if multiplayer and multiplayer_role == "Client":
-			for chunk_key in chunks_to_get:
-				net._send_packet({"type": "get_chunk", "player_id": net.player_id, "chunk_key": chunk_key}, net.host_address)
-				self.chunk_manager.chunks_to_get.append(chunk_key)
-		# Сборка объектов из загруженных чанков
-		self.visible_objects.clear()
-		self.visible_items.clear()
-		self.visible_walls.clear()
-		self.visible_farmlands.clear()
-		self.visible_caves.clear()
-		for chunk_key in self.chunk_manager.loaded_chunks:
-			chunk = self.chunk_manager.chunks[chunk_key]
-			self.visible_objects.extend(chunk.objects)
-			self.visible_items.extend(chunk.items)
-			self.visible_walls.update(chunk.walls)
-			self.visible_farmlands.update(chunk.farmlands)
-			self.visible_caves.extend(chunk.caves)
-
-	def render_loaded_chunks(self):
-
-		"""Отрисовка загруженных чанков с их биомами"""
-
-		for chunk_key in self.chunk_manager.loaded_chunks:
-			chunk = self.chunk_manager.chunks.get(chunk_key)
-			if chunk and chunk.is_generated:
-				bounds = chunk.get_world_bounds()
-				
-				# Проверка, виден ли чанк на экране
-				if (bounds["x2"] > player.x - Width // 2 and 
-					bounds["x1"] < player.x + Width // 2 and
-					bounds["y2"] > player.y - Height // 2 and 
-					bounds["y1"] < player.y + Height):
-					
-					biome_texture = biome_textures.get(chunk.biome)
-					if biome_texture:
-						# Смещение чанка относительно игрока
-						offset_x = bounds["x1"] - player.x + Width // 2
-						offset_y = player.y - bounds["y1"] + Height // 2
-						
-						# Отрисовка тайлов чанка
-						tiles_per_chunk = 2048 // 256
-						for tile_x, tile_y in product(range(tiles_per_chunk), range(tiles_per_chunk)):
-							tile_screen_x = offset_x + tile_x * 256
-							tile_screen_y = offset_y - tile_y * 256
-							if (tile_screen_x > -256 and 
-								tile_screen_x < Width and
-								tile_screen_y > -256 and 
-								tile_screen_y < Height):
-								win.blit(biome_texture, (tile_screen_x, tile_screen_y))
-
-					if chunk.transition_image is not None:
-						win.blit(chunk.transition_image, (bounds["x1"] - player.x + Width // 2, player.y - bounds["y2"] + Height // 2 + 256))
-
-world = World()
-time_system = TimeSystem()
-ron = Ron(world_to_screen, Projectile, player)
-
 class GameState:
 
 	def __init__(self):
@@ -2180,15 +1690,6 @@ class Portal:
 					player.y = object.y * 256 - 257
 		
 		win.blit(self.image, (self.x * 128 + Width // 2 - player.x, player.y - self.y * 256 + Height // 2))
-
-class Vending_machine:
-
-	def __init__(self) -> None:
-
-		self.x = (player.x + mouse_x - Width // 2) // 304
-		self.y = (player.y + mouse_y - Height // 2) // 560
-		self.owner = Settings["User"][0]
-		self.image = Vending_machine_image
 
 ui_system = UISystem()
 
@@ -3727,7 +3228,7 @@ def start_game():
 
 		# Если есть движение - двигаем игрока
 		if dx != 0 or dy != 0:
-			player.move(dx, dy, dt)
+			player.move(dx, dy, dt, check_collision, world)
 			game_events.append({"event_type": "player_moved", "x": player.x, "y": player.y, "direction": player.direction})
 			if multiplayer:
 				net.peers[net.player_id].x = player.x
@@ -3753,7 +3254,7 @@ def start_game():
 				current_biome = current_chunk.biome
 			else:
 				current_biome = None
-			world.render_loaded_chunks()
+			world.render_loaded_chunks(player)
 			if time_system.day_phase == "Night" and not night_playing:
 				music_channel.stop()
 				music_channel.play(pygame.mixer.Sound(path + "Soundtracks/Night " + str(random.randint(1, 2)) + ".mp3"))
@@ -4019,22 +3520,22 @@ def start_game():
 									break
 
 						if object.name == "Pot":
-							if object.get_right_pressed() and inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].type == "Flower":
+							if object.get_right_pressed(mouse_x, mouse_y, player) and inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].type == "Flower":
 								world.chunk_manager.get_chunk_at(object.x, object.y).items.append(Object(inventory.whole_inventory[changed_slot].name, object.x, object.y + 36, 64, 64, inventory.whole_inventory[changed_slot].image))
 								inventory.reduce(changed_slot)
 				
 			else:
 
 				# Обновление мира
-				world.update() #TODO оптимизировать
+				world.update(player, multiplayer, multiplayer_role, net) #TODO оптимизировать
 
 				# Отображение объектов
 
 				for object in world.visible_objects:
 
-					object.main(dt)
+					object.main(player, world, dt, world_to_screen, multiplayer, game_events, Particle)
 
-					if object.get_left_pressed():
+					if object.get_left_pressed(mouse_x, mouse_y, player):
 
 						if object.name == "Pond":
 							if object.special_flags[0] != 0 and inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Bucket":
@@ -4044,7 +3545,7 @@ def start_game():
 								inventory.increate("Water bucket")
 								object.special_flags[0] -= 1
 			
-							if object.special_flags[1] != 0 and inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Stone shovel" and object.get_left_pressed() and random.randint(1, 30) == 1:
+							if object.special_flags[1] != 0 and inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Stone shovel" and object.get_left_pressed(mouse_x, mouse_y, player) and random.randint(1, 30) == 1:
 								rand_x, rand_y = object.x +random.randint(-128, 128), object.y + random.randint(-128, 128)
 								world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Clay", rand_x, rand_y, "Images/Items/Clay.png", pickable=True))
 								object.special_flags[1] -= 1
@@ -4078,7 +3579,7 @@ def start_game():
 
 					if object.name == "Punch" and False:
 
-						if object.get_left_pressed() and inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name in ("Mushroom", "Red mushroom", "Thread", "Poppy", "Purple tulip", "Orange tulip", "Black tulip", "Red tulip", "Yellow tulip", "Dandelion", "Cotton grass", "Onion"):
+						if object.get_left_pressed(mouse_x, mouse_y, player) and inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name in ("Mushroom", "Red mushroom", "Thread", "Poppy", "Purple tulip", "Orange tulip", "Black tulip", "Red tulip", "Yellow tulip", "Dandelion", "Cotton grass", "Onion"):
 							if object.special_flags < 11:
 								object.special_flags += 1
 								if object.special_flags > 6:
@@ -4100,7 +3601,7 @@ def start_game():
 					last_changed_item = inventory.whole_inventory[changed_slot].name
 
 				for item in world.visible_items:
-					item.main(player)
+					item.main(player, world, dt, world_to_screen, multiplayer, game_events, Particle)
 					try_pick = True
 					if item.pickable and Settings["Game"][0] and player.x - 150 < item.x < player.x + 150 and player.y - 150 < item.y < player.y + 150:
 						world.particles.append(Particle(item.x, item.y, item.image, lambda particle: round(((player.x - particle.x) // 2) / 10 * 5), lambda particle: round(((player.y - particle.y) // 2) / 10 * 5), track_ticks=True, del_self_condition=lambda particle: abs(particle.x - player.x) < 30 and abs(particle.y - player.y) < 30, end_command=lambda particle: (inventory.increate(item.name), play_sound("Pick an item"))))
@@ -4135,7 +3636,7 @@ def start_game():
 
 					if object.name == "Pot":
 
-						if object.get_right_pressed() and inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].type == "Flower":
+						if object.get_right_pressed(mouse_x, mouse_y, player) and inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].type == "Flower":
 							world.chunk_manager.get_chunk_at(object.x, object.y).items.append(Object(inventory.whole_inventory[changed_slot].name, object.x, object.y + 36, 64, 64, inventory.whole_inventory[changed_slot].image))
 							inventory.reduce(changed_slot)
 
@@ -4533,7 +4034,7 @@ def start_game():
 
 		for particle in world.particles:
 
-			particle.main(dt)
+			particle.main(dt, world)
 			
 			if (particle.end_time is not None and time.time() - particle.start_time >= particle.end_time) or (particle.del_self_condition is not None and particle.del_self_condition(particle)):
 				if particle.end_command is not None:
