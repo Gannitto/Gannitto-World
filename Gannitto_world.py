@@ -19,7 +19,7 @@ from Translator import translator
 from Cache import load
 from UISystem import UISystem
 from TimeSystem import TimeSystem
-from Commands import command_system
+from Commands import CommandSystem
 from Sound import play_sound, set_sound_volume, music_channel
 from InputSystem import input_system
 from Assets import *
@@ -128,6 +128,7 @@ world = World(world_rect_to_screen)
 time_system = TimeSystem()
 ui_system = UISystem()
 ron = Ron(world_to_screen, player)
+command_system = CommandSystem(player, multiplayer, game_events, net, chat, main_chat, FPS, inventory, time_system)
 
 class GameState:
 
@@ -140,62 +141,7 @@ class GameState:
 
 game = GameState()
 
-
 # Загрузка команд
-
-def tp(x, y, player=player):
-	"""Телепортация игрока на указанные координаты"""
-	player.x = x
-	player.y = y
-	if multiplayer:
-		game_events.append({"event_type": "player_tp", "x": player.x, "y": player.y, "direction": player.direction})
-		net.peers[net.player_id].x = player.x
-		net.peers[net.player_id].y = player.y
-		net.peers[net.player_id].direction = player.direction
-
-def chat_message(message: str, send_to_peers: bool = False):
-	"""Отправляет сообщение в чат"""
-	global chat_tick
-	chat.append(message)
-	main_chat.append(message)
-	chat_tick = len(message) // 1.5 * FPS
-	if multiplayer and send_to_peers:
-		game_events.append({"event_type": "chat_message", "message_text": message})
-
-def command_help(command: str=""):
-	if command == "":
-		chat_message("Команды можно использовать, если у вас включён режим бога или вы взломали код вселенной. Для ознакомления со списком команд введите /command_list")
-	elif command in command_system.commands:
-		chat_message(command_system.commands[command][1])
-	else:
-		chat_message("Нет такой команды: " + command)
-
-def command_list():
-	for command in command_system.commands.keys():
-		chat_message(command)
-
-def kukusiki_hack():
-	hack_list = ("рожи дыбильные", "лысый кал", "хитрожопые скоты", "спина и дождь", "маслодонное кино", "помидорный чай", "пьяный хлеб", "флюрография гуся")
-	chat_message("Смори, Ришный Мцэць взломал код вселенной и скинул нам этот шифрованный список:")
-	for i in hack_list:
-		chat_message(i)
-
-command_system.commands = {
-
-		"help": (command_help, "Выдаёт справку\n/help КОМАНДА"),
-		"command_list": (command_list, "Выдаёт список команд\n/command_list"),
-		"kukusiki_hack": (kukusiki_hack, "Раскрывает код вселенной\n/kukusiki_hack"),
-		"tp": (tp, "Телепортация игрока на указанные координаты\n tp X Y"),
-		"give": (inventory.increate, "Выдача предмета в инвентарь\n give ПРЕДМЕТ КОЛИЧЕСТВО=1"),
-		"get_brightness": (time_system.get_brightness, "Получение текущей яркости днейвного цикла\n/get_brightness"),
-		"get_time_of_day": (time_system.get_time_of_day, "Получение текущего времени в 24-часовом формате\n/get_time_of_day"),
-		"set_time_speed": (time_system.set_time_speed, "Изменить скорость времени\n/time_scale МНОЖИТЕЛЬ"),
-		"reset_to_day": (time_system.reset_to_day, "Обнулить время до дня\n/reset_to_day"),
-		"skip_time": (time_system.skip_time, "Перемотать время вперёд\n/skip_time СЕКУНДЫ"),
-		"chat_message": (chat_message, "Вывести сообщение в чат\n/chat_message ТЕКСТ")
-
-		}
-
 # def show_bar(times):
 #	import matplotlib.pyplot as plt
 #	categories = range(len(times))
@@ -2401,7 +2347,7 @@ def start_game():
 		if keys[hot_keys["Screenshot"]] and keys[hot_keys["Show keys"]]:
 			
 			pygame.image.save(win, str(Path.home()) + "/Your Screenshot " + time.asctime().replace(":", " ") + ".png")
-			chat_message(t("Game: Your screenshot is in ") + str(Path.home()) + "/Your Screenshot " + time.asctime().replace(":", " ") + ".png")
+			command_system.chat_message(t("Game: Your screenshot is in ") + str(Path.home()) + "/Your Screenshot " + time.asctime().replace(":", " ") + ".png")
 			
 			for _ in range(3):
 				win.fill((200, 255, 200))
@@ -3317,17 +3263,17 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 						eval(input_system.last_text[2:])
 						# Команды через eval - опасная штука, так что они доступны только в режиме разработчика
 					except Exception as e:
-						chat_message(languages("<<< Команда " + Settings["User"][0] + f" получила ошибку {e}" + ". >>>", "<<< " + Settings["User"][0] + f"'s command got an {e}" + "error. >>>", ""))
+						command_system.chat_message(languages("<<< Команда " + Settings["User"][0] + f" получила ошибку {e}" + ". >>>", "<<< " + Settings["User"][0] + f"'s command got an {e}" + "error. >>>", ""))
 					else:
-						chat_message(languages("<<< Команда " + Settings["User"][0] + " была успешно исполнена. >>>", "<<< " + Settings["User"][0] + "'s command was successfully executed. >>>", ""))
+						command_system.chat_message(languages("<<< Команда " + Settings["User"][0] + " была успешно исполнена. >>>", "<<< " + Settings["User"][0] + "'s command was successfully executed. >>>", ""))
 				elif input_system.last_text != "" and input_system.last_text[0] == "/":
-					chat_message(command_system.execute(input_system.last_text))
+					command_system.chat_message(command_system.execute(input_system.last_text))
 				elif input_system.last_text != "":
 					if multiplayer:
 						message_text = f"{net.peers[net.player_id].name}: {input_system.last_text}"
 					else:
 						message_text = f"{Settings['User'][0]}: {input_system.last_text}"
-					chat_message(message_text, True)
+					command_system.chat_message(message_text, True)
 		
 		if len(chat) != 0:
 
@@ -3605,7 +3551,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 						world.projectiles.append(Projectile(event["x"], event["y"], event["mouse_x"], event["mouse_y"], event["projectile_type"]))
 
 					case "chat_message":
-						chat_message(event["message_text"])
+						command_system.chat_message(event["message_text"])
 
 					case _:
 						remove_event = False
@@ -4030,7 +3976,7 @@ def multiplayer_settings_menu():
 		start_game_button.main()
 
 		if start_game_button.get_pressed():
-			net = NetworkManager(Peer, chat_message, world.chunk_manager.view_distance)
+			net = NetworkManager(Peer, command_system.chat_message, world.chunk_manager.view_distance)
 			if multiplayer_role == "Host":
 				if Settings["Multiplayer"][0]:
 					net.start_host(Settings["Multiplayer"][1], Settings["Multiplayer"][2])
