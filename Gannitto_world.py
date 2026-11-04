@@ -25,7 +25,6 @@ from InputSystem import input_system
 from Assets import *
 from Globals import *
 from Classes import Player, Peer, World, Object, Particle, Slime, Spider, Butterfly, Projectile, ExplodingProjectile, Wall, Farmland, Wire, Lever, Motherboard, Ron, Button
-from UI.SettingsMenu import SettingsMenu
 from GameState import GameState
 from Light import create_light_circle, create_light_circle_with_falloff, remove_light_circle
 
@@ -165,868 +164,6 @@ command_system = CommandSystem(game, player, FPS, inventory, time_system)
 
 # Кнопки в меню
 
-def settings2():
-	
-	game.does_lighten = False
-	page = 1
-	def page_back():
-		global page
-		page = max(1, page - 1)
-	def next_page():
-		global page
-		page += 1 
-	back_button = Button(-20, -20, pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Back.png"), (128, 128)), pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Back 2.png"), (128, 128)))
-
-	help_button = Button(10, 117, pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Help.png"), (132, 64)), pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Help 2.png"), (132, 64)))
-	display_button = Button(10, 192, pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Display.png"), (222, 64)), pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Display 2.png"), (222, 64)))
-	languages_button = Button(10, 267, pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Languages.png"), (272, 64)), pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Languages 2.png"), (272, 64)))
-	user_button = Button(10, 342, pygame.transform.scale(pygame.image.load(path + "Images/Buttons/User.png"), (132, 64)), pygame.transform.scale(pygame.image.load(path + "Images/Buttons/User 2.png"), (132, 64)))
-	sound_button = Button(10, 417, pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Sound.png"), (160, 64)), pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Sound 2.png"), (160, 64)))
-	statistics_button = Button(10, 492, pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Statistics.png"), (300, 64)), pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Statistics 2.png"), (300, 64)))
-	keys_button = Button(10, 567, pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Keys.png"), (132, 64)), pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Keys 2.png"), (132, 64)))
-	game_button = Button(10, 642, pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Game.png"), (132, 64)), pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Game 2.png"), (132, 64)))
-	
-	english_button = Button(385, 198, pygame.transform.scale(pygame.image.load(path + "Images/Buttons/English.png"), (220, 64)), pygame.transform.scale(pygame.image.load(path + "Images/Buttons/English 2.png"), (220, 64)))
-	russian_button = Button(385, 267, pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Russian.png"), (220, 64)), pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Russian 2.png"), (220, 64)))
-	kazach_button = Button(385, 336, pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Kazach.png"), (188, 64)), pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Kazach 2.png"), (188, 64)))
-
-	page_back_button = Button(361, Height - 138, pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Back.png"), (128, 128)), pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Back 2.png"), (128, 128)), action=page_back)
-	page_next_button = Button(Width - 138, Height - 138, pygame.transform.flip(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Back.png"), (128, 128)), True, False), pygame.transform.flip(pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Back 2.png"), (128, 128)), True, False), action=next_page)
-
-	bigTextInfo = pygame.font.Font(path + "Font.ttf", 36)
-	
-	def show_reset_settings():
-		
-		global Settings
-
-		if Width - 30 - bigTextInfo.size(t("Reset settings"))[0] < mouse_x < Width - 30 and 30 < mouse_y < 60:
-			win.blit(bigTextInfo.render(t("Reset settings"), True, menu_color_dark), (Width - 30 - bigTextInfo.size(t("Reset settings"))[0], 30))
-			if pygame.mouse.get_pressed()[0]:
-					
-				Settings = default_settings
-		else:
-			win.blit(bigTextInfo.render(t("Reset settings"), True, menu_color_medium), (Width - 30 - bigTextInfo.size(t("Reset settings"))[0], 30))
-
-	def help():
-
-		global mouse_x, mouse_y, page, alt_pressed
-		
-		while True:
-
-			mouse_x, mouse_y = pygame.mouse.get_pos()
-			dt = clock.tick(MAX_FPS) / 1000.0
-
-			for event in pygame.event.get():
-				if event.type == pygame.QUIT:
-					save()
-					sys.exit()
-				if event.type == pygame.KEYUP:
-					if event.key == hot_keys["Show keys"]:
-						alt_pressed = not alt_pressed
-
-					if event.key == hot_keys["Close"]:
-						Saver.save_objects(path + "Saves/Settings/Settings.save", Settings)
-						win_darken(win)
-						menu()
-
-			win.fill(menu_color_light)
-			pygame.draw.rect(win, menu_color_medium, (-8, 100, 373, Height), 8)
-			pygame.draw.line(win, menu_color_medium, (307, 103), (Width, 103), 8)
-			back_button.main()
-			show_reset_settings()
-			
-			if back_button.get_pressed():
-				Saver.save_objects(path + "Saves/Settings/Settings.save", Settings)
-				win_darken(win)
-				menu()
-				
-			page_back_button.main()
-			page_next_button.main()
-			page = min(page, 2)
-
-			win.blit(bigTextInfo.render(str(page), True, menu_color_medium), ((Width - 415) // 2 + 391, Height - 96))
-			win.blit(load(path + "Images/Buttons/Help 2.png", 132, 64), (10, 117))
-			display_button.main(display)
-			languages_button.main(Languages)
-			user_button.main(User)
-			sound_button.main(Sound)
-			statistics_button.main(Statistics)
-			keys_button.main(Keys)
-			game_button.main(Game)
-
-			if page == 1:
-				
-				win.blit(bigTextInfo.render(t("Start game"), True, menu_color_medium), (385, 123))
-				win.blit(textInfo.render(t(" • To move, you can use the arrows or A, S, W and D"), True, menu_color_medium), (385, 209)) # между строками 86 пикселей
-				win.blit(arrow_up, (459, 239))
-				win.blit(arrow_left, (385, 313))
-				win.blit(arrow_down, (459, 313))
-				win.blit(arrow_right, (533, 313))
-				pygame.draw.rect(win, menu_color_medium, (701, 239, 64, 64), 6)
-				pygame.draw.rect(win, menu_color_medium, (627, 313, 64, 64), 6)
-				pygame.draw.rect(win, menu_color_medium, (701, 313, 64, 64), 6)
-				pygame.draw.rect(win, menu_color_medium, (775, 313, 64, 64), 6)
-				win.blit(bigTextInfo.render("W", True, menu_color_medium), (710, 247))
-				win.blit(bigTextInfo.render("A", True, menu_color_medium), (640, 321))
-				win.blit(bigTextInfo.render("S", True, menu_color_medium), (716, 321))
-				win.blit(bigTextInfo.render("D", True, menu_color_medium), (790, 321))
-				win.blit(textInfo.render(t("  Also, you can put an item on the ground by pressing E, and to get it, just click"), True, menu_color_medium), (385, 381)) # между строками 30 пикселей
-				win.blit(textInfo.render(t("on it!"), True, menu_color_medium), (385, 411))
-				win.blit(textInfo.render(languages(" • Если вы хотите узнать свой координаты, или что-нибудь ещё, нажмите F2", " • If you want to know you coordinate, or anything more, press F2", "• Координаттарды немесе басқа кез келген нәрсені білгіңіз келсе, F2 пернесін басыңыз"), True, menu_color_medium), (385, 441))
-				win.blit(textInfo.render(languages("для открытия меню.", "to open the menu", "мәзірді ашу үшін"), True, menu_color_medium), (385, 471))
-				win.blit(textInfo.render(languages(" • При нажатии на I откроется весь инвентарь, чтобы его закрыть, нажмите", " • Clicking on I will open the entire inventory, to close it, click again.", "• Мен түймешігін бассаңыз, бүкіл тізімді ашамын, оны жабу үшін қайтадан басыңыз"), True, menu_color_medium), (385, 501))
-				win.blit(textInfo.render(languages("ещё раз", None, None), True, menu_color_medium), (385, 531))
-				win.blit(textInfo.render(languages(" • В верхнем правом углу есть пункт, в котором можно узнать информацию", " • In the upper right corner there is an item where you can find out", " • Жоғарғы оң жақ бұрышта ақпаратты табуға болатын элемент бар"), True, menu_color_medium), (385, 561))
-				win.blit(textInfo.render(languages("об объекте, на который вы навели.", "information about the object you hovered over", "меңзерді апарған нысан туралы."), True, menu_color_medium), (385, 591))
-				
-			elif page == 2:
-				
-				win.blit(bigTextInfo.render(languages("Крафт", "Craft", "Қолөнер"), True, menu_color_medium), (385, 123))
-				win.blit(textInfo.render(languages("   Наверняка, тебе было интересно, что это за слоты под инвентарём. Это", "    Forsnre, you were interesting about the cells under the inventory. This is", "Әлбетте, сіз бұл слоттардың түгендеу астында не бар екенін сұрадыңыз. Бұл"), True, menu_color_medium), (385, 209))
-				win.blit(textInfo.render(languages("система крафта", "crafting system", "Қолөнер жүйесі"), True, menu_color_medium), (385, 239))
-				win.blit(Changed_inventory_slot, (385, 269))
-				win.blit(Changed_inventory_slot, (465, 269))
-				win.blit(Inventory_slot, (545, 269))
-				win.blit(textInfo.render(languages("   На первый взгляд, всё как-то уныло, но на самом деле, крафтить весело!", "  At first glance, everything is somehow dull, but in fact, crafting is fun!", "Бір қарағанда, бәрі қандай да бір түсініксіз, бірақ шын мәнінде қолөнер қызықты!"), True, menu_color_medium), (385, 359))
-				win.blit(textInfo.render(languages("Первый слот обозначает объект, который нужен для крафта, например стол.", "The first slot denotes an object that is needed for crafting, such as a table.", "Бірінші ұяшық кесте сияқты өңдеуге қажет нысанды білдіреді"), True, menu_color_medium), (385, 389))
-				win.blit(textInfo.render(languages("Второй слот - инструмент, который тебе нужен, например молоток. Дальше", "The second slot is the tool you need, like a hammer. Еhen there are 7 slots", "Екінші ұяшық - балға сияқты сізге қажет құрал. Әрі қарай"), True, menu_color_medium), (385, 419))
-				win.blit(textInfo.render(languages("идут 7 слотов для предметов. Если положить предмет в первый, то", "for items. If you put an item in the first one, then the second one is", "7 элемент ұясы бар. Егер объектіні біріншіге қойсақ, онда"), True, menu_color_medium), (385, 449))
-				win.blit(textInfo.render(languages("разблокируется второй, потом третий, и так далее.", "unlocked, then the third, and so on.", "екіншісі құлыптан босатылады, содан кейін үшінші және т.б."), True, menu_color_medium), (385, 479))
-				win.blit(Changed_inventory_slot, (385, 509))
-				win.blit(load(path + "Images/Items/Furnace.png", 64), (385, 509))
-				win.blit(Changed_inventory_slot, (465, 509))
-				win.blit(Inventory_slot, (545, 509))
-				win.blit(load(path + "Images/Items/Clay.png", 64), (545, 509))
-				win.blit(Inventory_slot, (625, 509))
-				win.blit(Changed_inventory_slot, (1185, 509))
-				win.blit(load(path + "Images/Items/Brick.png", 64), (1185, 509))
-				win.blit(textInfo.render(languages("   Если положить определённую комбинацию предметов, то можно будет", "	 If you put a certain combination of items, then you can", "Егер сіз элементтердің белгілі бір комбинациясын қойсаңыз, онда сіз жасай аласыз"), True, menu_color_medium), (385, 599))
-				win.blit(textInfo.render(languages("получить что-либо. Например, если поставить печь и положить глину в ячейки", "get something. For example, if you put a furnace and put clay in the cells of", "бірдеңе алу. Мысалы, пешті қойып, ұяшықтарға балшық салсаңыз"), True, menu_color_medium), (385, 629))
-				win.blit(textInfo.render(languages("крафта, то можно будет получить кирпич, а чтобы его получить, нажми.", "crafting, you can get a brick, and to get it, click.", "қолөнер, сіз кірпіш алуға болады, және оны алу үшін басыңыз."), True, menu_color_medium), (385, 659))
-			
-
-			if alt_pressed:
-				
-				draw_key("ESC", 44, 108)
-				draw_key("<-", 425, Height - 168)
-				draw_key("->", Width - 74, Height - 168)
-
-			animate_click(dt, mouse_x, mouse_y)
-
-			win_fill(alpha=100 - Settings["Display"][0])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
-			
-			if not game.does_lighten:
-				win_lighten(win)
-				game.does_lighten = True
-
-			pygame.display.update()
-
-	def display():
-
-		global Settings, alt_pressed
-
-		bias = 0
-		max_bias = -ui_system._set_positions(bias, "Display")
-		max_bias = (max_bias + Height - 103) * max_bias > Height - 103
-
-		while True:
-			
-			click = pygame.mouse.get_pressed()
-			mouse_x, mouse_y = pygame.mouse.get_pos()
-			release = False
-			events = pygame.event.get()
-			dt = clock.tick(MAX_FPS) / 1000.0
-			
-			for event in events:
-				if event.type == pygame.QUIT:
-					Saver.save_objects(path + "Saves/Settings/Settings.save", Settings)
-					save()
-					sys.exit()
-				
-				elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
-					release = True
-				
-				elif event.type == pygame.KEYUP:
-					if event.key == hot_keys["Show keys"]:
-						alt_pressed = not alt_pressed
-					if event.key == hot_keys["Close"]:
-						Saver.save_objects(path + "Saves/Settings/Settings.save", Settings)
-						win_darken(win)
-						menu()
-				elif event.type == pygame.MOUSEWHEEL:
-					bias = max((min(bias + event.y * Settings["Game"][2], 0)), max_bias)
-					ui_system._set_positions(bias, "Display")
-			
-			# Очистка экрана
-			win.fill(menu_color_light)
-			
-			# Обработка UI
-			ui_system.handle_events(events, mouse_x, mouse_y, release, "Display")
-			ui_system.draw("Display", bias, max_bias)
-			
-			help_button.main(help)
-			win.blit(load(path + "Images/Buttons/Display 2.png", 222, 64), (10, 192))
-			languages_button.main(Languages)
-			user_button.main(User)
-			sound_button.main(Sound)
-			statistics_button.main(Statistics)
-			keys_button.main(Keys)
-			game_button.main(Game)
-			back_button.main()
-			show_reset_settings()
-			
-			if alt_pressed:
-				draw_key("ESC", 44, 108)
-
-			if back_button.get_pressed():
-				Saver.save_objects(path + "Saves/Settings/Settings.save", Settings)
-				win_darken(win)
-				menu()
-				
-			# Анимация и эффекты
-			animate_click(dt, mouse_x, mouse_y)
-			win_fill(alpha=100 - Settings["Display"][0])
-			
-			pygame.display.update()
-
-	def Languages():
-
-		global alt_pressed
-		
-		while True:
-			
-			mouse_x, mouse_y = pygame.mouse.get_pos()
-			dt = clock.tick(MAX_FPS) / 1000.0
-
-			for event in pygame.event.get():
-				if event.type == pygame.QUIT:
-					save()
-					sys.exit()
-				if event.type == pygame.KEYUP:
-					if event.key == hot_keys["Show keys"]:
-						alt_pressed = not alt_pressed
-					if event.key == hot_keys["Close"]:
-						Saver.save_objects(path + "Saves/Settings/Settings.save", Settings)
-						win_darken(win)
-						menu()
-
-					if event.key == pygame.K_1:
-						Settings["Languages"][0] = "English"
-						translator.load_language("English")
-						for element_list in ui_system.elements.values():
-							for element in element_list:
-								element.label_width = element.font.size(t(element.label))[0] + 10
-								element.rect = pygame.Rect(element.x + element.label_width, element.y, element.width, element.height)
-
-					if event.key == pygame.K_2:
-						Settings["Languages"][0] = "Russian"
-						translator.load_language("Russian")
-						for element_list in ui_system.elements.values():
-							for element in element_list:
-								element.label_width = element.font.size(t(element.label))[0] + 10
-								element.rect = pygame.Rect(element.x + element.label_width, element.y, element.width, element.height)
-
-					if event.key == pygame.K_3:
-						Settings["Languages"][0] = "Kazach"
-						translator.load_language("Kazach")
-						for element_list in ui_system.elements.values():
-							for element in element_list:
-								element.label_width = element.font.size(t(element.label))[0] + 10
-								element.rect = pygame.Rect(element.x + element.label_width, element.y, element.width, element.height)
-
-			win.fill(menu_color_light)
-			pygame.draw.rect(win, menu_color_medium, (-8, 100, 373, Height), 8)
-			pygame.draw.line(win, menu_color_medium, (307, 103), (Width, 103), 8)
-			back_button.main()
-			if back_button.get_pressed():
-				Saver.save_objects(path + "Saves/Settings/Settings.save", Settings)
-				win_darken(win)
-				menu()
-			show_reset_settings()
-
-			win.blit(bigTextInfo.render(t("You can choose one of these"), True, menu_color_medium), (385, 123))
-			win.blit(bigTextInfo.render(t("languages:"), True, menu_color_medium), (385, 153))
-
-			english_button.main()
-			if english_button.get_pressed():
-				Settings["Languages"][0] = "English"
-				translator.load_language("English")
-				for element_list in ui_system.elements.values():
-					for element in element_list:
-						element.label_width = element.font.size(t(element.label))[0] + 10
-						element.rect = pygame.Rect(element.x + element.label_width, element.y, element.width, element.height)
-
-			russian_button.main()
-			if russian_button.get_pressed():
-				Settings["Languages"][0] = "Russian"
-				translator.load_language("Russian")
-				for element_list in ui_system.elements.values():
-					for element in element_list:
-						element.label_width = element.font.size(t(element.label))[0] + 10
-						element.rect = pygame.Rect(element.x + element.label_width, element.y, element.width, element.height)
-
-			kazach_button.main()
-			if kazach_button.get_pressed():
-				Settings["Languages"][0] = "Kazach"
-				translator.load_language("Kazach")
-				for element_list in ui_system.elements.values():
-					for element in element_list:
-						element.label_width = element.font.size(t(element.label))[0] + 10
-						element.rect = pygame.Rect(element.x + element.label_width, element.y, element.width, element.height)
-
-			help_button.main(help)
-			display_button.main(display)
-			win.blit(load(path + "Images/Buttons/Languages 2.png", 272, 64), (10, 267))
-			user_button.main(User)
-			sound_button.main(Sound)
-			statistics_button.main(Statistics)
-			keys_button.main(Keys)
-			game_button.main(Game)
-			
-			if alt_pressed:
-				
-				draw_key("ESC", 44, 108)
-
-			animate_click(dt, mouse_x, mouse_y)
-			win_fill(alpha=100 - Settings["Display"][0])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
-
-			if not game.does_lighten:
-				win_lighten(win)
-				game.does_lighten = True
-
-			pygame.display.update()
-
-	def User():
-
-		global Settings, alt_pressed
-
-		bias = 0
-		max_bias = -ui_system._set_positions(bias, "User")
-		max_bias = (max_bias + Height - 103) * max_bias > Height - 103
-
-		while True:
-			
-			click = pygame.mouse.get_pressed()
-			mouse_x, mouse_y = pygame.mouse.get_pos()
-			release = False
-			dt = clock.tick(MAX_FPS) / 1000.0
-			
-			events = pygame.event.get()
-			
-			for event in events:
-				if event.type == pygame.QUIT:
-					Saver.save_objects(path + "Saves/Settings/Settings.save", Settings)
-					save()
-					sys.exit()
-				
-				elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
-					release = True
-				
-				elif event.type == pygame.KEYUP:
-					if event.key == hot_keys["Show keys"]:
-						alt_pressed = not alt_pressed
-					if event.key == hot_keys["Close"]:
-						Saver.save_objects(path + "Saves/Settings/Settings.save", Settings)
-						win_darken(win)
-						menu()
-				elif event.type == pygame.MOUSEWHEEL:
-					bias = max((min(bias + event.y * Settings["Game"][2], 0)), max_bias)
-					ui_system._set_positions(bias, "User")
-			
-			# Очистка экрана
-			win.fill(menu_color_light)
-			
-			# Обработка UI
-			ui_system.handle_events(events, mouse_x, mouse_y, release, "User")
-			ui_system.draw("User", bias, max_bias)
-			
-			help_button.main(help)
-			display_button.main(display)
-			languages_button.main(Languages)
-			win.blit(load(path + "Images/Buttons/User 2.png", 132, 64), (10, 342))
-			sound_button.main(Sound)
-			statistics_button.main(Statistics)
-			keys_button.main(Keys)
-			game_button.main(Game)
-			back_button.main()
-			show_reset_settings()
-			
-			if alt_pressed:
-				draw_key("ESC", 44, 108)
-
-			if back_button.get_pressed():
-				Saver.save_objects(path + "Saves/Settings/Settings.save", Settings)
-				win_darken(win)
-				menu()
-				
-			# Анимация и эффекты
-			animate_click(dt, mouse_x, mouse_y)
-			win_fill(alpha=100 - Settings["Display"][0])
-			
-			pygame.display.update()
-
-	def Sound():
-
-		global Settings, alt_pressed
-
-		bias = 0
-		max_bias = -ui_system._set_positions(bias, "Sound")
-		max_bias = (max_bias + Height - 103) * max_bias > Height - 103
-
-		while True:
-			
-			click = pygame.mouse.get_pressed()
-			mouse_x, mouse_y = pygame.mouse.get_pos()
-			release = False
-			dt = clock.tick(MAX_FPS) / 1000.0
-			
-			events = pygame.event.get()
-			
-			for event in events:
-				if event.type == pygame.QUIT:
-					Saver.save_objects(path + "Saves/Settings/Settings.save", Settings)
-					save()
-					sys.exit()
-				
-				elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
-					release = True
-				
-				elif event.type == pygame.KEYUP:
-					if event.key == hot_keys["Show keys"]:
-						alt_pressed = not alt_pressed
-					if event.key == hot_keys["Close"]:
-						Saver.save_objects(path + "Saves/Settings/Settings.save", Settings)
-						win_darken(win)
-						menu()
-					if event.key == pygame.K_RETURN:
-
-						music_channel.set_volume(Settings["Sound"][0], Settings["Sound"][0] / 100)
-						set_sound_volume(Settings["Sound"][1] / 100)
-
-				elif event.type == pygame.MOUSEWHEEL:
-					bias = max((min(bias + event.y * Settings["Game"][2], 0)), max_bias)
-					ui_system._set_positions(bias, "Sound")
-			
-			# Очистка экрана
-			win.fill(menu_color_light)
-			
-			# Обработка UI
-			ui_system.handle_events(events, mouse_x, mouse_y, release, "Sound")
-			ui_system.draw("Sound", bias, max_bias)
-			
-			help_button.main(help)
-			display_button.main(display)
-			languages_button.main(Languages)
-			user_button.main(User)
-			win.blit(load(path + "Images/Buttons/Sound 2.png", 160, 64), (10, 417))
-			statistics_button.main(Statistics)
-			keys_button.main(Keys)
-			game_button.main(Game)
-			back_button.main()
-			show_reset_settings()
-			
-			if alt_pressed:
-				draw_key("ESC", 44, 108)
-
-			if back_button.get_pressed():
-				Saver.save_objects(path + "Saves/Settings/Settings.save", Settings)
-				win_darken(win)
-				menu()
-				
-			# Анимация и эффекты
-			animate_click(dt, mouse_x, mouse_y)
-			win_fill(alpha=100 - Settings["Display"][0])
-			
-			pygame.display.update()
-
-	def Statistics():
-
-		global Settings, alt_pressed
-
-		bias = 0
-		max_bias = -ui_system._set_positions(bias, "Statistics", True)
-		max_bias = (max_bias + Height - 103) * max_bias > Height - 103
-
-		while True:
-			
-			click = pygame.mouse.get_pressed()
-			mouse_x, mouse_y = pygame.mouse.get_pos()
-			release = False
-			dt = clock.tick(MAX_FPS) / 1000.0
-			
-			events = pygame.event.get()
-			
-			for event in events:
-				if event.type == pygame.QUIT:
-					Saver.save_objects(path + "Saves/Settings/Settings.save", Settings)
-					save()
-					sys.exit()
-				
-				elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
-					release = True
-				
-				elif event.type == pygame.KEYUP:
-					if event.key == hot_keys["Show keys"]:
-						alt_pressed = not alt_pressed
-					if event.key == hot_keys["Close"]:
-						Saver.save_objects(path + "Saves/Settings/Settings.save", Settings)
-						win_darken(win)
-						menu()
-				elif event.type == pygame.MOUSEWHEEL:
-					bias = max((min(bias + event.y * Settings["Game"][2], 0)), max_bias)
-					ui_system._set_positions(bias, "Statistics")
-			
-			# Очистка экрана
-			win.fill(menu_color_light)
-			
-			# Обработка UI
-			ui_system.draw("Statistics", bias, max_bias)
-			
-			help_button.main(help)
-			display_button.main(display)
-			languages_button.main(Languages)
-			user_button.main(User)
-			sound_button.main(Sound)
-			win.blit(load(path + "Images/Buttons/Statistics 2.png", 300, 64), (10, 492))
-			keys_button.main(Keys)
-			game_button.main(Game)
-			back_button.main()
-			show_reset_settings()
-			
-			if alt_pressed:
-				draw_key("ESC", 44, 108)
-
-			if back_button.get_pressed():
-				Saver.save_objects(path + "Saves/Settings/Settings.save", Settings)
-				win_darken(win)
-				menu()
-				
-			# Анимация и эффекты
-			animate_click(dt, mouse_x, mouse_y)
-			win_fill(alpha=100 - Settings["Display"][0])
-			
-			pygame.display.update()
-
-	def Keys():
-
-		global Settings, mouse_x, mouse_y, alt_pressed, hot_keys
-		
-		changed_key = ""
-		looked_key = None
-		key_values = ({
-				"esc": pygame.K_ESCAPE,
-				"f1": pygame.K_F1,
-				"f2": pygame.K_F2,
-				"f3": pygame.K_F3,
-				"f4": pygame.K_F4,
-				"f4": pygame.K_F5,
-				"f5": pygame.K_F5,
-				"f6": pygame.K_F6,
-				"f7": pygame.K_F7,
-				"f8": pygame.K_F8,
-				"f9": pygame.K_F9,
-				"f10": pygame.K_F10,
-				"f11": pygame.K_F11,
-				"f12": pygame.K_F12,
-				"prt sc": pygame.K_PRINTSCREEN,
-				"off": pygame.K_o,
-				"delete": pygame.K_DELETE
-			},
-			{
-				"`": pygame.K_BACKQUOTE,
-				"1": pygame.K_1,
-				"2": pygame.K_2,
-				"3": pygame.K_3,
-				"4": pygame.K_4,
-				"5": pygame.K_5,
-				"6": pygame.K_6,
-				"7": pygame.K_7,
-				"8": pygame.K_8,
-				"9": pygame.K_9,
-				"0": pygame.K_0,
-				"-": pygame.K_MINUS,
-				"=": pygame.K_EQUALS,
-				"← backspace": pygame.K_BACKSPACE,
-				"home": pygame.K_HOME
-			},
-			{
-				"tab ⥂": pygame.K_TAB,
-				"Q": pygame.K_q,
-				"W": pygame.K_w,
-				"E": pygame.K_e,
-				"R": pygame.K_r,
-				"T": pygame.K_t,
-				"Y": pygame.K_y,
-				"U": pygame.K_u,
-				"I": pygame.K_i,
-				"O": pygame.K_o,
-				"P": pygame.K_p,
-				"[": pygame.K_LEFTBRACKET,
-				"]": pygame.K_RIGHTBRACKET,
-				"\\": pygame.K_BACKSLASH,
-				"pg up": pygame.K_PAGEUP,
-			},
-			{
-				"caps lock": pygame.K_CAPSLOCK,
-				"A": pygame.K_a,
-				"S": pygame.K_s,
-				"D": pygame.K_d,
-				"F": pygame.K_f,
-				"G": pygame.K_g,
-				"H": pygame.K_h,
-				"J": pygame.K_j,
-				"K": pygame.K_k,
-				"L": pygame.K_l,
-				";": pygame.K_SEMICOLON,
-				"'": pygame.K_QUOTE,
-				"↵ enter": pygame.K_RETURN,
-				"pg dn": pygame.K_PAGEDOWN
-			},
-			{
-				"shift ↑": pygame.K_LSHIFT,
-				"Z": pygame.K_z,
-				"X": pygame.K_x,
-				"C": pygame.K_c,
-				"V": pygame.K_v,
-				"B": pygame.K_b,
-				"N": pygame.K_n,
-				"M": pygame.K_m,
-				",": pygame.K_COMMA,
-				".": pygame.K_PERIOD,
-				"/": pygame.K_SLASH,
-				"↑ shift": pygame.K_RSHIFT,
-				"↑": pygame.K_UP,
-				"end": pygame.K_END
-			},
-			{
-				"ctrl": pygame.K_LCTRL,
-				"fn": pygame.K_o,
-				"super": pygame.K_LSUPER,
-				"alt": pygame.K_LALT,
-				" ": pygame.K_SPACE,
-				"alt ": pygame.K_RALT,
-				"ctrl ": pygame.K_RCTRL,
-				"←": pygame.K_LEFT,
-				"↓": pygame.K_DOWN,
-				"→": pygame.K_RIGHT
-			}
-			)
-		key_values_combined = {}
-		for key in key_values:
-			key_values_combined.update(key)
-
-		key_sizes = (
-			(40,) * 16,
-			(40,) * 13 + (90,) + (40,),
-			(60,) + (40,) * 12 + (70,) + (40,),
-			(70,) + (40,) * 11 + (110,) + (40,),
-			(90,) + (40,) * 10 + (90,) + (40,) * 2,
-			(40,) * 4 + (340,) + (40,) * 50
-			)
-		check_keys = lambda key: key_values_combined[key] in hot_keys.values() # Эта lambda-функция выясняет, является ли данная клавиша одной из горячих клавиш игры
-		check_blocked_keys = lambda key: key in ("prt sc", "super", "off")
-
-		while True:
-
-			changed_key = ""
-			click = pygame.mouse.get_pressed()
-			mouse_x, mouse_y = pygame.mouse.get_pos()
-			release = False
-			dt = clock.tick(MAX_FPS) / 1000.0
-			
-			for event in pygame.event.get():
-
-				if event.type == pygame.QUIT:
-					Saver.save_objects(path + "Saves/Settings/Hot keys.save", hot_keys)
-					save()
-					sys.exit()
-				if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
-					release = True
-				if event.type == pygame.KEYUP:
-					if event.key == hot_keys["Show keys"]:
-						alt_pressed = not alt_pressed
-					if event.key == hot_keys["Close"]:
-						if looked_key is not None:
-							looked_key = None
-						else:
-							Saver.save_objects(path + "Saves/Settings/Settings.save", Settings)
-							Saver.save_objects(path + "Saves/Settings/Hot keys.save", hot_keys)
-							win_darken(win)
-							menu()
-
-			back_button.main()
-			if back_button.get_pressed():
-				if looked_key is not None:
-					looked_key = None
-				else:
-					Saver.save_objects(path + "Saves/Settings/Settings.save", Settings)
-					Saver.save_objects(path + "Saves/Settings/Hot keys.save", hot_keys)
-					win_darken(win)
-					menu()
-				
-			win.fill(menu_color_light)
-			pygame.draw.rect(win, menu_color_medium, (-8, 100, 373, Height), 8)
-			pygame.draw.line(win, menu_color_medium, (307, 103), (Width, 103), 8)
-			back_button.main()
-			show_reset_settings()
-			help_button.main(help)
-			display_button.main(display)
-			languages_button.main(Languages)
-			user_button.main(User)
-			sound_button.main(Sound)
-			statistics_button.main(Statistics)
-			win.blit(load(path + "Images/Buttons/Keys 2.png", 132, 64), (10, 567))
-			game_button.main(Game)
-			
-			littleTextInfo = pygame.font.Font(path + "Font.ttf", 8)
-			key_color = menu_color_medium
-			X = 385
-			Y = 123
-			close_key = ""
-
-			for line_num, line in enumerate(key_values):
-				for key_x, key in enumerate(line):
-					key_size = key_sizes[line_num][key_x]
-					key_rect = pygame.Rect(X, Y, key_size, 40)
-					key_color = menu_color_medium
-					if check_keys(key): key_color = menu_color_dark
-					if key == looked_key: key_color = menu_color_medium
-					if check_blocked_keys(key): key_color = (255, 255, 255)
-					if key_values_combined[key] == hot_keys["Close"]: close_key = key
-					if key_rect.collidepoint((mouse_x, mouse_y)): changed_key = key
-					
-					pygame.draw.rect(win, key_color, (X, Y, key_size, 40), 6 if changed_key == key else 3)
-					win.blit(littleTextInfo.render(key, True, key_color), (X + 5, Y + 7))
-					X += key_size + 10
-				X = 385
-				Y += 50
-			
-			text(t("Hotkeys are highlighted in dark blue"), 385, 440, menu_color_dark)
-			text(t("Locked keys are highlighted in white"), 385, 470, (255, 255, 255))
-			text(t("To change the hot key, click on it"), 385, 500, menu_color_medium)
-
-			if Width - 30 - textInfo.size(t("Reset key settings"))[0] < mouse_x < Width - 30 and 420 < mouse_y < 450:
-				win.blit(textInfo.render(t("Reset key settings"), True, menu_color_dark), (Width - 30 - textInfo.size(t("Reset key settings"))[0], 420))
-				if click[0]:
-					hot_keys = default_hot_keys
-			else:
-				win.blit(textInfo.render(t("Reset key settings"), True, menu_color_medium), (Width - 30 - textInfo.size(t("Reset key settings"))[0], 420))
-
-			pygame.draw.rect(win, menu_color_medium, (385, 530, Width - 500, 150))
-			pygame.draw.rect(win, menu_color_dark, (385, 530, Width - 500, 150), 5)
-			text(changed_key if looked_key is None else f"Выбрана клавиша {looked_key}.\nНажмите {close_key}, чтобы отменить, либо выберите клавишу, которую Вы хотите назначить вместо неё.", 400, 545, menu_color_dark)
-			
-			changed_key_key = ""
-			if changed_key == "":
-				changed_key_value = None
-			else:
-				changed_key_value = key_values_combined[changed_key]
-
-			if changed_key_value is None:
-				win.blit(textInfo.render(changed_key_key, True, menu_color_dark), (400, 575))
-			else:
-				for key, val in hot_keys.items():
-					if val == changed_key_value:
-						text("\n" + key, 400, 575, menu_color_dark)
-						break
-
-			if changed_key != "" and release:
-				
-				if looked_key is None:
-					if changed_key != "" and check_keys(changed_key) and not check_blocked_keys(key):
-						looked_key = changed_key
-				elif changed_key != looked_key and looked_key is not None and not check_blocked_keys(changed_key) and not check_keys(changed_key):
-					for key, val in hot_keys.items():
-						if val == key_values_combined[looked_key]:
-							hot_keys[key] = changed_key_value
-							break
-					looked_key = None
-
-			if alt_pressed:
-				draw_key("ESC", 44, 108)
-
-			animate_click(dt, mouse_x, mouse_y)
-
-			win_fill(alpha=100 - Settings["Display"][0])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
-			
-			if not game.does_lighten:
-				win_lighten(win)
-				game.does_lighten = True
-
-			pygame.display.update()
-
-	def Game():
-
-		global Settings, alt_pressed
-
-		bias = 0
-		max_bias = -ui_system._set_positions(bias, "Game")
-		max_bias = (max_bias + Height - 103) * max_bias > Height - 103
-
-		while True:
-			
-			click = pygame.mouse.get_pressed()
-			mouse_x, mouse_y = pygame.mouse.get_pos()
-			release = False
-			dt = clock.tick(MAX_FPS) / 1000.0
-			
-			events = pygame.event.get()
-			
-			for event in events:
-				if event.type == pygame.QUIT:
-					Saver.save_objects(path + "Saves/Settings/Settings.save", Settings)
-					save()
-					sys.exit()
-				
-				elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
-					release = True
-				
-				elif event.type == pygame.KEYUP:
-					if event.key == hot_keys["Show keys"]:
-						alt_pressed = not alt_pressed
-					if event.key == hot_keys["Close"]:
-						Saver.save_objects(path + "Saves/Settings/Settings.save", Settings)
-						win_darken(win)
-						menu()
-				elif event.type == pygame.MOUSEWHEEL:
-					bias = max((min(bias + event.y * Settings["Game"][2], 0)), max_bias)
-					ui_system._set_positions(bias, "Game")
-			
-			# Очистка экрана
-			win.fill(menu_color_light)
-			
-			# Обработка UI
-			ui_system.handle_events(events, mouse_x, mouse_y, release, "Game")
-			ui_system.draw("Game", bias, max_bias)
-			
-			help_button.main(help)
-			display_button.main(display)
-			languages_button.main(Languages)
-			user_button.main(User)
-			sound_button.main(Sound)
-			statistics_button.main(Statistics)
-			keys_button.main(Keys)
-			win.blit(load(path + "Images/Buttons/Game 2.png", 132, 64), (10, 642))
-			back_button.main()
-			show_reset_settings()
-			
-			if alt_pressed:
-				draw_key("ESC", 44, 108)
-
-			if back_button.get_pressed():
-				Saver.save_objects(path + "Saves/Settings/Settings.save", Settings)
-				win_darken(win)
-				menu()
-				
-			# Анимация и эффекты
-			animate_click(dt, mouse_x, mouse_y)
-			win_fill(alpha=100 - Settings["Display"][0])
-			
-			pygame.display.update()
-	
-	win_darken(win)
-	help()
-
 def change_a_character():
 
 	game.does_lighten = False
@@ -1109,17 +246,17 @@ def change_a_character():
 			win.blit(bigTextInfo.render(changed_character.info, True, menu_color_medium), (Width - len(changed_character.info) * 30 - 28, 140))
 			back_button.main()
 			
-			if back_button.get_pressed():
+			if back_button.is_released:
 				win_darken(win)
 				menu()
 			win.blit(load(path + "Images/Buttons/Character 2.png", 278, 64), (10, 120))
 			pets_button.main(pets)
 			
 			page_back_button.main()
-			if page_back_button.get_pressed() and page > 1: page -= 1
+			if page_back_button.is_released and page > 1: page -= 1
 			page_next_button.main()
 			
-			if page_next_button.get_pressed() and page < 3: page += 1
+			if page_next_button.is_released and page < 3: page += 1
 			win.blit(bigTextInfo.render(str(page), True, menu_color_medium), ((Width - 415) // 2 + 340, Height - 96))
 
 			for index, character in enumerate(characters_list):
@@ -1170,7 +307,7 @@ def change_a_character():
 
 			back_button.main()
 
-			if back_button.get_pressed():
+			if back_button.is_released:
 				win_darken(win)
 				menu()
 
@@ -3231,11 +2368,11 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.in
 				enable_multiplayer.main()
 				enter_another_game.main()
 
-				if enable_multiplayer.get_pressed():
+				if enable_multiplayer.is_released:
 					b = 1
 					game.multiplayer_menu_open = False
 
-				elif enter_another_game.get_pressed():
+				elif enter_another_game.is_released:
 					b = 2
 					game.multiplayer_menu_open = False
 				if not animation_showed:
@@ -3264,7 +2401,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.in
 						win.fill(color)
 						win.blit(textInfo.render("Your server's host is " + socket.gethostbyname(socket.gethostname()), True, text_color), ((Width - textInfo.size("Your server's host is " + socket.gethostbyname(socket.gethostname()))[0]) // 2, Height // 2 - 30))
 						i.main()
-						if i.get_pressed():
+						if i.is_released:
 							a = False
 
 						pygame.display.update()
@@ -3329,7 +2466,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.in
 					#		win.blit(textInfo.render(t("Connection error"), True, menu_color_medium), ((Width - textInfo.size(t("Connection error"))[0]) // 2, Height // 2 - 20))
 
 					#		a.main()
-					#		if a.get_pressed():
+					#		if a.is_released:
 					#			break
 							
 					#		pygame.display.update()
@@ -3670,19 +2807,19 @@ def edit_world():
 		win.blit(bigTextInfo.render(t("Game difficulty:"), True, menu_color_medium), (50, 150))
 
 		easy_but.main()
-		if easy_but.get_pressed():
+		if easy_but.is_released:
 			game.difficulty = "easy"
 		
 		norm_but.main()
-		if norm_but.get_pressed():
+		if norm_but.is_released:
 			game.difficulty = "norm"
 		
 		hard_but.main()
-		if hard_but.get_pressed():
+		if hard_but.is_released:
 			game.difficulty = "hard"
 		
 		skull_but.main()
-		if skull_but.get_pressed():
+		if skull_but.is_released:
 			game.difficulty = "skull"
 
 		win.blit(load(path + "Images/Modes/" + game.difficulty + ".png", 548, 274), (232, 200))
@@ -3757,7 +2894,7 @@ def edit_world():
 						win.blit(textInfo.render(t("Are you sure want to delete this world?"), True, menu_color_medium), ((Width - textInfo.size(t("Are you sure want to delete this world?"))[0]) // 2, Height // 2 - 100))
 
 						yes_button.main()
-						if yes_button.get_pressed():   # Удалить выбранный мир
+						if yes_button.is_released:   # Удалить выбранный мир
 							import shutil
 							shutil.rmtree(path + "Saves/Worlds/" + game.world_name)
 							del shutil
@@ -3765,7 +2902,7 @@ def edit_world():
 							worlds()
 						
 						no_button.main()
-						if no_button.get_pressed() or keys[hot_keys["Close"]]:
+						if no_button.is_released or keys[hot_keys["Close"]]:
 							break
 					
 						win_fill(alpha=100 - Settings["Display"][0])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
@@ -3852,23 +2989,23 @@ def multiplayer_settings_menu():
 		ui_system.handle_events(events, mouse_x, mouse_y, release, "Multiplayer settings menu")
 		ui_system.draw("Multiplayer settings menu",show_settings_lines=False)
 		back_button.main()
-		if back_button.get_pressed():
+		if back_button.is_released:
 			win_darken(win)
 			worlds()
 
 		if game.multiplayer_role == "Client":
 			host_button.main()
-			if host_button.get_pressed():
+			if host_button.is_released:
 				game.multiplayer_role = "Host"
 			win.blit(textInfo.render("Клиент (ты заходишь в мир хоста)", True, menu_color_dark), (Width * 3 // 4 - textInfo.size("Клиент (ты заходишь в мир хоста)")[0] // 2, 50 - textInfo.size("Клиент (ты заходишь в мир хоста)")[1] // 2))
 		else:
 			win.blit(textInfo.render("Хост (в твой мир заходят игроки)", True, menu_color_dark), (Width // 4 - textInfo.size("Хост (в твой мир заходят игроки)")[0] // 2, 50 - textInfo.size("Хост (в твой мир заходят игроки)")[1] // 2))
 			client_button.main()
-			if client_button.get_pressed():
+			if client_button.is_released:
 				game.multiplayer_role = "Client"
 		start_game_button.main()
 
-		if start_game_button.get_pressed():
+		if start_game_button.is_released:
 			net = NetworkManager(Peer, command_system.chat_message, world.chunk_manager.view_distance)
 			if game.multiplayer_role == "Host":
 				if Settings["Multiplayer"][0]:
@@ -3974,11 +3111,11 @@ def worlds():
 				edit_world()
 		else:
 
-			if create_new_world_button.get_pressed():
+			if create_new_world_button.is_released:
 				input_system.start_input("World name", Width // 2, Height // 2 + 20, text_alignment=True)
 				world_name_input = True
 			
-			if back_button.get_pressed():
+			if back_button.is_released:
 				input_system.stop_input()
 				win_darken(win)
 				menu()
@@ -4018,18 +3155,18 @@ def worlds():
 			back_button.main()
 			if game.multiplayer:
 				single_player_button.main()
-				if single_player_button.get_pressed():
+				if single_player_button.is_released:
 					game.multiplayer = False
 				win.blit(textInfo.render(t("Multiplayer"), True, menu_color_dark), (Width * 3 // 4 - textInfo.size(t("Multiplayer"))[0] // 2, 50 - textInfo.size(t("Multiplayer"))[1] // 2))
 				enter_another_game_button.main()
-				if enter_another_game_button.get_pressed():
+				if enter_another_game_button.is_released:
 					game.multiplayer_role = "Client"
 					win_darken(win)
 					multiplayer_settings_menu()
 			else:
 				win.blit(textInfo.render(t("Single play"), True, menu_color_dark), (Width // 4 - textInfo.size(t("Single play"))[0] // 2, 50 - textInfo.size(t("Single play"))[1] // 2))
 				multiplayer_button.main()
-				if multiplayer_button.get_pressed():
+				if multiplayer_button.is_released:
 					game.multiplayer = True
 				create_new_world_button.main()
 		
@@ -4134,7 +3271,7 @@ def menu():
 
 		pygame.display.update()
 
-settings = SettingsMenu(game, save, menu, music_channel, set_sound_volume, Settings, hot_keys)
+settings = SettingsMenu(game, save, music_channel, set_sound_volume, Settings, hot_keys)
 
 def show_intro():
 	

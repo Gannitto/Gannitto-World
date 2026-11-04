@@ -12,14 +12,13 @@ ui_system = UISystem()
 
 class SettingsMenu():
 
-	def __init__(self, game, save, menu, music_channel, set_sound_volume, Settings, hot_keys):
+	def __init__(self, game, save, music_channel, set_sound_volume, Settings, hot_keys):
 
 		self.game = game
 		self.game.does_lighten = False
 		self.page = 1
 		self.init_buttons()
 		self.save = save 
-		self.menu = menu
 		self.music_channel = music_channel
 		self.set_sound_volume = set_sound_volume
 		self.Settings = Settings
@@ -28,7 +27,9 @@ class SettingsMenu():
 	def open_settings(self):
 		win_darken(win)
 		self.game.does_lighten = False
-		self.help()
+		current_screen = self.help
+		while current_screen is not None:
+			current_screen = current_screen()
 
 	def page_back(self):
 		self.page = max(1, self.page - 1)
@@ -82,7 +83,7 @@ class SettingsMenu():
 					if event.key == self.hot_keys["Close"]:
 						Saver.save_objects(path + "Saves/Settings/Settings.save", self.Settings)
 						win_darken(win)
-						self.menu()
+						return
 
 			win.fill(menu_color_light)
 			pygame.draw.rect(win, menu_color_medium, (-8, 100, 373, Height), 8)
@@ -90,10 +91,10 @@ class SettingsMenu():
 			self.back_button.main()
 			self.show_reset_settings()
 			
-			if self.back_button.get_pressed():
+			if self.back_button.is_released:
 				Saver.save_objects(path + "Saves/Settings/Settings.save", self.Settings)
 				win_darken(win)
-				self.menu()
+				return
 				
 			self.page_back_button.main()
 			self.page_next_button.main()
@@ -101,13 +102,20 @@ class SettingsMenu():
 
 			win.blit(bigTextInfo.render(str(self.page), True, menu_color_medium), ((Width - 415) // 2 + 391, Height - 96))
 			win.blit(load(path + "Images/Buttons/Help 2.png", 132, 64), (10, 117))
-			self.display_button.main(self.display)
-			self.languages_button.main(self.Languages)
-			self.user_button.main(self.User)
-			self.sound_button.main(self.Sound)
-			self.statistics_button.main(self.Statistics)
-			self.keys_button.main(self.Keys)
-			self.game_button.main(self.Game)
+			self.display_button.main()
+			if self.display_button.is_released: return self.display
+			self.languages_button.main()
+			if self.languages_button.is_released: return self.display
+			self.user_button.main()
+			if self.user_button.is_released: return self.User
+			self.sound_button.main()
+			if self.sound_button.is_released: return self.Sound
+			self.statistics_button.main()
+			if self.statistics_button.is_released: return self.Statistics
+			self.keys_button.main()
+			if self.keys_button.is_released: return self.Keys
+			self.game_button.main()
+			if self.game_button.is_released: return self.Game
 
 			if self.page == 1:
 				
@@ -168,7 +176,7 @@ class SettingsMenu():
 
 			animate_click(dt, self.game.mouse_x, self.game.mouse_y)
 
-			win_fill(alpha=100 - self.Settings["Display"][0])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
+			win_fill(alpha=100 - self.Settings["Display"][0])	# Если в настройках установлена яркость ниже 100, то экран становится темнее
 			
 			if not self.game.does_lighten:
 				win_lighten(win)
@@ -205,7 +213,7 @@ class SettingsMenu():
 					if event.key == self.hot_keys["Close"]:
 						Saver.save_objects(path + "Saves/Settings/Settings.save", self.Settings)
 						win_darken(win)
-						self.menu()
+						return
 				elif event.type == pygame.MOUSEWHEEL:
 					bias = max((min(bias + event.y * self.Settings["Game"][2], 0)), max_bias)
 					ui_system._set_positions(bias, "Display")
@@ -216,25 +224,38 @@ class SettingsMenu():
 			# Обработка UI
 			ui_system.handle_events(events, self.game.mouse_x, self.game.mouse_y, release, "Display")
 			ui_system.draw("Display", bias, max_bias)
-			
-			self.help_button.main(self.help)
-			win.blit(load(path + "Images/Buttons/Display 2.png", 222, 64), (10, 192))
-			self.languages_button.main(self.Languages)
-			self.user_button.main(self.User)
-			self.sound_button.main(self.Sound)
-			self.statistics_button.main(self.Statistics)
-			self.keys_button.main(self.Keys)
-			self.game_button.main(self.Game)
+
 			self.back_button.main()
 			self.show_reset_settings()
+			
+			if self.back_button.is_released:
+				Saver.save_objects(path + "Saves/Settings/Settings.save", self.Settings)
+				win_darken(win)
+				return
+
+			self.help_button.main()
+			if self.help_button.is_released: return self.help
+			win.blit(load(path + "Images/Buttons/Display 2.png", 222, 64), (10, 192))
+			self.languages_button.main()
+			if self.languages_button.is_released: return self.Languages
+			self.user_button.main()
+			if self.user_button.is_released: return self.User
+			self.sound_button.main()
+			if self.sound_button.is_released: return self.Sound
+			self.statistics_button.main()
+			if self.statistics_button.is_released: return self.Statistics
+			self.keys_button.main()
+			if self.keys_button.is_released: return self.Keys
+			self.game_button.main()
+			if self.game_button.is_released: return self.Game
 			
 			if self.game.alt_pressed:
 				draw_key("ESC", 44, 108)
 
-			if self.back_button.get_pressed():
+			if self.back_button.is_released:
 				Saver.save_objects(path + "Saves/Settings/Settings.save", self.Settings)
 				win_darken(win)
-				self.menu()
+				return
 				
 			# Анимация и эффекты
 			animate_click(dt, self.game.mouse_x, self.game.mouse_y)
@@ -259,7 +280,7 @@ class SettingsMenu():
 					if event.key == self.hot_keys["Close"]:
 						Saver.save_objects(path + "Saves/Settings/Settings.save", self.Settings)
 						win_darken(win)
-						self.menu()
+						return
 
 					if event.key == pygame.K_1:
 						self.Settings["Languages"][0] = "English"
@@ -289,17 +310,17 @@ class SettingsMenu():
 			pygame.draw.rect(win, menu_color_medium, (-8, 100, 373, Height), 8)
 			pygame.draw.line(win, menu_color_medium, (307, 103), (Width, 103), 8)
 			self.back_button.main()
-			if self.back_button.get_pressed():
+			if self.back_button.is_released:
 				Saver.save_objects(path + "Saves/Settings/Settings.save", self.Settings)
 				win_darken(win)
-				self.menu()
+				return
 			self.show_reset_settings()
 
 			win.blit(bigTextInfo.render(t("You can choose one of these"), True, menu_color_medium), (385, 123))
 			win.blit(bigTextInfo.render(t("languages:"), True, menu_color_medium), (385, 153))
 
 			self.english_button.main()
-			if self.english_button.get_pressed():
+			if self.english_button.is_released:
 				self.Settings["Languages"][0] = "English"
 				translator.load_language("English")
 				for element_list in ui_system.elements.values():
@@ -308,7 +329,7 @@ class SettingsMenu():
 						element.rect = pygame.Rect(element.x + element.label_width, element.y, element.width, element.height)
 
 			self.russian_button.main()
-			if self.russian_button.get_pressed():
+			if self.russian_button.is_released:
 				self.Settings["Languages"][0] = "Russian"
 				translator.load_language("Russian")
 				for element_list in ui_system.elements.values():
@@ -317,7 +338,7 @@ class SettingsMenu():
 						element.rect = pygame.Rect(element.x + element.label_width, element.y, element.width, element.height)
 
 			self.kazach_button.main()
-			if self.kazach_button.get_pressed():
+			if self.kazach_button.is_released:
 				self.Settings["Languages"][0] = "Kazach"
 				translator.load_language("Kazach")
 				for element_list in ui_system.elements.values():
@@ -325,21 +346,28 @@ class SettingsMenu():
 						element.label_width = element.font.size(t(element.label))[0] + 10
 						element.rect = pygame.Rect(element.x + element.label_width, element.y, element.width, element.height)
 
-			self.help_button.main(self.help)
-			self.display_button.main(self.display)
+			self.help_button.main()
+			if self.help_button.is_released: return self.help
+			self.display_button.main()
+			if self.display_button.is_released: return self.display
 			win.blit(load(path + "Images/Buttons/Languages 2.png", 272, 64), (10, 267))
-			self.user_button.main(self.User)
-			self.sound_button.main(self.Sound)
-			self.statistics_button.main(self.Statistics)
-			self.keys_button.main(self.Keys)
-			self.game_button.main(self.Game)
+			self.user_button.main()
+			if self.user_button.is_released: return self.User
+			self.sound_button.main()
+			if self.sound_button.is_released: return self.Sound
+			self.statistics_button.main()
+			if self.statistics_button.is_released: return self.Statistics
+			self.keys_button.main()
+			if self.keys_button.is_released: return self.Keys
+			self.game_button.main()
+			if self.game_button.is_released: return self.Game
 			
 			if self.game.alt_pressed:
 				
 				draw_key("ESC", 44, 108)
 
 			animate_click(dt, self.game.mouse_x, self.game.mouse_y)
-			win_fill(alpha=100 - self.Settings["Display"][0])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
+			win_fill(alpha=100 - self.Settings["Display"][0])	# Если в настройках установлена яркость ниже 100, то экран становится темнее
 
 			if not self.game.does_lighten:
 				win_lighten(win)
@@ -377,7 +405,7 @@ class SettingsMenu():
 					if event.key == self.hot_keys["Close"]:
 						Saver.save_objects(path + "Saves/Settings/Settings.save", self.Settings)
 						win_darken(win)
-						self.menu()
+						return
 				elif event.type == pygame.MOUSEWHEEL:
 					bias = max((min(bias + event.y * self.Settings["Game"][2], 0)), max_bias)
 					ui_system._set_positions(bias, "User")
@@ -389,24 +417,37 @@ class SettingsMenu():
 			ui_system.handle_events(events, self.game.mouse_x, self.game.mouse_y, release, "User")
 			ui_system.draw("User", bias, max_bias)
 			
-			self.help_button.main(self.help)
-			self.display_button.main(self.display)
-			self.languages_button.main(self.Languages)
-			win.blit(load(path + "Images/Buttons/User 2.png", 132, 64), (10, 342))
-			self.sound_button.main(self.Sound)
-			self.statistics_button.main(self.Statistics)
-			self.keys_button.main(self.Keys)
-			self.game_button.main(self.Game)
 			self.back_button.main()
 			self.show_reset_settings()
 			
+			if self.back_button.is_released:
+				Saver.save_objects(path + "Saves/Settings/Settings.save", self.Settings)
+				win_darken(win)
+				return
+
+			self.help_button.main()
+			if self.help_button.is_released: return self.help
+			self.display_button.main()
+			if self.display_button.is_released: return self.display
+			self.languages_button.main()
+			if self.languages_button.is_released: return self.Languages
+			win.blit(load(path + "Images/Buttons/User 2.png", 132, 64), (10, 342))
+			self.sound_button.main()
+			if self.sound_button.is_released: return self.Sound
+			self.statistics_button.main()
+			if self.statistics_button.is_released: return self.Statistics
+			self.keys_button.main()
+			if self.keys_button.is_released: return self.Keys
+			self.game_button.main()
+			if self.game_button.is_released: return self.Game
+
 			if self.game.alt_pressed:
 				draw_key("ESC", 44, 108)
 
-			if self.back_button.get_pressed():
+			if self.back_button.is_released:
 				Saver.save_objects(path + "Saves/Settings/Settings.save", self.Settings)
 				win_darken(win)
-				self.menu()
+				return
 				
 			# Анимация и эффекты
 			animate_click(dt, self.game.mouse_x, self.game.mouse_y)
@@ -444,7 +485,7 @@ class SettingsMenu():
 					if event.key == self.hot_keys["Close"]:
 						Saver.save_objects(path + "Saves/Settings/Settings.save", self.Settings)
 						win_darken(win)
-						self.menu()
+						return
 					if event.key == pygame.K_RETURN:
 
 						self.music_channel.set_volume(self.Settings["Sound"][0], self.Settings["Sound"][0] / 100)
@@ -461,24 +502,37 @@ class SettingsMenu():
 			ui_system.handle_events(events, self.game.mouse_x, self.game.mouse_y, release, "Sound")
 			ui_system.draw("Sound", bias, max_bias)
 			
-			self.help_button.main(self.help)
-			self.display_button.main(self.display)
-			self.languages_button.main(self.Languages)
-			self.user_button.main(self.User)
-			win.blit(load(path + "Images/Buttons/Sound 2.png", 160, 64), (10, 417))
-			self.statistics_button.main(self.Statistics)
-			self.keys_button.main(self.Keys)
-			self.game_button.main(self.Game)
 			self.back_button.main()
 			self.show_reset_settings()
 			
+			if self.back_button.is_released:
+				Saver.save_objects(path + "Saves/Settings/Settings.save", self.Settings)
+				win_darken(win)
+				return
+
+			self.help_button.main()
+			if self.help_button.is_released: return self.help
+			self.display_button.main()
+			if self.display_button.is_released: return self.display
+			self.languages_button.main()
+			if self.languages_button.is_released: return self.Languages
+			self.user_button.main()
+			if self.user_button.is_released: return self.User
+			win.blit(load(path + "Images/Buttons/Sound 2.png", 160, 64), (10, 417))
+			self.statistics_button.main()
+			if self.statistics_button.is_released: return self.Statistics
+			self.keys_button.main()
+			if self.keys_button.is_released: return self.Keys
+			self.game_button.main()
+			if self.game_button.is_released: return self.Game
+
 			if self.game.alt_pressed:
 				draw_key("ESC", 44, 108)
 
-			if self.back_button.get_pressed():
+			if self.back_button.is_released:
 				Saver.save_objects(path + "Saves/Settings/Settings.save", self.Settings)
 				win_darken(win)
-				self.menu()
+				return
 				
 			# Анимация и эффекты
 			animate_click(dt, self.game.mouse_x, self.game.mouse_y)
@@ -516,7 +570,7 @@ class SettingsMenu():
 					if event.key == self.hot_keys["Close"]:
 						Saver.save_objects(path + "Saves/Settings/Settings.save", self.Settings)
 						win_darken(win)
-						self.menu()
+						return
 				elif event.type == pygame.MOUSEWHEEL:
 					bias = max((min(bias + event.y * self.Settings["Game"][2], 0)), max_bias)
 					ui_system._set_positions(bias, "Statistics")
@@ -527,24 +581,37 @@ class SettingsMenu():
 			# Обработка UI
 			ui_system.draw("Statistics", bias, max_bias)
 			
-			self.help_button.main(self.help)
-			self.display_button.main(self.display)
-			self.languages_button.main(self.Languages)
-			self.user_button.main(self.User)
-			self.sound_button.main(self.Sound)
-			win.blit(load(path + "Images/Buttons/Statistics 2.png", 300, 64), (10, 492))
-			self.keys_button.main(self.Keys)
-			self.game_button.main(self.Game)
 			self.back_button.main()
 			self.show_reset_settings()
 			
+			if self.back_button.is_released:
+				Saver.save_objects(path + "Saves/Settings/Settings.save", self.Settings)
+				win_darken(win)
+				return
+
+			self.help_button.main()
+			if self.help_button.is_released: return self.help
+			self.display_button.main()
+			if self.display_button.is_released: return self.display
+			self.languages_button.main()
+			if self.languages_button.is_released: return self.Languages
+			self.user_button.main()
+			if self.user_button.is_released: return self.User
+			self.sound_button.main()
+			if self.sound_button.is_released: return self.Sound
+			win.blit(load(path + "Images/Buttons/Statistics 2.png", 300, 64), (10, 492))
+			self.keys_button.main()
+			if self.keys_button.is_released: return self.Keys
+			self.game_button.main()
+			if self.game_button.is_released: return self.Game
+
 			if self.game.alt_pressed:
 				draw_key("ESC", 44, 108)
 
-			if self.back_button.get_pressed():
+			if self.back_button.is_released:
 				Saver.save_objects(path + "Saves/Settings/Settings.save", self.Settings)
 				win_darken(win)
-				self.menu()
+				return
 				
 			# Анимация и эффекты
 			animate_click(dt, self.game.mouse_x, self.game.mouse_y)
@@ -695,32 +762,47 @@ class SettingsMenu():
 							Saver.save_objects(path + "Saves/Settings/Settings.save", self.Settings)
 							Saver.save_objects(path + "Saves/Settings/Hot keys.save", self.hot_keys)
 							win_darken(win)
-							self.menu()
+							return
 
 			self.back_button.main()
-			if self.back_button.get_pressed():
+			if self.back_button.is_released:
 				if looked_key is not None:
 					looked_key = None
 				else:
 					Saver.save_objects(path + "Saves/Settings/Settings.save", self.Settings)
 					Saver.save_objects(path + "Saves/Settings/Hot keys.save", self.hot_keys)
 					win_darken(win)
-					self.menu()
+					return
 				
 			win.fill(menu_color_light)
 			pygame.draw.rect(win, menu_color_medium, (-8, 100, 373, Height), 8)
 			pygame.draw.line(win, menu_color_medium, (307, 103), (Width, 103), 8)
+			
 			self.back_button.main()
 			self.show_reset_settings()
-			self.help_button.main(self.help)
-			self.display_button.main(self.display)
-			self.languages_button.main(self.Languages)
-			self.user_button.main(self.User)
-			self.sound_button.main(self.Sound)
-			self.statistics_button.main(self.Statistics)
-			win.blit(load(path + "Images/Buttons/Keys 2.png", 132, 64), (10, 567))
-			self.game_button.main(self.Game)
 			
+			if self.back_button.is_released:
+				Saver.save_objects(path + "Saves/Settings/Settings.save", self.Settings)
+				win_darken(win)
+				return
+
+			self.help_button.main()
+			if self.help_button.is_released: return self.help
+			self.display_button.main()
+			if self.display_button.is_released: return self.display
+			self.languages_button.main()
+			if self.languages_button.is_released: return self.Languages
+			self.user_button.main()
+			if self.user_button.is_released: return self.User
+			self.sound_button.main()
+			if self.sound_button.is_released: return self.Sound
+			self.statistics_button.main()
+			if self.statistics_button.is_released: return self.Statistics
+			self.keys_button.main()
+			win.blit(load(path + "Images/Buttons/Keys 2.png", 132, 64), (10, 567))
+			self.game_button.main()
+			if self.game_button.is_released: return self.Game
+
 			littleTextInfo = pygame.font.Font(path + "Font.ttf", 8)
 			key_color = menu_color_medium
 			X = 385
@@ -790,7 +872,7 @@ class SettingsMenu():
 
 			animate_click(dt, self.game.mouse_x, self.game.mouse_y)
 
-			win_fill(alpha=100 - self.Settings["Display"][0])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
+			win_fill(alpha=100 - self.Settings["Display"][0])	# Если в настройках установлена яркость ниже 100, то экран становится темнее
 			
 			if not self.game.does_lighten:
 				win_lighten(win)
@@ -828,7 +910,7 @@ class SettingsMenu():
 					if event.key == self.hot_keys["Close"]:
 						Saver.save_objects(path + "Saves/Settings/Settings.save", self.Settings)
 						win_darken(win)
-						self.menu()
+						return
 				elif event.type == pygame.MOUSEWHEEL:
 					bias = max((min(bias + event.y * self.Settings["Game"][2], 0)), max_bias)
 					ui_system._set_positions(bias, "Game")
@@ -840,24 +922,37 @@ class SettingsMenu():
 			ui_system.handle_events(events, self.game.mouse_x, self.game.mouse_y, release, "Game")
 			ui_system.draw("Game", bias, max_bias)
 			
-			self.help_button.main(self.help)
-			self.display_button.main(self.display)
-			self.languages_button.main(self.Languages)
-			self.user_button.main(self.User)
-			self.sound_button.main(self.Sound)
-			self.statistics_button.main(self.Statistics)
-			self.keys_button.main(self.Keys)
-			win.blit(load(path + "Images/Buttons/Game 2.png", 132, 64), (10, 642))
 			self.back_button.main()
 			self.show_reset_settings()
 			
+			if self.back_button.is_released:
+				Saver.save_objects(path + "Saves/Settings/Settings.save", self.Settings)
+				win_darken(win)
+				return
+
+			self.help_button.main()
+			if self.help_button.is_released: return self.help
+			self.display_button.main()
+			if self.display_button.is_released: return self.display
+			self.languages_button.main()
+			if self.languages_button.is_released: return self.Languages
+			self.user_button.main()
+			if self.user_button.is_released: return self.User
+			self.sound_button.main()
+			if self.sound_button.is_released: return self.Sound
+			self.statistics_button.main()
+			if self.statistics_button.is_released: return self.Statistics
+			self.keys_button.main()
+			if self.keys_button.is_released: return self.Keys
+			win.blit(load(path + "Images/Buttons/Game 2.png", 132, 64), (10, 642))
+
 			if self.game.alt_pressed:
 				draw_key("ESC", 44, 108)
 
-			if self.back_button.get_pressed():
+			if self.back_button.is_released:
 				Saver.save_objects(path + "Saves/Settings/Settings.save", self.Settings)
 				win_darken(win)
-				self.menu()
+				return
 				
 			# Анимация и эффекты
 			animate_click(dt, self.game.mouse_x, self.game.mouse_y)

@@ -45,9 +45,10 @@ class Button:
 		self.info_back = False
 
 		self.action = action
-
+		
+		self.hovered = False
 		self.is_pressed = False
-		self.is_activated = False
+		self.is_released = False
 		self.last_trigger_time = 0
 	
 	def main(self, action=None):
@@ -56,7 +57,7 @@ class Button:
 
 		mouse_x, mouse_y = pygame.mouse.get_pos()
 		click = pygame.mouse.get_pressed()
-		current_time = pygame.time.get_ticks()
+		self.is_released = False
 		
 		if self.info_back:
 
@@ -92,8 +93,8 @@ class Button:
 				pygame.draw.rect(self.surface, menu_color_medium, (self.x - self.w // 2 - textInfo.size(self.info)[0] // 2 - 5, self.y - self.h / 2 - self.info_y - 5, textInfo.size(self.info)[0] + 10, 28))
 				self.surface.blit(textInfo.render(self.info, True, menu_color_medium, menu_color_light), (self.x - self.w // 2 - textInfo.size(self.info)[0] // 2, self.y - self.info_y))
 
-		hovered = self.alignment and (self.x - self.w / 2 < mouse_x < self.x + self.w / 2 and self.y - self.h / 2 < mouse_y < self.y + self.h / 2) or not self.alignment and (self.x < mouse_x < self.x + self.w and self.y < mouse_y < self.y + self.h)
-		if hovered:
+		self.hovered = self.alignment and (self.x - self.w / 2 < mouse_x < self.x + self.w / 2 and self.y - self.h / 2 < mouse_y < self.y + self.h / 2) or not self.alignment and (self.x < mouse_x < self.x + self.w and self.y < mouse_y < self.y + self.h)
+		if self.hovered:
 
 			self.image = self.image2
 			self.hold += 1
@@ -127,22 +128,16 @@ class Button:
 			self.image = self.image1
 			self.hold = 0
 			if self.info_y > 0: self.info_back = True
+		
+		if self.get_pressed():
+			if self.sound:
+				play_sound("Button click")
+			self.is_released = True
 
-		if hovered and click[0]:
-			self.is_pressed = True
-		else:
-			if not click[0]:
-				if self.is_pressed and hovered:
-					if current_time - self.last_trigger_time > self.cooldown * 1000:
-						if self.sound:
-							play_sound("Button click")
-						self.last_trigger_time = current_time
-						self.is_activated = True
-
-						if self.action is not None:
-							self.action()
-						if action is not None:
-							action()
+			if self.action is not None:
+				self.action()
+			if action is not None:
+				action()
 		
 		if not click[0]:
 			self.is_pressed = False
@@ -154,14 +149,15 @@ class Button:
 
 	def get_pressed(self) -> bool:
 
-		"Проверяет, нажата ли кнопка. Устаревший метод, оставлен для совместимости"
-
-		mouse_x, mouse_y = pygame.mouse.get_pos()
+		"Проверяет, нажата ли кнопка"
 		click = pygame.mouse.get_pressed()
-		if self.alignment and (self.x - self.w / 2 < mouse_x < self.x + self.w / 2 and self.y - self.h / 2 < mouse_y < self.y + self.h / 2) or not self.alignment and (self.x < mouse_x < self.x + self.w and self.y < mouse_y < self.y + self.h):
-			self.image = self.image2
-			if click[0]:
-				return True
+		current_time = pygame.time.get_ticks()
+		if self.hovered and click[0]:
+			self.is_pressed = True
 		else:
-			self.image = self.image1
-			return False
+			if not click[0]:
+				if self.is_pressed and self.hovered:
+					if current_time - self.last_trigger_time > self.cooldown * 1000:
+						self.last_trigger_time = current_time
+						return True
+		return False
