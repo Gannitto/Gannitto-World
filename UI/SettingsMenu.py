@@ -25,11 +25,13 @@ class SettingsMenu():
 		self.hot_keys = hot_keys
 
 	def open_settings(self):
+
 		win_darken(win)
 		self.game.does_lighten = False
 		current_screen = self.help
 		while current_screen is not None:
 			current_screen = current_screen()
+		self.game.does_lighten = False
 
 	def page_back(self):
 		self.page = max(1, self.page - 1)
