@@ -148,6 +148,8 @@ class Inventory:
 		"""Выдаёт предмет в инвентарь"""
 		
 		try:
+			amount = int(amount)
+
 			resource_template = self.resources[name]
 			remaining = amount
 			

@@ -35,8 +35,7 @@ pygame.init()
 
 Карта кода:
 
-Классы
-Загрузка команд
+Инициализация игры
 Кнопки в меню
 Загрузка данных мира
 Основной цикл игры
@@ -119,7 +118,7 @@ pygame.display.set_caption("Gannitto World")
 
 
 
-# Классы
+# Инициализация игры
 
 game = GameState()
 
@@ -139,7 +138,6 @@ ui_system = UISystem()
 ron = Ron(world_to_screen, player)
 command_system = CommandSystem(game, player, FPS, inventory, time_system)
 
-# Загрузка команд
 # def show_bar(times):
 #	import matplotlib.pyplot as plt
 #	categories = range(len(times))
@@ -1542,25 +1540,27 @@ def start_game():
 			farmland.main(release, dt, world_to_screen, world_rect_to_screen, mouse_x, mouse_y, world, inventory)
 
 		if not Backrooms.InBackrooms and world.current_cave is None:
+			
+			pass
+			# TODO тут сделать переход в закулисье
 
-			if False: # TODO тут сделать переход в закулисье
-				Backrooms.InBackrooms = True
-				color = colors["Backrooms"]
-				text_color = colors["Backrooms2"]
-				i = -1
+			# Backrooms.InBackrooms = True
+			# color = colors["Backrooms"]
+			# text_color = colors["Backrooms2"]
+			# i = -1
 
-				for object in Backrooms.objects:
-					i += 1
-					world.backrooms_objects.append(Object(object, Backrooms.objects_x[i], Backrooms.objects_y[i], "Images/Items/" + inventory.resources[object].name + ".png", special_flags="Item"))
+			# for object in Backrooms.objects:
+			# 	i += 1
+			# 	world.backrooms_objects.append(Object(object, Backrooms.objects_x[i], Backrooms.objects_y[i], "Images/Items/" + inventory.resources[object].name + ".png", special_flags="Item"))
 
-				x = 0
-				y = 0
+			# x = 0
+			# y = 0
 
-				play_sound("1", loops=-1)
-				pygame.mixer.music.set_volume(0.5)
+			# play_sound("1", loops=-1)
+			# pygame.mixer.music.set_volume(0.5)
 
-				aaa = 100
-				AA = 0
+			# aaa = 100
+			# AA = 0
 
 		elif Backrooms.InBackrooms:
 			
@@ -3923,7 +3923,6 @@ def worlds():
 	single_player_button = Button(Width // 4, 50, textInfo.render(t("Single play"), True, menu_color_medium), textInfo.render(t("Single play"), True, menu_color_dark), alignment=True)
 	multiplayer_button = Button(Width * 3 // 4, 50, textInfo.render(t("Multiplayer"), True, menu_color_medium), textInfo.render(t("Multiplayer"), True, menu_color_dark), alignment=True)
 	back_button = Button(-20, -20, load(path + "Images/Buttons/Back.png", 128), load(path + "Images/Buttons/Back 2.png", 128, 128))
-	world_name_input = False
 	game.does_lighten = False
 	bias = 0
 
@@ -3936,6 +3935,7 @@ def worlds():
 
 	inside_folders.sort()
 	release = False
+	world_name_input = len(inside_folders) == 0
 
 	while True:
 
@@ -3985,38 +3985,34 @@ def worlds():
 				win_darken(win)
 				menu()
 
-			if len(inside_folders) == 0:
-				pass #TODO надпись что типа нет миров ещё
-			else:
+			for temp_y, name_of_world in enumerate(inside_folders):
 
-				for temp_y, name_of_world in enumerate(inside_folders):
+				text_y = 150 + bias + temp_y * 50
 
-					text_y = 150 + bias + temp_y * 50
+				win.blit(textInfo.render(name_of_world, True, menu_color_medium), (50, text_y))
 
-					win.blit(textInfo.render(name_of_world, True, menu_color_medium), (50, text_y))
+				if 50 + textInfo.size(name_of_world)[0] <= mouse_x <= 82 + textInfo.size(name_of_world)[0] and text_y <= mouse_y <= text_y + 32:
+					win.blit(load(path + "Images/Buttons/Edit 2.png", 32), (50 + textInfo.size(name_of_world)[0], text_y))
+					if release:
+						game.world_name = name_of_world
+						win_darken(win)
+						edit_world()
 
-					if 50 + textInfo.size(name_of_world)[0] <= mouse_x <= 82 + textInfo.size(name_of_world)[0] and text_y <= mouse_y <= text_y + 32:
-						win.blit(load(path + "Images/Buttons/Edit 2.png", 32), (50 + textInfo.size(name_of_world)[0], text_y))
-						if release:
+				if 50 <= mouse_x <= 50 + textInfo.size(name_of_world)[0] and text_y <= mouse_y <= text_y + textInfo.size(name_of_world)[1]:
+
+					win.blit(textInfo.render(name_of_world, True, menu_color_dark), (50, text_y))
+					
+					win.blit(load(path + "Images/Buttons/Edit.png", 32), (50 + textInfo.size(name_of_world)[0], text_y))
+					
+					if release:
+						if game.multiplayer:
 							game.world_name = name_of_world
+							game.multiplayer_role = "Host"
 							win_darken(win)
-							edit_world()
-
-					if 50 <= mouse_x <= 50 + textInfo.size(name_of_world)[0] and text_y <= mouse_y <= text_y + textInfo.size(name_of_world)[1]:
-
-						win.blit(textInfo.render(name_of_world, True, menu_color_dark), (50, text_y))
-						
-						win.blit(load(path + "Images/Buttons/Edit.png", 32), (50 + textInfo.size(name_of_world)[0], text_y))
-						
-						if release:
-							if game.multiplayer:
-								game.world_name = name_of_world
-								game.multiplayer_role = "Host"
-								win_darken(win)
-								multiplayer_settings_menu()
-							else:
-								game.world_name = name_of_world
-								start_game()
+							multiplayer_settings_menu()
+						else:
+							game.world_name = name_of_world
+							start_game()
 			
 			pygame.draw.rect(win, menu_color_light, (0, 0, Width, 103))
 			pygame.draw.line(win, menu_color_medium, (0, 103), (Width, 103), 8)

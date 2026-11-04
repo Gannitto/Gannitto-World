@@ -13,33 +13,71 @@ class CommandSystem:
 		self.init_commands()
 	
 	def parse_command(self, command_text: str) -> Tuple[str, List[str]]:
+
 		"""
-		Разобрать строку команды на имя и аргументы
+		Разобрать строку команды на имя и аргументы.
 		Поддерживает кавычки для аргументов с пробелами
+		и экранирование через \ (как в терминале).
 		"""
-		# Разбиваем с учётом кавычек
-		args = re.findall(r'(?:[^\s"]+|"[^"]*")+', command_text.strip())
+		text = command_text.strip()
+		if not text:
+			return "", []
+
+		args: List[str] = []
+		current: List[str] = []
+		in_quotes = False
+		has_content = False  # был ли хоть один символ в текущем аргументе
+		i = 0
+		n = len(text)
+
+		while i < n:
+			ch = text[i]
+
+			if ch == '\\' and i + 1 < n:
+				# Экранирование: следующий символ — обычный символ
+				current.append(text[i + 1])
+				has_content = True
+				i += 2
+				continue
+
+			if in_quotes:
+				if ch == '"':
+					in_quotes = False
+					# Закрывающая кавычка завершает "кавычковую" часть,
+					# но аргумент может продолжаться (например: "a b"c)
+					has_content = True
+				else:
+					current.append(ch)
+				i += 1
+				continue
+
+			if ch == '"':
+				in_quotes = True
+				has_content = True	# пустые кавычки "" тоже дают аргумент
+				i += 1
+				continue
+
+			if ch.isspace():
+				if has_content:
+					args.append(''.join(current))
+					current = []
+					has_content = False
+				i += 1
+				continue
+
+			current.append(ch)
+			has_content = True
+			i += 1
+
+		if has_content:
+			args.append(''.join(current))
+
 		if not args:
 			return "", []
-		
+
 		command_name = args[0].lower()
-		# Убираем кавычки у аргументов
-		parsed_args = []
-		for arg in args[1:]:
-			if arg.startswith('"') and arg.endswith('"'): 
-				parsed_args.append(arg[1:-1])
-			else:
-				# Пробуем преобразовать в число
-				try:
-					if "." in arg:
-						parsed_args.append(float(arg))
-					else:
-						parsed_args.append(int(arg))
-				except ValueError:
-					parsed_args.append(arg)
-		
-		return command_name, parsed_args
-	
+		return command_name, args[1:]
+
 	def execute(self, command_text: str) -> str:
 		"""Выполнить команду и вернуть результат/сообщение"""
 		if not command_text.startswith("/"):
@@ -65,8 +103,8 @@ class CommandSystem:
 		"""Телепортация игрока на указанные координаты"""
 		if player is None:
 			player = self.player
-		player.x = x
-		player.y = y
+		player.x = int(x)
+		player.y = int(y)
 		if self.game.multiplayer:
 			self.game.events.append({"event_type": "player_tp", "x": player.x, "y": player.y, "direction": player.direction})
 			self.game.net.peers[self.game.net.player_id].x = player.x
@@ -78,7 +116,7 @@ class CommandSystem:
 		self.game.chat.append(message)
 		self.game.main_chat.append(message)
 		self.game.chat_tick = len(message) // 1.5 * self.FPS #TODO заменить FPS на dt
-		if self.game.multiplayer and send_to_peers:
+		if self.game.multiplayer and bool(send_to_peers):
 			self.game.events.append({"event_type": "chat_message", "message_text": message})
 
 	def command_help(self, command: str=""):
