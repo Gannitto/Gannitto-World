@@ -398,5 +398,5 @@ class Motherboard:
 
 		mouse_x, mouse_y = pygame.mouse.get_pos()
 		if self.in_motherboard is None:
-			if self.x * 64 + Width // 2 - player.x <= mouse_x <= self.x * 64 + Width // 2 - player.x + 64 and player.y - self.y * 64 + Height // 2 - 16 <= mouse_y <= player.y - self.y * 64 + Height // 2 - 16 + 64 and in_motherboard is None and pygame.mouse.get_pressed()[0]:
-				in_motherboard = self
+			if self.x * 64 + Width // 2 - player.x <= mouse_x <= self.x * 64 + Width // 2 - player.x + 64 and player.y - self.y * 64 + Height // 2 - 16 <= mouse_y <= player.y - self.y * 64 + Height // 2 - 16 + 64 and self.in_motherboard is None and pygame.mouse.get_pressed()[0]:
+				self.in_motherboard = self

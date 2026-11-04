@@ -1,9 +1,9 @@
 import json
 import os
-from Globals import path
+from Globals import path, Settings
 
 class Translator:
-	def __init__(self, lang="English"):
+	def __init__(self, lang=Settings["Languages"][0]):
 		self.lang = lang
 		self.load_language(lang)
 	
@@ -19,3 +19,5 @@ class Translator:
 		return self.translations.get(key, default or key)
 
 translator = Translator()
+t = translator.get
+

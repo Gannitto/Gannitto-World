@@ -1,5 +1,5 @@
 import pygame
-from ElementsUI import ToggleButton, InputField, Button
+from UI.ElementsUI import ToggleButton, InputField, Button
 from Globals import win, Settings, statistics, Width, Height
 
 class UISystem:
@@ -191,7 +191,7 @@ class UISystem:
 			]
 		}
 
-	def _set_positions(self, bias, section, get_max_bias=False, start_y=50):
+	def _set_positions(self, bias, section, start_y=50):
 		
 		y = 0
 		for element in self.elements[section]:
@@ -201,9 +201,7 @@ class UISystem:
 			if hasattr(element, "handle_keyboard") and element.is_active:
 				element.update_text_pos()
 
-		if get_max_bias:
-			return y
-		return
+		return y
 		
 	def handle_events(self, events, mouse_x, mouse_y, release, section):
 

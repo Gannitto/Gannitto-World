@@ -15,9 +15,9 @@ from Functions import *
 from Build import build, check_build_objects, draw_select_image, draw_select_image_arbitrarily
 from Chunks import ChunkManager
 from Inventory import inventory
-from Translator import translator
+from Translator import translator, t
 from Cache import load
-from UISystem import UISystem
+from UI import SettingsMenu, UISystem
 from TimeSystem import TimeSystem
 from Commands import CommandSystem
 from Sound import play_sound, set_sound_volume, music_channel
@@ -25,6 +25,7 @@ from InputSystem import input_system
 from Assets import *
 from Globals import *
 from Classes import Player, Peer, World, Object, Particle, Slime, Spider, Butterfly, Projectile, ExplodingProjectile, Wall, Farmland, Wire, Lever, Motherboard, Ron, Button
+from UI.SettingsMenu import SettingsMenu
 from GameState import GameState
 from Light import create_light_circle, create_light_circle_with_falloff, remove_light_circle
 
@@ -66,9 +67,6 @@ pygame.init()
    ####   ####				#########		   ########		   #########   
 
 """
-
-translator.load_language(Settings["Languages"][0])
-t = translator.get
 
 def save(darken:bool=True, save_world_settings:bool=False):
 
@@ -167,7 +165,7 @@ command_system = CommandSystem(game, player, FPS, inventory, time_system)
 
 # Кнопки в меню
 
-def settings():
+def settings2():
 	
 	game.does_lighten = False
 	page = 1
@@ -328,7 +326,7 @@ def settings():
 		global Settings, alt_pressed
 
 		bias = 0
-		max_bias = -ui_system._set_positions(bias, "Display", True)
+		max_bias = -ui_system._set_positions(bias, "Display")
 		max_bias = (max_bias + Height - 103) * max_bias > Height - 103
 
 		while True:
@@ -430,7 +428,7 @@ def settings():
 
 					if event.key == pygame.K_3:
 						Settings["Languages"][0] = "Kazach"
-						translator.load_language("Karach")
+						translator.load_language("Kazach")
 						for element_list in ui_system.elements.values():
 							for element in element_list:
 								element.label_width = element.font.size(t(element.label))[0] + 10
@@ -503,7 +501,7 @@ def settings():
 		global Settings, alt_pressed
 
 		bias = 0
-		max_bias = -ui_system._set_positions(bias, "User", True)
+		max_bias = -ui_system._set_positions(bias, "User")
 		max_bias = (max_bias + Height - 103) * max_bias > Height - 103
 
 		while True:
@@ -572,7 +570,7 @@ def settings():
 		global Settings, alt_pressed
 
 		bias = 0
-		max_bias = -ui_system._set_positions(bias, "Sound", True)
+		max_bias = -ui_system._set_positions(bias, "Sound")
 		max_bias = (max_bias + Height - 103) * max_bias > Height - 103
 
 		while True:
@@ -962,7 +960,7 @@ def settings():
 		global Settings, alt_pressed
 
 		bias = 0
-		max_bias = -ui_system._set_positions(bias, "Game", True)
+		max_bias = -ui_system._set_positions(bias, "Game")
 		max_bias = (max_bias + Height - 103) * max_bias > Height - 103
 
 		while True:
@@ -3816,7 +3814,7 @@ def multiplayer_settings_menu():
 	create_world = False
 	release = False
 	game.does_lighten = False
-	max_bias = -ui_system._set_positions(0, "Multiplayer settings menu", True)
+	max_bias = -ui_system._set_positions(0, "Multiplayer settings menu")
 	max_bias = (max_bias + Height - 103) * max_bias > Height - 103
 
 	while True:
@@ -4054,7 +4052,7 @@ def worlds():
 def menu():
 	
 	play_button = Button(Width / 2, Height / 2 - 150, pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Play.png"), (264, 128)), pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Play 2.png"), (264, 128)), alignment=True, info="Подсказка: вы можете нажать enter, чтобы сразу начать игру.", action=worlds)
-	settings_button = Button(Width / 2, Height / 2, pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Settings.png"), (488, 128)), pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Settings 2.png"), (488, 128)), alignment=True, action=settings)
+	settings_button = Button(Width / 2, Height / 2, pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Settings.png"), (488, 128)), pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Settings 2.png"), (488, 128)), alignment=True, action=settings.open_settings)
 	change_a_character_button = Button(Width / 2, Height / 2 + 150, pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Change a character.png"), (960, 128)), pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Change a character 2.png"), (960, 128)), alignment=True, action=change_a_character)
 
 	version = f"Version {open(path + 'Version.txt').read()} (Build {str(get_build_number())})"
@@ -4136,7 +4134,7 @@ def menu():
 
 		pygame.display.update()
 
-
+settings = SettingsMenu(game, save, menu, music_channel, set_sound_volume, Settings, hot_keys)
 
 def show_intro():
 	

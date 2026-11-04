@@ -1,12 +1,10 @@
 import pygame
 import time
 from typing import Callable, Any, Optional
-from Translator import translator
+from Translator import t
 from Globals import Settings, bigTextInfo, win, path
 from InputSystem import input_system
 from Sound import play_sound
-
-t = translator.get
 
 class UIElement:
 	"""Базовый класс для всех UI элементов"""
@@ -73,8 +71,6 @@ class InputField(UIElement):
 		self.can_write_text = can_write_text
 		self.max_len = max_len
 		self.width = (font.size("a" * max_len)[0] + 20) or width
-		self.cursor_timer = 0
-		self.show_cursor = False
 		super().__init__(x, y, self.width, 71, label)
 	
 	def draw(self):

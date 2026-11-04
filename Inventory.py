@@ -3,10 +3,9 @@ import os
 import json
 from Assets import Inventory_slot
 from Globals import path, win
-from Translator import translator
+from Translator import t
 
 pygame.init()
-t = translator.get
 textInfo = pygame.font.Font(None, 20)
 types = ("Just an item", "Tool", "Food", "Drink", "Mechanism", "Flower", "Seed", "Build")
 
