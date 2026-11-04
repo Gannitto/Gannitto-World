@@ -17,13 +17,13 @@ from Chunks import ChunkManager
 from Inventory import inventory
 from Translator import translator, t
 from Cache import load
-from UI import SettingsMenu, CharactersMenu, UISystem
 from TimeSystem import TimeSystem
 from Commands import CommandSystem
 from Sound import play_sound, set_sound_volume, music_channel
 from InputSystem import input_system
 from Assets import *
 from Globals import *
+from UI import SettingsMenu, CharactersMenu, UISystem, WorldsMenu
 from Classes import Player, Peer, World, Object, Particle, Slime, Spider, Butterfly, Projectile, ExplodingProjectile, Wall, Farmland, Wire, Lever, Motherboard, Ron, Button
 from GameState import GameState
 from Light import create_light_circle, create_light_circle_with_falloff, remove_light_circle
@@ -53,7 +53,6 @@ pygame.init()
 	Отображение полосы здоровья
 	Механика мультиплеера
 Меню редактирования мира
-Меню миров
 Меню
 
 	########					########	 ###	  ###		   ########
@@ -2618,7 +2617,7 @@ def edit_world():
 					game.world_name = Settings["Edit world"][0]
 					player.god_mode = Settings["Edit world"][1]
 					Saver.save_objects(path + "Saves/Worlds/" + game.world_name + "/Settings.save", [game.difficulty, player.god_mode])
-					worlds()
+					worlds_menu.open_worlds_menu()
 				
 				if event.key == hot_keys["Show keys"]:
 					alt_pressed = not alt_pressed
@@ -2640,7 +2639,7 @@ def edit_world():
 					game.world_name = Settings["Edit world"][0]
 					player.god_mode = Settings["Edit world"][1]
 					Saver.save_objects(path + "Saves/Worlds/" + game.world_name + "/Settings.save", [game.difficulty, player.god_mode])
-				worlds()
+				worlds_menu.open_worlds_menu()
 
 		win.blit(bigTextInfo.render(t("Game difficulty:"), True, menu_color_medium), (50, 150))
 
@@ -2737,7 +2736,7 @@ def edit_world():
 							shutil.rmtree(path + "Saves/Worlds/" + game.world_name)
 							del shutil
 							win_darken(win)
-							worlds()
+							worlds_menu.open_worlds_menu()
 						
 						no_button.main()
 						if no_button.is_released or keys[hot_keys["Close"]]:
@@ -2760,7 +2759,7 @@ def edit_world():
 					if create_world:
 						start_game()
 					else:
-						worlds()
+						worlds_menu.open_worlds_menu()
 						
 		if alt_pressed:
 			draw_key("ESC", Width - 50, 55)
@@ -2817,7 +2816,7 @@ def multiplayer_settings_menu():
 					alt_pressed = not alt_pressed
 				if event.key == hot_keys["Close"]:
 					win_darken(win)
-					worlds()
+					worlds_menu.open_worlds_menu()
 		
 		win.fill(menu_color_light)
 
@@ -2829,7 +2828,7 @@ def multiplayer_settings_menu():
 		back_button.main()
 		if back_button.is_released:
 			win_darken(win)
-			worlds()
+			worlds_menu.open_worlds_menu()
 
 		if game.multiplayer_role == "Client":
 			host_button.main()
@@ -2884,149 +2883,11 @@ def multiplayer_settings_menu():
 		
 		pygame.display.update()
 
-
-# Меню миров
-
-def worlds():
-
-	global keys, alt_pressed
-
-	create_new_world_button = Button(Width // 2, 130, textInfo.render(t("Create world"), True, menu_color_medium), textInfo.render(t("Create world"), True, menu_color_dark), alignment=True)
-	enter_another_game_button = Button(Width // 2, 130, textInfo.render("Подключиться в мир хоста", True, menu_color_medium), textInfo.render("Подключиться в мир хоста", True, menu_color_dark), alignment=True)
-	single_player_button = Button(Width // 4, 50, textInfo.render(t("Single play"), True, menu_color_medium), textInfo.render(t("Single play"), True, menu_color_dark), alignment=True)
-	multiplayer_button = Button(Width * 3 // 4, 50, textInfo.render(t("Multiplayer"), True, menu_color_medium), textInfo.render(t("Multiplayer"), True, menu_color_dark), alignment=True)
-	back_button = Button(-20, -20, load(path + "Images/Buttons/Back.png", 128), load(path + "Images/Buttons/Back 2.png", 128, 128))
-	game.does_lighten = False
-	bias = 0
-
-	win_darken(win)
-
-	inside_folders = []	
-	for dirs, folder, files in os.walk(path + "Saves/Worlds/"):
-		inside_folders = folder
-		break
-
-	inside_folders.sort()
-	release = False
-	world_name_input = len(inside_folders) == 0
-
-	while True:
-
-		mouse_x, mouse_y = pygame.mouse.get_pos()
-		click = pygame.mouse.get_pressed()
-		release = False
-		dt = clock.tick(MAX_FPS) / 1000.0
-		events = pygame.event.get()
-		for event in events:
-
-			if event.type == pygame.QUIT:
-				win_darken(win)
-				sys.exit()
-
-			elif event.type == pygame.MOUSEBUTTONUP:
-				if event.button == 1:
-					release = True
-			elif event.type == pygame.MOUSEWHEEL:
-				bias = (min(bias + event.y * Settings["Game"][2], 0))
-
-			if event.type == pygame.KEYUP:
-				if event.key == hot_keys["Show keys"]:
-					alt_pressed = not alt_pressed
-				if event.key == hot_keys["Close"]:
-					if world_name_input:
-						input_system.stop_input()
-						world_name_input = False
-					else:
-						win_darken(win)
-						menu()
-
-		win.fill(menu_color_light)
-
-		if world_name_input:
-			text(t("Enter world name:"), Width // 2, Height // 2 - 20, menu_color_medium, alignment=True)
-			if not input_system.inputting:
-				game.world_name = input_system.last_text
-				edit_world()
-		else:
-
-			if create_new_world_button.is_released:
-				input_system.start_input("World name", Width // 2, Height // 2 + 20, text_alignment=True)
-				world_name_input = True
-			
-			if back_button.is_released:
-				input_system.stop_input()
-				win_darken(win)
-				menu()
-
-			for temp_y, name_of_world in enumerate(inside_folders):
-
-				text_y = 150 + bias + temp_y * 50
-
-				win.blit(textInfo.render(name_of_world, True, menu_color_medium), (50, text_y))
-
-				if 50 + textInfo.size(name_of_world)[0] <= mouse_x <= 82 + textInfo.size(name_of_world)[0] and text_y <= mouse_y <= text_y + 32:
-					win.blit(load(path + "Images/Buttons/Edit 2.png", 32), (50 + textInfo.size(name_of_world)[0], text_y))
-					if release:
-						game.world_name = name_of_world
-						win_darken(win)
-						edit_world()
-
-				if 50 <= mouse_x <= 50 + textInfo.size(name_of_world)[0] and text_y <= mouse_y <= text_y + textInfo.size(name_of_world)[1]:
-
-					win.blit(textInfo.render(name_of_world, True, menu_color_dark), (50, text_y))
-					
-					win.blit(load(path + "Images/Buttons/Edit.png", 32), (50 + textInfo.size(name_of_world)[0], text_y))
-					
-					if release:
-						if game.multiplayer:
-							game.world_name = name_of_world
-							game.multiplayer_role = "Host"
-							win_darken(win)
-							multiplayer_settings_menu()
-						else:
-							game.world_name = name_of_world
-							start_game()
-			
-			pygame.draw.rect(win, menu_color_light, (0, 0, Width, 103))
-			pygame.draw.line(win, menu_color_medium, (0, 103), (Width, 103), 8)
-			pygame.draw.line(win, menu_color_medium, (Width // 2, 0), (Width // 2, 103), 8)
-			back_button.main()
-			if game.multiplayer:
-				single_player_button.main()
-				if single_player_button.is_released:
-					game.multiplayer = False
-				win.blit(textInfo.render(t("Multiplayer"), True, menu_color_dark), (Width * 3 // 4 - textInfo.size(t("Multiplayer"))[0] // 2, 50 - textInfo.size(t("Multiplayer"))[1] // 2))
-				enter_another_game_button.main()
-				if enter_another_game_button.is_released:
-					game.multiplayer_role = "Client"
-					win_darken(win)
-					multiplayer_settings_menu()
-			else:
-				win.blit(textInfo.render(t("Single play"), True, menu_color_dark), (Width // 4 - textInfo.size(t("Single play"))[0] // 2, 50 - textInfo.size(t("Single play"))[1] // 2))
-				multiplayer_button.main()
-				if multiplayer_button.is_released:
-					game.multiplayer = True
-				create_new_world_button.main()
-		
-		input_system.handle_input(events)
-		if alt_pressed: draw_key("ESC", 44, 108)
-		
-		animate_click(dt, mouse_x, mouse_y)
-
-		win_fill(alpha=100 - Settings["Display"][0])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
-		if not game.does_lighten:
-			win_lighten(win)
-			game.does_lighten = True
-		
-		pygame.display.update()
-
-
-
 # Меню
 
 def menu():
 	
-	play_button = Button(Width / 2, Height / 2 - 150, pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Play.png"), (264, 128)), pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Play 2.png"), (264, 128)), alignment=True, info="Подсказка: вы можете нажать enter, чтобы сразу начать игру.", action=worlds)
+	play_button = Button(Width / 2, Height / 2 - 150, pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Play.png"), (264, 128)), pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Play 2.png"), (264, 128)), alignment=True, info="Подсказка: вы можете нажать enter, чтобы сразу начать игру.", action=worlds_menu.open_worlds_menu)
 	settings_button = Button(Width / 2, Height / 2, pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Settings.png"), (488, 128)), pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Settings 2.png"), (488, 128)), alignment=True, action=settings.open_settings)
 	change_a_character_button = Button(Width / 2, Height / 2 + 150, pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Change a character.png"), (960, 128)), pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Change a character 2.png"), (960, 128)), alignment=True, action=characters_menu.open_characters_menu)
 
@@ -3049,7 +2910,7 @@ def menu():
 				release = True
 			elif event.type == pygame.KEYUP:
 				if event.key == pygame.K_RETURN:
-					worlds()
+					worlds_menu.open_worlds_menu()
 				if event.key == hot_keys["Close"]:
 					more_menu_open = False
 		win.blit(Screensaver2, (0, 0))
@@ -3110,6 +2971,7 @@ def menu():
 
 settings = SettingsMenu(game, save, music_channel, set_sound_volume, Settings, hot_keys)
 characters_menu = CharactersMenu(game, player, save)
+worlds_menu = WorldsMenu(game, input_system, edit_world, multiplayer_settings_menu, start_game)
 
 def show_intro():
 	

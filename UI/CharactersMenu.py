@@ -21,6 +21,7 @@ class CharactersMenu():
 		current_screen = self.characters
 		while current_screen is not None:
 			current_screen = current_screen()
+		win_darken(win)
 		self.game.does_lighten = False
 
 	def init_buttons(self):
