@@ -1,14 +1,14 @@
 {
 	"Just an item": {
-		"Blue slime":  {},
-		"Pink slime":  {},
-		"Jar":  {},
+		"Blue slime": {},
+		"Pink slime": {},
+		"Jar": {},
 		"Stick": {},
 		"Iron ingot": {},
 		"Gold ingot": {},
 		"Iron ore": {},
 		"Gold ore": {},
-		"Thread":  {},
+		"Thread": {},
 		"Stone": {},
 		"Wooden": {},
 		"Dark wooden": {},
@@ -16,20 +16,20 @@
 		"Clay": {},
 		"Brick": {},
 		"Stone brick": {},
-		"Bullet":  {},
+		"Bullet": {},
 		"Arrow": {},
 		"Powder": {},
-		"Wheat":  {},
+		"Wheat": {},
 		"Bucket": {},
 		"Water bucket": {},
 		"Gold bucket": {},
-		"Rope":  {},
+		"Rope": {},
 		"Grenade": {}
 	},
 
 	"Food": {
 		"Mushroom": {"special_info": 5},
-		"Red mushroom":  {"special_info": 5},
+		"Red mushroom": {"special_info": 5},
 		"Onion": {"special_info": 10},
 		"Carrot": {"special_info": 10},
 		"Tomato": {"special_info": 10},
@@ -40,11 +40,11 @@
 
 	"Drink": {
 		"Almond water": {},
-		"Beer":  {}
+		"Beer": {}
 	},
 
 	"Build": {
-		"Punch":  {},
+		"Punch": {},
 		"Table": {},
 		"Wall table": {},
 		"Furnace": {},
@@ -60,7 +60,7 @@
 		"Bow": {"max_stack": 1},
 		"Gun": {"max_stack": 1},
 		"Stone pickaxe": {"max_stack": 1},
-		"Stone shovel":  {"max_stack": 1},
+		"Stone shovel": {"max_stack": 1},
 		"Stone hammer": {"max_stack": 1},
 		"Stone hoe": {"max_stack": 1},
 		"Stone spear": {"max_stack": 1},
@@ -69,10 +69,10 @@
 	},
 
 	"Mechanism": {
-		"Wire":  {},
-		"Lever":  {},
-		"Random box":  {},
-		"Motherboard":  {}
+		"Wire": {},
+		"Lever": {},
+		"Random box": {},
+		"Motherboard": {}
 	},
 
 	"Flower": {
