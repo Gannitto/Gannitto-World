@@ -21,6 +21,7 @@ class Player:
 		self.costum = 0
 		directions = ("Down", "Up", "Left", "Right", "Down-left", "Down-right", "Up-left", "Up-right")
 		self.animations = {}
+		self.animation = [None, 0]
 		
 		for direction in directions:
 
@@ -112,14 +113,14 @@ class Player:
 		self.animation_timer = 0
 		self.move_timer = 0
 	
-	def render(self, screen):
+	def render(self):
 		"""Отрисовывает игрока на экране"""
 		frames = self.animations[self.direction]
-		screen.blit(shadow(self.image, f"Player {self.direction} {self.frame_index % len(frames)}"), (Width / 2 - 128, Height / 2 - 128))
+		win.blit(shadow(self.image, f"Player {self.direction} {self.frame_index % len(frames)}"), (Width / 2 - 128, Height / 2 - 128))
 		
 		if Settings["Display"][3]:
 			self.rect = pygame.Rect(self.x - 25, self.y - 112, 50, 224)
-			pygame.draw.rect(screen, (0, 255, 0), (Width / 2 - 128, Height / 2 - 128, 256, 256), 2)
+			pygame.draw.rect(win, (0, 255, 0), (Width / 2 - 128, Height / 2 - 128, 256, 256), 2)
 			pygame.draw.rect(win, (0, 0, 0), (self.rect[0] - self.x + Width // 2, self.y - self.rect[1] - self.rect[3] + Height // 2, self.rect[2], self.rect[3]), 3)
 
 class Peer(Player):
@@ -133,10 +134,10 @@ class Peer(Player):
 		self.y = Y
 		self.view_distance = view_distance
 	
-	def render(self, screen, world_to_screen, world_rect_to_screen):
+	def render(self, world_to_screen, world_rect_to_screen):
 		"""Отрисовывает игрока на экране"""
 		frames = self.animations[self.direction]
-		screen.blit(shadow(self.image, f"Player {self.direction} {self.frame_index % len(frames)}"), world_to_screen(self.x, self.y, 256, 256))
+		win.blit(shadow(self.image, f"Player {self.direction} {self.frame_index % len(frames)}"), world_to_screen(self.x, self.y, 256, 256))
 		if self.changed_item is not None and self.direction != "Up":
 			changed_item_x = 0
 			changed_item_y = 0
@@ -156,5 +157,5 @@ class Peer(Player):
 		
 		if Settings["Display"][3]:
 			self.rect = pygame.Rect(self.x - 25, self.y - 112, 50, 224)
-			pygame.draw.rect(screen, (0, 255, 0), world_rect_to_screen(self.x, self.y, 256, 256), 2)
+			pygame.draw.rect(win, (0, 255, 0), world_rect_to_screen(self.x, self.y, 256, 256), 2)
 			pygame.draw.rect(win, (0, 0, 0), (self.rect[0] - self.x + Width // 2, self.y - self.rect[1] - self.rect[3] + Height // 2, self.rect[2], self.rect[3]), 3)

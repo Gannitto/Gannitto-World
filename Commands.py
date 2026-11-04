@@ -3,17 +3,13 @@ from typing import List, Tuple
 
 class CommandSystem:
 
-	def __init__(self, player, multiplayer, game_events, net, chat, main_chat, FPS, inventory, time_system, chat_tick):
+	def __init__(self, game, player, FPS, inventory, time_system):
+
+		self.game = game
 		self.player = player
-		self.multiplayer = multiplayer
-		self.game_events = game_events
-		self.net = net
-		self.chat = chat
-		self.main_chat = main_chat
 		self.FPS = FPS
 		self.inventory = inventory
 		self.time_system = time_system
-		self.chat_tick = chat_tick
 		self.init_commands()
 	
 	def parse_command(self, command_text: str) -> Tuple[str, List[str]]:
@@ -71,19 +67,19 @@ class CommandSystem:
 			player = self.player
 		player.x = x
 		player.y = y
-		if self.multiplayer:
-			self.game_events.append({"event_type": "player_tp", "x": player.x, "y": player.y, "direction": player.direction})
-			self.net.peers[self.net.player_id].x = player.x
-			self.net.peers[self.net.player_id].y = player.y
-			self.net.peers[self.net.player_id].direction = player.direction
+		if self.game.multiplayer:
+			self.game.events.append({"event_type": "player_tp", "x": player.x, "y": player.y, "direction": player.direction})
+			self.game.net.peers[self.game.net.player_id].x = player.x
+			self.game.net.peers[self.game.net.player_id].y = player.y
+			self.game.net.peers[self.game.net.player_id].direction = player.direction
 
 	def chat_message(self, message: str, send_to_peers: bool = False):
 		"""Отправляет сообщение в чат"""
-		self.chat.append(message)
-		self.main_chat.append(message)
-		self.chat_tick = len(message) // 1.5 * self.FPS #TODO заменить FPS на dt
-		if self.multiplayer and send_to_peers:
-			self.game_events.append({"event_type": "chat_message", "message_text": message})
+		self.game.chat.append(message)
+		self.game.main_chat.append(message)
+		self.game.chat_tick = len(message) // 1.5 * self.FPS #TODO заменить FPS на dt
+		if self.game.multiplayer and send_to_peers:
+			self.game.events.append({"event_type": "chat_message", "message_text": message})
 
 	def command_help(self, command: str=""):
 		if command == "":

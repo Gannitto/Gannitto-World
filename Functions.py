@@ -313,7 +313,7 @@ def crack_surface(world, Particle, object, damage_level, scale=1):
 def destroy_object(image, x, y, world, Particle):
 	world.particles.append(Particle(x, y, image, y_bias=-image.get_height() / 4, twisting_in_height=image.get_height() / 16, increased_transparency=20))
 
-def create_throw_particle(Object, Particle, player, world, multiplayer, game_events, item_image, item_name):
+def create_throw_particle(Object, Particle, player, world, game, item_image, item_name):
 	
 	# Векторы направления
 	dir_map = {
@@ -350,8 +350,8 @@ def create_throw_particle(Object, Particle, player, world, multiplayer, game_eve
 		chunk = world.chunk_manager.get_chunk_at(p.x, p.y)
 		obj = Object(p.special_flags, p.x, p.y, f"Images/Items/{p.special_flags}.png", pickable=True)
 		chunk.items.append(obj)
-		if multiplayer:
-			game_events.append({
+		if game.multiplayer:
+			game.events.append({
 				"event_type": "item_added",
 				"item": obj.__getstate__()
 			})

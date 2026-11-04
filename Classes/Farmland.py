@@ -23,11 +23,11 @@ class Farmland:
 		self.grow_timer = 0
 		self.watered = False
 		
-	def main(self, release, dt, world_to_screen, world_rect_to_screen, mouse_x, mouse_y, world, inventory, changed_slot):
+	def main(self, release, dt, world_to_screen, world_rect_to_screen, mouse_x, mouse_y, world, inventory):
 
 		world_rect = world_rect_to_screen(self.x - 64, self.y + 64, 128, 128)
 		if release and pygame.Rect(world_rect).collidepoint((mouse_x, mouse_y)):
-			self.handle_click(world, inventory, changed_slot)
+			self.handle_click(world, inventory, inventory.changed_slot)
 		win.blit(self.image, world_to_screen(self.x, self.y, 256, 256))
 		if self.plant is not None:
 			win.blit(plant_images[self.plant][self.plant_growth_stage], world_to_screen(self.x, self.y, 256, 256))

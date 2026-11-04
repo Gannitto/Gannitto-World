@@ -116,13 +116,13 @@ class Wall:
 				self.image = self.images[12]
 				self.rect = pygame.Rect(self.x - 128, self.y - 128, 256, 256)
 		
-	def main(self, release, world_to_screen, world_rect_to_screen, mouse_x, mouse_y, multiplayer, game_events):
+	def main(self, release, world_to_screen, world_rect_to_screen, mouse_x, mouse_y, game):
 		screen_x, screen_y = world_to_screen(self.x, self.y, 256, 256)
 		if self.is_door and release and screen_x <= mouse_x <= screen_x + 256 and screen_y <= mouse_y <= screen_y + 256:
 			self.open = not self.open
 			self.update_neigboors()
-			if multiplayer:
-				game_events.append({"event_type": "wall_interaction", "wall_pos": (self.x, self.y)})
+			if game.multiplayer:
+				game.game_events.append({"event_type": "wall_interaction", "wall_pos": (self.x, self.y)})
 		win.blit(self.image, world_to_screen(self.x, self.y, 256, 256))
 		if Settings["Display"][3]:
 			pygame.draw.rect(win, (0, 0, 0), world_rect_to_screen(self.rect[0] + self.rect[2] // 2, self.rect[1] + self.rect[3] // 2, self.rect[2], self.rect[3]), 3)

@@ -28,48 +28,16 @@ except FileNotFoundError:
 	Settings = default_settings
 	Saver.save_objects(path + "Saves/Settings/Settings.save", Settings)
 
-cursor_speed = 0.7
-changed_slot = 0
-animation = [None, 0]
-craft_items_list = [None] * 7
-craft_amounts_list = [None] * 7
-craft_images_list = [None] * 7
-does_lighten = False
-alt_pressed = False
 win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-start_time = time.time()
-world_name = None
 MAX_FPS = Settings["Display"][6]
 FPS = MAX_FPS - 1
-page = 1
 Width, Height = pygame.display.get_surface().get_size()
-screenmode = "FULLSCREEN"
 text_color = (0, 180, 0)
 menu_color_light = (192, 203, 220)
 menu_color_medium = (139, 155, 180)
 menu_color_dark = (58, 68, 102)
-menu_open = False
-multiplayer_menu_open = False
 textInfo = pygame.font.Font(path + "Font.ttf", 18)
 bigTextInfo = pygame.font.Font(path + "Font.ttf", 36)
-mouse_x, mouse_y = pygame.mouse.get_pos()
-inventory_open = False
-hold_left = False
-backrooms_objects = []
-screenshot_num = 1
-bullet_num = 0
-item_settings_open = False
-craft_list_open = False
-craft_list_page = 1
-craft_list_offset = 0
-craft_list_max_offset = -10000
-multiplayer = False
-multiplayer_role = None
-net = None
-chat_open = False
-game_events = []
-slot_animations = [[False, 15] for _ in range(30)]   # Используется для анимации при наведении на слот
-special_slot_animations = {"Craft list slot": [False, 0.6], "Game menu slot": [False, 0.6], "Menu slot": [False, 0.6], "Multiplayer slot": [False, 0.6], "Close slot": [False, 0.6], "Reference slot": [False, 0.6], "Close slot": [False, 0.6], "Split items slot": [False, 0.6], "Compact inventory slot": [False, 0.6]}   # Используется для анимации при наведении на слот, который выполняет какое-либо действие
 
 try:
 	statistics = Saver.load_objects(path + "Saves/Settings/Statistics.save")
@@ -111,14 +79,6 @@ except FileNotFoundError:
 	Saver.save_objects(path + "Saves/Settings/Hot keys.save", hot_keys)
 
 clock = pygame.time.Clock()
-chat = []
-main_chat = []
-chat_tick = 0
-cursor_timer = 0
-show_cursor = False
-in_motherboard = None
-click = pygame.mouse.get_pressed()
-screen_rect = pygame.Rect((0, 0, Width, Height))
 colors = {
 	"Normal": (39, 155, 80),
 	"Normal2": (0, 255, 0),

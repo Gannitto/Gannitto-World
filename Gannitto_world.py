@@ -25,6 +25,7 @@ from InputSystem import input_system
 from Assets import *
 from Globals import *
 from Classes import Player, Peer, World, Object, Particle, Slime, Spider, Butterfly, Projectile, ExplodingProjectile, Wall, Farmland, Wire, Lever, Motherboard, Ron, Button
+from GameState import GameState
 from Light import create_light_circle, create_light_circle_with_falloff, remove_light_circle
 
 pygame.init()
@@ -78,37 +79,36 @@ def save(darken:bool=True, save_world_settings:bool=False):
 	save_world_settings - Сохранять ли настройки мира
 	"""
 
-	global player
 	Saver.save_objects(path + "Saves/Settings/Statistics.save", statistics)
 	
-	if world_name is not None:
+	if game.world_name is not None:
 		
-		if multiplayer:
+		if game.multiplayer:
 			pass
 			# TODO сохранение данных о других игроках
 		else:
 			
-			Saver.save_objects(path + "Saves/Worlds/" + world_name + "/Mobs.save", world.mobs)
-			Saver.save_objects(path + "Saves/Worlds/" + world_name + "/Info.save", [player.x, player.y, Backrooms.InBackrooms, Backrooms.Level, world.current_cave, player.speed, player.HP, start_time, ron.x, ron.y, ron.home, ron.inventory, world.chunk_manager.generator.seed, time_system.current_time])
-			Saver.save_objects(path + "Saves/Worlds/" + world_name + "/Inventory.save", inventory.whole_inventory)
-			Saver.save_objects(path + "Saves/Worlds/" + world_name + "/Resources.save", inventory.resources)
-			Saver.save_objects(path + "Saves/Worlds/" + world_name + "/Effects.save", player.effects)
+			Saver.save_objects(path + "Saves/Worlds/" + game.world_name + "/Mobs.save", world.mobs)
+			Saver.save_objects(path + "Saves/Worlds/" + game.world_name + "/Info.save", [player.x, player.y, Backrooms.InBackrooms, Backrooms.Level, world.current_cave, player.speed, player.HP, game.start_time, ron.x, ron.y, ron.home, ron.inventory, world.chunk_manager.generator.seed, time_system.current_time])
+			Saver.save_objects(path + "Saves/Worlds/" + game.world_name + "/Inventory.save", inventory.whole_inventory)
+			Saver.save_objects(path + "Saves/Worlds/" + game.world_name + "/Resources.save", inventory.resources)
+			Saver.save_objects(path + "Saves/Worlds/" + game.world_name + "/Effects.save", player.effects)
 
 			new_particles = []
 			particle_count = 1
 			for particle in new_particles:
 				if particle.save_particle:
-					pygame.image.save(particle.image, path + "Saves/Worlds/" + world_name +"/Images/Particle " + str(particle_count) + ".png")
+					pygame.image.save(particle.image, path + "Saves/Worlds/" + game.world_name +"/Images/Particle " + str(particle_count) + ".png")
 					particle.image_path = path + "Saves/Worlds/Images/Particle " + str(particle_count) + ".png"
 					particle_count += 1
 					new_particles.append(particle)
-			Saver.save_objects(path + "Saves/Worlds/" + world_name + "/Particles.save", new_particles)
+			Saver.save_objects(path + "Saves/Worlds/" + game.world_name + "/Particles.save", new_particles)
 			world.chunk_manager.save_all_loaded_chunks()
 				
 	if darken and Settings["Display"][9]:
 		win_darken(win)
 		
-	if save_world_settings: Saver.save_objects(path + "Saves/Worlds/" + world_name + "/Settings.save", [game.difficulty, player.god_mode])
+	if save_world_settings: Saver.save_objects(path + "Saves/Worlds/" + game.world_name + "/Settings.save", [game.difficulty, player.god_mode])
 
 # Применение настроек TODO
 
@@ -121,6 +121,15 @@ pygame.display.set_caption("Gannitto World")
 
 # Классы
 
+game = GameState()
+
+mouse_x = game.mouse_x
+mouse_y = game.mouse_y
+alt_pressed = game.alt_pressed
+net = game.net
+
+changed_slot = inventory.changed_slot
+
 player = Player()
 world_to_screen = lambda X, Y, W, H, player=player: (X - player.x + Width // 2 - W // 2, player.y - Y + Height // 2 - H // 2)
 world_rect_to_screen = lambda X, Y, W, H, player=player: (X - player.x + Width // 2 - W // 2, player.y - Y + Height // 2 - H // 2, W, H)
@@ -128,18 +137,7 @@ world = World(world_rect_to_screen)
 time_system = TimeSystem()
 ui_system = UISystem()
 ron = Ron(world_to_screen, player)
-command_system = CommandSystem(player, multiplayer, game_events, net, chat, main_chat, FPS, inventory, time_system, chat_tick)
-
-class GameState:
-
-	def __init__(self):
-
-		self.difficulty = "norm"
-		self.weather = "Clear"
-		self.shadow_surface = pygame.Surface((Width, Height), pygame.SRCALPHA)
-		self.shadow_surface.fill((0, 0, 0, 90))
-
-game = GameState()
+command_system = CommandSystem(game, player, FPS, inventory, time_system)
 
 # Загрузка команд
 # def show_bar(times):
@@ -172,10 +170,9 @@ game = GameState()
 # Кнопки в меню
 
 def settings():
-
-	global does_lighten
-
-	does_lighten = False
+	
+	game.does_lighten = False
+	page = 1
 	def page_back():
 		global page
 		page = max(1, page - 1)
@@ -216,7 +213,7 @@ def settings():
 
 	def help():
 
-		global win, screenmode, mouse_x, mouse_y, does_lighten, page, alt_pressed
+		global mouse_x, mouse_y, page, alt_pressed
 		
 		while True:
 
@@ -230,15 +227,6 @@ def settings():
 				if event.type == pygame.KEYUP:
 					if event.key == hot_keys["Show keys"]:
 						alt_pressed = not alt_pressed
-
-				if event.type == pygame.KEYUP:
-					if event.key == hot_keys["Change screen"]:
-						if screenmode == "FULLSCREEN":
-							win = pygame.display.set_mode((1000,700), pygame.RESIZABLE)
-							screenmode = "RESIZABLE"
-						else:
-							win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-							screenmode = "FULLSCREEN"
 
 					if event.key == hot_keys["Close"]:
 						Saver.save_objects(path + "Saves/Settings/Settings.save", Settings)
@@ -331,15 +319,15 @@ def settings():
 
 			win_fill(alpha=100 - Settings["Display"][0])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
 			
-			if not does_lighten:
+			if not game.does_lighten:
 				win_lighten(win)
-				does_lighten = True
+				game.does_lighten = True
 
 			pygame.display.update()
 
 	def display():
 
-		global win, screenmode, Settings, alt_pressed, MAX_FPS
+		global Settings, alt_pressed
 
 		bias = 0
 		max_bias = -ui_system._set_positions(bias, "Display", True)
@@ -369,14 +357,6 @@ def settings():
 						Saver.save_objects(path + "Saves/Settings/Settings.save", Settings)
 						win_darken(win)
 						menu()
-					if event.key == hot_keys["Change screen"]:
-						if screenmode == "FULLSCREEN":
-							win = pygame.display.set_mode((1000,700), pygame.RESIZABLE)
-							screenmode = "RESIZABLE"
-						else:
-							win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-							screenmode = "FULLSCREEN"
-
 				elif event.type == pygame.MOUSEWHEEL:
 					bias = max((min(bias + event.y * Settings["Game"][2], 0)), max_bias)
 					ui_system._set_positions(bias, "Display")
@@ -415,7 +395,7 @@ def settings():
 
 	def Languages():
 
-		global win, screenmode, does_lighten, page, alt_pressed
+		global alt_pressed
 		
 		while True:
 			
@@ -458,14 +438,6 @@ def settings():
 								element.label_width = element.font.size(t(element.label))[0] + 10
 								element.rect = pygame.Rect(element.x + element.label_width, element.y, element.width, element.height)
 
-					if event.key == hot_keys["Change screen"]:
-						if screenmode == "FULLSCREEN":
-							win = pygame.display.set_mode((1000,700), pygame.RESIZABLE)
-							screenmode = "RESIZABLE"
-						else:
-							win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-							screenmode = "FULLSCREEN"
-
 			win.fill(menu_color_light)
 			pygame.draw.rect(win, menu_color_medium, (-8, 100, 373, Height), 8)
 			pygame.draw.line(win, menu_color_medium, (307, 103), (Width, 103), 8)
@@ -475,10 +447,6 @@ def settings():
 				win_darken(win)
 				menu()
 			show_reset_settings()
-			
-			page_back_button.main()
-			page_next_button.main()
-			page = min(page, 1)
 
 			win.blit(bigTextInfo.render(t("You can choose one of these"), True, menu_color_medium), (385, 123))
 			win.blit(bigTextInfo.render(t("languages:"), True, menu_color_medium), (385, 153))
@@ -510,7 +478,6 @@ def settings():
 						element.label_width = element.font.size(t(element.label))[0] + 10
 						element.rect = pygame.Rect(element.x + element.label_width, element.y, element.width, element.height)
 
-			win.blit(bigTextInfo.render(str(page), True, menu_color_medium), ((Width - 415) // 2 + 391, Height - 96))
 			help_button.main(help)
 			display_button.main(display)
 			win.blit(load(path + "Images/Buttons/Languages 2.png", 272, 64), (10, 267))
@@ -523,21 +490,19 @@ def settings():
 			if alt_pressed:
 				
 				draw_key("ESC", 44, 108)
-				draw_key("<-", 425, Height - 168)
-				draw_key("->", Width - 74, Height - 168)
 
 			animate_click(dt, mouse_x, mouse_y)
 			win_fill(alpha=100 - Settings["Display"][0])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
 
-			if not does_lighten:
+			if not game.does_lighten:
 				win_lighten(win)
-				does_lighten = True
+				game.does_lighten = True
 
 			pygame.display.update()
 
 	def User():
 
-		global win, screenmode, Settings, alt_pressed, MAX_FPS
+		global Settings, alt_pressed
 
 		bias = 0
 		max_bias = -ui_system._set_positions(bias, "User", True)
@@ -568,14 +533,6 @@ def settings():
 						Saver.save_objects(path + "Saves/Settings/Settings.save", Settings)
 						win_darken(win)
 						menu()
-					if event.key == hot_keys["Change screen"]:
-						if screenmode == "FULLSCREEN":
-							win = pygame.display.set_mode((1000,700), pygame.RESIZABLE)
-							screenmode = "RESIZABLE"
-						else:
-							win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-							screenmode = "FULLSCREEN"
-
 				elif event.type == pygame.MOUSEWHEEL:
 					bias = max((min(bias + event.y * Settings["Game"][2], 0)), max_bias)
 					ui_system._set_positions(bias, "User")
@@ -614,7 +571,7 @@ def settings():
 
 	def Sound():
 
-		global win, screenmode, Settings, alt_pressed, MAX_FPS
+		global Settings, alt_pressed
 
 		bias = 0
 		max_bias = -ui_system._set_positions(bias, "Sound", True)
@@ -645,14 +602,6 @@ def settings():
 						Saver.save_objects(path + "Saves/Settings/Settings.save", Settings)
 						win_darken(win)
 						menu()
-					if event.key == hot_keys["Change screen"]:
-						if screenmode == "FULLSCREEN":
-							win = pygame.display.set_mode((1000,700), pygame.RESIZABLE)
-							screenmode = "RESIZABLE"
-						else:
-							win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-							screenmode = "FULLSCREEN"
-
 					if event.key == pygame.K_RETURN:
 
 						music_channel.set_volume(Settings["Sound"][0], Settings["Sound"][0] / 100)
@@ -696,7 +645,7 @@ def settings():
 
 	def Statistics():
 
-		global win, screenmode, Settings, alt_pressed, MAX_FPS
+		global Settings, alt_pressed
 
 		bias = 0
 		max_bias = -ui_system._set_positions(bias, "Statistics", True)
@@ -727,14 +676,6 @@ def settings():
 						Saver.save_objects(path + "Saves/Settings/Settings.save", Settings)
 						win_darken(win)
 						menu()
-					if event.key == hot_keys["Change screen"]:
-						if screenmode == "FULLSCREEN":
-							win = pygame.display.set_mode((1000,700), pygame.RESIZABLE)
-							screenmode = "RESIZABLE"
-						else:
-							win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-							screenmode = "FULLSCREEN"
-
 				elif event.type == pygame.MOUSEWHEEL:
 					bias = max((min(bias + event.y * Settings["Game"][2], 0)), max_bias)
 					ui_system._set_positions(bias, "Statistics")
@@ -772,7 +713,7 @@ def settings():
 
 	def Keys():
 
-		global win, screenmode, Settings, click, mouse_x, mouse_y, does_lighten, page, alt_pressed, hot_keys
+		global Settings, mouse_x, mouse_y, alt_pressed, hot_keys
 		
 		changed_key = ""
 		looked_key = None
@@ -917,14 +858,6 @@ def settings():
 							win_darken(win)
 							menu()
 
-					if event.key == hot_keys["Change screen"]:
-						if screenmode == "FULLSCREEN":
-							win = pygame.display.set_mode((1000,700), pygame.RESIZABLE)
-							screenmode = "RESIZABLE"
-						else:
-							win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-							screenmode = "FULLSCREEN"
-
 			back_button.main()
 			if back_button.get_pressed():
 				if looked_key is not None:
@@ -1020,15 +953,15 @@ def settings():
 
 			win_fill(alpha=100 - Settings["Display"][0])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
 			
-			if not does_lighten:
+			if not game.does_lighten:
 				win_lighten(win)
-				does_lighten = True
+				game.does_lighten = True
 
 			pygame.display.update()
 
 	def Game():
 
-		global win, screenmode, Settings, alt_pressed, MAX_FPS
+		global Settings, alt_pressed
 
 		bias = 0
 		max_bias = -ui_system._set_positions(bias, "Game", True)
@@ -1059,14 +992,6 @@ def settings():
 						Saver.save_objects(path + "Saves/Settings/Settings.save", Settings)
 						win_darken(win)
 						menu()
-					if event.key == hot_keys["Change screen"]:
-						if screenmode == "FULLSCREEN":
-							win = pygame.display.set_mode((1000,700), pygame.RESIZABLE)
-							screenmode = "RESIZABLE"
-						else:
-							win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-							screenmode = "FULLSCREEN"
-
 				elif event.type == pygame.MOUSEWHEEL:
 					bias = max((min(bias + event.y * Settings["Game"][2], 0)), max_bias)
 					ui_system._set_positions(bias, "Game")
@@ -1108,9 +1033,7 @@ def settings():
 
 def change_a_character():
 
-	global does_lighten
-
-	does_lighten = False
+	game.does_lighten = False
 
 	back_button = Button(-20, -20, pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Back.png"), (128, 128)), pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Back 2.png"), (128, 128)))
 	character_button = Button(10, 120, pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Character.png"), (272, 64)), pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Character 2.png"), (272, 64)))
@@ -1124,7 +1047,8 @@ def change_a_character():
 
 	def characters():
 
-		global win, screenmode, does_lighten, page, alt_pressed
+		global alt_pressed
+		page = 1
 		
 		class Character():
 
@@ -1173,14 +1097,6 @@ def change_a_character():
 						page -= 1
 					if event.key == pygame.K_RIGHT and page < 3:
 						page += 1
-					if event.key == hot_keys["Change screen"]:
-						if screenmode == "FULLSCREEN":
-							win = pygame.display.set_mode((1000,700), pygame.RESIZABLE)
-							screenmode = "RESIZABLE"
-						else:
-							win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-							screenmode = "FULLSCREEN"
-			
 			win.fill()
 
 			pygame.draw.rect(win, menu_color_medium, (-8, 100, 315, Height), 8)
@@ -1228,16 +1144,14 @@ def change_a_character():
 
 			win_fill(alpha=100 - Settings["Display"][0])
 			
-			if not does_lighten:
+			if not game.does_lighten:
 				win_lighten(win)
-				does_lighten = True
+				game.does_lighten = True
 
 			pygame.display.update()
 	
 	def pets():
 
-		global win, screenmode, does_lighten
-		
 		while True:
 			
 			mouse_x, mouse_y = pygame.mouse.get_pos()
@@ -1248,13 +1162,6 @@ def change_a_character():
 					save()
 					sys.exit()
 				if event.type == pygame.KEYUP:
-					if event.key == hot_keys["Change screen"]:
-						if screenmode == "FULLSCREEN":
-							win = pygame.display.set_mode((1000,700), pygame.RESIZABLE)
-							screenmode = "RESIZABLE"
-						else:
-							win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-							screenmode = "FULLSCREEN"
 					if event.key == hot_keys["Close"]:
 						win_darken(win)
 						menu()
@@ -1279,9 +1186,9 @@ def change_a_character():
 
 			win_fill(alpha=100 - Settings["Display"][0])
 			
-			if not does_lighten:
+			if not game.does_lighten:
 				win_lighten(win)
-				does_lighten = True
+				game.does_lighten = True
 			
 			pygame.display.update()
 
@@ -1299,14 +1206,14 @@ objects_templates = {
 
 def start_game():
 	
-	global win, changed_slot, menu_open, multiplayer_menu_open, screenmode, inventory_open, hold_left, backrooms, text_color, bullet_num, craft_items_list, craft_amounts_list, craft_images_list, screenshot_num, mouse_x, mouse_y, item_settings_open, chat_tick, chat, main_chat, chat_open, craft_list_open, craft_list_page, craft_list_offset, craft_list_max_offset, click, in_motherboard, world_name, color, multiplayer, animation, start_time, new_particles, game, alt_pressed, player, world, FPS, MAX_FPS, screen_rect, time_index, game_events, show_cursor, cursor_timer
+	global backrooms, text_color, mouse_x, mouse_y, color, new_particles, game, alt_pressed, player, world, FPS, changed_slot, win
 
 	night_playing = False
 	bigTextInfo = pygame.font.Font(path + "Font.ttf", 36)
 	aaa = 0
 	AA = 0
 	use_item_pressed = False
-	start_time = time.time()
+	game.start_time = time.time()
 
 	tile_size = 256
 	Width, Height = pygame.display.get_surface().get_size()
@@ -1315,7 +1222,7 @@ def start_game():
 	dx = 0
 	dy = 0
 	release = False
-	craft_list_max_offset = (len(inventory.recipes) + 1) * -80 + Height
+	game.craft_list_max_offset = (len(inventory.recipes) + 1) * -80 + Height
 
 	new_particles = []
 
@@ -1330,27 +1237,27 @@ def start_game():
 	craft_list_next_button = Button(Width - 144, Height - 176, bigTextInfo.render(">", True, (0, 150, 0)), bigTextInfo.render(">", True, (0, 100, 0)))
 
 	# Загрузка данных мира
-	if not multiplayer or multiplayer_role == "Host":
-		world.chunk_manager.save_directory = path + "Saves/Worlds/" + world_name + "/Chunks/"
+	if not game.multiplayer or game.multiplayer_role == "Host":
+		world.chunk_manager.save_directory = path + "Saves/Worlds/" + game.world_name + "/Chunks/"
 
-		if os.path.exists(path + "Saves/Worlds/" + world_name):
+		if os.path.exists(path + "Saves/Worlds/" + game.world_name):
 			
-			world.mobs = Saver.load_objects(path + "Saves/Worlds/" + world_name + "/Mobs.save")
-			player.x, player.y, Backrooms.InBackrooms, Backrooms.Level, world.current_cave, player.speed, player.HP, start_time, ron.x, ron.y, ron.home, ron.inventory, world.chunk_manager.generator.seed, time_system.current_time = Saver.load_objects(path + "Saves/Worlds/" + world_name + "/Info.save")
+			world.mobs = Saver.load_objects(path + "Saves/Worlds/" + game.world_name + "/Mobs.save")
+			player.x, player.y, Backrooms.InBackrooms, Backrooms.Level, world.current_cave, player.speed, player.HP, game.start_time, ron.x, ron.y, ron.home, ron.inventory, world.chunk_manager.generator.seed, time_system.current_time = Saver.load_objects(path + "Saves/Worlds/" + game.world_name + "/Info.save")
 			world.chunk_manager.update_seed()
-			game.difficulty, player.god_mode = Saver.load_objects(path + "Saves/Worlds/" + world_name + "/Settings.save")
-			inventory.whole_inventory = Saver.load_objects(path + "Saves/Worlds/" + world_name + "/Inventory.save")
-			player.effects = Saver.load_objects(path + "Saves/Worlds/" + world_name + "/Effects.save")
+			game.difficulty, player.god_mode = Saver.load_objects(path + "Saves/Worlds/" + game.world_name + "/Settings.save")
+			inventory.whole_inventory = Saver.load_objects(path + "Saves/Worlds/" + game.world_name + "/Inventory.save")
+			player.effects = Saver.load_objects(path + "Saves/Worlds/" + game.world_name + "/Effects.save")
 
-			if multiplayer:
+			if game.multiplayer:
 				net.peers[net.player_id].x = player.x
 				net.peers[net.player_id].y = player.y
 				net.peers[net.player_id].direction = player.direction
 			
 		else:
 
-			os.mkdir(path + "Saves/Worlds/" + world_name)
-			os.mkdir(path + "Saves/Worlds/" + world_name + "/Images")
+			os.mkdir(path + "Saves/Worlds/" + game.world_name)
+			os.mkdir(path + "Saves/Worlds/" + game.world_name + "/Images")
 
 			save(False, True)
 		
@@ -1392,7 +1299,7 @@ def start_game():
 						for object in world.visible_objects:
 							if a == object:
 								b = False
-						if b and world_name == i[6]:
+						if b and game.world_name == i[6]:
 							world.visible_objects.append(a)
 
 					case "Command":
@@ -1413,7 +1320,6 @@ def start_game():
 		use_item_pressed = False
 		dx = 0
 		dy = 0
-		screen_rect = pygame.Rect((player.x - Width / 2, player.y + Height / 2, Width, Height))
 		player.hovered_object = None
 		player.breaking_object = None
 
@@ -1421,14 +1327,14 @@ def start_game():
 		dt = clock.tick(MAX_FPS) / 1000.0
 		time_system.update(dt)
 		player.changed_item = inventory.whole_inventory[changed_slot]
-		if multiplayer:
-			game_events.clear()
+		if game.multiplayer:
+			game.events.clear()
 		events = pygame.event.get()
 		for event in events:
 			
 			if event.type == pygame.QUIT:
-				statistics[1] += (time.time() - start_time) / 3600
-				if multiplayer:
+				statistics[1] += (time.time() - game.start_time) / 3600
+				if game.multiplayer:
 					net.disconnect()
 				save()
 				sys.exit()
@@ -1437,18 +1343,18 @@ def start_game():
 				if event.button == 1:
 					release = True
 			
-			elif event.type == pygame.MOUSEWHEEL and not any((item_settings_open, ron.window[0], in_motherboard)):
-				if craft_list_open:
-					craft_list_offset = max((min(craft_list_offset + event.y * Settings["Game"][2], 0)), craft_list_max_offset)
+			elif event.type == pygame.MOUSEWHEEL and not any((game.item_settings_open, ron.window[0], game.in_motherboard)):
+				if game.craft_list_open:
+					game.craft_list_offset = max((min(game.craft_list_offset + event.y * Settings["Game"][2], 0)), game.craft_list_max_offset)
 				else:
 					changed_slot += event.y
 					if changed_slot > 9: changed_slot = 0
 					if changed_slot < 0: changed_slot = 9
 
 			if event.type == pygame.KEYUP:
-				if chat_open:
+				if game.chat_open:
 					if event.key == hot_keys["Close"]:
-						chat_open = False
+						game.chat_open = False
 						input_system.stop_input()
 				else:
 					if event.key == hot_keys["Show keys"]:
@@ -1456,44 +1362,44 @@ def start_game():
 					if event.key == hot_keys["Use item"]:
 						use_item_pressed = True
 					if event.key == hot_keys["Multiplayer menu"]:
-						multiplayer_menu_open = True
+						game.multiplayer_menu_open = True
 					if event.key == hot_keys["Set Ron home"]:
 						ron.home = [player.x, player.y]
 					if event.key == hot_keys["Menu"]:
-						menu_open = not menu_open
+						game.menu_open = not game.menu_open
 					if event.key == hot_keys["Open chat"]:
-						chat_open = True
+						game.chat_open = True
 						input_system.start_input("Chat", 20, Height - 40, (255, 255, 255))
 					if event.key == hot_keys["Execute command"]:
-						chat_open = True
+						game.chat_open = True
 						input_system.start_input("Chat", 20, Height - 40, (255, 255, 255), input_text="/")
 
 					if event.key == hot_keys["Close"]:
 	
-						if item_settings_open:
-							item_settings_open = False
+						if game.item_settings_open:
+							game.item_settings_open = False
 						elif ron.window[0]:
 							ron.window[0] = False
-						elif in_motherboard is not None:
-							in_motherboard = None
-						elif craft_list_open:
-							craft_list_open = False
-						elif inventory_open:
-							inventory_open = False
+						elif game.in_motherboard is not None:
+							game.in_motherboard = None
+						elif game.craft_list_open:
+							game.craft_list_open = False
+						elif game.inventory_open:
+							game.inventory_open = False
 						else:
 							music_channel.stop()
-							statistics[1] += (time.time() - start_time) / 3600
+							statistics[1] += (time.time() - game.start_time) / 3600
 							save()
 							world.chunk_manager.chunks = {}
 							world.mobs = []
 							player.effects = []
 							particles = []
-							chat = []
-							main_chat = []
-							chat_tick = 0
+							game.chat = []
+							game.main_chat = []
+							game.chat_tick = 0
 							inventory.whole_inventory = [None] * 30
-							world_name = None
-							if multiplayer:
+							game.world_name = None
+							if game.multiplayer:
 								net.disconnect()
 							menu()
 
@@ -1509,49 +1415,41 @@ def start_game():
 
 					if event.key == hot_keys["Help"]:
 						music_channel.stop()
-						statistics[1] += (time.time() - start_time) / 3600
+						statistics[1] += (time.time() - game.start_time) / 3600
 						save(False)
 						settings()
 
 					if event.key == hot_keys["Inventory"]:
-						inventory_open = not inventory_open
-						if not inventory_open:
-							if craft_items_list != [None] * 7:
-								for item_index, item in enumerate(craft_items_list):
+						game.inventory_open = not game.inventory_open
+						if not game.inventory_open:
+							if inventory.craft_items_list != [None] * 7:
+								for item_index, item in enumerate(inventory.craft_items_list):
 									if item is not None:
-										inventory.increate(item, craft_amounts_list[item_index])
-							craft_items_list = [None] * 7
-							craft_amounts_list = [None] * 7
-							craft_images_list = [None] * 7
+										inventory.increate(item, inventory.craft_amounts_list[item_index])
+							inventory.craft_items_list = [None] * 7
+							inventory.craft_amounts_list = [None] * 7
+							inventory.craft_images_list = [None] * 7
 
 					if event.key == hot_keys["Throw away the item"] and inventory.whole_inventory[changed_slot] is not None:
 						
 						if Backrooms.InBackrooms:
-							backrooms_objects.append(Object(inventory.whole_inventory[changed_slot].name, player.x, player.y, "Images/Items/" + inventory.whole_inventory[changed_slot].name + ".png", special_flags="Item"))
+							world.backrooms_objects.append(Object(inventory.whole_inventory[changed_slot].name, player.x, player.y, "Images/Items/" + inventory.whole_inventory[changed_slot].name + ".png", special_flags="Item"))
 						else:
-							world.particles.append(create_throw_particle(Object, Particle, player, world, multiplayer, game_events, inventory.whole_inventory[changed_slot].image, inventory.whole_inventory[changed_slot].name))
+							world.particles.append(create_throw_particle(Object, Particle, player, world, game, inventory.whole_inventory[changed_slot].image, inventory.whole_inventory[changed_slot].name))
 						
 						inventory.reduce(changed_slot)
 
-					if event.key == hot_keys["Change screen"]:
-						if screenmode == "FULLSCREEN":
-							win = pygame.display.set_mode((1000,700), pygame.RESIZABLE)
-							screenmode = "RESIZABLE"
-						else:
-							win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-							screenmode = "FULLSCREEN"
-		
-		if inventory_open:
-			if click[0] and not hold_left:
+		if game.inventory_open:
+			if click[0] and not game.hold_left:
 				inventory.set_start_cell(mouse_x, mouse_y)
-				hold_left = True
-			if hold_left and not click[0]:
-				craft_items_list, craft_amounts_list, craft_images_list = inventory.set_end_cell(mouse_x, mouse_y, craft_items_list, craft_amounts_list, craft_images_list)
-				hold_left = False
+				game.hold_left = True
+			if game.hold_left and not click[0]:
+				inventory.craft_items_list, inventory.craft_amounts_list, inventory.craft_images_list = inventory.set_end_cell(mouse_x, mouse_y)
+				game.hold_left = False
 
 		keys = pygame.key.get_pressed()
 
-		if not chat_open:
+		if not game.chat_open:
 
 			if keys[hot_keys["Move left"]]: dx = -1
 			if keys[hot_keys["Move right"]]: dx = 1
@@ -1565,14 +1463,14 @@ def start_game():
 		# Если есть движение - двигаем игрока
 		if dx != 0 or dy != 0:
 			player.move(dx, dy, dt, check_collision, world)
-			game_events.append({"event_type": "player_moved", "x": player.x, "y": player.y, "direction": player.direction})
-			if multiplayer:
+			game.events.append({"event_type": "player_moved", "x": player.x, "y": player.y, "direction": player.direction})
+			if game.multiplayer:
 				net.peers[net.player_id].x = player.x
 				net.peers[net.player_id].y = player.y
 				net.peers[net.player_id].direction = player.direction
 		else:
 			if player.is_moving:
-				game_events.append({"event_type": "player_stopped", "x": player.x, "y": player.y})
+				game.events.append({"event_type": "player_stopped", "x": player.x, "y": player.y})
 			player.stop()
 		
 		# Обновляем анимацию
@@ -1580,7 +1478,7 @@ def start_game():
 
 		win.fill((0, 0, 0))
 
-		if Width // 2 - 100 <= mouse_x <= Width // 2 + 100 and Height // 2 - 100 <= mouse_y <= Height // 2 + 100 and not any((item_settings_open, ron.window[0], in_motherboard, craft_list_open)):
+		if Width // 2 - 100 <= mouse_x <= Width // 2 + 100 and Height // 2 - 100 <= mouse_y <= Height // 2 + 100 and not any((game.item_settings_open, ron.window[0], game.in_motherboard, game.craft_list_open)):
 			mouse_object = t("It's you")
 
 		if not Backrooms.InBackrooms:
@@ -1641,7 +1539,7 @@ def start_game():
 			mechanism.main(world, player)
 		
 		for farmland in world.visible_farmlands.values():
-			farmland.main(release, dt, world_to_screen, world_rect_to_screen, mouse_x, mouse_y, world, inventory, changed_slot)
+			farmland.main(release, dt, world_to_screen, world_rect_to_screen, mouse_x, mouse_y, world, inventory)
 
 		if not Backrooms.InBackrooms and world.current_cave is None:
 
@@ -1653,7 +1551,7 @@ def start_game():
 
 				for object in Backrooms.objects:
 					i += 1
-					backrooms_objects.append(Object(object, Backrooms.objects_x[i], Backrooms.objects_y[i], "Images/Items/" + inventory.resources[object].name + ".png", special_flags="Item"))
+					world.backrooms_objects.append(Object(object, Backrooms.objects_x[i], Backrooms.objects_y[i], "Images/Items/" + inventory.resources[object].name + ".png", special_flags="Item"))
 
 				x = 0
 				y = 0
@@ -1863,13 +1761,13 @@ def start_game():
 			else:
 
 				# Обновление мира
-				world.update(player, multiplayer, multiplayer_role, net) #TODO оптимизировать
+				world.update(player, game.multiplayer, game.multiplayer_role, net) #TODO оптимизировать
 
 				# Отображение объектов
 
 				for object in world.visible_objects:
 
-					object.main(player, world, dt, world_to_screen, multiplayer, game_events, Particle)
+					object.main(player, world, dt, world_to_screen, game.multiplayer, game.events, Particle)
 
 					if object.get_left_pressed(mouse_x, mouse_y, player):
 
@@ -1926,8 +1824,8 @@ def start_game():
 
 				if player.breaking_object is None and player.started_break:
 					player.started_break = False
-					if multiplayer:
-						game_events.append({"event_type": "object_stopped_breaking", "x": player.breaking_object_info[0], "y": player.breaking_object_info[1], "name": player.breaking_object_info[2]})
+					if game.multiplayer:
+						game.events.append({"event_type": "object_stopped_breaking", "x": player.breaking_object_info[0], "y": player.breaking_object_info[1], "name": player.breaking_object_info[2]})
 					player.breaking_object_info = None
 
 				# Отображение предметов
@@ -1937,12 +1835,12 @@ def start_game():
 					last_changed_item = inventory.whole_inventory[changed_slot].name
 
 				for item in world.visible_items:
-					item.main(player, world, dt, world_to_screen, multiplayer, game_events, Particle)
+					item.main(player, world, dt, world_to_screen, game.multiplayer, game.events, Particle)
 					try_pick = True
 					if item.pickable and Settings["Game"][0] and player.x - 150 < item.x < player.x + 150 and player.y - 150 < item.y < player.y + 150:
 						world.particles.append(Particle(item.x, item.y, item.image, lambda particle: round(((player.x - particle.x) // 2) / 10 * 5), lambda particle: round(((player.y - particle.y) // 2) / 10 * 5), track_ticks=True, del_self_condition=lambda particle: abs(particle.x - player.x) < 30 and abs(particle.y - player.y) < 30, end_command=lambda particle: (inventory.increate(item.name), play_sound("Pick an item"))))
-						if multiplayer:
-							game_events.append({"event_type": "item_removed", "x": item.x, "y": item.y, "name": item.name})
+						if game.multiplayer:
+							game.events.append({"event_type": "item_removed", "x": item.x, "y": item.y, "name": item.name})
 
 						world.chunk_manager.get_chunk_at(item.x, item.y).items.remove(item)
 						try_pick = False
@@ -1953,8 +1851,8 @@ def start_game():
 						if click[0]:
 							world.particles.append(Particle(item.x, item.y, item.image, lambda particle: round(((player.x - particle.x) // 2) / 10 * 5), lambda particle: round(((player.y - particle.y) // 2) / 10 * 5), track_ticks=True, del_self_condition=lambda particle: abs(particle.x - player.x) < 30 and abs(particle.y - player.y) < 30, end_command=lambda particle: (inventory.increate(particle.special_flags), play_sound("Pick an item")), special_flags=item.name))
 									
-							if multiplayer:
-								game_events.append({"event_type": "item_removed", "x": item.x, "y": item.y, "name": item.name})
+							if game.multiplayer:
+								game.events.append({"event_type": "item_removed", "x": item.x, "y": item.y, "name": item.name})
 							world.chunk_manager.get_chunk_at(item.x, item.y).items.remove(item)
 						elif item.pickable and click[2] and inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name in ("Blue slime", "Pink slime"):
 							item.pickable = False
@@ -1962,7 +1860,7 @@ def start_game():
 
 		elif len(Backrooms.objects) != 1:
 
-			for object in backrooms_objects:
+			for object in world.backrooms_objects:
 
 				object.main()
 
@@ -2011,7 +1909,7 @@ def start_game():
 			projectile.main(world, world_to_screen, world_rect_to_screen)
 
 		for wall in world.visible_walls.values():
-			wall.main(release, world_to_screen, world_rect_to_screen, mouse_x, mouse_y, multiplayer, game_events)
+			wall.main(release, world_to_screen, world_rect_to_screen, mouse_x, mouse_y, game)
 		
 		if not Backrooms.InBackrooms and world.current_cave is None:
 
@@ -2064,9 +1962,9 @@ def start_game():
 
 		# Отрисовка игрока
 		
-		player.render(win)
+		player.render()
 
-		if multiplayer:
+		if game.multiplayer:
 			with net.lock:
 				peers_copy = dict(net.peers.items())  # Создаем копию
 			for pid, peer in peers_copy.items():
@@ -2093,7 +1991,7 @@ def start_game():
 									peer.breaking_object_info = None
 
 							net.server_events[pid].remove(event)
-					peer.render(win, world_to_screen, world_rect_to_screen)
+					peer.render(world_to_screen, world_rect_to_screen)
 					peer.update_animation(dt)
 					if peer.breaking_object_info is not None:
 						for object in world.visible_objects:
@@ -2103,15 +2001,15 @@ def start_game():
 
 		# Анимации Хиро
 
-		if animation[0] is None:
+		if player.animation[0] is None:
 			
 			if random.randint(1, 300) == 1:
-				animation = ["Close eyes", 0, 16]
+				player.animation = ["Close eyes", 0, 16]
 
-		elif animation[1] <= animation[2]:
-			animation[1] += 1
+		elif player.animation[1] <= player.animation[2]:
+			player.animation[1] += 1
 		else:
-			animation = [None, 0]
+			player.animation = [None, 0]
 
 		changed_item_x = 0
 		changed_item_y = 0
@@ -2127,16 +2025,16 @@ def start_game():
 						changed_item_x = Width // 2 - 80
 						changed_item_y = Height // 2
 
-						match animation[0]:
+						match player.animation[0]:
 
 							case "Close eyes":
 
-								if animation[1] < 9:
-									win.fill((62, 39, 49), (Width // 2 - 24, Height / 2 - 32, 8, animation[1] * 2))
-									win.fill((62, 39, 49), (Width // 2 + 16, Height / 2 - 32, 8, animation[1] * 2))
+								if player.animation[1] < 9:
+									win.fill((62, 39, 49), (Width // 2 - 24, Height / 2 - 32, 8, player.animation[1] * 2))
+									win.fill((62, 39, 49), (Width // 2 + 16, Height / 2 - 32, 8, player.animation[1] * 2))
 								else:
-									win.fill((62, 39, 49), (Width // 2 - 24, Height / 2 - 32, 8, (8 - animation[1] + 8) * 2))
-									win.fill((62, 39, 49), (Width // 2 + 16, Height / 2 - 32, 8, (8 - animation[1] + 8) * 2))
+									win.fill((62, 39, 49), (Width // 2 - 24, Height / 2 - 32, 8, (8 - player.animation[1] + 8) * 2))
+									win.fill((62, 39, 49), (Width // 2 + 16, Height / 2 - 32, 8, (8 - player.animation[1] + 8) * 2))
 
 						match player.costum:
 
@@ -2159,32 +2057,32 @@ def start_game():
 						changed_item_x = Width // 2 - 74
 						changed_item_y = Height // 2 - 16
 
-						match animation[0]:
+						match player.animation[0]:
 
 							case "Close eyes":
 
-								if animation[1] < 9:
-									win.fill((62, 39, 49), (Width // 2 - 24, Height / 2 - 24, 8, animation[1] * 2))
-									win.fill((62, 39, 49), (Width // 2 + 16, Height / 2 - 24, 8, animation[1] * 2))
+								if player.animation[1] < 9:
+									win.fill((62, 39, 49), (Width // 2 - 24, Height / 2 - 24, 8, player.animation[1] * 2))
+									win.fill((62, 39, 49), (Width // 2 + 16, Height / 2 - 24, 8, player.animation[1] * 2))
 								else:
-									win.fill((62, 39, 49), (Width // 2 - 24, Height / 2 - 24, 8, (8 - animation[1] + 8) * 2))
-									win.fill((62, 39, 49), (Width // 2 + 16, Height / 2 - 24, 8, (8 - animation[1] + 8) * 2))
+									win.fill((62, 39, 49), (Width // 2 - 24, Height / 2 - 24, 8, (8 - player.animation[1] + 8) * 2))
+									win.fill((62, 39, 49), (Width // 2 + 16, Height / 2 - 24, 8, (8 - player.animation[1] + 8) * 2))
 
 					case 5:
 
 						changed_item_x = Width // 2 - 94
 						changed_item_y = Height // 2 - 16
 
-						match animation[0]:
+						match player.animation[0]:
 
 							case "Close eyes":
 
-								if animation[1] < 9:
-									win.fill((62, 39, 49), (Width // 2 - 24, Height / 2 - 24, 8, animation[1] * 2))
-									win.fill((62, 39, 49), (Width // 2 + 16, Height / 2 - 24, 8, animation[1] * 2))
+								if player.animation[1] < 9:
+									win.fill((62, 39, 49), (Width // 2 - 24, Height / 2 - 24, 8, player.animation[1] * 2))
+									win.fill((62, 39, 49), (Width // 2 + 16, Height / 2 - 24, 8, player.animation[1] * 2))
 								else:
-									win.fill((62, 39, 49), (Width // 2 - 24, Height / 2 - 24, 8, (8 - animation[1] + 8) * 2))
-									win.fill((62, 39, 49), (Width // 2 + 16, Height / 2 - 24, 8, (8 - animation[1] + 8) * 2))
+									win.fill((62, 39, 49), (Width // 2 - 24, Height / 2 - 24, 8, (8 - player.animation[1] + 8) * 2))
+									win.fill((62, 39, 49), (Width // 2 + 16, Height / 2 - 24, 8, (8 - player.animation[1] + 8) * 2))
 
 			case "Left":
 
@@ -2195,42 +2093,42 @@ def start_game():
 						changed_item_x = Width // 2 - 84
 						changed_item_y = Height // 2 - 16
 
-						match animation[0]:
+						match player.animation[0]:
 
 							case "Close eyes":
 
-								if animation[1] < 9:
-									win.fill((62, 39, 49), (Width // 2 - 24, Height / 2 - 32, 8, animation[1] * 2))
+								if player.animation[1] < 9:
+									win.fill((62, 39, 49), (Width // 2 - 24, Height / 2 - 32, 8, player.animation[1] * 2))
 								else:
-									win.fill((62, 39, 49), (Width // 2 - 24, Height / 2 - 32, 8, (8 - animation[1] + 8) * 2))
+									win.fill((62, 39, 49), (Width // 2 - 24, Height / 2 - 32, 8, (8 - player.animation[1] + 8) * 2))
 
 					case 2:
 
 						changed_item_x = Width // 2 - 104
 						changed_item_y = Height // 2
 
-						match animation[0]:
+						match player.animation[0]:
 
 							case "Close eyes":
 
-								if animation[1] < 9:
-									win.fill((62, 39, 49), (Width // 2 - 24, Height / 2 - 24, 8, animation[1] * 2))
+								if player.animation[1] < 9:
+									win.fill((62, 39, 49), (Width // 2 - 24, Height / 2 - 24, 8, player.animation[1] * 2))
 								else:
-									win.fill((62, 39, 49), (Width // 2 - 24, Height / 2 - 24, 8, (8 - animation[1] + 8) * 2))
+									win.fill((62, 39, 49), (Width // 2 - 24, Height / 2 - 24, 8, (8 - player.animation[1] + 8) * 2))
 
 					case 5:
 
 						changed_item_x = Width // 2 - 70
 						changed_item_y = Height // 2
 
-						match animation[0]:
+						match player.animation[0]:
 
 							case "Close eyes":
 
-								if animation[1] < 9:
-									win.fill((62, 39, 49), (Width // 2 - 24, Height / 2 - 24, 8, animation[1] * 2))
+								if player.animation[1] < 9:
+									win.fill((62, 39, 49), (Width // 2 - 24, Height / 2 - 24, 8, player.animation[1] * 2))
 								else:
-									win.fill((62, 39, 49), (Width // 2 - 24, Height / 2 - 24, 8, (8 - animation[1] + 8) * 2))
+									win.fill((62, 39, 49), (Width // 2 - 24, Height / 2 - 24, 8, (8 - player.animation[1] + 8) * 2))
 
 			case "Right":
 
@@ -2241,51 +2139,51 @@ def start_game():
 						changed_item_x = Width // 2 - 20
 						changed_item_y = Height // 2
 
-						match animation[0]:
+						match player.animation[0]:
 
 							case "Close eyes":
 
-								if animation[1] < 9:
-									win.fill((62, 39, 49), (Width // 2 + 16, Height / 2 - 32, 8, animation[1] * 2))
+								if player.animation[1] < 9:
+									win.fill((62, 39, 49), (Width // 2 + 16, Height / 2 - 32, 8, player.animation[1] * 2))
 								else:
-									win.fill((62, 39, 49), (Width // 2 + 16, Height / 2 - 32, 8, (8 - animation[1] + 8) * 2))
+									win.fill((62, 39, 49), (Width // 2 + 16, Height / 2 - 32, 8, (8 - player.animation[1] + 8) * 2))
 
 					case 2:
 
 						changed_item_x = Width // 2 - 32
 						changed_item_y = Height // 2
 
-						match animation[0]:
+						match player.animation[0]:
 
 							case "Close eyes":
 
-								if animation[1] < 9:
-									win.fill((62, 39, 49), (Width // 2 + 16, Height / 2 - 24, 8, animation[1] * 2))
+								if player.animation[1] < 9:
+									win.fill((62, 39, 49), (Width // 2 + 16, Height / 2 - 24, 8, player.animation[1] * 2))
 								else:
-									win.fill((62, 39, 49), (Width // 2 + 16, Height / 2 - 24, 8, (8 - animation[1] + 8) * 2))
+									win.fill((62, 39, 49), (Width // 2 + 16, Height / 2 - 24, 8, (8 - player.animation[1] + 8) * 2))
 
 					case 5 | 6 | 7:
 
 						changed_item_x = Width // 2 - 16
 						changed_item_y = Height // 2 + 16
 
-						match animation[0]:
+						match player.animation[0]:
 
 							case "Close eyes":
 
-								if animation[1] < 9:
-									win.fill((62, 39, 49), (Width // 2 + 16, Height / 2 - 24, 8, animation[1] * 2))
+								if player.animation[1] < 9:
+									win.fill((62, 39, 49), (Width // 2 + 16, Height / 2 - 24, 8, player.animation[1] * 2))
 								else:
-									win.fill((62, 39, 49), (Width // 2 + 16, Height / 2 - 24, 8, (8 - animation[1] + 8) * 2))
+									win.fill((62, 39, 49), (Width // 2 + 16, Height / 2 - 24, 8, (8 - player.animation[1] + 8) * 2))
 
 		if inventory.whole_inventory[changed_slot] is not None and player.direction != "Up" and not (changed_item_x == changed_item_y == 0):
 			win.blit(inventory.whole_inventory[changed_slot].image, (changed_item_x, changed_item_y))
 
 		# Рон
 		old_ron_pos = ron.x, ron.y
-		ron.update(world, dt, not multiplayer or multiplayer_role == "Host")
-		if multiplayer and multiplayer_role == "Host" and old_ron_pos != (ron.x, ron.y):
-			game_events.append({"event_type": "ron_moved", "x": ron.x, "y": ron.y, "direction": ron.direction})
+		ron.update(world, dt, not game.multiplayer or game.multiplayer_role == "Host")
+		if game.multiplayer and game.multiplayer_role == "Host" and old_ron_pos != (ron.x, ron.y):
+			game.events.append({"event_type": "ron_moved", "x": ron.x, "y": ron.y, "direction": ron.direction})
 
 		# Механика использования еды и некоторых предметов через пробел
 
@@ -2296,7 +2194,7 @@ def start_game():
 			win.blit(Inventory_slot, (Width - 370, Height - 74))
 			win.blit(inventory.whole_inventory[changed_slot].image, (Width - 370, Height - 74))
 		
-		if (inventory.whole_inventory[changed_slot] is not None and (use_item_pressed or (click[0] and Settings["Game"][1]))) and not chat_open:
+		if (inventory.whole_inventory[changed_slot] is not None and (use_item_pressed or (click[0] and Settings["Game"][1]))) and not game.chat_open:
 
 			match inventory.whole_inventory[changed_slot].name:
 
@@ -2306,9 +2204,8 @@ def start_game():
 						if slot is not None and slot.name == "Bullet":
 							inventory.reduce(item_index)
 							world.projectiles.append(Projectile(player.x, player.y, mouse_x, mouse_y, "Bullet"))
-							if multiplayer:
-								game_events.append({"event_type": "projectile_added", "x": player.x, "y": player.y, "mouse_x": mouse_x, "mouse_y": mouse_y, "projectile_type": "Bullet"})
-							bullet_num += 1
+							if game.multiplayer:
+								game.events.append({"event_type": "projectile_added", "x": player.x, "y": player.y, "mouse_x": mouse_x, "mouse_y": mouse_y, "projectile_type": "Bullet"})
 							break
 					else:
 						text(t("You don't have bullets to shoot"), Width // 2, Height // 2, (200, 30, 30), alignment=True)
@@ -2319,9 +2216,8 @@ def start_game():
 						if slot is not None and slot.name == "Arrow":
 							inventory.reduce(item_index)
 							world.projectiles.append(Projectile(player.x, player.y, mouse_x, mouse_y, "Arrow"))
-							if multiplayer:
-								game_events.append({"event_type": "projectile_added", "x": player.x, "y": player.y, "mouse_x": mouse_x, "mouse_y": mouse_y, "projectile_type": "Arrow"})
-							bullet_num += 1
+							if game.multiplayer:
+								game.events.append({"event_type": "projectile_added", "x": player.x, "y": player.y, "mouse_x": mouse_x, "mouse_y": mouse_y, "projectile_type": "Arrow"})
 							break
 					else:
 						text(t("You don't have arrows to shoot"), Width // 2, Height // 2, (200, 30, 30), alignment=True)
@@ -2403,7 +2299,6 @@ def start_game():
 			draw_select_image_arbitrarily(player.hovered_object.x, player.hovered_object.y, player.hovered_object.w, player.hovered_object.h, world_to_screen, world_rect_to_screen)
 			mouse_object = player.hovered_object.name
 
-
 		# Механика анимации слотов
 		if Settings["Display"][5]:
 			for yy, xx in product(range(0, 3), range(0, 10)):
@@ -2412,23 +2307,23 @@ def start_game():
 				cell_y = 10 + yy * 80
 			
 				if cell_x <= mouse_x <= cell_x + 64 and cell_y <= mouse_y <= cell_y + 64:
-					if slot_animations[yy * 10 + xx][0]:
-						if slot_animations[yy * 10 + xx][1] < dt * 150:
-							slot_animations[yy * 10 + xx][1] += 1
-							slot_animations[yy * 10 + xx][2] -= 3
-							slot_animations[yy * 10 + xx][2] = abs(slot_animations[yy * 10 + xx][2])
+					if game.slot_animations[yy * 10 + xx][0]:
+						if game.slot_animations[yy * 10 + xx][1] < dt * 150:
+							game.slot_animations[yy * 10 + xx][1] += 1
+							game.slot_animations[yy * 10 + xx][2] -= 3
+							game.slot_animations[yy * 10 + xx][2] = abs(game.slot_animations[yy * 10 + xx][2])
 					else:
-						slot_animations[yy * 10 + xx] = [True, 0, 10]
+						game.slot_animations[yy * 10 + xx] = [True, 0, 10]
 					
-				elif slot_animations[yy * 10 + xx][0]:
-					slot_animations[yy * 10 + xx][0] = False
-					slot_animations[yy * 10 + xx][1] = 0
-				elif slot_animations[yy * 10 + xx][1] < dt * 250:
-					slot_animations[yy * 10 + xx][1] += 1	
+				elif game.slot_animations[yy * 10 + xx][0]:
+					game.slot_animations[yy * 10 + xx][0] = False
+					game.slot_animations[yy * 10 + xx][1] = 0
+				elif game.slot_animations[yy * 10 + xx][1] < dt * 250:
+					game.slot_animations[yy * 10 + xx][1] += 1	
 
 		# Меню на клавише TAB
 
-		if keys[hot_keys["TAB menu"]] and not chat_open:
+		if keys[hot_keys["TAB menu"]] and not game.chat_open:
 
 			radius = 0	 # Расстояние, на котором кнопки находятся относительно центра экрана
 			display_speed = 7	# Скорость отдаления кнопок от центра экрана
@@ -2482,27 +2377,27 @@ def start_game():
 				# Дальше идёт отображение всех кнопок по супер сложной формуле, я уже сам хз как это работает
 					
 				if Width // 2 + radius - 32 < mouse_x < Width // 2 + radius + 32 and Height // 2 - 32 < mouse_y < Height // 2 + 32:
-					if special_slot_animations["Craft list slot"][0]:
-						if special_slot_animations["Craft list slot"][1] < FPS / 6:
-							special_slot_animations["Craft list slot"][1] += 1
-							special_slot_animations["Craft list slot"][2] -= 3
-							special_slot_animations["Craft list slot"][2] = abs(special_slot_animations["Craft list slot"][2])
+					if game.special_slot_animations["Craft list slot"][0]:
+						if game.special_slot_animations["Craft list slot"][1] < FPS / 6:
+							game.special_slot_animations["Craft list slot"][1] += 1
+							game.special_slot_animations["Craft list slot"][2] -= 3
+							game.special_slot_animations["Craft list slot"][2] = abs(game.special_slot_animations["Craft list slot"][2])
 					else:
-						special_slot_animations["Craft list slot"] = [True, 0, 10]
+						game.special_slot_animations["Craft list slot"] = [True, 0, 10]
 					
 					if release:
-						inventory_open = True
-						craft_list_open = True
+						game.inventory_open = True
+						game.craft_list_open = True
 						b = True
 						display_speed = 7
 					
-				elif special_slot_animations["Craft list slot"][0]:
-					special_slot_animations["Craft list slot"][0] = False
-					special_slot_animations["Craft list slot"][1] = 0
-				elif special_slot_animations["Craft list slot"][1] < FPS / 4:
-					special_slot_animations["Craft list slot"][1] += 1	 
-				if special_slot_animations["Craft list slot"][0] and Settings["Display"][5]:
-					try:win.blit(pygame.transform.scale(Craft_list_slot2, (64 - special_slot_animations["Craft list slot"][2], 64 - special_slot_animations["Craft list slot"][2])), (Width // 2 + radius - 32, Height // 2 - 32))
+				elif game.special_slot_animations["Craft list slot"][0]:
+					game.special_slot_animations["Craft list slot"][0] = False
+					game.special_slot_animations["Craft list slot"][1] = 0
+				elif game.special_slot_animations["Craft list slot"][1] < FPS / 4:
+					game.special_slot_animations["Craft list slot"][1] += 1	 
+				if game.special_slot_animations["Craft list slot"][0] and Settings["Display"][5]:
+					try:win.blit(pygame.transform.scale(Craft_list_slot2, (64 - game.special_slot_animations["Craft list slot"][2], 64 - game.special_slot_animations["Craft list slot"][2])), (Width // 2 + radius - 32, Height // 2 - 32))
 					except: win.blit(Craft_list_slot2, (Width // 2 + radius - 32, Height // 2 - 32))
 				
 				else:
@@ -2513,28 +2408,28 @@ def start_game():
 
 
 				if Width // 2 + math.cos((2 * math.pi) / 6) * radius - 32 < mouse_x < Width // 2 + math.cos((2 * math.pi) / 6) * radius + 32 and Height // 2 + math.sin((2 * math.pi) / 6) * radius - 32 < mouse_y < Height // 2 + math.sin((2 * math.pi) / 6) * radius + 32:
-					if special_slot_animations["Game menu slot"][0]:
-						if special_slot_animations["Game menu slot"][1] < FPS / 6:
-							special_slot_animations["Game menu slot"][1] += 1
-							special_slot_animations["Game menu slot"][2] -= 3
-							special_slot_animations["Game menu slot"][2] = abs(special_slot_animations["Game menu slot"][2])
+					if game.special_slot_animations["Game menu slot"][0]:
+						if game.special_slot_animations["Game menu slot"][1] < FPS / 6:
+							game.special_slot_animations["Game menu slot"][1] += 1
+							game.special_slot_animations["Game menu slot"][2] -= 3
+							game.special_slot_animations["Game menu slot"][2] = abs(game.special_slot_animations["Game menu slot"][2])
 					else:
-						special_slot_animations["Game menu slot"] = [True, 0, 10]
+						game.special_slot_animations["Game menu slot"] = [True, 0, 10]
 					
 					if click[0]:
 						save(False)
-						if multiplayer:
+						if game.multiplayer:
 							net.disconnect()
 						menu()
 					
-				elif special_slot_animations["Game menu slot"][0]:
-					special_slot_animations["Game menu slot"][0] = False
-					special_slot_animations["Game menu slot"][1] = 0
-				elif special_slot_animations["Game menu slot"][1] < FPS / 4:
-					special_slot_animations["Game menu slot"][1] += 1
+				elif game.special_slot_animations["Game menu slot"][0]:
+					game.special_slot_animations["Game menu slot"][0] = False
+					game.special_slot_animations["Game menu slot"][1] = 0
+				elif game.special_slot_animations["Game menu slot"][1] < FPS / 4:
+					game.special_slot_animations["Game menu slot"][1] += 1
 
-				if special_slot_animations["Game menu slot"][0] and Settings["Display"][5]:
-					try:win.blit(pygame.transform.scale(Game_menu_slot2, (64 - special_slot_animations["Game menu slot"][2], 64 - special_slot_animations["Game menu slot"][2])), (Width // 2 + math.cos((2 * math.pi) / 6) * radius - 32, Height // 2 + math.sin((2 * math.pi) / 6) * radius - 32))
+				if game.special_slot_animations["Game menu slot"][0] and Settings["Display"][5]:
+					try:win.blit(pygame.transform.scale(Game_menu_slot2, (64 - game.special_slot_animations["Game menu slot"][2], 64 - game.special_slot_animations["Game menu slot"][2])), (Width // 2 + math.cos((2 * math.pi) / 6) * radius - 32, Height // 2 + math.sin((2 * math.pi) / 6) * radius - 32))
 					except: win.blit(Game_menu_slot2, (Width // 2 + math.cos((2 * math.pi) / 6) * radius - 32, Height // 2 + math.sin((2 * math.pi) / 6) * radius - 32))
 				
 				else:
@@ -2545,27 +2440,27 @@ def start_game():
 
 				
 				if Width // 2 + math.cos((2 * math.pi * 2) / 6) * radius - 32 < mouse_x < Width // 2 + math.cos((2 * math.pi * 2) / 6) * radius + 32 and Height // 2 + math.sin((2 * math.pi * 2) / 6) * radius - 32 < mouse_y < Height // 2 + math.sin((2 * math.pi * 2) / 6) * radius + 32:
-					if special_slot_animations["Menu slot"][0]:
-						if special_slot_animations["Menu slot"][1] < FPS / 6:
-							special_slot_animations["Menu slot"][1] += 1
-							special_slot_animations["Menu slot"][2] -= 3
-							special_slot_animations["Menu slot"][2] = abs(special_slot_animations["Menu slot"][2])
+					if game.special_slot_animations["Menu slot"][0]:
+						if game.special_slot_animations["Menu slot"][1] < FPS / 6:
+							game.special_slot_animations["Menu slot"][1] += 1
+							game.special_slot_animations["Menu slot"][2] -= 3
+							game.special_slot_animations["Menu slot"][2] = abs(game.special_slot_animations["Menu slot"][2])
 					else:
-						special_slot_animations["Menu slot"] = [True, 0, 10]
+						game.special_slot_animations["Menu slot"] = [True, 0, 10]
 					
 					if click[0]:
-						multiplayer_menu_open = True
+						game.multiplayer_menu_open = True
 						b = True
 						display_speed = 7
 
-				elif special_slot_animations["Menu slot"][0]:
-					special_slot_animations["Menu slot"][0] = False
-					special_slot_animations["Menu slot"][1] = 0
-				elif special_slot_animations["Menu slot"][1] < FPS / 4:
-					special_slot_animations["Menu slot"][1] += 1   
+				elif game.special_slot_animations["Menu slot"][0]:
+					game.special_slot_animations["Menu slot"][0] = False
+					game.special_slot_animations["Menu slot"][1] = 0
+				elif game.special_slot_animations["Menu slot"][1] < FPS / 4:
+					game.special_slot_animations["Menu slot"][1] += 1   
 
-				if special_slot_animations["Menu slot"][0] and Settings["Display"][5]:
-					try:win.blit(pygame.transform.scale(Menu_slot2, (64 - special_slot_animations["Menu slot"][2], 64 - special_slot_animations["Menu slot"][2])), (Width // 2 + math.cos((2 * math.pi * 2) / 6) * radius - 32, Height // 2 + math.sin((2 * math.pi) / 6) * radius - 32))
+				if game.special_slot_animations["Menu slot"][0] and Settings["Display"][5]:
+					try:win.blit(pygame.transform.scale(Menu_slot2, (64 - game.special_slot_animations["Menu slot"][2], 64 - game.special_slot_animations["Menu slot"][2])), (Width // 2 + math.cos((2 * math.pi * 2) / 6) * radius - 32, Height // 2 + math.sin((2 * math.pi) / 6) * radius - 32))
 					except: win.blit(Menu_slot2, (Width // 2 + math.cos((2 * math.pi * 2) / 6) * radius - 32, Height // 2 + math.sin((2 * math.pi * 2) / 6) * radius - 32))
 				
 				else:
@@ -2576,27 +2471,27 @@ def start_game():
 
 
 				if Width // 2 + math.cos((2 * math.pi * 3) / 6) * radius - 32 < mouse_x < Width // 2 + math.cos((2 * math.pi * 3) / 6) * radius + 32 and Height // 2 + math.sin((2 * math.pi * 3) / 6) * radius - 32 < mouse_y < Height // 2 + math.sin((2 * math.pi * 3) / 6) * radius + 32:
-					if special_slot_animations["Multiplayer slot"][0]:
-						if special_slot_animations["Multiplayer slot"][1] < FPS / 6:
-							special_slot_animations["Multiplayer slot"][1] += 1
-							special_slot_animations["Multiplayer slot"][2] -= 3
-							special_slot_animations["Multiplayer slot"][2] = abs(special_slot_animations["Multiplayer slot"][2])
+					if game.special_slot_animations["Multiplayer slot"][0]:
+						if game.special_slot_animations["Multiplayer slot"][1] < FPS / 6:
+							game.special_slot_animations["Multiplayer slot"][1] += 1
+							game.special_slot_animations["Multiplayer slot"][2] -= 3
+							game.special_slot_animations["Multiplayer slot"][2] = abs(game.special_slot_animations["Multiplayer slot"][2])
 					else:
-						special_slot_animations["Multiplayer slot"] = [True, 0, 10]
+						game.special_slot_animations["Multiplayer slot"] = [True, 0, 10]
 					
 					if click[0]:
-						multiplayer_menu_open = True
+						game.multiplayer_menu_open = True
 						b = True
 						display_speed = 7
 
-				elif special_slot_animations["Multiplayer slot"][0]:
-					special_slot_animations["Multiplayer slot"][0] = False
-					special_slot_animations["Multiplayer slot"][1] = 0
-				elif special_slot_animations["Multiplayer slot"][1] < FPS / 4:
-					special_slot_animations["Multiplayer slot"][1] += 1   
+				elif game.special_slot_animations["Multiplayer slot"][0]:
+					game.special_slot_animations["Multiplayer slot"][0] = False
+					game.special_slot_animations["Multiplayer slot"][1] = 0
+				elif game.special_slot_animations["Multiplayer slot"][1] < FPS / 4:
+					game.special_slot_animations["Multiplayer slot"][1] += 1   
 
-				if special_slot_animations["Multiplayer slot"][0] and Settings["Display"][5]:
-					try:win.blit(pygame.transform.scale(Multiplayer_slot2, (64 - special_slot_animations["Multiplayer slot"][2], 64 - special_slot_animations["Multiplayer slot"][2])), (Width // 2 + math.cos((2 * math.pi * 3) / 6) * radius - 32, Height // 2 + math.sin((2 * math.pi * 3) / 6) * radius - 32))
+				if game.special_slot_animations["Multiplayer slot"][0] and Settings["Display"][5]:
+					try:win.blit(pygame.transform.scale(Multiplayer_slot2, (64 - game.special_slot_animations["Multiplayer slot"][2], 64 - game.special_slot_animations["Multiplayer slot"][2])), (Width // 2 + math.cos((2 * math.pi * 3) / 6) * radius - 32, Height // 2 + math.sin((2 * math.pi * 3) / 6) * radius - 32))
 					except: win.blit(Multiplayer_slot2, (Width // 2 + math.cos((2 * math.pi * 3) / 6) * radius - 32, Height // 2 + math.sin((2 * math.pi * 3) / 6) * radius - 32))
 				
 				else:
@@ -2607,26 +2502,26 @@ def start_game():
 
 				
 				if Width // 2 + math.cos((2 * math.pi * 4) / 6) * radius - 32 < mouse_x < Width // 2 + math.cos((2 * math.pi * 4) / 6) * radius + 32 and Height // 2 + math.sin((2 * math.pi * 4) / 6) * radius - 32 < mouse_y < Height // 2 + math.sin((2 * math.pi * 4) / 6) * radius + 32:
-					if special_slot_animations["Close slot"][0]:
-						if special_slot_animations["Close slot"][1] < FPS / 6:
-							special_slot_animations["Close slot"][1] += 1
-							special_slot_animations["Close slot"][2] -= 3
-							special_slot_animations["Close slot"][2] = abs(special_slot_animations["Close slot"][2])
+					if game.special_slot_animations["Close slot"][0]:
+						if game.special_slot_animations["Close slot"][1] < FPS / 6:
+							game.special_slot_animations["Close slot"][1] += 1
+							game.special_slot_animations["Close slot"][2] -= 3
+							game.special_slot_animations["Close slot"][2] = abs(game.special_slot_animations["Close slot"][2])
 					else:
-						special_slot_animations["Close slot"] = [True, 0, 10]
+						game.special_slot_animations["Close slot"] = [True, 0, 10]
 					
 					if click[0]:
 						b = True
 						display_speed = 7
 
-				elif special_slot_animations["Close slot"][0]:
-					special_slot_animations["Close slot"][0] = False
-					special_slot_animations["Close slot"][1] = 0
-				elif special_slot_animations["Close slot"][1] < FPS / 4:
-					special_slot_animations["Close slot"][1] += 1	
+				elif game.special_slot_animations["Close slot"][0]:
+					game.special_slot_animations["Close slot"][0] = False
+					game.special_slot_animations["Close slot"][1] = 0
+				elif game.special_slot_animations["Close slot"][1] < FPS / 4:
+					game.special_slot_animations["Close slot"][1] += 1	
 
-				if special_slot_animations["Close slot"][0] and Settings["Display"][5]:
-					try:win.blit(pygame.transform.scale(Close_slot2, (64 - special_slot_animations["Close slot"][2], 64 - special_slot_animations["Close slot"][2])), (Width // 2 + math.cos((2 * math.pi * 4) / 6) * radius - 32, Height // 2 + math.sin((2 * math.pi * 4) / 6) * radius - 32))
+				if game.special_slot_animations["Close slot"][0] and Settings["Display"][5]:
+					try:win.blit(pygame.transform.scale(Close_slot2, (64 - game.special_slot_animations["Close slot"][2], 64 - game.special_slot_animations["Close slot"][2])), (Width // 2 + math.cos((2 * math.pi * 4) / 6) * radius - 32, Height // 2 + math.sin((2 * math.pi * 4) / 6) * radius - 32))
 					except: win.blit(Close_slot2, (Width // 2 + math.cos((2 * math.pi * 4) / 6) * radius - 32, Height // 2 + math.sin((2 * math.pi * 4) / 6) * radius - 32))
 				
 				else:
@@ -2637,26 +2532,26 @@ def start_game():
 
 
 				if Width // 2 + math.cos((2 * math.pi * 5) / 6) * radius - 32 < mouse_x < Width // 2 + math.cos((2 * math.pi * 5) / 6) * radius + 32 and Height // 2 + math.sin((2 * math.pi * 5) / 6) * radius - 32 < mouse_y < Height // 2 + math.sin((2 * math.pi * 5) / 6) * radius + 32:
-					if special_slot_animations["Reference slot"][0]:
-						if special_slot_animations["Reference slot"][1] < FPS / 6:
-							special_slot_animations["Reference slot"][1] += 1
-							special_slot_animations["Reference slot"][2] -= 3
-							special_slot_animations["Reference slot"][2] = abs(special_slot_animations["Reference slot"][2])
+					if game.special_slot_animations["Reference slot"][0]:
+						if game.special_slot_animations["Reference slot"][1] < FPS / 6:
+							game.special_slot_animations["Reference slot"][1] += 1
+							game.special_slot_animations["Reference slot"][2] -= 3
+							game.special_slot_animations["Reference slot"][2] = abs(game.special_slot_animations["Reference slot"][2])
 					else:
-						special_slot_animations["Reference slot"] = [True, 0, 10]
+						game.special_slot_animations["Reference slot"] = [True, 0, 10]
 					
 					if click[0]:
 						save(False)
 						settings()
 
-				elif special_slot_animations["Reference slot"][0]:
-					special_slot_animations["Reference slot"][0] = False
-					special_slot_animations["Reference slot"][1] = 0
-				elif special_slot_animations["Reference slot"][1] < FPS / 4:
-					special_slot_animations["Reference slot"][1] += 1	
+				elif game.special_slot_animations["Reference slot"][0]:
+					game.special_slot_animations["Reference slot"][0] = False
+					game.special_slot_animations["Reference slot"][1] = 0
+				elif game.special_slot_animations["Reference slot"][1] < FPS / 4:
+					game.special_slot_animations["Reference slot"][1] += 1	
 
-				if special_slot_animations["Reference slot"][0] and Settings["Display"][5]:
-					try:win.blit(pygame.transform.scale(Reference_slot2, (64 - special_slot_animations["Reference slot"][2], 64 - special_slot_animations["Reference slot"][2])), (Width // 2 + math.cos((2 * math.pi * 5) / 6) * radius - 32, Height // 2 + math.sin((2 * math.pi * 4) / 6) * radius - 32))
+				if game.special_slot_animations["Reference slot"][0] and Settings["Display"][5]:
+					try:win.blit(pygame.transform.scale(Reference_slot2, (64 - game.special_slot_animations["Reference slot"][2], 64 - game.special_slot_animations["Reference slot"][2])), (Width // 2 + math.cos((2 * math.pi * 5) / 6) * radius - 32, Height // 2 + math.sin((2 * math.pi * 4) / 6) * radius - 32))
 					except: win.blit(Reference_slot2, (Width // 2 + math.cos((2 * math.pi * 5) / 6) * radius - 32, Height // 2 + math.sin((2 * math.pi * 5) / 6) * radius - 32))
 				
 				else:
@@ -2673,14 +2568,14 @@ def start_game():
 			left_b.main()
 			down_b.main()
 			right_b.main()
-			if inventory_open:
+			if game.inventory_open:
 				win.blit(load(path + "Images/Slots/Open inventory slot.png", 64), (890, 10))
 				if 890 <= mouse_x <= 954 and 10 <= mouse_y <= 74 and click[0]:
-					inventory_open = False
+					game.inventory_open = False
 			else:
 				win.blit(load(path + "Images/Slots/Open inventory slot.png", 64), (810, 10))
 				if 810 <= mouse_x <= 874 and 10 <= mouse_y <= 74 and click[0]:
-					inventory_open = True
+					game.inventory_open = True
 		
 		if player.HP_animation_tick > 0 and not player.god_mode:
 			
@@ -2696,7 +2591,7 @@ def start_game():
 				player.HP_animation_tick = 0
 
 		# Отображение инвентаря
-		if inventory_open:
+		if game.inventory_open:
 
 			if 10 < mouse_x < 794 and 10 < mouse_y < 314:
 				mouse_object = t("Inventory (I)")
@@ -2709,8 +2604,8 @@ def start_game():
 				if slot == changed_slot: win.blit(Changed_inventory_slot, (slot_x, slot_y))
 				else:
 					
-					if slot_animations[slot][0]:
-						try:win.blit(pygame.transform.scale(Inventory_slot, (64 - slot_animations[slot][2], 64 - slot_animations[slot][2])), (slot_x, slot_y))
+					if game.slot_animations[slot][0]:
+						try:win.blit(pygame.transform.scale(Inventory_slot, (64 - game.slot_animations[slot][2], 64 - game.slot_animations[slot][2])), (slot_x, slot_y))
 						except: win.blit(pygame.transform.scale(Inventory_slot, (64, 64)), (slot_x, slot_y))
 
 					else:
@@ -2738,7 +2633,7 @@ def start_game():
 
 			win.blit(Tool_inventory_slot, (90, 250))
 
-			item_to_get = inventory.check_recipies(need_object, craft_items_list, craft_amounts_list)
+			item_to_get = inventory.check_recipies(need_object)
 			
 			if item_to_get is not None:
 
@@ -2751,32 +2646,32 @@ def start_game():
 					win.blit(inventory.resources[item_to_get[3]].image, (90, 250))
 				if 730 <= mouse_x <= 810 and 250 <= mouse_y <= 330 and release:
 					inventory.increate(item_to_get[0], item_to_get[1])
-					craft_items_list = [None] * 7
-					craft_amounts_list = [None] * 7
-					craft_images_list = [None] * 7
+					inventory.craft_items_list = [None] * 7
+					inventory.craft_amounts_list = [None] * 7
+					inventory.craft_images_list = [None] * 7
 			
 			# Разделение предметов
 			if 810 <= mouse_x <= 874 and 10 <= mouse_y <= 74:
-				if special_slot_animations["Split items slot"][0]:
-					if special_slot_animations["Split items slot"][1] < FPS / 6:
-						special_slot_animations["Split items slot"][1] += 1
-						special_slot_animations["Split items slot"][2] -= 3
-						special_slot_animations["Split items slot"][2] = abs(special_slot_animations["Split items slot"][2])
+				if game.special_slot_animations["Split items slot"][0]:
+					if game.special_slot_animations["Split items slot"][1] < FPS / 6:
+						game.special_slot_animations["Split items slot"][1] += 1
+						game.special_slot_animations["Split items slot"][2] -= 3
+						game.special_slot_animations["Split items slot"][2] = abs(game.special_slot_animations["Split items slot"][2])
 				else:
-					special_slot_animations["Split items slot"] = [True, 0, 10]
+					game.special_slot_animations["Split items slot"] = [True, 0, 10]
 				
 				if release:
 					inventory.Split_items = not inventory.Split_items
 				
-			elif special_slot_animations["Split items slot"][0]:
-				special_slot_animations["Split items slot"][0] = False
-				special_slot_animations["Split items slot"][1] = 0
-			elif special_slot_animations["Split items slot"][1] < FPS / 4:
-				special_slot_animations["Split items slot"][1] += 1   
+			elif game.special_slot_animations["Split items slot"][0]:
+				game.special_slot_animations["Split items slot"][0] = False
+				game.special_slot_animations["Split items slot"][1] = 0
+			elif game.special_slot_animations["Split items slot"][1] < FPS / 4:
+				game.special_slot_animations["Split items slot"][1] += 1   
 
-			if special_slot_animations["Split items slot"][0] or inventory.Split_items:
+			if game.special_slot_animations["Split items slot"][0] or inventory.Split_items:
 				try:
-					if Settings["Display"][5]: win.blit(pygame.transform.scale(Split_items2, (64 - special_slot_animations["Split items slot"][2], 64 - special_slot_animations["Split items slot"][2])), (810, 10))
+					if Settings["Display"][5]: win.blit(pygame.transform.scale(Split_items2, (64 - game.special_slot_animations["Split items slot"][2], 64 - game.special_slot_animations["Split items slot"][2])), (810, 10))
 					else: win.blit(pygame.transform.scale(Split_items2, (64, 64)), (810, 10))
 				except: win.blit(pygame.transform.scale(Split_items2, (64, 64)), (810, 10))
 				mouse_object = t("Split items")
@@ -2787,26 +2682,26 @@ def start_game():
 			# Сжатие инвентаря
 			
 			if 810 <= mouse_x <= 874 and 170 <= mouse_y <= 234:
-				if special_slot_animations["Compact inventory slot"][0]:
-					if special_slot_animations["Compact inventory slot"][1] < FPS / 6:
-						special_slot_animations["Compact inventory slot"][1] += 1
-						special_slot_animations["Compact inventory slot"][2] -= 3
-						special_slot_animations["Compact inventory slot"][2] = abs(special_slot_animations["Compact inventory slot"][2])
+				if game.special_slot_animations["Compact inventory slot"][0]:
+					if game.special_slot_animations["Compact inventory slot"][1] < FPS / 6:
+						game.special_slot_animations["Compact inventory slot"][1] += 1
+						game.special_slot_animations["Compact inventory slot"][2] -= 3
+						game.special_slot_animations["Compact inventory slot"][2] = abs(game.special_slot_animations["Compact inventory slot"][2])
 				else:
-					special_slot_animations["Compact inventory slot"] = [True, 0, 10]
+					game.special_slot_animations["Compact inventory slot"] = [True, 0, 10]
 				
 				if release:
 					inventory.compact_inventory()
 				
-			elif special_slot_animations["Compact inventory slot"][0]:
-				special_slot_animations["Compact inventory slot"][0] = False
-				special_slot_animations["Compact inventory slot"][1] = 0
-			elif special_slot_animations["Compact inventory slot"][1] < FPS / 4:
-				special_slot_animations["Compact inventory slot"][1] += 1	
+			elif game.special_slot_animations["Compact inventory slot"][0]:
+				game.special_slot_animations["Compact inventory slot"][0] = False
+				game.special_slot_animations["Compact inventory slot"][1] = 0
+			elif game.special_slot_animations["Compact inventory slot"][1] < FPS / 4:
+				game.special_slot_animations["Compact inventory slot"][1] += 1	
 
-			if special_slot_animations["Compact inventory slot"][0]:
+			if game.special_slot_animations["Compact inventory slot"][0]:
 				try:
-					if Settings["Display"][5]: win.blit(pygame.transform.scale(Compact_inventory2, (64 - special_slot_animations["Compact inventory slot"][2], 64 - special_slot_animations["Compact inventory slot"][2])), (810, 170))
+					if Settings["Display"][5]: win.blit(pygame.transform.scale(Compact_inventory2, (64 - game.special_slot_animations["Compact inventory slot"][2], 64 - game.special_slot_animations["Compact inventory slot"][2])), (810, 170))
 					else: win.blit(pygame.transform.scale(Compact_inventory2, (64, 64)), (810, 170))
 				except: win.blit(pygame.transform.scale(Compact_inventory2, (64, 64)), (810, 170))
 				mouse_object = t("Compact inventory")
@@ -2814,9 +2709,9 @@ def start_game():
 			else:
 				win.blit(pygame.transform.scale(Compact_inventory1, (64, 64)), (810, 170))
 
-			inventory.draw_whole(craft_images_list, craft_amounts_list, Inventory_slot)
+			inventory.draw_whole()
 			
-			if craft_list_open:
+			if game.craft_list_open:
 
 				win.blit(Changed_craft_list_inventory_slot, (810, 90))
 				win_fill(rect=(970, 0, Width - 970, Height))
@@ -2829,47 +2724,47 @@ def start_game():
 							break
 						else:
 							cell_x += 1
-							win.blit(Inventory_slot, (970 + cell_x * 80, 10 + craft_list_offset + cell_y * 80))
-							win.blit(inventory.resources[ii].image, (970 + cell_x * 80, 10 + craft_list_offset + cell_y * 80))
-							win.blit(textInfo.render(str(recipe.ingredients_amounts[cell_x]), True, (0, 150, 0)), (980 + cell_x * 80, 52 + craft_list_offset + cell_y * 80))
+							win.blit(Inventory_slot, (970 + cell_x * 80, 10 + game.craft_list_offset + cell_y * 80))
+							win.blit(inventory.resources[ii].image, (970 + cell_x * 80, 10 + game.craft_list_offset + cell_y * 80))
+							win.blit(textInfo.render(str(recipe.ingredients_amounts[cell_x]), True, (0, 150, 0)), (980 + cell_x * 80, 52 + game.craft_list_offset + cell_y * 80))
 					if recipe.need_object is not None:
 						cell_x = 8
-						win.blit(Changed_inventory_slot, (990 + cell_x * 80, 10 + craft_list_offset + cell_y * 80))
-						win.blit(inventory.resources[recipe.need_object].image, (990 + cell_x * 80, 10 + craft_list_offset + cell_y * 80))
+						win.blit(Changed_inventory_slot, (990 + cell_x * 80, 10 + game.craft_list_offset + cell_y * 80))
+						win.blit(inventory.resources[recipe.need_object].image, (990 + cell_x * 80, 10 + game.craft_list_offset + cell_y * 80))
 					if recipe.need_tool is not None:
 						cell_x = 9
-						win.blit(Changed_inventory_slot, (990 + cell_x * 80, 10 + craft_list_offset + cell_y * 80))
-						win.blit(inventory.resources[recipe.need_tool].image, (990 + cell_x * 80, 10 + craft_list_offset + cell_y * 80))
+						win.blit(Changed_inventory_slot, (990 + cell_x * 80, 10 + game.craft_list_offset + cell_y * 80))
+						win.blit(inventory.resources[recipe.need_tool].image, (990 + cell_x * 80, 10 + game.craft_list_offset + cell_y * 80))
 					cell_x = 10
-					win.blit(Changed_inventory_slot, (990 + cell_x * 80, 10 + craft_list_offset + cell_y * 80))
-					win.blit(inventory.resources[recipe.result].image, (990 + cell_x * 80, 10 + craft_list_offset + cell_y * 80))
-					win.blit(textInfo.render(str(recipe.result_amount), True, (0, 150, 0)), (1000 + cell_x * 80, 52 + craft_list_offset + cell_y * 80))
+					win.blit(Changed_inventory_slot, (990 + cell_x * 80, 10 + game.craft_list_offset + cell_y * 80))
+					win.blit(inventory.resources[recipe.result].image, (990 + cell_x * 80, 10 + game.craft_list_offset + cell_y * 80))
+					win.blit(textInfo.render(str(recipe.result_amount), True, (0, 150, 0)), (1000 + cell_x * 80, 52 + game.craft_list_offset + cell_y * 80))
 
 				if 810 <= mouse_x <= 874 and 90 <= mouse_y <= 154 and release:
-					craft_list_open = False
+					game.craft_list_open = False
 						
 			else:
 				
 				if 810 <= mouse_x <= 874 and 90 <= mouse_y <= 154:
-					if special_slot_animations["Craft list slot"][0]:
-						if special_slot_animations["Craft list slot"][1] < FPS / 6:
-							special_slot_animations["Craft list slot"][1] += 1
-							special_slot_animations["Craft list slot"][2] -= 3
-							special_slot_animations["Craft list slot"][2] = abs(special_slot_animations["Craft list slot"][2])
+					if game.special_slot_animations["Craft list slot"][0]:
+						if game.special_slot_animations["Craft list slot"][1] < FPS / 6:
+							game.special_slot_animations["Craft list slot"][1] += 1
+							game.special_slot_animations["Craft list slot"][2] -= 3
+							game.special_slot_animations["Craft list slot"][2] = abs(game.special_slot_animations["Craft list slot"][2])
 					else:
-						special_slot_animations["Craft list slot"] = [True, 0, 10]
+						game.special_slot_animations["Craft list slot"] = [True, 0, 10]
 					
 					if release:
-						craft_list_open = True
+						game.craft_list_open = True
 					
-				elif special_slot_animations["Craft list slot"][0]:
-					special_slot_animations["Craft list slot"][0] = False
-					special_slot_animations["Craft list slot"][1] = 0
-				elif special_slot_animations["Craft list slot"][1] < FPS / 4:
-					special_slot_animations["Craft list slot"][1] += 1	 
+				elif game.special_slot_animations["Craft list slot"][0]:
+					game.special_slot_animations["Craft list slot"][0] = False
+					game.special_slot_animations["Craft list slot"][1] = 0
+				elif game.special_slot_animations["Craft list slot"][1] < FPS / 4:
+					game.special_slot_animations["Craft list slot"][1] += 1	 
 
-				if special_slot_animations["Craft list slot"][0] and Settings["Display"][5]:
-					try:win.blit(pygame.transform.scale(Changed_craft_list_inventory_slot, (64 - special_slot_animations["Craft list slot"][2], 64 - special_slot_animations["Craft list slot"][2])), (810, 90))
+				if game.special_slot_animations["Craft list slot"][0] and Settings["Display"][5]:
+					try:win.blit(pygame.transform.scale(Changed_craft_list_inventory_slot, (64 - game.special_slot_animations["Craft list slot"][2], 64 - game.special_slot_animations["Craft list slot"][2])), (810, 90))
 					except: win.blit(pygame.transform.scale(Changed_craft_list_inventory_slot, (64, 64)), (810, 90))
 					mouse_object = t("Craft list")
 			
@@ -2883,7 +2778,7 @@ def start_game():
 
 				if 900 <= mouse_x <= 964 and 10 <= mouse_y <= 74:
 					win.blit(Changed_inventory_slot, (900, 10))
-					if release: item_settings_open = True
+					if release: game.item_settings_open = True
 				else:
 					win.blit(Inventory_slot, (900, 10))
 		else:
@@ -2951,7 +2846,7 @@ def start_game():
 			if effect[1] <= 0:
 				player.effects.remove(effect)
 		
-		if item_settings_open:
+		if game.item_settings_open:
 
 			if inventory.whole_inventory[changed_slot].name == "Wrench":
 
@@ -2994,12 +2889,12 @@ def start_game():
 				if Width - 160 <= mouse_x <= Width - 130 and 130 <= mouse_y <= 160:
 					win.blit(bigTextInfo.render("x", True, (0, 100, 0)), (Width - 160, 130))
 					if release:
-						item_settings_open = False
+						game.item_settings_open = False
 		
 		if inventory.whole_inventory[changed_slot] is not None:
-			text(t("Item name " + inventory.whole_inventory[changed_slot].name), 10, 320 if inventory_open else 80)
+			text(t("Item name " + inventory.whole_inventory[changed_slot].name), 10, 320 if game.inventory_open else 80)
 
-		if ron.x - player.x + Width // 2 - 128 <= mouse_x <= ron.x - player.x + Width // 2 + 128 and player.y - ron.y + Height // 2 - 128 <= mouse_y <= player.y - ron.y + Height // 2 + 128 and release and (not multiplayer or multiplayer_role == "Host"):
+		if ron.x - player.x + Width // 2 - 128 <= mouse_x <= ron.x - player.x + Width // 2 + 128 and player.y - ron.y + Height // 2 - 128 <= mouse_y <= player.y - ron.y + Height // 2 + 128 and release and (not game.multiplayer or game.multiplayer_role == "Host"):
 			ron.window[0] = True
 
 		if ron.window[0]:
@@ -3039,7 +2934,7 @@ def start_game():
 				if release:
 					ron.window[0] = False
 					
-		if in_motherboard is not None:
+		if game.in_motherboard is not None:
 
 			win_fill()
 
@@ -3049,7 +2944,7 @@ def start_game():
 			a = -1
 			b = 0
 
-			for i in in_motherboard.objects:
+			for i in game.in_motherboard.objects:
 				a += 1
 				if a == 32:
 					a = 0
@@ -3071,9 +2966,9 @@ def start_game():
 			if Width - 160 <= mouse_x <= Width - 130 and 130 <= mouse_y <= 160:
 				win.blit(bigTextInfo.render("x", True, (0, 100, 0)), (Width - 160, 130))
 				if release:
-					in_motherboard = None
+					game.in_motherboard = None
 
-		if menu_open:
+		if game.menu_open:
 
 			text(f"""X {player.x // 50}
 Y {player.y // 50}
@@ -3081,11 +2976,11 @@ Ron X {ron.x // 50}
 Ron Y {ron.y // 50}
 FPS {FPS}""" + (f"""
 You are in backrooms lol
-Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if inventory_open else 300)
+Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.inventory_open else 300)
 		
 		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Wire":
 
-			if in_motherboard is None:
+			if game.in_motherboard is None:
 				pos = (player.x + mouse_x - Width // 2) // 64 * 64 + 32, (player.y - mouse_y + Height // 2) // 64 * 64 + 32
 				draw_select_image(64, 64, player, mouse_x, mouse_y)
 
@@ -3103,14 +2998,14 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 			else:
 				a = True
 				if click[0]:
-					for mechanism in in_motherboard.objects:
+					for mechanism in game.in_motherboard.objects:
 						if mechanism is not None and mechanism.x == (mouse_x - Width // 2 - 300) // 18.75 and mechanism.y == (mouse_y + Width // 2 - 300) // 18.75:
 							a = False
 							break
 				
 					if a and Width // 2 - 300 <= mouse_x <= Width // 2 + 300 and  Height // 2 - 310 <= mouse_y < Height // 2 + 290:
 						inventory.reduce(changed_slot)
-						in_motherboard.objects[(mouse_x - Width // 2 - 300) // 19 + ((mouse_y + Width // 2 - 300) // 19 - 19) * 32] = (Wire(player, world, mouse_x, mouse_y, in_motherboard))
+						game.in_motherboard.objects[(mouse_x - Width // 2 - 300) // 19 + ((mouse_y + Width // 2 - 300) // 19 - 19) * 32] = (Wire(player, world, mouse_x, mouse_y, game.in_motherboard))
 
 		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Lever":
 
@@ -3180,8 +3075,8 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 		build_tuple = (changed_slot, player, world, inventory.whole_inventory)
 		new_object = check_build_objects(objects_templates, build_tuple)
 
-		if multiplayer and new_object is not None:
-			game_events.append({"event_type": "object_added", "object": new_object.__getstate__()})
+		if game.multiplayer and new_object is not None:
+			game.events.append({"event_type": "object_added", "object": new_object.__getstate__()})
 
 		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Stone hoe":
 			
@@ -3190,7 +3085,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 
 			if click[0] and farmland_pos not in world.visible_farmlands and not check_collision(pygame.Rect(farmland_pos[0] - 128, farmland_pos[1], 128, 128), world, False):
 				world.chunk_manager.get_chunk_at(*farmland_pos).farmlands[farmland_pos] = Farmland(farmland_pos[0], farmland_pos[1])
-				game_events.append({"event_type": "farmland_added", "farmland_pos": farmland_pos})
+				game.events.append({"event_type": "farmland_added", "farmland_pos": farmland_pos})
 
 				play_sound("Dirt")
 				# for farmland in (((farmland_pos[0] - 128, farmland_pos[1]), (farmland_pos[0] + 128, farmland_pos[1]), (farmland_pos[0], farmland_pos[1] - 128), (farmland_pos[0], farmland_pos[1] + 128))):
@@ -3207,8 +3102,8 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 				for wall in (((wall_pos[0] - 256, wall_pos[1]), (wall_pos[0] + 256, wall_pos[1]), (wall_pos[0], wall_pos[1] - 256), (wall_pos[0], wall_pos[1] + 256))):
 					if wall in world.visible_walls:
 						world.visible_walls[wall].update_neigboors()
-				if multiplayer:
-					game_events.append({"event_type": "wall_added", "wall": world.chunk_manager.get_chunk_at(*wall_pos).walls[wall_pos].__getstate__()})
+				if game.multiplayer:
+					game.events.append({"event_type": "wall_added", "wall": world.chunk_manager.get_chunk_at(*wall_pos).walls[wall_pos].__getstate__()})
 				inventory.reduce(changed_slot)
 
 		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name in door_types:
@@ -3221,8 +3116,8 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 				for wall in (((wall_pos[0] - 256, wall_pos[1]), (wall_pos[0] + 256, wall_pos[1]), (wall_pos[0], wall_pos[1] - 256), (wall_pos[0], wall_pos[1] + 256))):
 					if wall in world.visible_walls:
 						world.visible_walls[wall].update_neigboors()
-				if multiplayer:
-					game_events.append({"event_type": "wall_added", "wall": world.chunk_manager.get_chunk_at(*wall_pos).walls[wall_pos].__getstate__()})
+				if game.multiplayer:
+					game.events.append({"event_type": "wall_added", "wall": world.chunk_manager.get_chunk_at(*wall_pos).walls[wall_pos].__getstate__()})
 				inventory.reduce(changed_slot)
 
 		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Stone hammer":
@@ -3234,7 +3129,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 				if break_pos in world.visible_walls:
 					inventory.increate(world.chunk_manager.get_chunk_at(*break_pos).walls[break_pos].wall_type)
 					destroy_object(world.visible_walls[break_pos].image, world.visible_walls[break_pos].x, world.visible_walls[break_pos].y, world, Particle)
-					game_events.append({"event_type": "wall_removed", "break_pos": break_pos})
+					game.events.append({"event_type": "wall_removed", "break_pos": break_pos})
 					world.chunk_manager.get_chunk_at(*break_pos).walls.pop(break_pos, None)
 					for wall in ((break_pos[0] - 256, break_pos[1]), (break_pos[0] + 256, break_pos[1]), (break_pos[0], break_pos[1] - 256), (break_pos[0], break_pos[1] + 256)):
 						if wall in world.chunk_manager.get_chunk_at(*wall).walls:
@@ -3244,7 +3139,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 					if object.breakable_by_hammer and (object.x, object.y) == break_pos:
 						inventory.increate(object.name)
 						destroy_object(object.image, object.x, object.y, world, Particle)
-						game_events.append({"event_type": "object_removed", "x": object.x, "y": object.y, "name": object.name})
+						game.events.append({"event_type": "object_removed", "x": object.x, "y": object.y, "name": object.name})
 						world.chunk_manager.get_chunk_at(object.x, object.y).objects.remove(object)
 						break
 
@@ -3252,12 +3147,12 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 			# text(mouse_object, Width - textInfo.size(mouse_object)[0] - 10, 10)
 			win.blit(textInfo.render(mouse_object, True, text_color), (Width - textInfo.size(mouse_object)[0] - 10, 10))
 		
-		if chat_open:
+		if game.chat_open:
 			win_fill()
 			win_fill(rect=(10, Height - 50, Width - 20, 40))
 			if not input_system.inputting:
 
-				chat_open = False
+				game.chat_open = False
 				if input_system.last_text[0:2] == "/!" and Settings["User"][1]:
 					try:
 						eval(input_system.last_text[2:])
@@ -3269,32 +3164,32 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 				elif input_system.last_text != "" and input_system.last_text[0] == "/":
 					command_system.chat_message(command_system.execute(input_system.last_text))
 				elif input_system.last_text != "":
-					if multiplayer:
+					if game.multiplayer:
 						message_text = f"{net.peers[net.player_id].name}: {input_system.last_text}"
 					else:
 						message_text = f"{Settings['User'][0]}: {input_system.last_text}"
 					command_system.chat_message(message_text, True)
 		
-		if len(chat) != 0:
+		if len(game.chat) != 0:
 
-			if chat_tick == 0:
-				chat.remove(chat[0])
+			if game.chat_tick == 0:
+				game.chat.remove(game.chat[0])
 				try:
-					chat_tick = len(chat[0]) // 1.5 * FPS
+					game.chat_tick = len(game.chat[0]) // 1.5 * FPS
 				except: pass
 			
-		reversed_chat = main_chat.copy() if chat_open else chat.copy()
+		reversed_chat = game.main_chat.copy() if game.chat_open else game.chat.copy()
 		reversed_chat.reverse()
 		message_y = 80
 		for message in reversed_chat:
 			message_y += get_text_height(message)
 			text(message, 10, Height - message_y)
 		
-		chat_tick = max(0, chat_tick - 1)
+		game.chat_tick = max(0, game.chat_tick - 1)
 		
-		if multiplayer_menu_open:
+		if game.multiplayer_menu_open:
 			
-			enable_multiplayer = Button(Width // 2, Height // 2 - 30, bigTextInfo.render(t("Enable multiplayer"), True, menu_color_medium), bigTextInfo.render(t("Enable multiplayer"), True, menu_color_dark), alignment=True, info=t("Your IP-address - ") + socket.gethostbyname(socket.gethostname()))
+			enable_multiplayer = Button(Width // 2, Height // 2 - 30, bigTextInfo.render(t("Enable game.multiplayer"), True, menu_color_medium), bigTextInfo.render(t("Enable game.multiplayer"), True, menu_color_dark), alignment=True, info=t("Your IP-address - ") + socket.gethostbyname(socket.gethostname()))
 			enter_another_game = Button(Width // 2, Height // 2 + 30, bigTextInfo.render(t("Enter another game"), True, menu_color_medium), bigTextInfo.render(t("Enter another game"), True, menu_color_dark), alignment=True)
 			
 			pygame.image.save(win, path + "Saves/Cache/Win.png")
@@ -3303,7 +3198,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 			animation_showed = False
 			release = False
 
-			while multiplayer_menu_open:
+			while game.multiplayer_menu_open:
 
 				mouse_x, mouse_y = pygame.mouse.get_pos()
 				click = pygame.mouse.get_pressed()
@@ -3320,14 +3215,14 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 							release = True
 
 					elif event.type == pygame.KEYDOWN and event.key == hot_keys["Close"]:
-						multiplayer_menu_open = False						
+						game.multiplayer_menu_open = False						
 
 				win.fill(menu_color_light)
 
 				if mouse_x <= 128 and mouse_y <= 128:
 					win.blit(load(path + "Images/Buttons/Back 2.png", 128), (0, 0))
 					if release:
-						multiplayer_menu_open = False
+						game.multiplayer_menu_open = False
 						
 				else:
 					win.blit(load(path + "Images/Buttons/Back.png", 128), (0, 0))
@@ -3340,11 +3235,11 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 
 				if enable_multiplayer.get_pressed():
 					b = 1
-					multiplayer_menu_open = False
+					game.multiplayer_menu_open = False
 
 				elif enter_another_game.get_pressed():
 					b = 2
-					multiplayer_menu_open = False
+					game.multiplayer_menu_open = False
 				if not animation_showed:
 					win_lighten(win)
 					animation_showed = True
@@ -3442,7 +3337,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 					#		pygame.display.update()
 					#		clock.tick(MAX_FPS)
 				
-		if inventory.whole_inventory[inventory.start_cell] is not None and inventory.start_cell > -1 and hold_left:
+		if inventory.whole_inventory[inventory.start_cell] is not None and inventory.start_cell > -1 and game.hold_left:
 
 			item_text = t("Item info " + inventory.whole_inventory[inventory.start_cell].name) + "\n" + t("Item purpose " + inventory.whole_inventory[inventory.start_cell].name)
 			
@@ -3469,16 +3364,16 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 		
 		# Механика мультиплеера
 
-		if multiplayer:
+		if game.multiplayer:
 
 			if inventory.check_new_items(changed_slot):
 				if inventory.whole_inventory[changed_slot] is None:
 					player.changed_item = None
 				else:
 					player.changed_item = inventory.whole_inventory[changed_slot].name
-				game_events.append({"event_type": "changed_item", "changed_item": player.changed_item})
-			if len(game_events) != 0:
-				net.send_events(tuple(game_events))
+				game.events.append({"event_type": "changed_item", "changed_item": player.changed_item})
+			if len(game.events) != 0:
+				net.send_events(tuple(game.events))
 			for event in net.server_events["Game"]:
 				remove_event = True
 
@@ -3559,12 +3454,12 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 				if remove_event:
 					net.server_events["Game"].remove(event)
 
-			if multiplayer_role == "Host":
+			if game.multiplayer_role == "Host":
 				for event in net.server_events["Game"]:
 					match event["event_type"]:
 						case "peer_joined":
 							net._send_packet({"type": "server_event", "player_id": "Game", "event_type": "world_info", "world_info": (
-								0, 0, False, 0, None, player.speed, player.HP, start_time, ron.x, ron.y, ron.home, ron.inventory, world.chunk_manager.generator.seed, time_system.current_time, game.difficulty
+								0, 0, False, 0, None, player.speed, player.HP, game.start_time, ron.x, ron.y, ron.home, ron.inventory, world.chunk_manager.generator.seed, time_system.current_time, game.difficulty
 								)}, event["address"])
 						case "get_chunk":
 							chunk_key = tuple(event["chunk_key"])
@@ -3600,7 +3495,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 				for event in net.server_events["Game"]:
 					match event["event_type"]:
 						case "world_info":
-							player.x, player.y, Backrooms.InBackrooms, Backrooms.Level, world.current_cave, player.speed, player.HP, start_time, ron.x, ron.y, ron.home, ron.inventory, world.chunk_manager.generator.seed, time_system.current_time, game.difficulty = event["world_info"]
+							player.x, player.y, Backrooms.InBackrooms, Backrooms.Level, world.current_cave, player.speed, player.HP, game.start_time, ron.x, ron.y, ron.home, ron.inventory, world.chunk_manager.generator.seed, time_system.current_time, game.difficulty = event["world_info"]
 							world.chunk_manager.update_seed()
 
 						case "ron_moved":
@@ -3654,7 +3549,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 				pygame.display.update()
 			time.sleep(0.1)
 			
-		if keys[hot_keys["Plugin manager"]] and not chat_open:
+		if keys[hot_keys["Plugin manager"]] and not game.chat_open:
 			
 			win = pygame.display.set_mode((0, 0), pygame.RESIZABLE)
 
@@ -3678,19 +3573,19 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if invento
 
 def edit_world():
 	
-	global world_name, game, player, alt_pressed, does_lighten
+	global player, alt_pressed
 
 	create_world = False
 	release = False
-	does_lighten = False
+	game.does_lighten = False
 
 	try:
-		game.difficulty, player.god_mode = Saver.load_objects(path + "Saves/Worlds/" + world_name + "/Settings.save")
+		game.difficulty, player.god_mode = Saver.load_objects(path + "Saves/Worlds/" + game.world_name + "/Settings.save")
 	except:
 		game.difficulty = "norm"
 		player.god_mode = False
 		create_world = True
-	Settings["Edit world"][0] = world_name
+	Settings["Edit world"][0] = game.world_name
 	Settings["Edit world"][1] = player.god_mode
 
 	input_text = ""
@@ -3717,11 +3612,11 @@ def edit_world():
 
 			if event.type == pygame.QUIT:
 				if not create_world:
-					if world_name != Settings["Edit world"][0]:
-						os.rename(path + "Saves/Worlds/" + world_name, path + "Worlds/" + Settings["Edit world"][0])
-					world_name = Settings["Edit world"][0]
+					if game.world_name != Settings["Edit world"][0]:
+						os.rename(path + "Saves/Worlds/" + game.world_name, path + "Worlds/" + Settings["Edit world"][0])
+					game.world_name = Settings["Edit world"][0]
 					player.god_mode = Settings["Edit world"][1]
-					Saver.save_objects(path + "Saves/Worlds/" + world_name + "/Settings.save", [game.difficulty, player.god_mode])
+					Saver.save_objects(path + "Saves/Worlds/" + game.world_name + "/Settings.save", [game.difficulty, player.god_mode])
 				win_darken(win)
 				sys.exit()
 				
@@ -3745,11 +3640,11 @@ def edit_world():
 			if event.type == pygame.KEYUP:
 				
 				if event.key == hot_keys["Close"] and not create_world:
-					if world_name != Settings["Edit world"][0]:
-						os.rename(path + "Saves/Worlds/" + world_name, path + "Worlds/" + Settings["Edit world"][0])
-					world_name = Settings["Edit world"][0]
+					if game.world_name != Settings["Edit world"][0]:
+						os.rename(path + "Saves/Worlds/" + game.world_name, path + "Worlds/" + Settings["Edit world"][0])
+					game.world_name = Settings["Edit world"][0]
 					player.god_mode = Settings["Edit world"][1]
-					Saver.save_objects(path + "Saves/Worlds/" + world_name + "/Settings.save", [game.difficulty, player.god_mode])
+					Saver.save_objects(path + "Saves/Worlds/" + game.world_name + "/Settings.save", [game.difficulty, player.god_mode])
 					worlds()
 				
 				if event.key == hot_keys["Show keys"]:
@@ -3768,10 +3663,10 @@ def edit_world():
 			if pygame.mouse.get_pressed()[0]:
 				
 				if not create_world:
-					os.rename(path + "Saves/Worlds/" + world_name, path + "Worlds/" + Settings["Edit world"][0])
-					world_name = Settings["Edit world"][0]
+					os.rename(path + "Saves/Worlds/" + game.world_name, path + "Worlds/" + Settings["Edit world"][0])
+					game.world_name = Settings["Edit world"][0]
 					player.god_mode = Settings["Edit world"][1]
-					Saver.save_objects(path + "Saves/Worlds/" + world_name + "/Settings.save", [game.difficulty, player.god_mode])
+					Saver.save_objects(path + "Saves/Worlds/" + game.world_name + "/Settings.save", [game.difficulty, player.god_mode])
 				worlds()
 
 		win.blit(bigTextInfo.render(t("Game difficulty:"), True, menu_color_medium), (50, 150))
@@ -3825,7 +3720,7 @@ def edit_world():
 				
 				win.blit(bigTextInfo.render(t("Create world"), True, menu_color_dark), (Width - bigTextInfo.size(t("Create world"))[0] - 50, 150))
 				if release:
-					world_name = Settings["Edit world"][0]
+					game.world_name = Settings["Edit world"][0]
 					player.god_mode = Settings["Edit world"][1]
 					win_darken(win)
 					start_game()
@@ -3866,7 +3761,7 @@ def edit_world():
 						yes_button.main()
 						if yes_button.get_pressed():   # Удалить выбранный мир
 							import shutil
-							shutil.rmtree(path + "Saves/Worlds/" + world_name)
+							shutil.rmtree(path + "Saves/Worlds/" + game.world_name)
 							del shutil
 							win_darken(win)
 							worlds()
@@ -3886,7 +3781,7 @@ def edit_world():
 				win.blit(bigTextInfo.render(t("Copy world"), True, menu_color_dark), (50, 600))
 				if release:
 					import shutil
-					shutil.copytree(path + "Saves/Worlds/" + world_name, path + "Worlds/" + world_name + t(" - copy"))
+					shutil.copytree(path + "Saves/Worlds/" + game.world_name, path + "Worlds/" + game.world_name + t(" - copy"))
 					del shutil
 					win_darken(win)
 					if create_world:
@@ -3900,18 +3795,18 @@ def edit_world():
 		win_fill(alpha=100 - Settings["Display"][0])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
 		
 		if not create_world:
-			Saver.save_objects(path + "Saves/Worlds/" + world_name + "/Settings.save", [game.difficulty, player.god_mode])
+			Saver.save_objects(path + "Saves/Worlds/" + game.world_name + "/Settings.save", [game.difficulty, player.god_mode])
 
-		if not does_lighten:
+		if not game.does_lighten:
 			win_lighten(win)
-			does_lighten = True
+			game.does_lighten = True
 		
 		pygame.display.update()
 		clock.tick(30)
 
 def multiplayer_settings_menu():
 	
-	global alt_pressed, does_lighten, multiplayer_role, net
+	global alt_pressed, net
 
 	back_button = Button(-20, -20, load(path + "Images/Buttons/Back.png", 128), load(path + "Images/Buttons/Back 2.png", 128))
 	host_button = Button(Width // 4, 50, textInfo.render("Хост (в твой мир заходят игроки)", True, menu_color_medium), textInfo.render("Хост (в твой мир заходят игроки)", True, menu_color_dark), alignment=True)
@@ -3920,7 +3815,7 @@ def multiplayer_settings_menu():
 
 	create_world = False
 	release = False
-	does_lighten = False
+	game.does_lighten = False
 	max_bias = -ui_system._set_positions(0, "Multiplayer settings menu", True)
 	max_bias = (max_bias + Height - 103) * max_bias > Height - 103
 
@@ -3963,21 +3858,21 @@ def multiplayer_settings_menu():
 			win_darken(win)
 			worlds()
 
-		if multiplayer_role == "Client":
+		if game.multiplayer_role == "Client":
 			host_button.main()
 			if host_button.get_pressed():
-				multiplayer_role = "Host"
+				game.multiplayer_role = "Host"
 			win.blit(textInfo.render("Клиент (ты заходишь в мир хоста)", True, menu_color_dark), (Width * 3 // 4 - textInfo.size("Клиент (ты заходишь в мир хоста)")[0] // 2, 50 - textInfo.size("Клиент (ты заходишь в мир хоста)")[1] // 2))
 		else:
 			win.blit(textInfo.render("Хост (в твой мир заходят игроки)", True, menu_color_dark), (Width // 4 - textInfo.size("Хост (в твой мир заходят игроки)")[0] // 2, 50 - textInfo.size("Хост (в твой мир заходят игроки)")[1] // 2))
 			client_button.main()
 			if client_button.get_pressed():
-				multiplayer_role = "Client"
+				game.multiplayer_role = "Client"
 		start_game_button.main()
 
 		if start_game_button.get_pressed():
 			net = NetworkManager(Peer, command_system.chat_message, world.chunk_manager.view_distance)
-			if multiplayer_role == "Host":
+			if game.multiplayer_role == "Host":
 				if Settings["Multiplayer"][0]:
 					net.start_host(Settings["Multiplayer"][1], Settings["Multiplayer"][2])
 				else:
@@ -4010,9 +3905,9 @@ def multiplayer_settings_menu():
 		animate_click(dt, mouse_x, mouse_y)
 		win_fill(alpha=100 - Settings["Display"][0])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
 
-		if not does_lighten:
+		if not game.does_lighten:
 			win_lighten(win)
-			does_lighten = True
+			game.does_lighten = True
 		
 		pygame.display.update()
 
@@ -4021,16 +3916,15 @@ def multiplayer_settings_menu():
 
 def worlds():
 
-	global world_name, keys, alt_pressed, does_lighten, multiplayer, multiplayer_role
+	global keys, alt_pressed
 
 	create_new_world_button = Button(Width // 2, 130, textInfo.render(t("Create world"), True, menu_color_medium), textInfo.render(t("Create world"), True, menu_color_dark), alignment=True)
 	enter_another_game_button = Button(Width // 2, 130, textInfo.render("Подключиться в мир хоста", True, menu_color_medium), textInfo.render("Подключиться в мир хоста", True, menu_color_dark), alignment=True)
 	single_player_button = Button(Width // 4, 50, textInfo.render(t("Single play"), True, menu_color_medium), textInfo.render(t("Single play"), True, menu_color_dark), alignment=True)
 	multiplayer_button = Button(Width * 3 // 4, 50, textInfo.render(t("Multiplayer"), True, menu_color_medium), textInfo.render(t("Multiplayer"), True, menu_color_dark), alignment=True)
 	back_button = Button(-20, -20, load(path + "Images/Buttons/Back.png", 128), load(path + "Images/Buttons/Back 2.png", 128, 128))
-	page = 1
 	world_name_input = False
-	does_lighten = False
+	game.does_lighten = False
 	bias = 0
 
 	win_darken(win)
@@ -4078,7 +3972,7 @@ def worlds():
 		if world_name_input:
 			text(t("Enter world name:"), Width // 2, Height // 2 - 20, menu_color_medium, alignment=True)
 			if not input_system.inputting:
-				world_name = input_system.last_text
+				game.world_name = input_system.last_text
 				edit_world()
 		else:
 
@@ -4104,7 +3998,7 @@ def worlds():
 					if 50 + textInfo.size(name_of_world)[0] <= mouse_x <= 82 + textInfo.size(name_of_world)[0] and text_y <= mouse_y <= text_y + 32:
 						win.blit(load(path + "Images/Buttons/Edit 2.png", 32), (50 + textInfo.size(name_of_world)[0], text_y))
 						if release:
-							world_name = name_of_world
+							game.world_name = name_of_world
 							win_darken(win)
 							edit_world()
 
@@ -4115,34 +4009,34 @@ def worlds():
 						win.blit(load(path + "Images/Buttons/Edit.png", 32), (50 + textInfo.size(name_of_world)[0], text_y))
 						
 						if release:
-							if multiplayer:
-								world_name = name_of_world
-								multiplayer_role = "Host"
+							if game.multiplayer:
+								game.world_name = name_of_world
+								game.multiplayer_role = "Host"
 								win_darken(win)
 								multiplayer_settings_menu()
 							else:
-								world_name = name_of_world
+								game.world_name = name_of_world
 								start_game()
 			
 			pygame.draw.rect(win, menu_color_light, (0, 0, Width, 103))
 			pygame.draw.line(win, menu_color_medium, (0, 103), (Width, 103), 8)
 			pygame.draw.line(win, menu_color_medium, (Width // 2, 0), (Width // 2, 103), 8)
 			back_button.main()
-			if multiplayer:
+			if game.multiplayer:
 				single_player_button.main()
 				if single_player_button.get_pressed():
-					multiplayer = False
+					game.multiplayer = False
 				win.blit(textInfo.render(t("Multiplayer"), True, menu_color_dark), (Width * 3 // 4 - textInfo.size(t("Multiplayer"))[0] // 2, 50 - textInfo.size(t("Multiplayer"))[1] // 2))
 				enter_another_game_button.main()
 				if enter_another_game_button.get_pressed():
-					multiplayer_role = "Client"
+					game.multiplayer_role = "Client"
 					win_darken(win)
 					multiplayer_settings_menu()
 			else:
 				win.blit(textInfo.render(t("Single play"), True, menu_color_dark), (Width // 4 - textInfo.size(t("Single play"))[0] // 2, 50 - textInfo.size(t("Single play"))[1] // 2))
 				multiplayer_button.main()
 				if multiplayer_button.get_pressed():
-					multiplayer = True
+					game.multiplayer = True
 				create_new_world_button.main()
 		
 		input_system.handle_input(events)
@@ -4151,9 +4045,9 @@ def worlds():
 		animate_click(dt, mouse_x, mouse_y)
 
 		win_fill(alpha=100 - Settings["Display"][0])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
-		if not does_lighten:
+		if not game.does_lighten:
 			win_lighten(win)
-			does_lighten = True
+			game.does_lighten = True
 		
 		pygame.display.update()
 
@@ -4163,15 +4057,13 @@ def worlds():
 
 def menu():
 	
-	global win, screenmode, num, does_lighten
-
 	play_button = Button(Width / 2, Height / 2 - 150, pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Play.png"), (264, 128)), pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Play 2.png"), (264, 128)), alignment=True, info="Подсказка: вы можете нажать enter, чтобы сразу начать игру.", action=worlds)
 	settings_button = Button(Width / 2, Height / 2, pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Settings.png"), (488, 128)), pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Settings 2.png"), (488, 128)), alignment=True, action=settings)
 	change_a_character_button = Button(Width / 2, Height / 2 + 150, pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Change a character.png"), (960, 128)), pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Change a character 2.png"), (960, 128)), alignment=True, action=change_a_character)
 
 	version = f"Version {open(path + 'Version.txt').read()} (Build {str(get_build_number())})"
 	more_menu_open = False
-	does_lighten = False
+	game.does_lighten = False
 
 	while True:
 		
@@ -4192,26 +4084,6 @@ def menu():
 					worlds()
 				if event.key == hot_keys["Close"]:
 					more_menu_open = False
-				if event.key == hot_keys["Change screen"]:
-					if screenmode == "FULLSCREEN":
-						win = pygame.display.set_mode((1000,700), pygame.RESIZABLE)
-						screenmode = "RESIZABLE"
-						play_button.x = 500
-						play_button.y = 200
-						settings_button.x = 500
-						settings_button.y = 350
-						change_a_character_button.x = 500
-						change_a_character_button.y = 500
-					else:
-						win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-						screenmode = "FULLSCREEN"
-						play_button.x = Width / 2
-						play_button.y = Height / 2 - 150
-						settings_button.x = Width / 2
-						settings_button.y = Height / 2
-						change_a_character_button.x = Width / 2
-						change_a_character_button.y = Height / 2 + 150
-
 		win.blit(Screensaver2, (0, 0))
 
 		if not more_menu_open:
@@ -4262,9 +4134,9 @@ def menu():
 
 		win_fill(alpha=100 - Settings["Display"][0])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
 
-		if not does_lighten:
+		if not game.does_lighten:
 			win_lighten(win)
-			does_lighten = True
+			game.does_lighten = True
 
 		pygame.display.update()
 
@@ -4303,7 +4175,7 @@ def show_intro():
 			menu()
 		except Exception as e:
 			music_channel.stop()
-			if multiplayer:
+			if game.multiplayer:
 				net.disconnect()
 			show_error_window(e)
 

@@ -1,6 +1,7 @@
 import pygame
 import os
 import json
+from Assets import Inventory_slot
 from Globals import path, win
 from Translator import translator
 
@@ -137,6 +138,10 @@ class Inventory:
 		self.end_cell_inventory = 0
 		self.Split_items = False
 		self.last_changed_item = None
+		self.craft_items_list = [None] * 7
+		self.craft_amounts_list = [None] * 7
+		self.craft_images_list = [None] * 7
+		self.changed_slot = 0
 	
 	def increate(self, name: str, amount: int=1):
 		
@@ -234,7 +239,7 @@ class Inventory:
 				current_index += 1
 				total_amount -= stack_size
 
-	def draw_whole(self, craft_images_list, craft_amounts_list, Inventory_slot):
+	def draw_whole(self):
 		
 		"""Рисует весь инвентарь"""
 
@@ -253,14 +258,14 @@ class Inventory:
 		win.blit(Inventory_slot, (170, 250))
 		i = -1
 		
-		for cell in craft_images_list:
+		for cell in self.craft_images_list:
 			i += 1
 			if cell is None:
 				break
 			else:
 				win.blit(cell, (cell_x, 250))
-				if craft_amounts_list != [None] * 7 and craft_amounts_list[i] > 1:
-					win.blit(textInfo.render(str(craft_amounts_list[i]), True, (0, 150, 0)), (cell_x + 10, 292))
+				if self.craft_amounts_list != [None] * 7 and self.craft_amounts_list[i] > 1:
+					win.blit(textInfo.render(str(self.craft_amounts_list[i]), True, (0, 150, 0)), (cell_x + 10, 292))
 				cell_x += 80
 				win.blit(Inventory_slot, (cell_x, 250))
 	
@@ -290,7 +295,7 @@ class Inventory:
 					self.start_cell = yy * 10 + xx
 					return
 	
-	def set_end_cell(self, mouse__x: int, mouse__y: int, craft_items_list, craft_amounts_list, craft_images_list):
+	def set_end_cell(self, mouse__x: int, mouse__y: int):
 
 		for yy in range(0, 3):
 			for xx in range(0, 10):
@@ -305,9 +310,9 @@ class Inventory:
 			if cell_x <= mouse__x <= cell_x + 64 and 250 <= mouse__y <= 314:
 				self.end_cell = X - 2
 				self.end_cell_inventory = 1
-		return self.swap_cells(craft_items_list, craft_amounts_list, craft_images_list)
+		return self.swap_cells()
 	
-	def swap_cells(self, craft_items_list, craft_amounts_list, craft_images_list):
+	def swap_cells(self):
 		
 		"""Перемещает слоты в инвентаре"""
 		
@@ -347,10 +352,10 @@ class Inventory:
 			
 			elif self.end_cell_inventory == 1:
 				# Перемещение в крафт
-				temp = craft_items_list[self.end_cell]
-				craft_items_list[self.end_cell] = self.whole_inventory[self.start_cell].name
-				craft_amounts_list[self.end_cell] = self.whole_inventory[self.start_cell].amount
-				craft_images_list[self.end_cell] = self.whole_inventory[self.start_cell].image
+				temp = self.craft_items_list[self.end_cell]
+				self.craft_items_list[self.end_cell] = self.whole_inventory[self.start_cell].name
+				self.craft_amounts_list[self.end_cell] = self.whole_inventory[self.start_cell].amount
+				self.craft_images_list[self.end_cell] = self.whole_inventory[self.start_cell].image
 				self.whole_inventory[self.start_cell] = None
 				
 				if temp is not None:
@@ -360,11 +365,11 @@ class Inventory:
 		self.start_cell = 0
 		self.end_cell = 0
 		# self.compact_inventory()	# Компактизируем после каждого изменения
-		return craft_items_list, craft_amounts_list, craft_images_list
+		return self.craft_items_list, self.craft_amounts_list, self.craft_images_list
 
-	def check_recipies(self, need_object, craft_items_list, craft_amounts_list):
+	def check_recipies(self, need_object):
 		for recipie in self.recipes:
-			result = recipie.get_result(need_object, craft_items_list, craft_amounts_list)
+			result = recipie.get_result(need_object, self.craft_items_list, self.craft_amounts_list)
 			if result is not None:
 				return result
 		return None

@@ -21,6 +21,7 @@ class World:
 		self.particles = []
 		self.mechanisms = []
 		self.projectiles = []
+		self.backrooms_objects = []
 		
 	def update(self, player, multiplayer, multiplayer_role, net):
 
