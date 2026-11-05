@@ -10,7 +10,6 @@ import sys
 import os
 import Backrooms
 import Saver
-from Multiplayer import NetworkManager
 from Functions import *
 from Build import build, check_build_objects, draw_select_image, draw_select_image_arbitrarily
 from Chunks import ChunkManager
@@ -23,8 +22,8 @@ from Sound import play_sound, set_sound_volume, music_channel
 from InputSystem import input_system
 from Assets import *
 from Globals import *
-from UI import SettingsMenu, CharactersMenu, UISystem, WorldsMenu, EditWorldMenu
-from Classes import Player, Peer, World, Object, Particle, Slime, Spider, Butterfly, Projectile, ExplodingProjectile, Wall, Farmland, Wire, Lever, Motherboard, Ron, Button
+from UI import SettingsMenu, CharactersMenu, UISystem, WorldsMenu, EditWorldMenu, MultiplayerSettingsMenu
+from Classes import Player, World, Object, Particle, Slime, Spider, Butterfly, Projectile, ExplodingProjectile, Wall, Farmland, Wire, Lever, Motherboard, Ron, Button
 from GameState import GameState
 from Light import create_light_circle, create_light_circle_with_falloff, remove_light_circle
 
@@ -121,7 +120,6 @@ game = GameState()
 mouse_x = game.mouse_x
 mouse_y = game.mouse_y
 alt_pressed = game.alt_pressed
-net = game.net
 
 changed_slot = inventory.changed_slot
 
@@ -220,9 +218,9 @@ def start_game():
 			player.effects = Saver.load_objects(path + "Saves/Worlds/" + game.world_name + "/Effects.save")
 
 			if game.multiplayer:
-				net.peers[net.player_id].x = player.x
-				net.peers[net.player_id].y = player.y
-				net.peers[net.player_id].direction = player.direction
+				game.net.peers[game.net.player_id].x = player.x
+				game.net.peers[game.net.player_id].y = player.y
+				game.net.peers[game.net.player_id].direction = player.direction
 			
 		else:
 
@@ -305,7 +303,7 @@ def start_game():
 			if event.type == pygame.QUIT:
 				statistics[1] += (time.time() - game.start_time) / 3600
 				if game.multiplayer:
-					net.disconnect()
+					game.net.disconnect()
 				save()
 				sys.exit()
 
@@ -370,7 +368,7 @@ def start_game():
 							inventory.whole_inventory = [None] * 30
 							game.world_name = None
 							if game.multiplayer:
-								net.disconnect()
+								game.net.disconnect()
 							menu()
 
 					if event.key in (pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_4, pygame.K_5, pygame.K_6, pygame.K_7, pygame.K_8, pygame.K_9, pygame.K_0, ):
@@ -435,9 +433,9 @@ def start_game():
 			player.move(dx, dy, dt, check_collision, world)
 			game.events.append({"event_type": "player_moved", "x": player.x, "y": player.y, "direction": player.direction})
 			if game.multiplayer:
-				net.peers[net.player_id].x = player.x
-				net.peers[net.player_id].y = player.y
-				net.peers[net.player_id].direction = player.direction
+				game.net.peers[game.net.player_id].x = player.x
+				game.net.peers[game.net.player_id].y = player.y
+				game.net.peers[game.net.player_id].direction = player.direction
 		else:
 			if player.is_moving:
 				game.events.append({"event_type": "player_stopped", "x": player.x, "y": player.y})
@@ -733,7 +731,7 @@ def start_game():
 			else:
 
 				# Обновление мира
-				world.update(player, game.multiplayer, game.multiplayer_role, net) #TODO оптимизировать
+				world.update(player, game.multiplayer, game.multiplayer_role, game.net) #TODO оптимизировать
 
 				# Отображение объектов
 
@@ -937,12 +935,12 @@ def start_game():
 		player.render()
 
 		if game.multiplayer:
-			with net.lock:
-				peers_copy = dict(net.peers.items())  # Создаем копию
+			with game.net.lock:
+				peers_copy = dict(game.net.peers.items())  # Создаем копию
 			for pid, peer in peers_copy.items():
-				if pid != net.player_id:
-					if pid in net.server_events:
-						for event in net.server_events[pid]:
+				if pid != game.net.player_id:
+					if pid in game.net.server_events:
+						for event in game.net.server_events[pid]:
 							match event["event_type"]:
 								case "player_moved":
 									peer.x = event["x"]
@@ -962,7 +960,7 @@ def start_game():
 								case "object_stopped_breaking":
 									peer.breaking_object_info = None
 
-							net.server_events[pid].remove(event)
+							game.net.server_events[pid].remove(event)
 					peer.render(world_to_screen, world_rect_to_screen)
 					peer.update_animation(dt)
 					if peer.breaking_object_info is not None:
@@ -1391,7 +1389,7 @@ def start_game():
 					if click[0]:
 						save(False)
 						if game.multiplayer:
-							net.disconnect()
+							game.net.disconnect()
 						menu()
 					
 				elif game.special_slot_animations["Game menu slot"][0]:
@@ -2137,7 +2135,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.in
 					command_system.chat_message(command_system.execute(input_system.last_text))
 				elif input_system.last_text != "":
 					if game.multiplayer:
-						message_text = f"{net.peers[net.player_id].name}: {input_system.last_text}"
+						message_text = f"{game.net.peers[game.net.player_id].name}: {input_system.last_text}"
 					else:
 						message_text = f"{Settings['User'][0]}: {input_system.last_text}"
 					command_system.chat_message(message_text, True)
@@ -2345,8 +2343,8 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.in
 					player.changed_item = inventory.whole_inventory[changed_slot].name
 				game.events.append({"event_type": "changed_item", "changed_item": player.changed_item})
 			if len(game.events) != 0:
-				net.send_events(tuple(game.events))
-			for event in net.server_events["Game"]:
+				game.net.send_events(tuple(game.events))
+			for event in game.net.server_events["Game"]:
 				remove_event = True
 
 				match event["event_type"]:
@@ -2424,13 +2422,13 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.in
 						remove_event = False
 
 				if remove_event:
-					net.server_events["Game"].remove(event)
+					game.net.server_events["Game"].remove(event)
 
 			if game.multiplayer_role == "Host":
-				for event in net.server_events["Game"]:
+				for event in game.net.server_events["Game"]:
 					match event["event_type"]:
 						case "peer_joined":
-							net._send_packet({"type": "server_event", "player_id": "Game", "event_type": "world_info", "world_info": (
+							game.net._send_packet({"type": "server_event", "player_id": "Game", "event_type": "world_info", "world_info": (
 								0, 0, False, 0, None, player.speed, player.HP, game.start_time, ron.x, ron.y, ron.home, ron.inventory, world.chunk_manager.generator.seed, time_system.current_time, game.difficulty
 								)}, event["address"])
 						case "get_chunk":
@@ -2457,14 +2455,14 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.in
 							state["walls"] = new_walls
 							new_farmlands = [farmland.__getstate__() for _, farmland in state["farmlands"].items()]
 							state["farmlands"] = new_farmlands
-							if event["player_id"] in net.peers:
-								net._send_packet({"type": "server_event", "event_type": "chunk", "player_id": "Game", "chunk_key": chunk_key, "chunk_state": state}, net.peers[event["player_id"]].address)
+							if event["player_id"] in game.net.peers:
+								game.net._send_packet({"type": "server_event", "event_type": "chunk", "player_id": "Game", "chunk_key": chunk_key, "chunk_state": state}, game.net.peers[event["player_id"]].address)
 
-					net.server_events["Game"].remove(event)
+					game.net.server_events["Game"].remove(event)
 			else:
-				if time.time() - net.last_heartbeat > 3:
-					net.send_heartbeat()
-				for event in net.server_events["Game"]:
+				if time.time() - game.net.last_heartbeat > 3:
+					game.net.send_heartbeat()
+				for event in game.net.server_events["Game"]:
 					match event["event_type"]:
 						case "world_info":
 							player.x, player.y, Backrooms.InBackrooms, Backrooms.Level, world.current_cave, player.speed, player.HP, game.start_time, ron.x, ron.y, ron.home, ron.inventory, world.chunk_manager.generator.seed, time_system.current_time, game.difficulty = event["world_info"]
@@ -2509,7 +2507,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.in
 							chunk.farmlands = new_farmlands
 							world.chunk_manager.chunks_to_get.remove(chunk_key)
 
-					net.server_events["Game"].remove(event)
+					game.net.server_events["Game"].remove(event)
 
 		if keys[hot_keys["Screenshot"]] and not keys[hot_keys["Show keys"]]:
 			
@@ -2543,112 +2541,6 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.in
 
 # Меню редактирования мира
 
-def multiplayer_settings_menu():
-	
-	global alt_pressed, net
-
-	back_button = Button(-20, -20, load(path + "Images/Buttons/Back.png", 128), load(path + "Images/Buttons/Back 2.png", 128))
-	host_button = Button(Width // 4, 50, textInfo.render("Хост (в твой мир заходят игроки)", True, menu_color_medium), textInfo.render("Хост (в твой мир заходят игроки)", True, menu_color_dark), alignment=True)
-	client_button = Button(Width * 3 // 4, 50, textInfo.render("Клиент (ты заходишь в мир хоста)", True, menu_color_medium), textInfo.render("Клиент (ты заходишь в мир хоста)", True, menu_color_dark), alignment=True)
-	start_game_button = Button(Width - 10 - bigTextInfo.size("Начать игру")[0], 150, bigTextInfo.render("Начать игру", True, menu_color_medium), bigTextInfo.render("Начать игру", True, menu_color_dark), alignment=True)
-
-	create_world = False
-	release = False
-	game.does_lighten = False
-	max_bias = -ui_system._set_positions(0, "Multiplayer settings menu")
-	max_bias = (max_bias + Height - 103) * max_bias > Height - 103
-
-	while True:
-		
-		mouse_x, mouse_y = pygame.mouse.get_pos()
-		click = pygame.mouse.get_pressed()
-		keys = pygame.key.get_pressed()
-		release = False
-		events = pygame.event.get()
-		dt = clock.tick(MAX_FPS) / 1000.0
-
-		for event in events:
-
-			if event.type == pygame.QUIT:
-				win_darken(win)
-				sys.exit()
-				
-			elif event.type == pygame.MOUSEBUTTONUP:
-				if event.button == 1:
-					release = True
-			
-			if event.type == pygame.KEYUP:
-				
-				if event.key == hot_keys["Show keys"]:
-					alt_pressed = not alt_pressed
-				if event.key == hot_keys["Close"]:
-					win_darken(win)
-					worlds_menu.open_worlds_menu()
-		
-		win.fill(menu_color_light)
-
-		pygame.draw.rect(win, menu_color_light, (0, 0, Width, 103))
-		pygame.draw.line(win, menu_color_medium, (0, 103), (Width, 103), 8)
-		pygame.draw.line(win, menu_color_medium, (Width // 2, 0), (Width // 2, 103), 8)
-		ui_system.handle_events(events, mouse_x, mouse_y, release, "Multiplayer settings menu")
-		ui_system.draw("Multiplayer settings menu",show_settings_lines=False)
-		back_button.main()
-		if back_button.is_released:
-			win_darken(win)
-			worlds_menu.open_worlds_menu()
-
-		if game.multiplayer_role == "Client":
-			host_button.main()
-			if host_button.is_released:
-				game.multiplayer_role = "Host"
-			win.blit(textInfo.render("Клиент (ты заходишь в мир хоста)", True, menu_color_dark), (Width * 3 // 4 - textInfo.size("Клиент (ты заходишь в мир хоста)")[0] // 2, 50 - textInfo.size("Клиент (ты заходишь в мир хоста)")[1] // 2))
-		else:
-			win.blit(textInfo.render("Хост (в твой мир заходят игроки)", True, menu_color_dark), (Width // 4 - textInfo.size("Хост (в твой мир заходят игроки)")[0] // 2, 50 - textInfo.size("Хост (в твой мир заходят игроки)")[1] // 2))
-			client_button.main()
-			if client_button.is_released:
-				game.multiplayer_role = "Client"
-		start_game_button.main()
-
-		if start_game_button.is_released:
-			net = NetworkManager(Peer, command_system.chat_message, world.chunk_manager.view_distance)
-			if game.multiplayer_role == "Host":
-				if Settings["Multiplayer"][0]:
-					net.start_host(Settings["Multiplayer"][1], Settings["Multiplayer"][2])
-				else:
-					net.start_local_host(Settings["Multiplayer"][1])
-			else:
-				if not os.path.exists(path + "Saves/Cache/Multiplayer"):
-					os.mkdir(path + "Saves/Cache/Multiplayer")
-				world.chunk_manager.save_directory = path + "Saves/Cache/Multiplayer/"
-				if Settings["Multiplayer"][0]:
-					net.connect_to_host(Settings["Multiplayer"][3], Settings["Multiplayer"][4])
-				else:
-					net.connect_to_local_host(Settings["Multiplayer"][3], Settings["Multiplayer"][1])
-				# connecting = True
-				# while connecting:
-				#	mouse_x, mouse_y = pygame.mouse.get_pos()
-				#	for event in pygame.event.get():
-				#		if event.type == pygame.QUIT:
-				#			win_darken(win)
-				#			sys.exit()
-				#	win.fill(menu_color_light)
-				#	for event in net.server_events["Game"]:
-				#		if event["event_type"] == "world_info":
-				#			connecting = False
-				#	animate_click(dt, mouse_x, mouse_y)
-				#	pygame.display.update()
-				#	clock.tick(MAX_FPS)
-			start_game()
-
-		if alt_pressed: draw_key("ESC", 44, 108)
-		animate_click(dt, mouse_x, mouse_y)
-		win_fill(alpha=100 - Settings["Display"][0])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
-
-		if not game.does_lighten:
-			win_lighten(win)
-			game.does_lighten = True
-		
-		pygame.display.update()
 
 # Меню
 
@@ -2739,7 +2631,8 @@ def menu():
 settings = SettingsMenu(game, save, music_channel, set_sound_volume, Settings, hot_keys)
 characters_menu = CharactersMenu(game, player, save)
 edit_world_menu = EditWorldMenu(game, player, Settings, world, start_game)
-worlds_menu = WorldsMenu(game, input_system, edit_world_menu.open_edit_world_menu, multiplayer_settings_menu, start_game)
+multiplayer_settings_menu = MultiplayerSettingsMenu(game, world, command_system, start_game)
+worlds_menu = WorldsMenu(game, input_system, edit_world_menu.open_edit_world_menu, multiplayer_settings_menu.open_multiplayer_settings_menu, start_game)
 
 def show_intro():
 	
@@ -2775,7 +2668,7 @@ def show_intro():
 		except Exception as e:
 			music_channel.stop()
 			if game.multiplayer:
-				net.disconnect()
+				game.net.disconnect()
 			show_error_window(e)
 
 if __name__ == "__main__":
