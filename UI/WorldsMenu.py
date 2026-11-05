@@ -9,23 +9,10 @@ from Classes import Button
 
 class WorldsMenu():
 
-	def __init__(self, game, input_system, edit_world, multiplayer_settings_menu, start_game):
+	def __init__(self, game, input_system):
 		self.game = game
 		self.input_system = input_system
-		self.edit_world = edit_world
-		self.multiplayer_settings_menu = multiplayer_settings_menu
-		self.start_game = start_game
 		self.init_buttons()
-
-	def open_worlds_menu(self):
-
-		win_darken(win)
-		self.game.does_lighten = False
-		current_screen = self.worlds_menu
-		while current_screen is not None:
-			current_screen = current_screen()
-		win_darken(win)
-		self.game.does_lighten = False
 
 	def init_buttons(self):
 
@@ -74,7 +61,9 @@ class WorldsMenu():
 							self.input_system.stop_input()
 							world_name_input = False
 						else:
-							return
+							win_darken(win)
+							self.game.does_lighten = False
+							return self.game.main_menu.main_menu
 
 			win.fill(menu_color_light)
 
@@ -83,7 +72,7 @@ class WorldsMenu():
 				if not self.input_system.inputting:
 					self.game.world_name = self.input_system.last_text
 					win_darken(win)
-					return self.edit_world
+					return self.game.edit_world_menu.edit_world_menu
 			else:
 
 				if self.create_new_world_button.is_released:
@@ -92,7 +81,9 @@ class WorldsMenu():
 				
 				if self.back_button.is_released:
 					self.input_system.stop_input()
-					return
+					win_darken(win)
+					self.game.does_lighten = False
+					return self.game.main_menu.main_menu
 
 				for temp_y, name_of_world in enumerate(inside_folders):
 
@@ -105,7 +96,8 @@ class WorldsMenu():
 						if release:
 							self.game.world_name = name_of_world
 							win_darken(win)
-							return self.edit_world
+							self.game.does_lighten = False
+							return self.game.edit_world_menu.edit_world_menu
 
 					if 50 <= mouse_x <= 50 + textInfo.size(name_of_world)[0] and text_y <= mouse_y <= text_y + textInfo.size(name_of_world)[1]:
 
@@ -117,10 +109,12 @@ class WorldsMenu():
 							if self.game.multiplayer:
 								self.game.world_name = name_of_world
 								self.game.multiplayer_role = "Host"
-								return self.multiplayer_settings_menu
+								win_darken(win)
+								self.game.does_lighten = False
+								return self.game.multiplayer_settings_menu.multiplayer_settings_menu
 							else:
 								self.game.world_name = name_of_world
-								return self.start_game
+								return self.game.start_game
 				
 				pygame.draw.rect(win, menu_color_light, (0, 0, Width, 103))
 				pygame.draw.line(win, menu_color_medium, (0, 103), (Width, 103), 8)
@@ -134,7 +128,7 @@ class WorldsMenu():
 					self.enter_another_game_button.main()
 					if self.enter_another_game_button.is_released:
 						self.game.multiplayer_role = "Client"
-						return self.multiplayer_settings_menu
+						return self.game.multiplayer_settings_menu.multiplayer_settings_menu
 				else:
 					win.blit(textInfo.render(t("Single play"), True, menu_color_dark), (Width // 4 - textInfo.size(t("Single play"))[0] // 2, 50 - textInfo.size(t("Single play"))[1] // 2))
 					self.multiplayer_button.main()

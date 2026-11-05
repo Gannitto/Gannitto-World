@@ -14,12 +14,11 @@ ui_system = UISystem()
 
 class EditWorldMenu():
 	
-	def __init__(self, game, player, Settings, world, start_game):
+	def __init__(self, game, player, Settings, world):
 		self.game = game
 		self.player = player
 		self.Settings = Settings
 		self.world = world
-		self.start_game = start_game
 		self.init_buttons()
 
 	def init_buttons(self):
@@ -29,17 +28,7 @@ class EditWorldMenu():
 		self.hard_but = Button(50, 340, load(path + "Images/Buttons/Hard.png", 132, 64), load(path + "Images/Buttons/Hard 2.png", 132, 64))
 		self.skull_but = Button(50, 410, load(path + "Images/Buttons/Skull.png", 132, 64), load(path + "Images/Buttons/Skull 2.png", 132, 64))
 
-	def open_edit_world_menu(self):
-
-		win_darken(win)
-		self.game.does_lighten = False
-		current_screen = self.edit_world
-		while current_screen is not None:
-			current_screen = current_screen()
-		win_darken(win)
-		self.game.does_lighten = False
-
-	def edit_world(self):
+	def edit_world_menu(self):
 
 		create_world = False
 		release = False
@@ -106,7 +95,9 @@ class EditWorldMenu():
 						self.game.world_name = self.Settings["Edit world"][0]
 						self.player.god_mode = self.Settings["Edit world"][1]
 						Saver.save_objects(path + "Saves/Worlds/" + self.game.world_name + "/Settings.save", [self.game.difficulty, self.player.god_mode])
-						return None
+						win_darken(win)
+						self.game.does_lighten = False
+						return self.game.worlds_menu.worlds_menu
 					
 					if event.key == hot_keys["Show keys"]:
 						self.game.alt_pressed = not self.game.alt_pressed
@@ -124,11 +115,13 @@ class EditWorldMenu():
 				if pygame.mouse.get_pressed()[0]:
 					
 					if not create_world:
-						os.rename(path + "Saves/Worlds/" + self.game.world_name, path + "Worlds/" + self.Settings["Edit world"][0])
+						os.rename(path + "Saves/Worlds/" + self.game.world_name, path + "Saves/Worlds/" + self.Settings["Edit world"][0])
 						self.game.world_name = self.Settings["Edit world"][0]
 						self.player.god_mode = self.Settings["Edit world"][1]
 						Saver.save_objects(path + "Saves/Worlds/" + self.game.world_name + "/Settings.save", [self.game.difficulty, self.player.god_mode])
-					return None
+					win_darken(win)
+					self.game.does_lighten = False
+					return self.game.worlds_menu.worlds_menu
 
 			win.blit(bigTextInfo.render(t("Game difficulty:"), True, menu_color_medium), (50, 150))
 
@@ -184,7 +177,8 @@ class EditWorldMenu():
 						self.game.world_name = self.Settings["Edit world"][0]
 						self.player.god_mode = self.Settings["Edit world"][1]
 						win_darken(win)
-						return self.start_game
+						self.game.does_lighten = False
+						return self.game.start_game
 			else:
 				
 				win.blit(bigTextInfo.render(t("Delete world"), True, menu_color_medium), (50, 660))
@@ -225,7 +219,8 @@ class EditWorldMenu():
 								shutil.rmtree(path + "Saves/Worlds/" + self.game.world_name)
 								del shutil
 								win_darken(win)
-								return None
+								self.game.does_lighten = False
+								return self.game.worlds_menu.worlds_menu
 							
 							no_button.main()
 							if no_button.is_released or keys[hot_keys["Close"]]:
@@ -246,9 +241,9 @@ class EditWorldMenu():
 						del shutil
 						win_darken(win)
 						if create_world:
-							return self.start_game
+							return self.game.start_game
 						else:
-							return None
+							return self.game.worlds_menu.worlds_menu
 							
 			if self.game.alt_pressed:
 				draw_key("ESC", Width - 50, 55)

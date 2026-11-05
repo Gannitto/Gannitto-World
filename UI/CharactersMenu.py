@@ -14,16 +14,6 @@ class CharactersMenu():
 		self.save = save
 		self.init_buttons()
 
-	def open_characters_menu(self):
-
-		win_darken(win)
-		self.game.does_lighten = False
-		current_screen = self.characters
-		while current_screen is not None:
-			current_screen = current_screen()
-		win_darken(win)
-		self.game.does_lighten = False
-
 	def init_buttons(self):
 
 		self.back_button = Button(-20, -20, load(path + "Images/Buttons/Back.png", 128), load(path + "Images/Buttons/Back 2.png", 128))
@@ -73,7 +63,9 @@ class CharactersMenu():
 					if event.key == hot_keys["Show keys"]:
 						self.game.alt_pressed = not self.game.alt_pressed
 					if event.key == hot_keys["Close"]:
-						return
+						win_darken(win)
+						self.game.does_lighten = False
+						return self.game.main_menu.main_menu
 					if event.key == pygame.K_1:
 						changed_character_num = 0
 					if event.key == pygame.K_2:
@@ -100,7 +92,8 @@ class CharactersMenu():
 			
 			if self.back_button.is_released:
 				win_darken(win)
-				return
+				self.game.does_lighten = False
+				return self.game.main_menu.main_menu
 			win.blit(load(path + "Images/Buttons/Character 2.png", 278, 64), (10, 120))
 			self.pets_button.main()
 			if self.pets_button.is_released: return self.pets
@@ -150,7 +143,8 @@ class CharactersMenu():
 				if event.type == pygame.KEYUP:
 					if event.key == hot_keys["Close"]:
 						win_darken(win)
-						return
+						self.game.does_lighten = False
+						return self.game.main_menu.main_menu
 
 			win.fill(menu_color_light)
 
@@ -161,7 +155,8 @@ class CharactersMenu():
 
 			if self.back_button.is_released:
 				win_darken(win)
-				return
+				self.game.does_lighten = False
+				return self.game.main_menu.main_menu
 
 			self.character_button.main()
 			if self.character_button.is_released: return self.characters

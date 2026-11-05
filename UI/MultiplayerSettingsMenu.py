@@ -27,16 +27,6 @@ class MultiplayerSettingsMenu():
 		self.client_button = Button(Width * 3 // 4, 50, textInfo.render("Клиент (ты заходишь в мир хоста)", True, menu_color_medium), textInfo.render("Клиент (ты заходишь в мир хоста)", True, menu_color_dark), alignment=True)
 		self.start_game_button = Button(Width - 10 - bigTextInfo.size("Начать игру")[0], 150, bigTextInfo.render("Начать игру", True, menu_color_medium), bigTextInfo.render("Начать игру", True, menu_color_dark), alignment=True)
 
-	def open_multiplayer_settings_menu(self):
-
-		win_darken(win)
-		self.game.does_lighten = False
-		current_screen = self.multiplayer_settings_menu
-		while current_screen is not None:
-			current_screen = current_screen()
-		win_darken(win)
-		self.game.does_lighten = False
-
 	def multiplayer_settings_menu(self):
 
 		create_world = False
@@ -69,7 +59,8 @@ class MultiplayerSettingsMenu():
 						self.game.alt_pressed = not self.game.alt_pressed
 					if event.key == hot_keys["Close"]:
 						win_darken(win)
-						return None
+						self.game.does_lighten = False
+						return self.game.worlds_menu.worlds_menu
 			
 			win.fill(menu_color_light)
 
@@ -81,7 +72,8 @@ class MultiplayerSettingsMenu():
 			self.back_button.main()
 			if self.back_button.is_released:
 				win_darken(win)
-				return None
+				self.game.does_lighten = False
+				return self.game.worlds_menu.worlds_menu
 
 			if self.game.multiplayer_role == "Client":
 				self.host_button.main()

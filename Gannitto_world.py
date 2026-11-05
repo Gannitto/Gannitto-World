@@ -22,7 +22,7 @@ from Sound import play_sound, set_sound_volume, music_channel
 from InputSystem import input_system
 from Assets import *
 from Globals import *
-from UI import SettingsMenu, CharactersMenu, UISystem, WorldsMenu, EditWorldMenu, MultiplayerSettingsMenu
+from UI import SettingsMenu, CharactersMenu, UISystem, WorldsMenu, EditWorldMenu, MultiplayerSettingsMenu, MainMenu
 from Classes import Player, World, Object, Particle, Slime, Spider, Butterfly, Projectile, ExplodingProjectile, Wall, Farmland, Wire, Lever, Motherboard, Ron, Button
 from GameState import GameState
 from Light import create_light_circle, create_light_circle_with_falloff, remove_light_circle
@@ -369,7 +369,9 @@ def start_game():
 							game.world_name = None
 							if game.multiplayer:
 								game.net.disconnect()
-							menu()
+							win_darken(win)
+							game.does_lighten = False
+							return game.main_menu.main_menu
 
 					if event.key in (pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_4, pygame.K_5, pygame.K_6, pygame.K_7, pygame.K_8, pygame.K_9, pygame.K_0, ):
 						last_changed_slot = changed_slot
@@ -385,7 +387,7 @@ def start_game():
 						music_channel.stop()
 						statistics[1] += (time.time() - game.start_time) / 3600
 						save(False)
-						settings()
+						return settings_menu.help
 
 					if event.key == hot_keys["Inventory"]:
 						game.inventory_open = not game.inventory_open
@@ -1390,7 +1392,9 @@ def start_game():
 						save(False)
 						if game.multiplayer:
 							game.net.disconnect()
-						menu()
+						win_darken(win)
+						game.does_lighten = False
+						return game.main_menu.main_menu
 					
 				elif game.special_slot_animations["Game menu slot"][0]:
 					game.special_slot_animations["Game menu slot"][0] = False
@@ -2537,134 +2541,57 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.in
 
 		pygame.display.update()
 
-
-
-# Меню редактирования мира
-
-
-# Меню
-
-def menu():
-	
-	play_button = Button(Width / 2, Height / 2 - 150, pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Play.png"), (264, 128)), pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Play 2.png"), (264, 128)), alignment=True, info="Подсказка: вы можете нажать enter, чтобы сразу начать игру.", action=worlds_menu.open_worlds_menu)
-	settings_button = Button(Width / 2, Height / 2, pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Settings.png"), (488, 128)), pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Settings 2.png"), (488, 128)), alignment=True, action=settings.open_settings)
-	change_a_character_button = Button(Width / 2, Height / 2 + 150, pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Change a character.png"), (960, 128)), pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Change a character 2.png"), (960, 128)), alignment=True, action=characters_menu.open_characters_menu)
-
-	version = f"Version {open(path + 'Version.txt').read()} (Build {str(get_build_number())})"
-	more_menu_open = False
-
-	while True:
-		
-		mouse_x, mouse_y = pygame.mouse.get_pos()
-		click = pygame.mouse.get_pressed()
-		release = False
-		dt = clock.tick(MAX_FPS) / 1000.0
-
-		for event in pygame.event.get():
-
-			if event.type == pygame.QUIT:
-				save()
-				sys.exit()
-			elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
-				release = True
-			elif event.type == pygame.KEYUP:
-				if event.key == pygame.K_RETURN:
-					worlds_menu.open_worlds_menu()
-				if event.key == hot_keys["Close"]:
-					more_menu_open = False
-		win.blit(Screensaver2, (0, 0))
-
-		if not more_menu_open:
-			play_button.main()
-			settings_button.main()
-			change_a_character_button.main()
-		
-		text(version, 5, Height - 30, (255, 255, 255))
-
-		win.blit(load(path + "Images/Discord logo.png", 108, 81), (Width - 90, Height - 80))
-		if mouse_x > Width - 70 and mouse_y > Height - 80:
-			win_fill()
-			if click[0]:
-				import webbrowser
-				webbrowser.open("https://discord.com/invite/aQNgcCQkHc")
-				del webbrowser
-				break
-			
-		if Width - 140 < mouse_x < Width - 76 and Height - 70 < mouse_y < Height - 6:
-			win.blit(pygame.transform.scale(load(path + "Images/Buttons/More 2.png"), 64), (Width - 140, Height - 70))
-
-			if release:
-				more_menu_open = not more_menu_open
-				
-		else:
-			win.blit(load(path + "Images/Buttons/More.png", 64), (Width - 140, Height - 70))
-
-		if more_menu_open:
-			
-			pygame.draw.rect(win, menu_color_light, (100, 100, Width - 200, Height - 200))
-			pygame.draw.rect(win, menu_color_dark, (100, 100, Width - 200, Height - 200), 10)
-			pygame.draw.rect(win, menu_color_medium, (110, 110, Width - 220, Height - 220), 10)
-			
-			win.blit(load(path + "Images/Telegram logo.png", 100), (200, Height // 2 + 50))
-			text("Telegram\n@Gannitto", 250, Height // 2 + 180, menu_color_medium, alignment=True)
-			
-			win.blit(load(path + "Images/Discord logo.png", 200, 150), (Width // 2 - 100, Height // 2 + 30))
-			text("Discord\nGannitto#0694", Width // 2, Height // 2 + 180, menu_color_medium, alignment=True)
-			
-			win.blit(load(path + "Images/Gmail logo.png", 100, 100), (Width - 300, Height // 2 + 50))
-			text("Gmail", Width - 250, Height // 2 + 180, menu_color_medium, alignment=True)
-			text("danilaserezhin@gmail.com", Width - 250, Height // 2 + 200, menu_color_medium, 16, True)
-			
-			win.blit(load(path + "Images/Rickrolling QR-code.png"), (Width // 2 - 100, Height // 2 - 200))
-			text(t("You can get other information from this QR code"), Width // 2, Height // 2 + 10, menu_color_medium, alignment=True)
-
-		animate_click(dt, mouse_x, mouse_y)
-
-		win_fill(alpha=100 - Settings["Display"][0])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
-
-		if not game.does_lighten:
-			win_lighten(win)
-			game.does_lighten = True
-
-		pygame.display.update()
-
-settings = SettingsMenu(game, save, music_channel, set_sound_volume, Settings, hot_keys)
-characters_menu = CharactersMenu(game, player, save)
-edit_world_menu = EditWorldMenu(game, player, Settings, world, start_game)
-multiplayer_settings_menu = MultiplayerSettingsMenu(game, world, command_system, start_game)
-worlds_menu = WorldsMenu(game, input_system, edit_world_menu.open_edit_world_menu, multiplayer_settings_menu.open_multiplayer_settings_menu, start_game)
+game.start_game = start_game
+game.settings_menu = SettingsMenu(game, save, music_channel, set_sound_volume, Settings, hot_keys)
+game.characters_menu = CharactersMenu(game, player, save)
+game.edit_world_menu = EditWorldMenu(game, player, Settings, world)
+game.multiplayer_settings_menu = MultiplayerSettingsMenu(game, world, command_system, start_game)
+game.worlds_menu = WorldsMenu(game, input_system)
+game.main_menu = MainMenu(game, save)
 
 def show_intro():
 	
-	if Settings["Display"][10]:
-		
-		# import cv2
-		# video = cv2.VideoCapture(path + "Intro.mp4")
-		# success, video_image = video.read()
-		
-		# while success:
-		#	for event in pygame.event.get():
-		#		if event.type == pygame.QUIT:
-		#			run = False
+	# import cv2
+	# video = cv2.VideoCapture(path + "Intro.mp4")
+	# success, video_image = video.read()
 	
-		#	success, video_image = video.read()
-		#	if success:
-		#		video_surf = pygame.image.frombuffer(
-		#			video_image.tobytes(), 
-		#			video_image.shape[1::-1], 
-		#			"BGR"
-		#		)	
-		#	else:
-		#		run = False
-		#	win.blit(pygame.transform.scale(video_surf, (Width, Height)), (0, 0))
-		#	pygame.display.flip()
-		#	clock.tick(20)
-		pass
+	# while success:
+	#	for event in pygame.event.get():
+	#		if event.type == pygame.QUIT:
+	#			run = False
+
+	#	success, video_image = video.read()
+	#	if success:
+	#		video_surf = pygame.image.frombuffer(
+	#			video_image.tobytes(), 
+	#			video_image.shape[1::-1], 
+	#			"BGR"
+	#		)	
+	#	else:
+	#		run = False
+	#	win.blit(pygame.transform.scale(video_surf, (Width, Height)), (0, 0))
+	#	pygame.display.flip()
+	#	clock.tick(20)
+	pass
+
+def loop():
+	game.does_lighten = False
+	current_screen = game.main_menu.main_menu
+	while current_screen is not None:
+		current_screen = current_screen()
+	win_darken(win)
+	game.does_lighten = False
+
+def main():
+	
+	if Settings["Display"][10]:
+		show_intro()
+
 	if Settings["User"][1]:
-		menu()
+		loop()
 	else:
 		try:
-			menu()
+			loop()
 		except Exception as e:
 			music_channel.stop()
 			if game.multiplayer:
@@ -2672,5 +2599,5 @@ def show_intro():
 			show_error_window(e)
 
 if __name__ == "__main__":
-	show_intro()
+	main()
 

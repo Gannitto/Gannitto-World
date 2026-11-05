@@ -69,7 +69,7 @@ class TimeSystem:
 	
 	def skip_time(self, seconds):
 		"""Добавление времени (для пропуска времени)"""
-		self.current_time += seconds
+		self.current_time += int(seconds)
 		if self.current_time >= self.day_duration:
 			self.current_time -= self.day_duration
 

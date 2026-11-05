@@ -24,16 +24,6 @@ class SettingsMenu():
 		self.Settings = Settings
 		self.hot_keys = hot_keys
 
-	def open_settings(self):
-
-		win_darken(win)
-		self.game.does_lighten = False
-		current_screen = self.help
-		while current_screen is not None:
-			current_screen = current_screen()
-		win_darken(win)
-		self.game.does_lighten = False
-
 	def page_back(self):
 		self.page = max(1, self.page - 1)
 	def next_page(self):
@@ -85,7 +75,9 @@ class SettingsMenu():
 
 					if event.key == self.hot_keys["Close"]:
 						Saver.save_objects(path + "Saves/Settings/Settings.save", self.Settings)
-						return
+						win_darken(win)
+						self.game.does_lighten = False
+						return self.game.main_menu.main_menu
 
 			win.fill(menu_color_light)
 			pygame.draw.rect(win, menu_color_medium, (-8, 100, 373, Height), 8)
@@ -95,7 +87,9 @@ class SettingsMenu():
 			
 			if self.back_button.is_released:
 				Saver.save_objects(path + "Saves/Settings/Settings.save", self.Settings)
-				return
+				win_darken(win)
+				self.game.does_lighten = False
+				return self.game.main_menu.main_menu
 				
 			self.page_back_button.main()
 			self.page_next_button.main()
@@ -213,7 +207,9 @@ class SettingsMenu():
 						self.game.alt_pressed = not self.game.alt_pressed
 					if event.key == self.hot_keys["Close"]:
 						Saver.save_objects(path + "Saves/Settings/Settings.save", self.Settings)
-						return
+						win_darken(win)
+						self.game.does_lighten = False
+						return self.game.main_menu.main_menu
 				elif event.type == pygame.MOUSEWHEEL:
 					bias = max((min(bias + event.y * self.Settings["Game"][2], 0)), max_bias)
 					ui_system._set_positions(bias, "Display")
@@ -230,7 +226,9 @@ class SettingsMenu():
 			
 			if self.back_button.is_released:
 				Saver.save_objects(path + "Saves/Settings/Settings.save", self.Settings)
-				return
+				win_darken(win)
+				self.game.does_lighten = False
+				return self.game.main_menu.main_menu
 
 			self.help_button.main()
 			if self.help_button.is_released: return self.help
@@ -253,7 +251,9 @@ class SettingsMenu():
 
 			if self.back_button.is_released:
 				Saver.save_objects(path + "Saves/Settings/Settings.save", self.Settings)
-				return
+				win_darken(win)
+				self.game.does_lighten = False
+				return self.game.main_menu.main_menu
 				
 			# Анимация и эффекты
 			animate_click(dt, self.game.mouse_x, self.game.mouse_y)
@@ -277,7 +277,9 @@ class SettingsMenu():
 						self.game.alt_pressed = not self.game.alt_pressed
 					if event.key == self.hot_keys["Close"]:
 						Saver.save_objects(path + "Saves/Settings/Settings.save", self.Settings)
-						return
+						win_darken(win)
+						self.game.does_lighten = False
+						return self.game.main_menu.main_menu
 
 					if event.key == pygame.K_1:
 						self.Settings["Languages"][0] = "English"
@@ -309,7 +311,9 @@ class SettingsMenu():
 			self.back_button.main()
 			if self.back_button.is_released:
 				Saver.save_objects(path + "Saves/Settings/Settings.save", self.Settings)
-				return
+				win_darken(win)
+				self.game.does_lighten = False
+				return self.game.main_menu.main_menu
 			self.show_reset_settings()
 
 			win.blit(bigTextInfo.render(t("You can choose one of these"), True, menu_color_medium), (385, 123))
@@ -400,7 +404,9 @@ class SettingsMenu():
 						self.game.alt_pressed = not self.game.alt_pressed
 					if event.key == self.hot_keys["Close"]:
 						Saver.save_objects(path + "Saves/Settings/Settings.save", self.Settings)
-						return
+						win_darken(win)
+						self.game.does_lighten = False
+						return self.game.main_menu.main_menu
 				elif event.type == pygame.MOUSEWHEEL:
 					bias = max((min(bias + event.y * self.Settings["Game"][2], 0)), max_bias)
 					ui_system._set_positions(bias, "User")
@@ -417,7 +423,9 @@ class SettingsMenu():
 			
 			if self.back_button.is_released:
 				Saver.save_objects(path + "Saves/Settings/Settings.save", self.Settings)
-				return
+				win_darken(win)
+				self.game.does_lighten = False
+				return self.game.main_menu.main_menu
 
 			self.help_button.main()
 			if self.help_button.is_released: return self.help
@@ -440,7 +448,9 @@ class SettingsMenu():
 
 			if self.back_button.is_released:
 				Saver.save_objects(path + "Saves/Settings/Settings.save", self.Settings)
-				return
+				win_darken(win)
+				self.game.does_lighten = False
+				return self.game.main_menu.main_menu
 				
 			# Анимация и эффекты
 			animate_click(dt, self.game.mouse_x, self.game.mouse_y)
@@ -477,7 +487,9 @@ class SettingsMenu():
 						self.game.alt_pressed = not self.game.alt_pressed
 					if event.key == self.hot_keys["Close"]:
 						Saver.save_objects(path + "Saves/Settings/Settings.save", self.Settings)
-						return
+						win_darken(win)
+						self.game.does_lighten = False
+						return self.game.main_menu.main_menu
 					if event.key == pygame.K_RETURN:
 
 						self.music_channel.set_volume(self.Settings["Sound"][0], self.Settings["Sound"][0] / 100)
@@ -499,7 +511,9 @@ class SettingsMenu():
 			
 			if self.back_button.is_released:
 				Saver.save_objects(path + "Saves/Settings/Settings.save", self.Settings)
-				return
+				win_darken(win)
+				self.game.does_lighten = False
+				return self.game.main_menu.main_menu
 
 			self.help_button.main()
 			if self.help_button.is_released: return self.help
@@ -522,7 +536,9 @@ class SettingsMenu():
 
 			if self.back_button.is_released:
 				Saver.save_objects(path + "Saves/Settings/Settings.save", self.Settings)
-				return
+				win_darken(win)
+				self.game.does_lighten = False
+				return self.game.main_menu.main_menu
 				
 			# Анимация и эффекты
 			animate_click(dt, self.game.mouse_x, self.game.mouse_y)
@@ -559,7 +575,9 @@ class SettingsMenu():
 						self.game.alt_pressed = not self.game.alt_pressed
 					if event.key == self.hot_keys["Close"]:
 						Saver.save_objects(path + "Saves/Settings/Settings.save", self.Settings)
-						return
+						win_darken(win)
+						self.game.does_lighten = False
+						return self.game.main_menu.main_menu
 				elif event.type == pygame.MOUSEWHEEL:
 					bias = max((min(bias + event.y * self.Settings["Game"][2], 0)), max_bias)
 					ui_system._set_positions(bias, "Statistics")
@@ -575,7 +593,9 @@ class SettingsMenu():
 			
 			if self.back_button.is_released:
 				Saver.save_objects(path + "Saves/Settings/Settings.save", self.Settings)
-				return
+				win_darken(win)
+				self.game.does_lighten = False
+				return self.game.main_menu.main_menu
 
 			self.help_button.main()
 			if self.help_button.is_released: return self.help
@@ -598,7 +618,9 @@ class SettingsMenu():
 
 			if self.back_button.is_released:
 				Saver.save_objects(path + "Saves/Settings/Settings.save", self.Settings)
-				return
+				win_darken(win)
+				self.game.does_lighten = False
+				return self.game.main_menu.main_menu
 				
 			# Анимация и эффекты
 			animate_click(dt, self.game.mouse_x, self.game.mouse_y)
@@ -748,7 +770,9 @@ class SettingsMenu():
 						else:
 							Saver.save_objects(path + "Saves/Settings/Settings.save", self.Settings)
 							Saver.save_objects(path + "Saves/Settings/Hot keys.save", self.hot_keys)
-							return
+							win_darken(win)
+							self.game.does_lighten = False
+							return self.game.main_menu.main_menu
 
 			self.back_button.main()
 			if self.back_button.is_released:
@@ -757,7 +781,9 @@ class SettingsMenu():
 				else:
 					Saver.save_objects(path + "Saves/Settings/Settings.save", self.Settings)
 					Saver.save_objects(path + "Saves/Settings/Hot keys.save", self.hot_keys)
-					return
+					win_darken(win)
+					self.game.does_lighten = False
+					return self.game.main_menu.main_menu
 				
 			win.fill(menu_color_light)
 			pygame.draw.rect(win, menu_color_medium, (-8, 100, 373, Height), 8)
@@ -768,7 +794,9 @@ class SettingsMenu():
 			
 			if self.back_button.is_released:
 				Saver.save_objects(path + "Saves/Settings/Settings.save", self.Settings)
-				return
+				win_darken(win)
+				self.game.does_lighten = False
+				return self.game.main_menu.main_menu
 
 			self.help_button.main()
 			if self.help_button.is_released: return self.help
@@ -893,7 +921,9 @@ class SettingsMenu():
 						self.game.alt_pressed = not self.game.alt_pressed
 					if event.key == self.hot_keys["Close"]:
 						Saver.save_objects(path + "Saves/Settings/Settings.save", self.Settings)
-						return
+						win_darken(win)
+						self.game.does_lighten = False
+						return self.game.main_menu.main_menu
 				elif event.type == pygame.MOUSEWHEEL:
 					bias = max((min(bias + event.y * self.Settings["Game"][2], 0)), max_bias)
 					ui_system._set_positions(bias, "Game")
@@ -910,7 +940,9 @@ class SettingsMenu():
 			
 			if self.back_button.is_released:
 				Saver.save_objects(path + "Saves/Settings/Settings.save", self.Settings)
-				return
+				win_darken(win)
+				self.game.does_lighten = False
+				return self.game.main_menu.main_menu
 
 			self.help_button.main()
 			if self.help_button.is_released: return self.help
@@ -933,7 +965,9 @@ class SettingsMenu():
 
 			if self.back_button.is_released:
 				Saver.save_objects(path + "Saves/Settings/Settings.save", self.Settings)
-				return
+				win_darken(win)
+				self.game.does_lighten = False
+				return self.game.main_menu.main_menu
 				
 			# Анимация и эффекты
 			animate_click(dt, self.game.mouse_x, self.game.mouse_y)
