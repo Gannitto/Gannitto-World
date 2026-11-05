@@ -27,3 +27,46 @@ def set_sound_volume(volume):
 		channel.set_volume(volume)
 
 set_sound_volume(Settings["Sound"][1] / 100)
+
+def update_sounds(game, player, world):
+	if game.time_system.day_phase == "Night" and not game.night_playing:
+		music_channel.stop()
+		music_channel.play(pygame.mixer.Sound(path + "Soundtracks/Night " + str(random.randint(1, 2)) + ".mp3"))
+		game.night_playing = True
+
+	elif not music_channel.get_busy() or (game.night_playing and game.time_system.day_phase != "Night"):
+
+		game.night_playing = False
+		music_channel.stop()
+
+		match game.current_biome:
+
+			case "Forest" | "Field":
+				music_channel.queue(pygame.mixer.Sound(path + "Soundtracks/Forest " + str(random.randint(1, 3)) + ".mp3"))
+				
+			case "Desert":
+				music_channel.queue(pygame.mixer.Sound(path + "Soundtracks/Desert " + str(random.randint(1, 2)) + ".mp3"))
+				
+			case "Swamp":
+				music_channel.queue(pygame.mixer.Sound(path + "Soundtracks/Swamp " + str(random.randint(1, 2)) + ".mp3"))
+				
+			case "Taiga":
+				music_channel.queue(pygame.mixer.Sound(path + "Soundtracks/Taiga " + str(random.randint(1, 1)) + ".mp3"))
+
+	if player.animation_timer == 0 and (player.frame_index % 6 == 2 or player.frame_index % 6 == 5):
+
+		if world.current_cave is not None:
+			play_sound("Cave walking", 3)
+
+		elif game.current_biome in ("Forest", "Field"):
+			play_sound("Grass walking", 3)
+
+		elif game.current_biome == "Desert":
+			play_sound("Sand walking", 3)
+
+		elif game.current_biome == "Taiga":
+			play_sound("Snow walking", 3)
+
+		elif game.current_biome == "Swamp":
+			play_sound("Swamp walking", 3)
+

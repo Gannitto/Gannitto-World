@@ -18,8 +18,9 @@ from Translator import translator, t
 from Cache import load
 from TimeSystem import TimeSystem
 from Commands import CommandSystem
-from Sound import play_sound, set_sound_volume, music_channel
+from Sound import play_sound, set_sound_volume, music_channel, update_sounds
 from InputSystem import input_system
+from Weather import WeatherSystem
 from Assets import *
 from Globals import *
 from UI import SettingsMenu, CharactersMenu, UISystem, WorldsMenu, EditWorldMenu, MultiplayerSettingsMenu, MainMenu
@@ -127,10 +128,12 @@ player = Player()
 world_to_screen = lambda X, Y, W, H, player=player: (X - player.x + Width // 2 - W // 2, player.y - Y + Height // 2 - H // 2)
 world_rect_to_screen = lambda X, Y, W, H, player=player: (X - player.x + Width // 2 - W // 2, player.y - Y + Height // 2 - H // 2, W, H)
 world = World(world_rect_to_screen)
-time_system = TimeSystem()
+game.time_system = TimeSystem()
+time_system = game.time_system
 ui_system = UISystem()
 ron = Ron(world_to_screen, player)
 command_system = CommandSystem(game, player, FPS, inventory, time_system)
+weather = WeatherSystem(world)
 
 # def show_bar(times):
 #	import matplotlib.pyplot as plt
@@ -176,7 +179,6 @@ def start_game():
 	
 	global backrooms, text_color, mouse_x, mouse_y, color, new_particles, game, alt_pressed, player, world, FPS, changed_slot, win
 
-	night_playing = False
 	bigTextInfo = pygame.font.Font(path + "Font.ttf", 36)
 	aaa = 0
 	AA = 0
@@ -455,50 +457,11 @@ def start_game():
 			
 			current_chunk = world.chunk_manager.get_chunk_at(player.x, player.y)
 			if current_chunk is not None:
-				current_biome = current_chunk.biome
+				game.current_biome = current_chunk.biome
 			else:
-				current_biome = None
+				game.current_biome = None
 			world.render_loaded_chunks(player)
-			if time_system.day_phase == "Night" and not night_playing:
-				music_channel.stop()
-				music_channel.play(pygame.mixer.Sound(path + "Soundtracks/Night " + str(random.randint(1, 2)) + ".mp3"))
-				night_playing = True
-
-			elif not music_channel.get_busy() or (night_playing and time_system.day_phase != "Night"):
-
-				night_playing = False
-				music_channel.stop()
-
-				match current_biome:
-
-					case "Forest" | "Field":
-						music_channel.queue(pygame.mixer.Sound(path + "Soundtracks/Forest " + str(random.randint(1, 3)) + ".mp3"))
-						
-					case "Desert":
-						music_channel.queue(pygame.mixer.Sound(path + "Soundtracks/Desert " + str(random.randint(1, 2)) + ".mp3"))
-						
-					case "Swamp":
-						music_channel.queue(pygame.mixer.Sound(path + "Soundtracks/Swamp " + str(random.randint(1, 2)) + ".mp3"))
-						
-					case "Taiga":
-						music_channel.queue(pygame.mixer.Sound(path + "Soundtracks/Taiga " + str(random.randint(1, 1)) + ".mp3"))
-
-			if player.animation_timer == 0 and (player.frame_index % 6 == 2 or player.frame_index % 6 == 5):
-
-				if world.current_cave is not None:
-					play_sound("Cave walking", 3)
-
-				elif current_biome in ("Forest", "Field"):
-					play_sound("Grass walking", 3)
-
-				elif current_biome == "Desert":
-					play_sound("Sand walking", 3)
-
-				elif current_biome == "Taiga":
-					play_sound("Snow walking", 3)
-
-				elif current_biome == "Swamp":
-					play_sound("Swamp walking", 3)
+			update_sounds(game, player, world)
 
 		else:
 
@@ -1224,16 +1187,10 @@ def start_game():
 			time.sleep(0.1)
 
 		# Отрисовка погоды
+
+		weather.update()
+		weather.draw()
 		
-		if random.randint(1, 18000) == 1: game.weather = random.choice(("Clear", "Rain"))
-
-		match game.weather:
-			
-			case "Rain":
-				offset = random.randint(-10, 10)
-				for _ in range(15):
-					world.particles.append(Particle(random.randint(1, Width), -50, drop_texture,  x_bias=random.randint(-5, 5) + offset, y_bias=random.randint(30, 40), display_mode=lambda X, Y, w, h: (X, Y), end_y=Height, end_zone=30))
-
 		# Отображение частиц
 
 		for particle in world.particles:

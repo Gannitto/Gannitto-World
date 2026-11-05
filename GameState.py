@@ -6,7 +6,6 @@ class GameState:
 	def __init__(self):
 
 		self.difficulty = "norm"
-		self.weather = "Clear"
 		self.shadow_surface = pygame.Surface((Width, Height), pygame.SRCALPHA)
 		self.shadow_surface.fill((0, 0, 0, 90))
 		self.chat = []
@@ -29,6 +28,8 @@ class GameState:
 		self.start_time = 0
 		self.hold_left = False
 		self.world_name = None
+		self.current_biome = None
+		self.night_playing = False
 
 		self.multiplayer = False
 		self.multiplayer_role = None
