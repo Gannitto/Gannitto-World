@@ -82,7 +82,7 @@ class Object:
 		else:
 			self.rect = pygame.Rect(rect[0] + self.x, rect[1] + self.y, rect[2], rect[3])
 	
-	def main(self, game, dt, multiplayer):
+	def main(self, game, dt):
 			
 		player = game.player
 
@@ -91,7 +91,7 @@ class Object:
 			if self.breakable and pygame.mouse.get_pressed()[0]:
 
 				player.breaking_object = self
-				if not player.started_break and multiplayer:
+				if not player.started_break and game.multiplayer:
 					game.events.append({"event_type": "object_started_breaking", "x": self.x, "y": self.y, "name": self.name})
 				player.started_break = True
 				player.breaking_object_info = (self.x, self.y, self.name)
@@ -101,7 +101,7 @@ class Object:
 				if self.breaked < 1:
 
 					destroy_object(self.image, self.x, self.y, game.world, Particle)
-					if multiplayer:
+					if game.multiplayer:
 						game.events.append({"event_type": "object_removed", "x": self.x, "y": self.y, "name": self.name})
 					game.world.chunk_manager.get_chunk_at(self.x, self.y).objects.remove(self)
 					

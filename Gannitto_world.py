@@ -21,6 +21,7 @@ from Commands import CommandSystem
 from Sound import play_sound, set_sound_volume, music_channel, update_sounds
 from InputSystem import input_system
 from Weather import WeatherSystem
+from ItemActions import ItemActions
 from Assets import *
 from Globals import *
 from UI import SettingsMenu, CharactersMenu, WorldsMenu, EditWorldMenu, MultiplayerSettingsMenu, MainMenu
@@ -122,8 +123,6 @@ mouse_x = game.mouse_x
 mouse_y = game.mouse_y
 alt_pressed = game.alt_pressed
 
-changed_slot = inventory.changed_slot
-
 game.player = Player()
 player = game.player
 game.inventory = inventory
@@ -136,7 +135,11 @@ world = game.world
 game.time_system = TimeSystem()
 time_system = game.time_system
 ron = Ron(game)
-command_system = CommandSystem(game)
+game.command_system = CommandSystem(game)
+command_system = game.command_system
+game.item_actions = ItemActions(game)
+item_actions = game.item_actions
+
 weather = WeatherSystem(world)
 
 # def show_bar(times):
@@ -181,7 +184,7 @@ objects_templates = {
 
 def start_game():
 	
-	global backrooms, text_color, mouse_x, mouse_y, color, new_particles, game, alt_pressed, player, world, FPS, changed_slot, win
+	global backrooms, text_color, mouse_x, mouse_y, color, new_particles, game, alt_pressed, player, world, FPS, win
 
 	bigTextInfo = pygame.font.Font(path + "Font.ttf", 36)
 	aaa = 0
@@ -300,7 +303,7 @@ def start_game():
 		FPS = int(clock.get_fps())
 		dt = clock.tick(MAX_FPS) / 1000.0
 		time_system.update(dt)
-		player.changed_item = inventory.whole_inventory[changed_slot]
+		player.changed_item = inventory.whole_inventory[inventory.changed_slot]
 		if game.multiplayer:
 			game.events.clear()
 		events = pygame.event.get()
@@ -321,9 +324,9 @@ def start_game():
 				if game.craft_list_open:
 					game.craft_list_offset = max((min(game.craft_list_offset + event.y * Settings["Game"][2], 0)), game.craft_list_max_offset)
 				else:
-					changed_slot += event.y
-					if changed_slot > 9: changed_slot = 0
-					if changed_slot < 0: changed_slot = 9
+					inventory.changed_slot -= event.y
+					if inventory.changed_slot > 9: inventory.changed_slot = 0
+					if inventory.changed_slot < 0: inventory.changed_slot = 9
 
 			if event.type == pygame.KEYUP:
 				if game.chat_open:
@@ -380,9 +383,9 @@ def start_game():
 							return game.main_menu.main_menu
 
 					if event.key in (pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_4, pygame.K_5, pygame.K_6, pygame.K_7, pygame.K_8, pygame.K_9, pygame.K_0, ):
-						last_changed_slot = changed_slot
-						changed_slot = int(event.unicode) - 1 + 10 * (event.key == pygame.K_0)
-						player.changed_item = inventory.whole_inventory[changed_slot]
+						last_changed_slot = inventory.changed_slot
+						inventory.changed_slot = int(event.unicode) - 1 + 10 * (event.key == pygame.K_0)
+						player.changed_item = inventory.whole_inventory[inventory.changed_slot]
 						if player.changed_item is not None:
 							player.changed_item = player.changed_item.name
 
@@ -406,14 +409,14 @@ def start_game():
 							inventory.craft_amounts_list = [None] * 7
 							inventory.craft_images_list = [None] * 7
 
-					if event.key == hot_keys["Throw away the item"] and inventory.whole_inventory[changed_slot] is not None:
+					if event.key == hot_keys["Throw away the item"] and inventory.whole_inventory[inventory.changed_slot] is not None:
 						
 						if Backrooms.InBackrooms:
-							world.backrooms_objects.append(Object(inventory.whole_inventory[changed_slot].name, player.x, player.y, "Images/Items/" + inventory.whole_inventory[changed_slot].name + ".png", special_flags="Item"))
+							world.backrooms_objects.append(Object(inventory.whole_inventory[inventory.changed_slot].name, player.x, player.y, "Images/Items/" + inventory.whole_inventory[inventory.changed_slot].name + ".png", special_flags="Item"))
 						else:
-							world.particles.append(create_throw_particle(Object, Particle, player, world, game, inventory.whole_inventory[changed_slot].image, inventory.whole_inventory[changed_slot].name))
+							world.particles.append(create_throw_particle(Object, Particle, player, world, game, inventory.whole_inventory[inventory.changed_slot].image, inventory.whole_inventory[inventory.changed_slot].name))
 						
-						inventory.reduce(changed_slot)
+						inventory.reduce(inventory.changed_slot)
 
 		if game.inventory_open:
 			if click[0] and not game.hold_left:
@@ -535,13 +538,13 @@ def start_game():
 
 				for object in world.current_cave.objects:
 
-					object.main(game, dt, game.multiplayer)
+					object.main(game, dt)
 
 					if object.__class__ == Object:
 
 						if object.x - player.x + Width // 2 - object.w // 2 <= mouse_x <= object.x - player.x + Width // 2 + object.w // 2 and player.y - object.y + Height // 2 - object.h // 2 <= mouse_y <= player.y - object.y + Height // 2 + object.h // 2:
 
-							if object.name == "Iron ore" and click[0] and inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name in ("Stone pickaxe"):
+							if object.name == "Iron ore" and click[0] and inventory.whole_inventory[inventory.changed_slot] is not None and inventory.whole_inventory[inventory.changed_slot].name in ("Stone pickaxe"):
 
 								object.special_flags -= 1
 								object.image = pygame.transform.scale(object.image, (32, 32))
@@ -571,7 +574,7 @@ def start_game():
 										world.current_cave.objects.append(Object("Iron ore", random.randint(object.x - 128, object.x + 128), random.randint(object.y - 128, object.y + 128), "Images/Items/Iron ore.png", special_flags="Item"))
 									break
 
-							if object.name == "Gold ore" and click[0] and inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name in ("Stone pickaxe"):
+							if object.name == "Gold ore" and click[0] and inventory.whole_inventory[inventory.changed_slot] is not None and inventory.whole_inventory[inventory.changed_slot].name in ("Stone pickaxe"):
 
 								object.special_flags -= 1
 								object.image = pygame.transform.scale(object.image, (32, 32))
@@ -601,9 +604,9 @@ def start_game():
 									break
 
 						if object.name == "Pot":
-							if object.get_right_pressed(mouse_x, mouse_y, player) and inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].type == "Flower":
-								world.chunk_manager.get_chunk_at(object.x, object.y).items.append(Object(inventory.whole_inventory[changed_slot].name, object.x, object.y + 36, 64, 64, inventory.whole_inventory[changed_slot].image))
-								inventory.reduce(changed_slot)
+							if object.get_right_pressed(mouse_x, mouse_y, player) and inventory.whole_inventory[inventory.changed_slot] is not None and inventory.whole_inventory[inventory.changed_slot].type == "Flower":
+								world.chunk_manager.get_chunk_at(object.x, object.y).items.append(Object(inventory.whole_inventory[inventory.changed_slot].name, object.x, object.y + 36, 64, 64, inventory.whole_inventory[inventory.changed_slot].image))
+								inventory.reduce(inventory.changed_slot)
 				
 			else:
 
@@ -614,19 +617,19 @@ def start_game():
 
 				for object in world.visible_objects:
 
-					object.main(game, dt, game.multiplayer)
+					object.main(game, dt)
 
 					if object.get_left_pressed(mouse_x, mouse_y, player):
 
 						if object.name == "Pond":
-							if object.special_flags[0] != 0 and inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Bucket":
+							if object.special_flags[0] != 0 and inventory.whole_inventory[inventory.changed_slot] is not None and inventory.whole_inventory[inventory.changed_slot].name == "Bucket":
 
-								inventory.reduce(changed_slot)
+								inventory.reduce(inventory.changed_slot)
 
 								inventory.increate("Water bucket")
 								object.special_flags[0] -= 1
 			
-							if object.special_flags[1] != 0 and inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Stone shovel" and object.get_left_pressed(mouse_x, mouse_y, player) and random.randint(1, 30) == 1:
+							if object.special_flags[1] != 0 and inventory.whole_inventory[inventory.changed_slot] is not None and inventory.whole_inventory[inventory.changed_slot].name == "Stone shovel" and object.get_left_pressed(mouse_x, mouse_y, player) and random.randint(1, 30) == 1:
 								rand_x, rand_y = object.x +random.randint(-128, 128), object.y + random.randint(-128, 128)
 								world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Clay", rand_x, rand_y, "Images/Items/Clay.png", pickable=True))
 								object.special_flags[1] -= 1
@@ -635,9 +638,9 @@ def start_game():
 
 						if object.name == "Pot":
 
-							if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].type == "Flower":
-								world.chunk_manager.get_chunk_at(object.x, object.y + 36).items.append(Object(inventory.whole_inventory[changed_slot].name, object.x, object.y + 36, 64, 64, inventory.whole_inventory[changed_slot].image))
-								inventory.reduce(changed_slot)
+							if inventory.whole_inventory[inventory.changed_slot] is not None and inventory.whole_inventory[inventory.changed_slot].type == "Flower":
+								world.chunk_manager.get_chunk_at(object.x, object.y + 36).items.append(Object(inventory.whole_inventory[inventory.changed_slot].name, object.x, object.y + 36, 64, 64, inventory.whole_inventory[inventory.changed_slot].image))
+								inventory.reduce(inventory.changed_slot)
 
 					if object.name == "Dandelion" and time.time() - object.start_time > 1200:
 
@@ -660,7 +663,7 @@ def start_game():
 
 					if object.name == "Punch" and False:
 
-						if object.get_left_pressed(mouse_x, mouse_y, player) and inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name in ("Mushroom", "Red mushroom", "Thread", "Poppy", "Purple tulip", "Orange tulip", "Black tulip", "Red tulip", "Yellow tulip", "Dandelion", "Cotton grass", "Onion"):
+						if object.get_left_pressed(mouse_x, mouse_y, player) and inventory.whole_inventory[inventory.changed_slot] is not None and inventory.whole_inventory[inventory.changed_slot].name in ("Mushroom", "Red mushroom", "Thread", "Poppy", "Purple tulip", "Orange tulip", "Black tulip", "Red tulip", "Yellow tulip", "Dandelion", "Cotton grass", "Onion"):
 							if object.special_flags < 11:
 								object.special_flags += 1
 								if object.special_flags > 6:
@@ -676,16 +679,16 @@ def start_game():
 					player.breaking_object_info = None
 
 				# Отображение предметов
-				if inventory.whole_inventory[changed_slot] is None:
+				if inventory.whole_inventory[inventory.changed_slot] is None:
 					last_changed_item = None
 				else:
-					last_changed_item = inventory.whole_inventory[changed_slot].name
+					last_changed_item = inventory.whole_inventory[inventory.changed_slot].name
 
 				for item in world.visible_items:
-					item.main(game, dt, game.multiplayer)
+					item.main(game, dt)
 					try_pick = True
 					if item.pickable and Settings["Game"][0] and player.x - 150 < item.x < player.x + 150 and player.y - 150 < item.y < player.y + 150:
-						world.particles.append(Particle(item.x, item.y, item.image, lambda particle: round(((player.x - particle.x) // 2) / 10 * 5), lambda particle: round(((player.y - particle.y) // 2) / 10 * 5), track_ticks=True, del_self_condition=lambda particle: abs(particle.x - player.x) < 30 and abs(particle.y - player.y) < 30, end_command=lambda particle: (inventory.increate(item.name), play_sound("Pick an item"))))
+						world.particles.append(Particle(item.x, item.y, item.image, lambda particle: round(((player.x - particle.x) // 2) / 10 * 5), lambda particle: round(((player.y - particle.y) // 2) / 10 * 5), track_ticks=True, del_self_condition=lambda particle: abs(particle.x - player.x) < 30 and abs(particle.y - player.y) < 30, end_command=lambda particle: (inventory.increate(particle.special_flags), play_sound("Pick an item"))))
 						if game.multiplayer:
 							game.events.append({"event_type": "item_removed", "x": item.x, "y": item.y, "name": item.name})
 
@@ -701,9 +704,9 @@ def start_game():
 							if game.multiplayer:
 								game.events.append({"event_type": "item_removed", "x": item.x, "y": item.y, "name": item.name})
 							world.chunk_manager.get_chunk_at(item.x, item.y).items.remove(item)
-						elif item.pickable and click[2] and inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name in ("Blue slime", "Pink slime"):
+						elif item.pickable and click[2] and inventory.whole_inventory[inventory.changed_slot] is not None and inventory.whole_inventory[inventory.changed_slot].name in ("Blue slime", "Pink slime"):
 							item.pickable = False
-							inventory.reduce(changed_slot)
+							inventory.reduce(inventory.changed_slot)
 
 		else:
 
@@ -717,9 +720,9 @@ def start_game():
 
 					if object.name == "Pot":
 
-						if object.get_right_pressed(mouse_x, mouse_y, player) and inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].type == "Flower":
-							world.chunk_manager.get_chunk_at(object.x, object.y).items.append(Object(inventory.whole_inventory[changed_slot].name, object.x, object.y + 36, 64, 64, inventory.whole_inventory[changed_slot].image))
-							inventory.reduce(changed_slot)
+						if object.get_right_pressed(mouse_x, mouse_y, player) and inventory.whole_inventory[inventory.changed_slot] is not None and inventory.whole_inventory[inventory.changed_slot].type == "Flower":
+							world.chunk_manager.get_chunk_at(object.x, object.y).items.append(Object(inventory.whole_inventory[inventory.changed_slot].name, object.x, object.y + 36, 64, 64, inventory.whole_inventory[inventory.changed_slot].image))
+							inventory.reduce(inventory.changed_slot)
 
 						if not object.x - 60 < object.special_flags[0] < object.x + 60:
 							if object.x < object.special_flags[0]:
@@ -1023,8 +1026,8 @@ def start_game():
 								else:
 									win.fill((62, 39, 49), (Width // 2 + 16, Height / 2 - 24, 8, (8 - player.animation[1] + 8) * 2))
 
-		if inventory.whole_inventory[changed_slot] is not None and player.direction != "Up" and not (changed_item_x == changed_item_y == 0):
-			win.blit(inventory.whole_inventory[changed_slot].image, (changed_item_x, changed_item_y))
+		if inventory.whole_inventory[inventory.changed_slot] is not None and player.direction != "Up" and not (changed_item_x == changed_item_y == 0):
+			win.blit(inventory.whole_inventory[inventory.changed_slot].image, (changed_item_x, changed_item_y))
 
 		# Рон
 		old_ron_pos = ron.x, ron.y
@@ -1037,55 +1040,12 @@ def start_game():
 		for i in range(Settings["Display"][2]):
 			win.blit(pygame.transform.scale(win, (Width - i * 2, Height - i * 2)), (i, i))
 
-		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name in ("Gun", "Bow") and Settings["Game"][1]:
+		if inventory.whole_inventory[inventory.changed_slot] is not None and inventory.whole_inventory[inventory.changed_slot].name in ("Gun", "Bow") and Settings["Game"][1]:
 			win.blit(Inventory_slot, (Width - 370, Height - 74))
-			win.blit(inventory.whole_inventory[changed_slot].image, (Width - 370, Height - 74))
+			win.blit(inventory.whole_inventory[inventory.changed_slot].image, (Width - 370, Height - 74))
 		
-		if (inventory.whole_inventory[changed_slot] is not None and (use_item_pressed or (click[0] and Settings["Game"][1]))) and not game.chat_open:
-
-			match inventory.whole_inventory[changed_slot].name:
-
-				case "Gun":
-
-					for item_index, slot in enumerate(inventory.whole_inventory):
-						if slot is not None and slot.name == "Bullet":
-							inventory.reduce(item_index)
-							world.projectiles.append(Projectile(player.x, player.y, mouse_x, mouse_y, "Bullet"))
-							if game.multiplayer:
-								game.events.append({"event_type": "projectile_added", "x": player.x, "y": player.y, "mouse_x": mouse_x, "mouse_y": mouse_y, "projectile_type": "Bullet"})
-							break
-					else:
-						text(t("You don't have bullets to shoot"), Width // 2, Height // 2, (200, 30, 30), alignment=True)
-
-				case "Bow":
-
-					for item_index, slot in enumerate(inventory.whole_inventory):
-						if slot is not None and slot.name == "Arrow":
-							inventory.reduce(item_index)
-							world.projectiles.append(Projectile(player.x, player.y, mouse_x, mouse_y, "Arrow"))
-							if game.multiplayer:
-								game.events.append({"event_type": "projectile_added", "x": player.x, "y": player.y, "mouse_x": mouse_x, "mouse_y": mouse_y, "projectile_type": "Arrow"})
-							break
-					else:
-						text(t("You don't have arrows to shoot"), Width // 2, Height // 2, (200, 30, 30), alignment=True)
-
-				case "Beer":
-
-					player.effects.append(["Drunk", 180])
-					inventory.reduce(changed_slot)
-
-				case "Grenade":
-
-					world.projectiles.append(ExplodingProjectile(player.x, player.y, mouse_x, mouse_y, "Grenade", (player.x + mouse_x - Width // 2, player.y - mouse_y + Height // 2)))
-
-					inventory.reduce(changed_slot)
-						
-			if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].type == "Food":
-				
-				player.HP += inventory.whole_inventory[changed_slot].special_info
-				inventory.reduce(changed_slot)
-				
-		
+		if (inventory.whole_inventory[inventory.changed_slot] is not None and (use_item_pressed or (click[0] and Settings["Game"][1]))) and not game.chat_open:
+			item_actions.handle_item_actions(mouse_x, mouse_y)
 
 		if keys[hot_keys["Screenshot"]] and keys[hot_keys["Show keys"]]:
 			
@@ -1444,7 +1404,7 @@ def start_game():
 
 			for slot in range(30):
 				
-				if slot == changed_slot: win.blit(Changed_inventory_slot, (slot_x, slot_y))
+				if slot == inventory.changed_slot: win.blit(Changed_inventory_slot, (slot_x, slot_y))
 				else:
 					
 					if game.slot_animations[slot][0]:
@@ -1617,7 +1577,7 @@ def start_game():
 			if alt_pressed:
 				draw_key(" I ", 42, 344)
 
-			if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Wrench":
+			if inventory.whole_inventory[inventory.changed_slot] is not None and inventory.whole_inventory[inventory.changed_slot].name == "Wrench":
 
 				if 900 <= mouse_x <= 964 and 10 <= mouse_y <= 74:
 					win.blit(Changed_inventory_slot, (900, 10))
@@ -1630,7 +1590,7 @@ def start_game():
 				mouse_object = t("Inventory (I)")
 
 			for slot_x in range(10):
-				if slot_x == changed_slot: win.blit(Changed_inventory_slot, (slot_x * 80 + 10, 10))
+				if slot_x == inventory.changed_slot: win.blit(Changed_inventory_slot, (slot_x * 80 + 10, 10))
 				else: win.blit(Inventory_slot, (slot_x * 80 + 10, 10))
 
 			inventory.draw_panel()
@@ -1691,37 +1651,37 @@ def start_game():
 		
 		if game.item_settings_open:
 
-			if inventory.whole_inventory[changed_slot].name == "Wrench":
+			if inventory.whole_inventory[inventory.changed_slot].name == "Wrench":
 
 				win_fill()
 
 				pygame.draw.rect(win, text_color, (100, 100, Width - 200, Height - 200))
 				pygame.draw.rect(win, (0, 150, 0), (100, 100, Width - 200, Height - 200), 10)
-				win.blit(pygame.transform.scale2x(inventory.whole_inventory[changed_slot].image), (Width // 2 - 64, 130))
+				win.blit(pygame.transform.scale2x(inventory.whole_inventory[inventory.changed_slot].image), (Width // 2 - 64, 130))
 				pygame.draw.line(win, (0, 150, 0), (150, 308), (Width - 150, 308), 10)
 				win.blit(textInfo.render(t("Only wire"), True, (0, 150, 0)), (130, 348))
 				win.blit(textInfo.render(t("All mechanisms"), True, (0, 150, 0)), (Width // 2 - textInfo.size(t("All mechanisms"))[0] // 2, 348))
 				win.blit(textInfo.render(t("All mechanisms except wire"), True, (0, 150, 0)), (Width - 150 - textInfo.size(t("All mechanisms except wire"))[0], 378))
 
-				if inventory.whole_inventory[changed_slot].settings == ["Only wire"]:
+				if inventory.whole_inventory[inventory.changed_slot].settings == ["Only wire"]:
 					pygame.draw.rect(win, (0, 150, 0), (120, 278, 60, 60), 30)
 					pygame.draw.circle(win, (0, 150, 0), (Width // 2, 308), 30)
 					pygame.draw.circle(win, (0, 150, 0), (Width - 150, 308), 30)
-				if inventory.whole_inventory[changed_slot].settings == []:
+				if inventory.whole_inventory[inventory.changed_slot].settings == []:
 					pygame.draw.circle(win, (0, 150, 0), (150, 308), 30)
 					pygame.draw.rect(win, (0, 150, 0), (Width // 2 - 30, 278, 60, 60), 30)
 					pygame.draw.circle(win, (0, 150, 0), (Width - 150, 308), 30)
-				if inventory.whole_inventory[changed_slot].settings == ["All mechanisms, but wire"]:
+				if inventory.whole_inventory[inventory.changed_slot].settings == ["All mechanisms, but wire"]:
 					pygame.draw.circle(win, (0, 150, 0), (150, 308), 30)
 					pygame.draw.circle(win, (0, 150, 0), (Width // 2, 308), 30)
 					pygame.draw.rect(win, (0, 150, 0), (Width - 180, 278, 60, 60), 30)
 
 				if 120 <= mouse_x <= 180 and 278 <= mouse_y <= 338 and release:
-					inventory.whole_inventory[changed_slot].settings = ["Only wire"]
+					inventory.whole_inventory[inventory.changed_slot].settings = ["Only wire"]
 				if Width // 2 - 30 <= mouse_x <= Width // 2 + 30 and 278 <= mouse_y <= 338 and release:
-					inventory.whole_inventory[changed_slot].settings = []
+					inventory.whole_inventory[inventory.changed_slot].settings = []
 				if Width - 180 <= mouse_x <= Width - 120 and 278 <= mouse_y <= 338 and release:
-					inventory.whole_inventory[changed_slot].settings = ["All mechanisms, but wire"]
+					inventory.whole_inventory[inventory.changed_slot].settings = ["All mechanisms, but wire"]
 					
 				
 				win.blit(bigTextInfo.render("x", True, (0, 150, 0)), (Width - 160, 130))
@@ -1734,8 +1694,8 @@ def start_game():
 					if release:
 						game.item_settings_open = False
 		
-		if inventory.whole_inventory[changed_slot] is not None:
-			text(t("Item name " + inventory.whole_inventory[changed_slot].name), 10, 320 if game.inventory_open else 80)
+		if inventory.whole_inventory[inventory.changed_slot] is not None:
+			text(t("Item name " + inventory.whole_inventory[inventory.changed_slot].name), 10, 320 if game.inventory_open else 80)
 
 		if ron.x - player.x + Width // 2 - 128 <= mouse_x <= ron.x - player.x + Width // 2 + 128 and player.y - ron.y + Height // 2 - 128 <= mouse_y <= player.y - ron.y + Height // 2 + 128 and release and (not game.multiplayer or game.multiplayer_role == "Host"):
 			ron.window[0] = True
@@ -1821,7 +1781,7 @@ FPS {FPS}""" + (f"""
 You are in backrooms lol
 Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.inventory_open else 300)
 		
-		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Wire":
+		if inventory.whole_inventory[inventory.changed_slot] is not None and inventory.whole_inventory[inventory.changed_slot].name == "Wire":
 
 			if game.in_motherboard is None:
 				pos = (player.x + mouse_x - Width // 2) // 64 * 64 + 32, (player.y - mouse_y + Height // 2) // 64 * 64 + 32
@@ -1836,7 +1796,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.in
 							break
 				
 					if a:
-						inventory.reduce(changed_slot)
+						inventory.reduce(inventory.changed_slot)
 						world.mechanisms.append(Wire(player, world, mouse_x, mouse_y, None))
 			else:
 				a = True
@@ -1847,10 +1807,10 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.in
 							break
 				
 					if a and Width // 2 - 300 <= mouse_x <= Width // 2 + 300 and  Height // 2 - 310 <= mouse_y < Height // 2 + 290:
-						inventory.reduce(changed_slot)
+						inventory.reduce(inventory.changed_slot)
 						game.in_motherboard.objects[(mouse_x - Width // 2 - 300) // 19 + ((mouse_y + Width // 2 - 300) // 19 - 19) * 32] = (Wire(player, world, mouse_x, mouse_y, game.in_motherboard))
 
-		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Lever":
+		if inventory.whole_inventory[inventory.changed_slot] is not None and inventory.whole_inventory[inventory.changed_slot].name == "Lever":
 
 			pos = (player.x + mouse_x - Width // 2) // 64 * 64 + 32, (player.y - mouse_y + Height // 2) // 64 * 64 + 32
 			draw_select_image(64, 64, player, mouse_x, mouse_y)
@@ -1862,21 +1822,21 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.in
 						a = False
 				
 				if a:
-					inventory.reduce(changed_slot)
+					inventory.reduce(inventory.changed_slot)
 					world.mechanisms.append(Lever(Player, world, mouse_x, mouse_y, None))
 
-		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Wrench":
+		if inventory.whole_inventory[inventory.changed_slot] is not None and inventory.whole_inventory[inventory.changed_slot].name == "Wrench":
 
 			pos = (player.x + mouse_x - Width // 2) // 64 * 64 + 32, (player.y - mouse_y + Height // 2) // 64 * 64 + 32
 			draw_select_image(64, 64, player, mouse_x, mouse_y)
 			if click[0]:
 				for mechanism in world.mechanisms:
 					if mechanism.x == (player.x + mouse_x - Width // 2) // 64 and mechanism.y == (player.y - mouse_y + Height // 2) // 64:
-						if (inventory.whole_inventory[changed_slot].settings == ["Only wire"] and mechanism.__class__ == Wire) or inventory.whole_inventory[changed_slot].settings == [] or (inventory.whole_inventory[changed_slot].settings == ["All mechanisms, but wire"] and mechanism.__class__ != Wire):
+						if (inventory.whole_inventory[inventory.changed_slot].settings == ["Only wire"] and mechanism.__class__ == Wire) or inventory.whole_inventory[inventory.changed_slot].settings == [] or (inventory.whole_inventory[inventory.changed_slot].settings == ["All mechanisms, but wire"] and mechanism.__class__ != Wire):
 							world.mechanisms.remove(mechanism)
 						break
 
-		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Random box":
+		if inventory.whole_inventory[inventory.changed_slot] is not None and inventory.whole_inventory[inventory.changed_slot].name == "Random box":
 
 			pos = (player.x + mouse_x - Width // 2) // 64 * 64 + 32, (player.y - mouse_y + Height // 2) // 64 * 64 + 32
 			draw_select_image(64, 64, player, mouse_x, mouse_y)
@@ -1889,10 +1849,10 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.in
 						a = False
 				
 				if a:
-					inventory.reduce(changed_slot)
+					inventory.reduce(inventory.changed_slot)
 					world.mechanisms.append(RandomBox(None))
 
-		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Motherboard":
+		if inventory.whole_inventory[inventory.changed_slot] is not None and inventory.whole_inventory[inventory.changed_slot].name == "Motherboard":
 
 			pos = (player.x + mouse_x - Width // 2) // 64 * 64 + 32, (player.y - mouse_y + Height // 2) // 64 * 64 + 32
 			draw_select_image(64, 64, player, mouse_x, mouse_y)
@@ -1904,9 +1864,9 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.in
 						a = False
 				
 				if a:
-					inventory.reduce(changed_slot)
+					inventory.reduce(inventory.changed_slot)
 					world.mechanisms.append(Motherboard(player, world, mouse_x, mouse_y, None))
-		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Portal gun":
+		if inventory.whole_inventory[inventory.changed_slot] is not None and inventory.whole_inventory[inventory.changed_slot].name == "Portal gun":
 
 			draw_select_image(128, 256, player, mouse_x, mouse_y)
 
@@ -1915,13 +1875,13 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.in
 				a = 0
 				if not check_collision(pygame.Rect((player.x + mouse_x - Width // 2) // 256 * 256 + 128, (player.y - mouse_y + Height // 2) // 256 * 256 + 128, 256, 256), world, False):
 					world.chunk_manager.get_chunk_at((player.x + mouse_x - Width // 2) // 128, (player.y + mouse_y - Height // 2) // 256).objects.append(Portal())
-		build_tuple = (changed_slot, player, world, inventory.whole_inventory)
+		build_tuple = (inventory.changed_slot, player, world, inventory.whole_inventory)
 		new_object = check_build_objects(objects_templates, build_tuple)
 
 		if game.multiplayer and new_object is not None:
 			game.events.append({"event_type": "object_added", "object": new_object.__getstate__()})
 
-		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Stone hoe":
+		if inventory.whole_inventory[inventory.changed_slot] is not None and inventory.whole_inventory[inventory.changed_slot].name == "Stone hoe":
 			
 			farmland_pos = (player.x + mouse_x - Width // 2) // 128 * 128 + 128, (player.y - mouse_y + Height // 2) // 128 * 128
 			draw_select_image(128, 128, player, mouse_x, mouse_y)
@@ -1935,35 +1895,35 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.in
 				#	if farmland in world.visible_farmlands:
 				#		world.visible_farmlands[farmland].update_neigboors()
 
-		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name in wall_types:
+		if inventory.whole_inventory[inventory.changed_slot] is not None and inventory.whole_inventory[inventory.changed_slot].name in wall_types:
 			
 			wall_pos = (player.x + mouse_x - Width // 2) // 256 * 256 + 128, (player.y - mouse_y + Height // 2) // 256 * 256 + 128
 			draw_select_image(256, 256, player, mouse_x, mouse_y)
 
 			if click[0] and wall_pos not in world.visible_walls and not check_collision(pygame.Rect(wall_pos[0], wall_pos[1], 256, 256), world, False, False):
-				world.chunk_manager.get_chunk_at(*wall_pos).walls[wall_pos] = Wall(world, inventory.whole_inventory[changed_slot].name, wall_pos[0], wall_pos[1])
+				world.chunk_manager.get_chunk_at(*wall_pos).walls[wall_pos] = Wall(world, inventory.whole_inventory[inventory.changed_slot].name, wall_pos[0], wall_pos[1])
 				for wall in (((wall_pos[0] - 256, wall_pos[1]), (wall_pos[0] + 256, wall_pos[1]), (wall_pos[0], wall_pos[1] - 256), (wall_pos[0], wall_pos[1] + 256))):
 					if wall in world.visible_walls:
 						world.visible_walls[wall].update_neigboors()
 				if game.multiplayer:
 					game.events.append({"event_type": "wall_added", "wall": world.chunk_manager.get_chunk_at(*wall_pos).walls[wall_pos].__getstate__()})
-				inventory.reduce(changed_slot)
+				inventory.reduce(inventory.changed_slot)
 
-		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name in door_types:
+		if inventory.whole_inventory[inventory.changed_slot] is not None and inventory.whole_inventory[inventory.changed_slot].name in door_types:
 
 			wall_pos = (player.x + mouse_x - Width // 2) // 256 * 256 + 128, (player.y - mouse_y + Height // 2) // 256 * 256 + 128
 			draw_select_image(256, 256, player, mouse_x, mouse_y)
 
 			if click[0] and wall_pos not in world.visible_walls and not check_collision(pygame.Rect(wall_pos[0], wall_pos[1], 256, 256), world, False, False):
-				world.chunk_manager.get_chunk_at(*wall_pos).walls[wall_pos] = Wall(world, inventory.whole_inventory[changed_slot].name, wall_pos[0], wall_pos[1], True)
+				world.chunk_manager.get_chunk_at(*wall_pos).walls[wall_pos] = Wall(world, inventory.whole_inventory[inventory.changed_slot].name, wall_pos[0], wall_pos[1], True)
 				for wall in (((wall_pos[0] - 256, wall_pos[1]), (wall_pos[0] + 256, wall_pos[1]), (wall_pos[0], wall_pos[1] - 256), (wall_pos[0], wall_pos[1] + 256))):
 					if wall in world.visible_walls:
 						world.visible_walls[wall].update_neigboors()
 				if game.multiplayer:
 					game.events.append({"event_type": "wall_added", "wall": world.chunk_manager.get_chunk_at(*wall_pos).walls[wall_pos].__getstate__()})
-				inventory.reduce(changed_slot)
+				inventory.reduce(inventory.changed_slot)
 
-		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Stone hammer":
+		if inventory.whole_inventory[inventory.changed_slot] is not None and inventory.whole_inventory[inventory.changed_slot].name == "Stone hammer":
 
 			break_pos = (player.x + mouse_x - Width // 2) // 256 * 256 + 128, (player.y - mouse_y + Height // 2) // 256 * 256 + 128
 			draw_select_image(256, 256, player, mouse_x, mouse_y)
@@ -2210,10 +2170,10 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.in
 		if game.multiplayer:
 
 			if inventory.check_new_items():
-				if inventory.whole_inventory[changed_slot] is None:
+				if inventory.whole_inventory[inventory.changed_slot] is None:
 					player.changed_item = None
 				else:
-					player.changed_item = inventory.whole_inventory[changed_slot].name
+					player.changed_item = inventory.whole_inventory[inventory.changed_slot].name
 				game.events.append({"event_type": "changed_item", "changed_item": player.changed_item})
 			if len(game.events) != 0:
 				game.net.send_events(tuple(game.events))
