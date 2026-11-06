@@ -5,10 +5,11 @@ from Globals import Width, Height, win
 
 class World:
 
-	def __init__(self, world_rect_to_screen):
+	def __init__(self, game):
 		
 		from Classes.Object import Object
-		self.chunk_manager = ChunkManager(Object, world_rect_to_screen)
+		self.game = game
+		self.chunk_manager = ChunkManager(Object, game.world_rect_to_screen)
 		self.current_cave = None
 
 		self.visible_objects = []
@@ -23,12 +24,12 @@ class World:
 		self.projectiles = []
 		self.backrooms_objects = []
 		
-	def update(self, player, multiplayer, multiplayer_role, net):
+	def update(self):
 
-		chunks_to_get = self.chunk_manager.update_visible_chunks(player.x, player.y, multiplayer and multiplayer_role == "Client")
-		if multiplayer and multiplayer_role == "Client":
+		chunks_to_get = self.chunk_manager.update_visible_chunks(self.game.player.x, self.game.player.y, self.game.multiplayer and self.game.multiplayer_role == "Client")
+		if self.game.multiplayer and self.game.multiplayer_role == "Client":
 			for chunk_key in chunks_to_get:
-				net._send_packet({"type": "get_chunk", "player_id": net.player_id, "chunk_key": chunk_key}, net.host_address)
+				self.game.net._send_packet({"type": "get_chunk", "player_id": self.game.net.player_id, "chunk_key": chunk_key}, self.game.net.host_address)
 				self.chunk_manager.chunks_to_get.append(chunk_key)
 		# Сборка объектов из загруженных чанков
 		self.visible_objects.clear()
@@ -44,7 +45,7 @@ class World:
 			self.visible_farmlands.update(chunk.farmlands)
 			self.visible_caves.extend(chunk.caves)
 
-	def render_loaded_chunks(self, player):
+	def render_loaded_chunks(self):
 
 		"""Отрисовка загруженных чанков с их биомами"""
 
@@ -54,16 +55,16 @@ class World:
 				bounds = chunk.get_world_bounds()
 				
 				# Проверка, виден ли чанк на экране
-				if (bounds["x2"] > player.x - Width // 2 and 
-					bounds["x1"] < player.x + Width // 2 and
-					bounds["y2"] > player.y - Height // 2 and 
-					bounds["y1"] < player.y + Height):
+				if (bounds["x2"] > self.game.player.x - Width // 2 and 
+					bounds["x1"] < self.game.player.x + Width // 2 and
+					bounds["y2"] > self.game.player.y - Height // 2 and 
+					bounds["y1"] < self.game.player.y + Height):
 					
 					biome_texture = biome_textures.get(chunk.biome)
 					if biome_texture:
 						# Смещение чанка относительно игрока
-						offset_x = bounds["x1"] - player.x + Width // 2
-						offset_y = player.y - bounds["y1"] + Height // 2
+						offset_x = bounds["x1"] - self.game.player.x + Width // 2
+						offset_y = self.game.player.y - bounds["y1"] + Height // 2
 						
 						# Отрисовка тайлов чанка
 						tiles_per_chunk = 2048 // 256
@@ -77,5 +78,6 @@ class World:
 								win.blit(biome_texture, (tile_screen_x, tile_screen_y))
 
 					if chunk.transition_image is not None:
-						win.blit(chunk.transition_image, (bounds["x1"] - player.x + Width // 2, player.y - bounds["y2"] + Height // 2 + 256))
+						win.blit(chunk.transition_image, (bounds["x1"] - self.game.player.x + Width // 2, self.game.player.y - bounds["y2"] + Height // 2 + 256))
+
 

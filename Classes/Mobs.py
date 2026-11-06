@@ -22,18 +22,18 @@ class Mob:
 		self.detection_range = 1000
 		self.attack_range = 200
 		
-	def update(self, player, world, dt):
+	def update(self, game, dt):
 		"""Обновляет состояние моба"""
 		self._update_animation(dt)
-		self._update_state(player, world)
-		self._update_position(world)
+		self._update_state(game.player)
+		self._update_position(game.world)
 		
 	def _update_animation(self, dt):
 		self.animation_timer += dt * 5
 		if self.animation_timer >= 4:
 			self.animation_timer = 0
 		
-	def _update_state(self, player, world):
+	def _update_state(self, player):
 		"""Определяет текущее состояние на основе расстояния до игрока"""
 		distance = self._get_distance_to(player)
 		

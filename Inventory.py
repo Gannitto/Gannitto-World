@@ -286,29 +286,29 @@ class Inventory:
 					win.blit(textInfo.render(str(cell.amount), True, (0, 150, 0)), (cell_x + 10, cell_y + 42))
 			cell_x += 80
 	
-	def set_start_cell(self, mouse__x: int, mouse__y: int):
+	def set_start_cell(self, mouse_x: int, mouse_y: int):
 
 		for yy in range(0, 3):
 			for xx in range(0, 10):
 				cell_x = 10 + xx * 80
 				cell_y = 10 + yy * 80
-				if cell_x <= mouse__x <= cell_x + 64 and cell_y <= mouse__y <= cell_y + 64:
+				if cell_x <= mouse_x <= cell_x + 64 and cell_y <= mouse_y <= cell_y + 64:
 					self.start_cell = yy * 10 + xx
 					return
 	
-	def set_end_cell(self, mouse__x: int, mouse__y: int):
+	def set_end_cell(self, mouse_x: int, mouse_y: int):
 
 		for yy in range(0, 3):
 			for xx in range(0, 10):
 				cell_x = 10 + xx * 80
 				cell_y = 10 + yy * 80
-				if cell_x <= mouse__x <= cell_x + 64 and cell_y <= mouse__y <= cell_y + 64:
+				if cell_x <= mouse_x <= cell_x + 64 and cell_y <= mouse_y <= cell_y + 64:
 					self.end_cell = yy * 10 + xx
 					self.end_cell_inventory = 0
 		
 		for X in range(2, 9):
 			cell_x = 10 + X * 80
-			if cell_x <= mouse__x <= cell_x + 64 and 250 <= mouse__y <= 314:
+			if cell_x <= mouse_x <= cell_x + 64 and 250 <= mouse_y <= 314:
 				self.end_cell = X - 2
 				self.end_cell_inventory = 1
 		return self.swap_cells()
@@ -389,12 +389,12 @@ class Inventory:
 		elif self.whole_inventory[slot].amount - amount == 0:
 			self.whole_inventory[slot] = None
 
-	def check_new_items(self, changed_slot):
+	def check_new_items(self):
 		new_item = False
-		if self.whole_inventory[changed_slot] is None:
+		if self.whole_inventory[self.changed_slot] is None:
 			new_changed_item = None
 		else:
-			new_changed_item = self.whole_inventory[changed_slot].name
+			new_changed_item = self.whole_inventory[self.changed_slot].name
 		if self.last_changed_item != new_changed_item:
 			new_item = True
 			self.last_changed_item = new_changed_item

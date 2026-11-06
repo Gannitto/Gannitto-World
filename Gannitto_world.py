@@ -23,8 +23,8 @@ from InputSystem import input_system
 from Weather import WeatherSystem
 from Assets import *
 from Globals import *
-from UI import SettingsMenu, CharactersMenu, UISystem, WorldsMenu, EditWorldMenu, MultiplayerSettingsMenu, MainMenu
-from Classes import Player, World, Object, Particle, Slime, Spider, Butterfly, Projectile, ExplodingProjectile, Wall, Farmland, Wire, Lever, Motherboard, Ron, Button
+from UI import SettingsMenu, CharactersMenu, WorldsMenu, EditWorldMenu, MultiplayerSettingsMenu, MainMenu
+from Classes import Player, World, Object, Particle, Slime, Spider, Butterfly, Projectile, ExplodingProjectile, Wall, Farmland, Wire, Lever, Motherboard, RandomBox, Ron, Button, Portal
 from GameState import GameState
 from Light import create_light_circle, create_light_circle_with_falloff, remove_light_circle
 
@@ -124,15 +124,19 @@ alt_pressed = game.alt_pressed
 
 changed_slot = inventory.changed_slot
 
-player = Player()
-world_to_screen = lambda X, Y, W, H, player=player: (X - player.x + Width // 2 - W // 2, player.y - Y + Height // 2 - H // 2)
-world_rect_to_screen = lambda X, Y, W, H, player=player: (X - player.x + Width // 2 - W // 2, player.y - Y + Height // 2 - H // 2, W, H)
-world = World(world_rect_to_screen)
+game.player = Player()
+player = game.player
+game.inventory = inventory
+game.world_to_screen = lambda X, Y, W, H, player=player: (X - player.x + Width // 2 - W // 2, player.y - Y + Height // 2 - H // 2)
+world_to_screen = game.world_to_screen
+game.world_rect_to_screen = lambda X, Y, W, H, player=player: (X - player.x + Width // 2 - W // 2, player.y - Y + Height // 2 - H // 2, W, H)
+world_rect_to_screen = game.world_rect_to_screen
+game.world = World(game)
+world = game.world
 game.time_system = TimeSystem()
 time_system = game.time_system
-ui_system = UISystem()
-ron = Ron(world_to_screen, player)
-command_system = CommandSystem(game, player, FPS, inventory, time_system)
+ron = Ron(game)
+command_system = CommandSystem(game)
 weather = WeatherSystem(world)
 
 # def show_bar(times):
@@ -389,7 +393,7 @@ def start_game():
 						music_channel.stop()
 						statistics[1] += (time.time() - game.start_time) / 3600
 						save(False)
-						return settings_menu.help
+						return game.settings_menu.help
 
 					if event.key == hot_keys["Inventory"]:
 						game.inventory_open = not game.inventory_open
@@ -434,7 +438,7 @@ def start_game():
 
 		# Если есть движение - двигаем игрока
 		if dx != 0 or dy != 0:
-			player.move(dx, dy, dt, check_collision, world)
+			player.move(dx, dy, dt, world)
 			game.events.append({"event_type": "player_moved", "x": player.x, "y": player.y, "direction": player.direction})
 			if game.multiplayer:
 				game.net.peers[game.net.player_id].x = player.x
@@ -453,26 +457,26 @@ def start_game():
 		if Width // 2 - 100 <= mouse_x <= Width // 2 + 100 and Height // 2 - 100 <= mouse_y <= Height // 2 + 100 and not any((game.item_settings_open, ron.window[0], game.in_motherboard, game.craft_list_open)):
 			mouse_object = t("It's you")
 
-		if not Backrooms.InBackrooms:
+		if Backrooms.InBackrooms:
 			
+			for i, ii in product(range(-6, 6), range(-3, 3)):
+				win.blit(biome_textures["Backrooms " + str(Backrooms.Level)], (Width - player.x % 256 + i * 256, player.y % 256 + ii * 256))
+
+		else:
+
 			current_chunk = world.chunk_manager.get_chunk_at(player.x, player.y)
 			if current_chunk is not None:
 				game.current_biome = current_chunk.biome
 			else:
 				game.current_biome = None
-			world.render_loaded_chunks(player)
+			world.render_loaded_chunks()
 			update_sounds(game, player, world)
-
-		else:
-
-			for i, ii in product(range(-6, 6), range(-3, 3)):
-				win.blit(textures["Backrooms " + str(Backrooms.Level)], (Width - player.x % 256 + i * 256, player.y % 256 + ii * 256))
 		
 		for mechanism in world.mechanisms:
 			mechanism.main(world, player)
 		
 		for farmland in world.visible_farmlands.values():
-			farmland.main(release, dt, world_to_screen, world_rect_to_screen, mouse_x, mouse_y, world, inventory)
+			farmland.main(release, dt, game, mouse_x, mouse_y)
 
 		if not Backrooms.InBackrooms and world.current_cave is None:
 			
@@ -499,100 +503,8 @@ def start_game():
 
 		elif Backrooms.InBackrooms:
 			
-			if int(player.x / 2000) != Backrooms.room_x:
-				Backrooms.get_rooms(int(player.x / 2000), int(player.y / 2000))
-			if int(player.y / 2000) != Backrooms.room_y:
-				Backrooms.get_rooms(int(player.x / 2000), int(player.y / 2000))
+			Backrooms.handle_backrooms_logic(game, keys)
 
-			Backrooms.room_x = int(player.x / 2000)
-			Backrooms.room_y = int(player.y / 2000)
-
-			match Backrooms.Level:
-				case 0:
-					win.fill((120, 100, 40))
-				case 0.2:
-					win.fill((170, 60, 50))
-				case 1:
-					win.fill((100, 100, 100))
-				case 2:
-					win.fill((50, 50, 50))
-
-			for room in Backrooms.rooms:
-				room.main(player.x, player.y)
-
-			if random.randint(1, 1000) == 1:
-				play_sound("Random sound 1")
-			
-			match Backrooms.Level:
-
-				case 0:
-
-					wall_color = (180, 159, 50)
-					next_levels = [0.2, 1]
-
-				case 0.2:
-
-					wall_color = (200, 180, 70)
-					next_levels = [0, 1]
-
-				case 1:
-
-					wall_color = (50, 50, 50)
-					next_levels = [2]
-
-				case 2:
-
-					wall_color = (50, 50, 50)
-
-			a, b, c, d = True, True, True, True
-
-			for i in range(Width // 2 - 80, Width // 2 + 80):
-
-				if win.get_at((i, Height // 2 + 127)) == wall_color:
-					a = False
-
-				if win.get_at((Width // 2 - 100, i)) == wall_color:
-					b = False
-
-			for i in range(Height // 2 - 100, Height // 2 + 100):
-
-				if win.get_at((Width // 2 - 100, i)) == wall_color:
-					c = False
-
-				if win.get_at((Width // 2 + 107, i)) == wall_color:
-					d = False
-
-			aa = 0
-
-			for i in (a, b, c, d):
-				if not i:
-					aa += 1
-
-			if aa == 4:
-				Backrooms.get_rooms(player.x // 2000, player.y // 2000)
-
-			if aa == 3 and keys[hot_keys["Noclip in backrooms"]] and random.randint(1, 30) == 30:
-
-				AA = 100
-				Backrooms.Level = random.choice(next_levels)
-
-				player.x = 0
-				player.y = 0
-
-				Backrooms.get_rooms(0, 0)
-				win.fill((0, 0, 0))
-
-			if aaa > 0:
-				win.blit(pygame.transform.scale(win, (Width - aaa * 2, Height - aaa * 2)), (aaa, aaa))
-
-			aaa = 0
-			if random.randint(1, 300) == 50:
-				aaa = 50
-
-			if AA > 0:
-				win.blit(pygame.transform.scale(win, (Width - AA * 2, Height - AA * 2)), (AA, AA))
-				AA -= 3
-		
 		if not Backrooms.InBackrooms:
 
 			if world.current_cave is not None and -64 <= player.x <= 64 and -64 <= player.y <= 64 and release:
@@ -623,7 +535,7 @@ def start_game():
 
 				for object in world.current_cave.objects:
 
-					object.main(player)
+					object.main(game, dt, game.multiplayer)
 
 					if object.__class__ == Object:
 
@@ -696,13 +608,13 @@ def start_game():
 			else:
 
 				# Обновление мира
-				world.update(player, game.multiplayer, game.multiplayer_role, game.net) #TODO оптимизировать
+				world.update() #TODO оптимизировать
 
 				# Отображение объектов
 
 				for object in world.visible_objects:
 
-					object.main(player, world, dt, world_to_screen, game.multiplayer, game.events, Particle)
+					object.main(game, dt, game.multiplayer)
 
 					if object.get_left_pressed(mouse_x, mouse_y, player):
 
@@ -770,7 +682,7 @@ def start_game():
 					last_changed_item = inventory.whole_inventory[changed_slot].name
 
 				for item in world.visible_items:
-					item.main(player, world, dt, world_to_screen, game.multiplayer, game.events, Particle)
+					item.main(game, dt, game.multiplayer)
 					try_pick = True
 					if item.pickable and Settings["Game"][0] and player.x - 150 < item.x < player.x + 150 and player.y - 150 < item.y < player.y + 150:
 						world.particles.append(Particle(item.x, item.y, item.image, lambda particle: round(((player.x - particle.x) // 2) / 10 * 5), lambda particle: round(((player.y - particle.y) // 2) / 10 * 5), track_ticks=True, del_self_condition=lambda particle: abs(particle.x - player.x) < 30 and abs(particle.y - player.y) < 30, end_command=lambda particle: (inventory.increate(item.name), play_sound("Pick an item"))))
@@ -793,7 +705,7 @@ def start_game():
 							item.pickable = False
 							inventory.reduce(changed_slot)
 
-		elif len(Backrooms.objects) != 1:
+		else:
 
 			for object in world.backrooms_objects:
 
@@ -841,17 +753,17 @@ def start_game():
 					world.mobs.append(Slime(player.x + random.randint(-Width, Width), player.y + random.randint(-Height, Height)))
 
 		for projectile in world.projectiles:
-			projectile.main(world, world_to_screen, world_rect_to_screen)
+			projectile.main(game)
 
 		for wall in world.visible_walls.values():
-			wall.main(release, world_to_screen, world_rect_to_screen, mouse_x, mouse_y, game)
+			wall.main(release, mouse_x, mouse_y, game)
 		
 		if not Backrooms.InBackrooms and world.current_cave is None:
 
 			# Отображение мобов
 			for mob in world.mobs:
 
-				mob.update(player, world, dt)
+				mob.update(game, dt)
 				mob.draw(player)
 
 				if world.projectiles != []:
@@ -926,7 +838,7 @@ def start_game():
 									peer.breaking_object_info = None
 
 							game.net.server_events[pid].remove(event)
-					peer.render(world_to_screen, world_rect_to_screen)
+					peer.render(game)
 					peer.update_animation(dt)
 					if peer.breaking_object_info is not None:
 						for object in world.visible_objects:
@@ -1473,7 +1385,7 @@ def start_game():
 					
 					if click[0]:
 						save(False)
-						settings()
+						return game.settings_menu.help
 
 				elif game.special_slot_animations["Reference slot"][0]:
 					game.special_slot_animations["Reference slot"][0] = False
@@ -1978,7 +1890,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.in
 				
 				if a:
 					inventory.reduce(changed_slot)
-					world.mechanisms.append(Random_box(None))
+					world.mechanisms.append(RandomBox(None))
 
 		if inventory.whole_inventory[changed_slot] is not None and inventory.whole_inventory[changed_slot].name == "Motherboard":
 
@@ -2297,7 +2209,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.in
 
 		if game.multiplayer:
 
-			if inventory.check_new_items(changed_slot):
+			if inventory.check_new_items():
 				if inventory.whole_inventory[changed_slot] is None:
 					player.changed_item = None
 				else:

@@ -29,19 +29,19 @@ class Projectile:
 		self.image = pygame.transform.rotate(load(path + "Images/Items/" + type + ".png", 64), math.atan2(mouse_x - Width / 2, mouse_y - Height / 2) * 180 / math.pi + 180)
 		self.end_time = int(time.time()) + 3
 
-	def main(self, world, world_to_screen, world_rect_to_screen):
+	def main(self, game):
 
 		"""Показывает снаряд"""
 
 		self.x -= int(self.x_vel)
 		self.y += int(self.y_vel)
 		
-		win.blit(self.image, world_to_screen(self.x, self.y, 64, 64))
+		win.blit(self.image, game.world_to_screen(self.x, self.y, 64, 64))
 
 		if Settings["Display"][3]:
-			pygame.draw.rect(win, (0, 0, 0), world_rect_to_screen(self.x, self.y, 64, 64), 3)
+			pygame.draw.rect(win, (0, 0, 0), game.world_rect_to_screen(self.x, self.y, 64, 64), 3)
 		if time.time() >= self.end_time:
-			world.projectiles.remove(self)
+			game.world.projectiles.remove(self)
 
 class ExplodingProjectile:
 

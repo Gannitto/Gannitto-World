@@ -1,15 +1,14 @@
 import re
 from typing import List, Tuple
+from Globals import FPS
 
 class CommandSystem:
 
-	def __init__(self, game, player, FPS, inventory, time_system):
+	def __init__(self, game):
 
 		self.game = game
-		self.player = player
+		self.player = game.player
 		self.FPS = FPS
-		self.inventory = inventory
-		self.time_system = time_system
 		self.init_commands()
 	
 	def parse_command(self, command_text: str) -> Tuple[str, List[str]]:
@@ -17,7 +16,7 @@ class CommandSystem:
 		"""
 		Разобрать строку команды на имя и аргументы.
 		Поддерживает кавычки для аргументов с пробелами
-		и экранирование через \ (как в терминале).
+		и экранирование через \\ (как в терминале).
 		"""
 		text = command_text.strip()
 		if not text:
@@ -145,12 +144,12 @@ class CommandSystem:
 				"command_list": (self.command_list, "Выдаёт список команд\n/command_list"),
 				"kukusiki_hack": (self.kukusiki_hack, "Раскрывает код вселенной\n/kukusiki_hack"),
 				"tp": (self.tp, "Телепортация игрока на указанные координаты\n tp X Y"),
-				"give": (self.inventory.increate, "Выдача предмета в инвентарь\n give ПРЕДМЕТ КОЛИЧЕСТВО=1"),
-				"get_brightness": (self.time_system.get_brightness, "Получение текущей яркости днейвного цикла\n/get_brightness"),
-				"get_time_of_day": (self.time_system.get_time_of_day, "Получение текущего времени в 24-часовом формате\n/get_time_of_day"),
-				"set_time_speed": (self.time_system.set_time_speed, "Изменить скорость времени\n/time_scale МНОЖИТЕЛЬ"),
-				"reset_to_day": (self.time_system.reset_to_day, "Обнулить время до дня\n/reset_to_day"),
-				"skip_time": (self.time_system.skip_time, "Перемотать время вперёд\n/skip_time СЕКУНДЫ"),
+				"give": (self.game.inventory.increate, "Выдача предмета в инвентарь\n give ПРЕДМЕТ КОЛИЧЕСТВО=1"),
+				"get_brightness": (self.game.time_system.get_brightness, "Получение текущей яркости днейвного цикла\n/get_brightness"),
+				"get_time_of_day": (self.game.time_system.get_time_of_day, "Получение текущего времени в 24-часовом формате\n/get_time_of_day"),
+				"set_time_speed": (self.game.time_system.set_time_speed, "Изменить скорость времени\n/time_scale МНОЖИТЕЛЬ"),
+				"reset_to_day": (self.game.time_system.reset_to_day, "Обнулить время до дня\n/reset_to_day"),
+				"skip_time": (self.game.time_system.skip_time, "Перемотать время вперёд\n/skip_time СЕКУНДЫ"),
 				"chat_message": (self.chat_message, "Вывести сообщение в чат\n/chat_message ТЕКСТ")
 
 				}

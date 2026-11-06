@@ -1,7 +1,10 @@
 """Этот модуль содержит механику закулисья"""
 
-from random import randint
+import random
 import pygame
+from itertools import product
+from Sound import play_sound
+from Globals import win, Width, Height, hot_keys
 pygame.init()
 
 InBackrooms = False
@@ -27,7 +30,7 @@ class Room():
 				self.w = w
 				self.h = h
 				self.biggest = False
-				self.type = randint(0, 1)
+				self.type = random.randint(0, 1)
 				if self.type == 0:
 					match Level:
 						case 0:
@@ -47,17 +50,17 @@ class Room():
 		self.x = X
 		self.y = Y
 
-		self.rect1 = RoomObject(X * 1000, Y * 1000, randint(100, 900), 1000)
+		self.rect1 = RoomObject(X * 1000, Y * 1000, random.randint(100, 900), 1000)
 		self.rect2 = RoomObject(X * 1000 + self.rect1.w, Y * 1000, 1000 - self.rect1.w, 1000)
-		self.rect1_1 = RoomObject(X * 1000, Y * 1000, self.rect1.w, randint(100, 900))
+		self.rect1_1 = RoomObject(X * 1000, Y * 1000, self.rect1.w, random.randint(100, 900))
 		self.rect1_2 = RoomObject(X * 1000, self.rect1_1.h, self.rect1.w, 1000 - self.rect1_1.h)
-		self.rect2_1 = RoomObject(X * 1000 + self.rect1.w, Y * 1000, self.rect2.w, randint(100, 1000))
+		self.rect2_1 = RoomObject(X * 1000 + self.rect1.w, Y * 1000, self.rect2.w, random.randint(100, 1000))
 		self.rect2_2 = RoomObject(X * 1000 + self.rect1.w, Y * 1000 + self.rect2_1.h, self.rect2.w, 1000 - self.rect2_1.h)
 		
 		if self.rect1_1.w * self.rect1_1.h > self.rect1_2.w * self.rect1_2.h and self.rect1_1.w * self.rect1_1.h > self.rect2_1.w * self.rect2_1.h and self.rect1_1.w * self.rect1_1.h > self.rect2_2.w * self.rect2_2.h:
 			self.rect1_1.biggest = True
 			self.rect1_1.type = 0
-			if randint(1, 3) == 1:
+			if random.randint(1, 3) == 1:
 				objects.append("Almond whater")
 				objects_x.append(self.rect1.x)
 				objects_y.append(self.rect1.y)
@@ -151,59 +154,56 @@ class Room():
 			else:
 				self.rect2_2_2.x += self.rect2_2_2.w
 	
-	def main(self, player_x: int, player_y: int):
+	def main(self, player):
 
 		"""Shows the room"""
-
-		from Gannitto_world import player, win
-		from itertools import product
 		
-		b = pygame.transform.scale(pygame.image.load("Images/Bioms/Backrooms " + str(Level) + " wall.png"), (256, 256))
+		b = pygame.transform.scale(pygame.image.load("Images/Bioms" + str(Level) + " wall.png"), (256, 256))
 
 		if not self.rect1_1.biggest:
 			if self.rect1_1_1.type == 1:
 				a = pygame.Surface((self.rect1_1_1.w, self.rect1_1_1.h))
 				for player.x, player.y in product(range(0, self.rect1_1_1.w, b.get_width()), range(0, self.rect1_1_1.h, b.get_height())):
 					a.blit(b, (player.x, player.y))
-				win.blit(a, (self.rect1_1_1.x - player_x, player_y - self.rect1_1_1.y))
+				win.blit(a, (self.rect1_1_1.x - player.x, player.y - self.rect1_1_1.y))
 			if self.rect1_1_2.type == 1:
 				a = pygame.Surface((self.rect1_1_2.w, self.rect1_1_2.h))
 				for player.x, player.y in product(range(0, self.rect1_1_2.w, b.get_width()), range(0, self.rect1_1_2.h, b.get_height())):
 					a.blit(b, (player.x, player.y))
-				win.blit(a, (self.rect1_1_2.x - player_x, player_y - self.rect1_1_2.y))
+				win.blit(a, (self.rect1_1_2.x - player.x, player.y - self.rect1_1_2.y))
 		if not self.rect1_2.biggest:
 			if self.rect1_2_1.type == 1:
 				a = pygame.Surface((self.rect1_2_1.w, self.rect1_2_1.h))
 				for player.x, player.y in product(range(0, self.rect1_2_1.w, b.get_width()), range(0, self.rect1_2_1.h, b.get_height())):
 					a.blit(b, (player.x, player.y))
-				win.blit(a, (self.rect1_2_1.x - player_x, player_y - self.rect1_2_1.y))
+				win.blit(a, (self.rect1_2_1.x - player.x, player.y - self.rect1_2_1.y))
 			if self.rect1_2_2.type == 1:
 				a = pygame.Surface((self.rect1_2_2.w, self.rect1_2_2.h))
 				for player.x, player.y in product(range(0, self.rect1_2_2.w, b.get_width()), range(0, self.rect1_2_2.h, b.get_height())):
 					a.blit(b, (player.x, player.y))
-				win.blit(a, (self.rect1_2_2.x - player_x, player_y - self.rect1_2_2.y))
+				win.blit(a, (self.rect1_2_2.x - player.x, player.y - self.rect1_2_2.y))
 		if not self.rect2_1.biggest:
 			if self.rect2_1_1.type == 1:
 				a = pygame.Surface((self.rect2_1_1.w, self.rect2_1_1.h))
 				for player.x, player.y in product(range(0, self.rect2_1_1.w, b.get_width()), range(0, self.rect2_1_1.h, b.get_height())):
 					a.blit(b, (player.x, player.y))
-				win.blit(a, (self.rect2_1_1.x - player_x, player_y - self.rect2_1_1.y))
+				win.blit(a, (self.rect2_1_1.x - player.x, player.y - self.rect2_1_1.y))
 			if self.rect2_1_2.type == 1:
 				a = pygame.Surface((self.rect2_1_2.w, self.rect2_1_2.h))
 				for player.x, player.y in product(range(0, self.rect2_1_2.w, b.get_width()), range(0, self.rect2_1_2.h, b.get_height())):
 					a.blit(b, (player.x, player.y))
-				win.blit(a, (self.rect2_1_2.x - player_x, player_y - self.rect2_1_2.y))
+				win.blit(a, (self.rect2_1_2.x - player.x, player.y - self.rect2_1_2.y))
 		if not self.rect2_2.biggest:
 			if self.rect2_2_1.type == 1:
 				a = pygame.Surface((self.rect2_2_1.w, self.rect2_2_1.h))
 				for player.x, player.y in product(range(0, self.rect2_2_1.w, b.get_width()), range(0, self.rect2_2_1.h, b.get_height())):
 					a.blit(b, (player.x, player.y))
-				win.blit(a, (self.rect2_2_1.x - player_x, player_y - self.rect2_2_1.y))
+				win.blit(a, (self.rect2_2_1.x - player.x, player.y - self.rect2_2_1.y))
 			if self.rect2_2_2.type == 1:
 				a = pygame.Surface((self.rect2_2_2.w, self.rect2_2_2.h))
 				for player.x, player.y in product(range(0, self.rect2_2_2.w, b.get_width()), range(0, self.rect2_2_2.h, b.get_height())):
 					a.blit(b, (player.x, player.y))
-				win.blit(a, (self.rect2_2_2.x - player_x, player_y - self.rect2_2_2.y))
+				win.blit(a, (self.rect2_2_2.x - player.x, player.y - self.rect2_2_2.y))
 
 class Wall:
 
@@ -227,18 +227,15 @@ class Wall:
 		self.Width = Width
 		self.Height = Height
 
-	def main(self, player_x: int, player_y: int):
-
-		from Gannitto_world import win
-		from itertools import product
+	def main(self, player):
 
 		a = pygame.Surface((self.Width, self.Height))
-		b = pygame.transform.scale(pygame.image.load("Images/Bioms/Backrooms " + str(Level) + " wall.png"), (256, 256))
+		b = pygame.transform.scale(pygame.image.load("Images/Bioms" + str(Level) + " wall.png"), (256, 256))
 		for X, Y in product(range(0, self.Width, b.get_width()), range(0, self.Height, b.get_height())):
 			a.blit(b, (X, Y))
 
-		win.blit(a, (self.x * 1000 - player_x, player_y - self.y))
-		#pygame.draw.rect(win, self.color, (self.x * 1000 - player_x, player_y - self.y, self.Width, self.Height))
+		win.blit(a, (self.x * 1000 - player.x, player.y - self.y))
+		#pygame.draw.rect(win, self.color, (self.x * 1000 - player.x, player.y - self.y, self.Width, self.Height))
 
 def get_rooms(Room_x: int, Room_y: int):
 
@@ -259,3 +256,101 @@ def get_rooms(Room_x: int, Room_y: int):
 						
 
 get_rooms(0, 0)
+
+def handle_backrooms_logic(game, keys):
+	
+	player = game.player
+
+	if int(player.x / 2000) != room_x:
+		get_rooms(int(player.x / 2000), int(player.y / 2000))
+	if int(player.y / 2000) != room_y:
+		get_rooms(int(player.x / 2000), int(player.y / 2000))
+
+	room_x = int(player.x / 2000)
+	room_y = int(player.y / 2000)
+
+	match Level:
+		case 0:
+			win.fill((120, 100, 40))
+		case 0.2:
+			win.fill((170, 60, 50))
+		case 1:
+			win.fill((100, 100, 100))
+		case 2:
+			win.fill((50, 50, 50))
+
+	for room in rooms:
+		room.main(player)
+
+	if random.randint(1, 1000) == 1:
+		play_sound("Random sound 1")
+	
+	match Level:
+
+		case 0:
+
+			wall_color = (180, 159, 50)
+			next_levels = [0.2, 1]
+
+		case 0.2:
+
+			wall_color = (200, 180, 70)
+			next_levels = [0, 1]
+
+		case 1:
+
+			wall_color = (50, 50, 50)
+			next_levels = [2]
+
+		case 2:
+
+			wall_color = (50, 50, 50)
+
+	a, b, c, d = True, True, True, True
+
+	for i in range(Width // 2 - 80, Width // 2 + 80):
+
+		if win.get_at((i, Height // 2 + 127)) == wall_color:
+			a = False
+
+		if win.get_at((Width // 2 - 100, i)) == wall_color:
+			b = False
+
+	for i in range(Height // 2 - 100, Height // 2 + 100):
+
+		if win.get_at((Width // 2 - 100, i)) == wall_color:
+			c = False
+
+		if win.get_at((Width // 2 + 107, i)) == wall_color:
+			d = False
+
+	aa = 0
+
+	for i in (a, b, c, d):
+		if not i:
+			aa += 1
+
+	if aa == 4:
+		get_rooms(player.x // 2000, player.y // 2000)
+
+	if aa == 3 and keys[hot_keys["Noclip in backrooms"]] and random.randint(1, 30) == 30:
+
+		AA = 100
+		Level = random.choice(next_levels)
+
+		player.x = 0
+		player.y = 0
+
+		get_rooms(0, 0)
+		win.fill((0, 0, 0))
+
+	if aaa > 0:
+		win.blit(pygame.transform.scale(win, (Width - aaa * 2, Height - aaa * 2)), (aaa, aaa))
+
+	aaa = 0
+	if random.randint(1, 300) == 50:
+		aaa = 50
+
+	if AA > 0:
+		win.blit(pygame.transform.scale(win, (Width - AA * 2, Height - AA * 2)), (AA, AA))
+		AA -= 3

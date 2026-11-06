@@ -4,6 +4,7 @@ import time
 from Cache import load
 from Functions import crack_surface, destroy_object
 from Globals import Width, Height, path, win, Settings, statistics
+from Classes.Particle import Particle
 
 class Object:
 
@@ -81,38 +82,40 @@ class Object:
 		else:
 			self.rect = pygame.Rect(rect[0] + self.x, rect[1] + self.y, rect[2], rect[3])
 	
-	def main(self, player, world, dt, world_to_screen, multiplayer, game_events, Particle):
+	def main(self, game, dt, multiplayer):
+			
+		player = game.player
 
-		if player.hovered_object is None and self.get_hovered(player, world_to_screen):
+		if player.hovered_object is None and self.get_hovered(game):
 			player.hovered_object = self
 			if self.breakable and pygame.mouse.get_pressed()[0]:
 
 				player.breaking_object = self
 				if not player.started_break and multiplayer:
-					game_events.append({"event_type": "object_started_breaking", "x": self.x, "y": self.y, "name": self.name})
+					game.events.append({"event_type": "object_started_breaking", "x": self.x, "y": self.y, "name": self.name})
 				player.started_break = True
 				player.breaking_object_info = (self.x, self.y, self.name)
 				self.breaked -= dt * 100
-				self.image = crack_surface(world, Particle, self, (self.max_break - self.breaked) // self.max_break, 8)
+				self.image = crack_surface(game.world, Particle, self, (self.max_break - self.breaked) // self.max_break, 8)
 
 				if self.breaked < 1:
 
-					destroy_object(self.image, self.x, self.y, world, Particle)
+					destroy_object(self.image, self.x, self.y, game.world, Particle)
 					if multiplayer:
-						game_events.append({"event_type": "object_removed", "x": self.x, "y": self.y, "name": self.name})
-					world.chunk_manager.get_chunk_at(self.x, self.y).objects.remove(self)
+						game.events.append({"event_type": "object_removed", "x": self.x, "y": self.y, "name": self.name})
+					game.world.chunk_manager.get_chunk_at(self.x, self.y).objects.remove(self)
 					
 					statistics[2] += 1
 					for item_name, min_amount, max_amount in self.drop_items:
 						for _ in range(random.randint(min_amount, max_amount)):
 							rand_x, rand_y = self.x + random.randint(-self.w // 2, self.w // 2), self.y + random.randint(-self.h // 2, self.h // 2)
-							world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object(item_name, rand_x, rand_y, f"Images/Items/{item_name}.png", pickable=True))
+							game.world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object(item_name, rand_x, rand_y, f"Images/Items/{item_name}.png", pickable=True))
 					return
 
 		if player.x - Width // 2 - self.w // 2 <= self.x <= player.x + Width // 2 + self.w // 2 and player.y - Height // 2 <= player.y + Height // 2:
-			win.blit(self.image, world_to_screen(self.x, self.y, self.w, self.h, player))
+			win.blit(self.image, game.world_to_screen(self.x, self.y, self.w, self.h, player))
 		if Settings["Display"][3]:
-			pygame.draw.rect(win, (0, 0, 0), (*world_to_screen(self.rect[0] + self.w // 2, self.rect[1] + self.h // 2, self.rect[2], self.rect[3], player), self.rect[2], self.rect[3]), 3)
+			pygame.draw.rect(win, (0, 0, 0), (*game.world_to_screen(self.rect[0] + self.w // 2, self.rect[1] + self.h // 2, self.rect[2], self.rect[3], player), self.rect[2], self.rect[3]), 3)
 
 	def get_left_pressed(self, mouse_x, mouse_y, player):
 
@@ -130,8 +133,8 @@ class Object:
 		else:
 			return False
 
-	def get_hovered(self, player, world_to_screen):
-		return pygame.Rect((*world_to_screen(self.rect[0] + self.w // 2, self.rect[1] + self.h // 2, self.rect[2], self.rect[3], player), self.rect[2], self.rect[3])).collidepoint(pygame.mouse.get_pos())
+	def get_hovered(self, game):
+		return pygame.Rect((*game.world_to_screen(self.rect[0] + self.w // 2, self.rect[1] + self.h // 2, self.rect[2], self.rect[3], game.player), self.rect[2], self.rect[3])).collidepoint(pygame.mouse.get_pos())
 
 	def copy(self):
 		return Object(self.name, self.x, self.y, self.image_path, self.scale, self.image, self.special_flags, self.add_path, self.start_time, self.is_solid, self.rect, self.is_solid, self.breakable, self.max_break, self.breakable_by_hammer, self.drop_items)
@@ -153,3 +156,4 @@ class Object:
 			self.image = load(self.image_path, *self.scale)
 
 		self.rect = pygame.Rect(state["rect"][0], state["rect"][1], state["rect"][2], state["rect"][3])
+		

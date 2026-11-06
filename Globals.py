@@ -4,6 +4,8 @@ import pygame
 import Saver
 import sys
 
+pygame.init()
+
 if getattr(sys, "frozen", False):
 	path = sys._MEIPASS
 else:

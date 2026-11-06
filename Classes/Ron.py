@@ -8,7 +8,7 @@ from Classes.Projectile import Projectile
 
 class Ron:
 
-	def __init__(self, world_to_screen, player):
+	def __init__(self, game):
 
 		self.x = 0
 		self.y = 0
@@ -22,11 +22,10 @@ class Ron:
 		self.INTERACTION_RADIUS = 400
 		self.PICKUP_RADIUS = 32
 		self.PLAYER_RADIUS = 512
-		self.world_to_screen = world_to_screen
-		self.player = player
+		self.game = game
 
 	def show(self):
-		win.blit(shadow(self.images[self.direction], "Ron " + self.direction), self.world_to_screen(self.x, self.y, 256, 256))
+		win.blit(shadow(self.images[self.direction], "Ron " + self.direction), self.game.world_to_screen(self.x, self.y, 256, 256))
 	
 	def move_towards(self, dt, target_x, target_y, radius):
 
@@ -84,7 +83,7 @@ class Ron:
 			if dx <= self.INTERACTION_RADIUS and dy <= self.INTERACTION_RADIUS:
 						
 				if self.home is None:
-					distance_to_player = math.dist((self.player.x, self.player.y), (item.x, item.y))
+					distance_to_player = math.dist((self.game.player.x, self.game.player.y), (item.x, item.y))
 				if self.home or distance_to_player <= self.PLAYER_RADIUS:
 					self.move_towards(dt, item.x, item.y, self.PICKUP_RADIUS)
 					return True
@@ -117,7 +116,7 @@ class Ron:
 
 		if moving:
 			if self.home is None:
-				self.move_towards(dt, self.player.x, self.player.y, self.PLAYER_RADIUS)
+				self.move_towards(dt, self.game.player.x, self.game.player.y, self.PLAYER_RADIUS)
 			self.check_items(world, dt)
 			self.check_mobs(world, dt)
 		self.show()
