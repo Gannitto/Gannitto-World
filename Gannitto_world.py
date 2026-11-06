@@ -135,7 +135,8 @@ game.world = World(game)
 world = game.world
 game.time_system = TimeSystem()
 time_system = game.time_system
-ron = Ron(game)
+game.ron = Ron(game)
+ron = game.ron
 game.command_system = CommandSystem(game)
 command_system = game.command_system
 game.item_actions = ItemActions(game)
@@ -143,6 +144,7 @@ item_actions = game.item_actions
 game.tab_menu = TabMenu(game, save)
 game.effects = EffectsSystem()
 effects = game.effects
+game.Backrooms = Backrooms
 
 weather = WeatherSystem(world)
 
@@ -1914,181 +1916,8 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.in
 			win.blit(inventory.whole_inventory[inventory.start_cell].image, (mouse_x - 32, mouse_y - 32))
 		
 		# Механика мультиплеера
-
 		if game.multiplayer:
-
-			if inventory.check_new_items():
-				if inventory.whole_inventory[inventory.changed_slot] is None:
-					player.changed_item = None
-				else:
-					player.changed_item = inventory.whole_inventory[inventory.changed_slot].name
-				game.events.append({"event_type": "changed_item", "changed_item": player.changed_item})
-			if len(game.events) != 0:
-				game.net.send_events(tuple(game.events))
-			for event in game.net.server_events["Game"]:
-				remove_event = True
-
-				match event["event_type"]:
-
-					case "object_added":
-						object = event["object"]
-						chunk = world.chunk_manager.get_chunk_at(object["x"], object["y"])
-						if chunk is not None:
-							object["scale"] = tuple(object["scale"])
-							chunk.objects.append(Object(object["name"], object["x"], object["y"], object["image_path"], object["scale"], None, object["special_flags"], object["add_path"], object["start_time"], object["is_solid"], object["rect"], object["is_solid"], object["breakable"], object["max_break"], object["breakable_by_hammer"], object["drop_items"]))
-							chunk.objects[-1].__setstate__(object)
-
-					case "object_removed":
-						for object in world.visible_objects:
-							if (object.x, object.y, object.name) == (event["x"], event["y"], event["name"]):
-								destroy_object(object.image, object.x, object.y, world, Particle)
-								world.chunk_manager.get_chunk_at(object.x, object.y).objects.remove(object)
-								break
-
-					case "item_added":
-						item = event["item"]
-						chunk = world.chunk_manager.get_chunk_at(item["x"], item["y"])
-						if chunk is not None:
-							item["scale"] = tuple(item["scale"])
-							chunk.items.append(Object(item["name"], item["x"], item["y"], item["image_path"], item["scale"], None, item["special_flags"], item["add_path"], item["start_time"], item["is_solid"], item["rect"], item["is_solid"], item["breakable"], item["max_break"], item["breakable_by_hammer"], item["drop_items"]))
-							chunk.items[-1].__setstate__(item)
-
-					case "item_removed":
-						for item in world.visible_items:
-							if (item.x, item.y, item.name) == (event["x"], event["y"], event["name"]):
-								world.chunk_manager.get_chunk_at(item.x, item.y).items.remove(item)
-								break
-
-					case "wall_added":
-						wall = event["wall"]
-						chunk = world.chunk_manager.get_chunk_at(wall["x"], wall["y"])
-						if chunk is not None:
-							wall_pos = (wall["x"], wall["y"])
-							chunk.walls[wall_pos] = Wall(world, wall["wall_type"], wall["x"], wall["y"], wall["is_door"])
-							chunk.walls[wall_pos].__setstate__(wall)
-							for wall in (((wall_pos[0] - 256, wall_pos[1]), (wall_pos[0] + 256, wall_pos[1]), (wall_pos[0], wall_pos[1] - 256), (wall_pos[0], wall_pos[1] + 256))):
-								if wall in world.visible_walls:
-									world.visible_walls[wall].update_neigboors(world)
-
-					case "wall_removed":
-						break_pos = tuple(event["break_pos"])
-						chunk = world.chunk_manager.get_chunk_at(*break_pos)
-						if chunk is not None and break_pos in chunk.walls:
-							del chunk.walls[break_pos]
-							for wall in (((break_pos[0] - 256, break_pos[1]), (break_pos[0] + 256, break_pos[1]), (break_pos[0], break_pos[1] - 256), (break_pos[0], break_pos[1] + 256))):
-								if wall in world.visible_walls:
-									world.visible_walls[wall].update_neigboors(world)
-
-					case "wall_interaction":
-						wall_pos = tuple(event["wall_pos"])
-						chunk = world.chunk_manager.get_chunk_at(*wall_pos)
-						if chunk is not None and wall_pos in chunk.walls:
-							chunk.walls[wall_pos].open = not chunk.walls[wall_pos].open
-							chunk.walls[wall_pos].update_neigboors(world)
-
-					case "farmland_added":
-						farmland_pos = tuple(event["farmland_pos"])
-						chunk = world.chunk_manager.get_chunk_at(*farmland_pos)
-						if chunk is not None:
-							chunk.farmlands[farmland_pos] = Farmland(*farmland_pos)
-							play_sound("Dirt")
-
-					case "projectile_added":
-						world.projectiles.append(Projectile(event["x"], event["y"], event["mouse_x"], event["mouse_y"], event["projectile_type"]))
-
-					case "chat_message":
-						command_system.chat_message(event["message_text"])
-
-					case _:
-						remove_event = False
-
-				if remove_event:
-					game.net.server_events["Game"].remove(event)
-
-			if game.multiplayer_role == "Host":
-				for event in game.net.server_events["Game"]:
-					match event["event_type"]:
-						case "peer_joined":
-							game.net._send_packet({"type": "server_event", "player_id": "Game", "event_type": "world_info", "world_info": (
-								0, 0, False, 0, None, player.speed, player.HP, game.start_time, ron.x, ron.y, ron.home, ron.inventory, world.chunk_manager.generator.seed, time_system.current_time, game.difficulty
-								)}, event["address"])
-						case "get_chunk":
-							chunk_key = tuple(event["chunk_key"])
-							if chunk_key in world.chunk_manager.chunks:
-								chunk = world.chunk_manager.chunks[chunk_key]
-							else:
-								chunk = world.chunk_manager._load_chunk_from_disk(*chunk_key)
-								if chunk is None:
-									world.chunk_manager.chunks[chunk_key] = world.chunk_manager.Chunk(*chunk_key)
-									chunk = world.chunk_manager.chunks[chunk_key]
-									world.chunk_manager.generate_chunk(chunk)
-									chunk.is_loaded = True
-							state = chunk.__getstate__()
-							state["mobs"] = []
-							state["particles"] = []
-							state["caves"] = []
-
-							new_objects = [object.__getstate__() for object in state["objects"]]
-							state["objects"] = new_objects
-							new_items = [item.__getstate__() for item in state["items"]]
-							state["items"] = new_items
-							new_walls = [wall.__getstate__() for _, wall in state["walls"].items()]
-							state["walls"] = new_walls
-							new_farmlands = [farmland.__getstate__() for _, farmland in state["farmlands"].items()]
-							state["farmlands"] = new_farmlands
-							if event["player_id"] in game.net.peers:
-								game.net._send_packet({"type": "server_event", "event_type": "chunk", "player_id": "Game", "chunk_key": chunk_key, "chunk_state": state}, game.net.peers[event["player_id"]].address)
-
-					game.net.server_events["Game"].remove(event)
-			else:
-				if time.time() - game.net.last_heartbeat > 3:
-					game.net.send_heartbeat()
-				for event in game.net.server_events["Game"]:
-					match event["event_type"]:
-						case "world_info":
-							player.x, player.y, Backrooms.InBackrooms, Backrooms.Level, world.current_cave, player.speed, player.HP, game.start_time, ron.x, ron.y, ron.home, ron.inventory, world.chunk_manager.generator.seed, time_system.current_time, game.difficulty = event["world_info"]
-							world.chunk_manager.update_seed()
-
-						case "ron_moved":
-							ron.x = event["x"]
-							ron.y = event["y"]
-							ron.direction = event["direction"]
-
-						case "chunk":
-							chunk_key = tuple(event["chunk_key"])
-							world.chunk_manager.chunks[chunk_key] = world.chunk_manager.Chunk(*chunk_key)
-							chunk = world.chunk_manager.chunks[chunk_key]
-							chunk.__setstate__(event["chunk_state"])
-							chunk.is_loaded = True
-
-							new_objects = []
-							for object in chunk.objects:
-								object["scale"] = tuple(object["scale"])
-								new_objects.append(Object(object["name"], object["x"], object["y"], object["image_path"], object["scale"], None, object["special_flags"], object["add_path"], object["start_time"], object["is_solid"], object["rect"], object["is_solid"], object["breakable"], object["max_break"], object["breakable_by_hammer"], object["drop_items"]))
-								new_objects[-1].__setstate__(object)
-							chunk.objects = new_objects
-							
-							new_items = []
-							for item in chunk.items:
-								item["scale"] = tuple(item["scale"])
-								new_items = [Object(item["name"], item["x"], item["y"], item["image_path"], item["scale"], None, item["special_flags"], item["add_path"], item["start_time"], item["is_solid"], item["rect"], item["is_solid"], item["breakable"], item["max_break"], item["breakable_by_hammer"], item["drop_items"]) for item in chunk.items]
-								new_items[-1].__setstate__(item)
-							chunk.items = new_items
-							
-							new_walls = {}
-							for wall in chunk.walls:
-								new_walls[(wall["x"], wall["y"])] = Wall(world, wall["wall_type"], wall["x"], wall["y"])
-								new_walls[(wall["x"], wall["y"])].__setstate__(wall)
-							chunk.walls = new_walls
-
-							new_farmlands = {}
-							for farmland in chunk.farmlands:
-								new_farmlands[(farmland["x"], farmland["y"])] = Farmland(farmland["x"], farmland["y"])
-								new_farmlands[(farmland["x"], farmland["y"])].__setstate__(farmland)
-							chunk.farmlands = new_farmlands
-							world.chunk_manager.chunks_to_get.remove(chunk_key)
-
-					game.net.server_events["Game"].remove(event)
+			game.net.handle_multiplayer(game)
 
 		if keys[hot_keys["Screenshot"]] and not keys[hot_keys["Show keys"]]:
 			

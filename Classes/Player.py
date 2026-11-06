@@ -19,17 +19,8 @@ class Player:
 		self.animation_timer = 0
 		self.move_timer = 0
 		self.costum = 0
-		directions = ("Down", "Up", "Left", "Right", "Down-left", "Down-right", "Up-left", "Up-right")
-		self.animations = {}
 		self.animation = [None, 0]
-		
-		for direction in directions:
-
-			frames = []
-			for frame_num in range(1, 7):
-				path_to_image = f"{path}Images/Players/Hiro/Normal/{direction}/{frame_num}.png"
-				frames.append(load(path_to_image, 256))	
-			self.animations[direction] = frames
+		self.changed_character = "Hiro"
 
 		# Игровые параметры
 		self.HP = 100
@@ -45,9 +36,23 @@ class Player:
 		self.breaking_object = None
 		self.changed_item = None
 		
-		# Текущий спрайт
+		# Спрайт
+		self.load_frames()
 		self.image = self.get_current_frame()
 		
+	def load_frames(self):
+
+		directions = ("Down", "Up", "Left", "Right", "Down-left", "Down-right", "Up-left", "Up-right")
+		self.animations = {}
+
+		for direction in directions:
+
+			frames = []
+			for frame_num in range(1, 7):
+				path_to_image = f"{path}Images/Players/{self.changed_character}/Normal/{direction}/{frame_num}.png"
+				frames.append(load(path_to_image, 256))	
+			self.animations[direction] = frames
+
 	def get_current_frame(self):
 		"""Возвращает текущий кадр анимации"""
 		frames = self.animations[self.direction]
