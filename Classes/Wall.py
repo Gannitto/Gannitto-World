@@ -17,14 +17,13 @@ class Wall:
 		self.images = wall_images[self.wall_type]
 
 		self.image = self.images[0]
-		self.world = world
-		self.update_neigboors()
+		self.update_neigboors(world)
 
-	def update_neigboors(self):
+	def update_neigboors(self, world):
 
 		self.neigbords = []
 		for wall in ((self.x - 256, self.y), (self.x + 256, self.y), (self.x, self.y - 256), (self.x, self.y + 256)):
-			chunk = self.world.chunk_manager.get_chunk_at(*wall)
+			chunk = world.chunk_manager.get_chunk_at(*wall)
 			if chunk is not None and wall in chunk.walls:
 				self.neigbords.append(wall)
 
@@ -120,7 +119,7 @@ class Wall:
 		screen_x, screen_y = game.world_to_screen(self.x, self.y, 256, 256)
 		if self.is_door and release and screen_x <= mouse_x <= screen_x + 256 and screen_y <= mouse_y <= screen_y + 256:
 			self.open = not self.open
-			self.update_neigboors()
+			self.update_neigboors(game.world)
 			if game.multiplayer:
 				game.game_events.append({"event_type": "wall_interaction", "wall_pos": (self.x, self.y)})
 		win.blit(self.image, game.world_to_screen(self.x, self.y, 256, 256))
@@ -145,3 +144,4 @@ class Wall:
 		self.image = self.images[self.image]
 
 		self.rect = pygame.Rect(state["rect"][0], state["rect"][1], state["rect"][2], state["rect"][3])
+

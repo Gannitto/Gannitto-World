@@ -11,7 +11,7 @@ import os
 import Backrooms
 import Saver
 from Functions import *
-from Build import build, check_build_objects, draw_select_image, draw_select_image_arbitrarily
+from Build import check_build_objects, draw_select_image, draw_select_image_arbitrarily
 from Chunks import ChunkManager
 from Inventory import inventory
 from Translator import translator, t
@@ -128,7 +128,7 @@ player = game.player
 game.inventory = inventory
 game.world_to_screen = lambda X, Y, W, H, player=player: (X - player.x + Width // 2 - W // 2, player.y - Y + Height // 2 - H // 2)
 world_to_screen = game.world_to_screen
-game.world_rect_to_screen = lambda X, Y, W, H, player=player: (X - player.x + Width // 2 - W // 2, player.y - Y + Height // 2 - H // 2, W, H)
+game.world_rect_to_screen = lambda X, Y, W, H: (X - player.x + Width // 2 - W // 2, player.y - Y + Height // 2 - H // 2, W, H)
 world_rect_to_screen = game.world_rect_to_screen
 game.world = World(game)
 world = game.world
@@ -689,7 +689,7 @@ def start_game():
 					item.main(game, dt)
 					try_pick = True
 					if item.pickable and Settings["Game"][0] and player.x - 150 < item.x < player.x + 150 and player.y - 150 < item.y < player.y + 150:
-						world.particles.append(Particle(item.x, item.y, item.image, lambda particle: round(((player.x - particle.x) // 2) / 10 * 5), lambda particle: round(((player.y - particle.y) // 2) / 10 * 5), track_ticks=True, del_self_condition=lambda particle: abs(particle.x - player.x) < 30 and abs(particle.y - player.y) < 30, end_command=lambda particle: (inventory.increate(particle.special_flags), play_sound("Pick an item"))))
+						world.particles.append(Particle(item.x, item.y, item.image, lambda particle: round(((player.x - particle.x) // 2) / 10 * 5), lambda particle: round(((player.y - particle.y) // 2) / 10 * 5), track_ticks=True, del_self_condition=lambda particle: abs(particle.x - player.x) < 30 and abs(particle.y - player.y) < 30, end_command=lambda particle: (inventory.increate(particle.special_flags), play_sound("Pick an item")), special_flags=item.name))
 						if game.multiplayer:
 							game.events.append({"event_type": "item_removed", "x": item.x, "y": item.y, "name": item.name})
 
@@ -1550,7 +1550,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.in
 
 			if game.in_motherboard is None:
 				pos = (player.x + mouse_x - Width // 2) // 64 * 64 + 32, (player.y - mouse_y + Height // 2) // 64 * 64 + 32
-				draw_select_image(64, 64, player, mouse_x, mouse_y)
+				draw_select_image(64, 64, game, mouse_x, mouse_y)
 
 
 				a = True
@@ -1578,7 +1578,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.in
 		if inventory.whole_inventory[inventory.changed_slot] is not None and inventory.whole_inventory[inventory.changed_slot].name == "Lever":
 
 			pos = (player.x + mouse_x - Width // 2) // 64 * 64 + 32, (player.y - mouse_y + Height // 2) // 64 * 64 + 32
-			draw_select_image(64, 64, player, mouse_x, mouse_y)
+			draw_select_image(64, 64, game, mouse_x, mouse_y)
 
 			a = True
 			if click[0]:
@@ -1593,7 +1593,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.in
 		if inventory.whole_inventory[inventory.changed_slot] is not None and inventory.whole_inventory[inventory.changed_slot].name == "Wrench":
 
 			pos = (player.x + mouse_x - Width // 2) // 64 * 64 + 32, (player.y - mouse_y + Height // 2) // 64 * 64 + 32
-			draw_select_image(64, 64, player, mouse_x, mouse_y)
+			draw_select_image(64, 64, game, mouse_x, mouse_y)
 			if click[0]:
 				for mechanism in world.mechanisms:
 					if mechanism.x == (player.x + mouse_x - Width // 2) // 64 and mechanism.y == (player.y - mouse_y + Height // 2) // 64:
@@ -1604,7 +1604,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.in
 		if inventory.whole_inventory[inventory.changed_slot] is not None and inventory.whole_inventory[inventory.changed_slot].name == "Random box":
 
 			pos = (player.x + mouse_x - Width // 2) // 64 * 64 + 32, (player.y - mouse_y + Height // 2) // 64 * 64 + 32
-			draw_select_image(64, 64, player, mouse_x, mouse_y)
+			draw_select_image(64, 64, game, mouse_x, mouse_y)
 			a = True
 
 			if click[0]:
@@ -1620,7 +1620,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.in
 		if inventory.whole_inventory[inventory.changed_slot] is not None and inventory.whole_inventory[inventory.changed_slot].name == "Motherboard":
 
 			pos = (player.x + mouse_x - Width // 2) // 64 * 64 + 32, (player.y - mouse_y + Height // 2) // 64 * 64 + 32
-			draw_select_image(64, 64, player, mouse_x, mouse_y)
+			draw_select_image(64, 64, game, mouse_x, mouse_y)
 
 			a = True
 			if click[0]:
@@ -1633,23 +1633,22 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.in
 					world.mechanisms.append(Motherboard(player, world, mouse_x, mouse_y, None))
 		if inventory.whole_inventory[inventory.changed_slot] is not None and inventory.whole_inventory[inventory.changed_slot].name == "Portal gun":
 
-			draw_select_image(128, 256, player, mouse_x, mouse_y)
+			draw_select_image(128, 256, game, mouse_x, mouse_y)
 
 			if click[0]:
 
 				a = 0
 				if not check_collision(pygame.Rect((player.x + mouse_x - Width // 2) // 256 * 256 + 128, (player.y - mouse_y + Height // 2) // 256 * 256 + 128, 256, 256), world, False):
 					world.chunk_manager.get_chunk_at((player.x + mouse_x - Width // 2) // 128, (player.y + mouse_y - Height // 2) // 256).objects.append(Portal())
-		build_tuple = (inventory.changed_slot, player, world, inventory.whole_inventory)
-		new_object = check_build_objects(objects_templates, build_tuple)
+		new_object = check_build_objects(objects_templates, game, mouse_x, mouse_y)
 
-		if game.multiplayer and new_object is not None:
+		if game.multiplayer and new_object:
 			game.events.append({"event_type": "object_added", "object": new_object.__getstate__()})
 
 		if inventory.whole_inventory[inventory.changed_slot] is not None and inventory.whole_inventory[inventory.changed_slot].name == "Stone hoe":
 			
 			farmland_pos = (player.x + mouse_x - Width // 2) // 128 * 128 + 128, (player.y - mouse_y + Height // 2) // 128 * 128
-			draw_select_image(128, 128, player, mouse_x, mouse_y)
+			draw_select_image(128, 128, game, mouse_x, mouse_y)
 
 			if click[0] and farmland_pos not in world.visible_farmlands and not check_collision(pygame.Rect(farmland_pos[0] - 128, farmland_pos[1], 128, 128), world, False):
 				world.chunk_manager.get_chunk_at(*farmland_pos).farmlands[farmland_pos] = Farmland(farmland_pos[0], farmland_pos[1])
@@ -1663,13 +1662,13 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.in
 		if inventory.whole_inventory[inventory.changed_slot] is not None and inventory.whole_inventory[inventory.changed_slot].name in wall_types:
 			
 			wall_pos = (player.x + mouse_x - Width // 2) // 256 * 256 + 128, (player.y - mouse_y + Height // 2) // 256 * 256 + 128
-			draw_select_image(256, 256, player, mouse_x, mouse_y)
+			draw_select_image(256, 256, game, mouse_x, mouse_y)
 
 			if click[0] and wall_pos not in world.visible_walls and not check_collision(pygame.Rect(wall_pos[0], wall_pos[1], 256, 256), world, False, False):
 				world.chunk_manager.get_chunk_at(*wall_pos).walls[wall_pos] = Wall(world, inventory.whole_inventory[inventory.changed_slot].name, wall_pos[0], wall_pos[1])
 				for wall in (((wall_pos[0] - 256, wall_pos[1]), (wall_pos[0] + 256, wall_pos[1]), (wall_pos[0], wall_pos[1] - 256), (wall_pos[0], wall_pos[1] + 256))):
 					if wall in world.visible_walls:
-						world.visible_walls[wall].update_neigboors()
+						world.visible_walls[wall].update_neigboors(world)
 				if game.multiplayer:
 					game.events.append({"event_type": "wall_added", "wall": world.chunk_manager.get_chunk_at(*wall_pos).walls[wall_pos].__getstate__()})
 				inventory.reduce(inventory.changed_slot)
@@ -1677,13 +1676,13 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.in
 		if inventory.whole_inventory[inventory.changed_slot] is not None and inventory.whole_inventory[inventory.changed_slot].name in door_types:
 
 			wall_pos = (player.x + mouse_x - Width // 2) // 256 * 256 + 128, (player.y - mouse_y + Height // 2) // 256 * 256 + 128
-			draw_select_image(256, 256, player, mouse_x, mouse_y)
+			draw_select_image(256, 256, game, mouse_x, mouse_y)
 
 			if click[0] and wall_pos not in world.visible_walls and not check_collision(pygame.Rect(wall_pos[0], wall_pos[1], 256, 256), world, False, False):
 				world.chunk_manager.get_chunk_at(*wall_pos).walls[wall_pos] = Wall(world, inventory.whole_inventory[inventory.changed_slot].name, wall_pos[0], wall_pos[1], True)
 				for wall in (((wall_pos[0] - 256, wall_pos[1]), (wall_pos[0] + 256, wall_pos[1]), (wall_pos[0], wall_pos[1] - 256), (wall_pos[0], wall_pos[1] + 256))):
 					if wall in world.visible_walls:
-						world.visible_walls[wall].update_neigboors()
+						world.visible_walls[wall].update_neigboors(world)
 				if game.multiplayer:
 					game.events.append({"event_type": "wall_added", "wall": world.chunk_manager.get_chunk_at(*wall_pos).walls[wall_pos].__getstate__()})
 				inventory.reduce(inventory.changed_slot)
@@ -1691,7 +1690,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.in
 		if inventory.whole_inventory[inventory.changed_slot] is not None and inventory.whole_inventory[inventory.changed_slot].name == "Stone hammer":
 
 			break_pos = (player.x + mouse_x - Width // 2) // 256 * 256 + 128, (player.y - mouse_y + Height // 2) // 256 * 256 + 128
-			draw_select_image(256, 256, player, mouse_x, mouse_y)
+			draw_select_image(256, 256, game, mouse_x, mouse_y)
 
 			if click[0]:
 				if break_pos in world.visible_walls:
@@ -1701,7 +1700,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.in
 					world.chunk_manager.get_chunk_at(*break_pos).walls.pop(break_pos, None)
 					for wall in ((break_pos[0] - 256, break_pos[1]), (break_pos[0] + 256, break_pos[1]), (break_pos[0], break_pos[1] - 256), (break_pos[0], break_pos[1] + 256)):
 						if wall in world.chunk_manager.get_chunk_at(*wall).walls:
-							world.chunk_manager.get_chunk_at(*wall).walls[wall].update_neigboors()
+							world.chunk_manager.get_chunk_at(*wall).walls[wall].update_neigboors(world)
 
 				for object in world.visible_objects:
 					if object.breakable_by_hammer and (object.x, object.y) == break_pos:
@@ -1985,7 +1984,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.in
 							chunk.walls[wall_pos].__setstate__(wall)
 							for wall in (((wall_pos[0] - 256, wall_pos[1]), (wall_pos[0] + 256, wall_pos[1]), (wall_pos[0], wall_pos[1] - 256), (wall_pos[0], wall_pos[1] + 256))):
 								if wall in world.visible_walls:
-									world.visible_walls[wall].update_neigboors()
+									world.visible_walls[wall].update_neigboors(world)
 
 					case "wall_removed":
 						break_pos = tuple(event["break_pos"])
@@ -1994,14 +1993,14 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.in
 							del chunk.walls[break_pos]
 							for wall in (((break_pos[0] - 256, break_pos[1]), (break_pos[0] + 256, break_pos[1]), (break_pos[0], break_pos[1] - 256), (break_pos[0], break_pos[1] + 256))):
 								if wall in world.visible_walls:
-									world.visible_walls[wall].update_neigboors()
+									world.visible_walls[wall].update_neigboors(world)
 
 					case "wall_interaction":
 						wall_pos = tuple(event["wall_pos"])
 						chunk = world.chunk_manager.get_chunk_at(*wall_pos)
 						if chunk is not None and wall_pos in chunk.walls:
 							chunk.walls[wall_pos].open = not chunk.walls[wall_pos].open
-							chunk.walls[wall_pos].update_neigboors()
+							chunk.walls[wall_pos].update_neigboors(world)
 
 					case "farmland_added":
 						farmland_pos = tuple(event["farmland_pos"])

@@ -127,3 +127,10 @@ Close_slot2.set_alpha(Settings["Display"][1])
 Reference_slot1.set_alpha(Settings["Display"][1])
 Reference_slot2.set_alpha(Settings["Display"][1])
 
+select_images = {
+	(512, 512): load(path + "Images/Select/512x512.png", 512),
+	(256, 256): load(path + "Images/Select/256x256.png", 256),
+	(128, 128): load(path + "Images/Select/128x128.png", 128),
+	(64, 64): load(path + "Images/Select/64x64.png", 64)
+}
+
