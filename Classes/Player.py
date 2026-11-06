@@ -35,7 +35,6 @@ class Player:
 		self.HP = 100
 		self.HP_TICK = 90
 		self.HP_animation_tick = 0
-		self.effects = []
 		self.god_mode = False
 		self.pass_through_walls = False # TODO
 		self.is_moving = False

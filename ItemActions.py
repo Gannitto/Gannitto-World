@@ -35,7 +35,7 @@ class ItemActions:
 
 			case "Beer":
 
-				self.game.player.effects.append(["Drunk", 180])
+				self.game.effects.effects.append(["Drunk", 180])
 				self.game.inventory.reduce(self.game.inventory.changed_slot)
 
 			case "Grenade":

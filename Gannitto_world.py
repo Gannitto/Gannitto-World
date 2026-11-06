@@ -22,6 +22,7 @@ from Sound import play_sound, set_sound_volume, music_channel, update_sounds
 from InputSystem import input_system
 from Weather import WeatherSystem
 from ItemActions import ItemActions
+from Effects import EffectsSystem
 from Assets import *
 from Globals import *
 from UI import SettingsMenu, CharactersMenu, WorldsMenu, EditWorldMenu, MultiplayerSettingsMenu, MainMenu, TabMenu
@@ -88,7 +89,7 @@ def save(darken:bool=True, save_world_settings:bool=False):
 			Saver.save_objects(path + "Saves/Worlds/" + game.world_name + "/Info.save", [player.x, player.y, Backrooms.InBackrooms, Backrooms.Level, world.current_cave, player.speed, player.HP, game.start_time, ron.x, ron.y, ron.home, ron.inventory, world.chunk_manager.generator.seed, time_system.current_time])
 			Saver.save_objects(path + "Saves/Worlds/" + game.world_name + "/Inventory.save", inventory.whole_inventory)
 			Saver.save_objects(path + "Saves/Worlds/" + game.world_name + "/Resources.save", inventory.resources)
-			Saver.save_objects(path + "Saves/Worlds/" + game.world_name + "/Effects.save", player.effects)
+			Saver.save_objects(path + "Saves/Worlds/" + game.world_name + "/Effects.save", effects.effects)
 
 			new_particles = []
 			particle_count = 1
@@ -140,6 +141,8 @@ command_system = game.command_system
 game.item_actions = ItemActions(game)
 item_actions = game.item_actions
 game.tab_menu = TabMenu(game, save)
+game.effects = EffectsSystem()
+effects = game.effects
 
 weather = WeatherSystem(world)
 
@@ -225,7 +228,7 @@ def start_game():
 			world.chunk_manager.update_seed()
 			game.difficulty, player.god_mode = Saver.load_objects(path + "Saves/Worlds/" + game.world_name + "/Settings.save")
 			inventory.whole_inventory = Saver.load_objects(path + "Saves/Worlds/" + game.world_name + "/Inventory.save")
-			player.effects = Saver.load_objects(path + "Saves/Worlds/" + game.world_name + "/Effects.save")
+			effects.effects = Saver.load_objects(path + "Saves/Worlds/" + game.world_name + "/Effects.save")
 
 			if game.multiplayer:
 				game.net.peers[game.net.player_id].x = player.x
@@ -370,7 +373,7 @@ def start_game():
 							save()
 							world.chunk_manager.chunks = {}
 							world.mobs = []
-							player.effects = []
+							effects.effects = []
 							particles = []
 							game.chat = []
 							game.main_chat = []
@@ -1393,27 +1396,8 @@ def start_game():
 				player.x = 0
 				player.y = 0
 
-		for effect_y, effect in enumerate(player.effects):
-
-			win.blit(textInfo.render(effect[0], True, text_color, (0, 0, 0, 0.5)), (Width - 30 - textInfo.size(effect[0])[0], effect_y * 60 + 100))
-			win.blit(textInfo.render(str(int(effect[1])), True, text_color, (0, 0, 0, 0.5)), (Width - 30 - textInfo.size(str(int(effect[1])))[0], effect_y * 60 + 130))
-
-			match effect[0]:
-				case "Drunk":
-					d = pygame.Surface((Width, Height))
-					d.fill((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)))
-					d.set_alpha(90)
-					win.blit(d, (0, 0))
-
-					for _ in range(10000):
-						win.set_at((random.randint(0, Width), random.randint(0, Height)), (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)))
-						
-					win.blit(win, (random.randint(-10, 10), random.randint(-10, 10)))
-
-			effect[1] -= dt
-			if effect[1] <= 0:
-				player.effects.remove(effect)
-		
+		effects.handle_effects(dt)
+	
 		if game.item_settings_open:
 
 			if inventory.whole_inventory[inventory.changed_slot].name == "Wrench":
