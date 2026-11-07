@@ -176,8 +176,6 @@ class Inventory:
 				
 				if empty_slot is None:
 					# Нет свободных слотов
-					from Gannitto_world import t, chat_message
-					chat_message(t("<<< Inventory is full! >>>"))
 					break
 				
 				# Создаем новый предмет
