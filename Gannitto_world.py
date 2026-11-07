@@ -24,6 +24,7 @@ from Weather import WeatherSystem
 from ItemActions import ItemActions
 from Effects import EffectsSystem
 from WorldLoader import WorldLoader
+from InputHandler import InputHandler
 from Assets import *
 from Globals import *
 from UI import SettingsMenu, CharactersMenu, WorldsMenu, EditWorldMenu, MultiplayerSettingsMenu, MainMenu, TabMenu
@@ -76,7 +77,7 @@ def save(darken:bool=True, save_world_settings:bool=False):
 	save_world_settings - Сохранять ли настройки мира
 	"""
 
-	Saver.save_objects(path + "Saves/Settings/Statistics.save", statistics)
+	Saver.save_objects(path + "Saves/Settings/Statistics.save", game.statistics)
 	
 	if game.world_name is not None:
 		
@@ -108,8 +109,6 @@ def save(darken:bool=True, save_world_settings:bool=False):
 	if save_world_settings: Saver.save_objects(path + "Saves/Worlds/" + game.world_name + "/Settings.save", [game.difficulty, player.god_mode])
 
 # Применение настроек TODO
-
-statistics[0] += 1
 
 pygame.display.set_icon(pygame.image.load(path + "Images/Icon.png"))
 pygame.display.set_caption("Gannitto World")
@@ -145,10 +144,12 @@ game.tab_menu = TabMenu(game, save)
 game.effects = EffectsSystem()
 effects = game.effects
 game.Backrooms = Backrooms
-world_loader = WorldLoader(game, save)
-
+game.statistics = statistics
+game.input_system = input_system
+game.world_loader = WorldLoader(game, save)
+game.input_handler = InputHandler(game, save, music_channel)
 weather = WeatherSystem(world)
-
+game.statistics[0] += 1
 # def show_bar(times):
 #	import matplotlib.pyplot as plt
 #	categories = range(len(times))
@@ -177,12 +178,6 @@ weather = WeatherSystem(world)
 #	time_index = 0
 
 hot_keys = Saver.load_objects(path + "Saves/Settings/Hot keys.save")
-objects_templates = {
-		"Table": Object("Table", 0, 0, "Images/Objects/Table.png", (256, 256), is_solid=True, breakable_by_hammer=True),
-		"Wall table": Object("Wall table", 0, 0, "Images/Objects/Wall table.png", (256, 256), special_flags=1, is_solid=True, breakable_by_hammer=True),
-		"Furnace": Object("Furnace", 0, 0, "Images/Items/Furnace.png", (256, 256), special_flags=1, is_solid=True, breakable_by_hammer=True),
-		"Punch": Object("Punch", 0, 0, "Images/Objects/Punch 1.png", (256, 256), is_solid=True, breakable_by_hammer=True)
-		}
 
 # Основной цикл игры
 
@@ -219,7 +214,7 @@ def start_game():
 
 	# Загрузка данных мира
 	if not game.multiplayer or game.multiplayer_role == "Host":
-		world_loader.load_world()
+		game.world_loader.load_world()
 
 	while True:
 
@@ -241,116 +236,9 @@ def start_game():
 		if game.multiplayer:
 			game.events.clear()
 		events = pygame.event.get()
-		for event in events:
-			
-			if event.type == pygame.QUIT:
-				statistics[1] += (time.time() - game.start_time) / 3600
-				if game.multiplayer:
-					game.net.disconnect()
-				save()
-				sys.exit()
-
-			elif event.type == pygame.MOUSEBUTTONUP:
-				if event.button == 1:
-					release = True
-			
-			elif event.type == pygame.MOUSEWHEEL and not any((game.item_settings_open, ron.window[0], game.in_motherboard)):
-				if game.craft_list_open:
-					game.craft_list_offset = max((min(game.craft_list_offset + event.y * Settings["Game"][2], 0)), game.craft_list_max_offset)
-				else:
-					inventory.changed_slot -= event.y
-					if inventory.changed_slot > 9: inventory.changed_slot = 0
-					if inventory.changed_slot < 0: inventory.changed_slot = 9
-
-			if event.type == pygame.KEYUP:
-				if game.chat_open:
-					if event.key == hot_keys["Close"]:
-						game.chat_open = False
-						input_system.stop_input()
-				else:
-					if event.key == hot_keys["Show keys"]:
-						alt_pressed = not alt_pressed
-					if event.key == hot_keys["Use item"]:
-						use_item_pressed = True
-					if event.key == hot_keys["Multiplayer menu"]:
-						game.multiplayer_menu_open = True
-					if event.key == hot_keys["Set Ron home"]:
-						ron.home = [player.x, player.y]
-					if event.key == hot_keys["Menu"]:
-						game.menu_open = not game.menu_open
-					if event.key == hot_keys["Open chat"]:
-						game.chat_open = True
-						input_system.start_input("Chat", 20, Height - 40, (255, 255, 255))
-					if event.key == hot_keys["Execute command"]:
-						game.chat_open = True
-						input_system.start_input("Chat", 20, Height - 40, (255, 255, 255), input_text="/")
-
-					if event.key == hot_keys["Close"]:
-	
-						if game.item_settings_open:
-							game.item_settings_open = False
-						elif ron.window[0]:
-							ron.window[0] = False
-						elif game.in_motherboard is not None:
-							game.in_motherboard = None
-						elif game.craft_list_open:
-							game.craft_list_open = False
-						elif game.inventory_open:
-							game.inventory_open = False
-						else:
-							music_channel.stop()
-							statistics[1] += (time.time() - game.start_time) / 3600
-							save()
-							world.chunk_manager.chunks = {}
-							world.mobs = []
-							effects.effects = []
-							particles = []
-							game.chat = []
-							game.main_chat = []
-							game.chat_tick = 0
-							inventory.whole_inventory = [None] * 30
-							game.world_name = None
-							if game.multiplayer:
-								game.net.disconnect()
-							win_darken(win)
-							game.does_lighten = False
-							return game.main_menu.main_menu
-
-					if event.key in (pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_4, pygame.K_5, pygame.K_6, pygame.K_7, pygame.K_8, pygame.K_9, pygame.K_0, ):
-						last_changed_slot = inventory.changed_slot
-						inventory.changed_slot = int(event.unicode) - 1 + 10 * (event.key == pygame.K_0)
-						player.changed_item = inventory.whole_inventory[inventory.changed_slot]
-						if player.changed_item is not None:
-							player.changed_item = player.changed_item.name
-
-					# if event.key == pygame.K_o and Settings["User"][1]:
-						# world.mobs.append(Spider(player.x, player.y))
-
-					if event.key == hot_keys["Help"]:
-						music_channel.stop()
-						statistics[1] += (time.time() - game.start_time) / 3600
-						save(False)
-						return game.settings_menu.help
-
-					if event.key == hot_keys["Inventory"]:
-						game.inventory_open = not game.inventory_open
-						if not game.inventory_open:
-							if inventory.craft_items_list != [None] * 7:
-								for item_index, item in enumerate(inventory.craft_items_list):
-									if item is not None:
-										inventory.increate(item, inventory.craft_amounts_list[item_index])
-							inventory.craft_items_list = [None] * 7
-							inventory.craft_amounts_list = [None] * 7
-							inventory.craft_images_list = [None] * 7
-
-					if event.key == hot_keys["Throw away the item"] and inventory.whole_inventory[inventory.changed_slot] is not None:
-						
-						if Backrooms.InBackrooms:
-							world.backrooms_objects.append(Object(inventory.whole_inventory[inventory.changed_slot].name, player.x, player.y, "Images/Items/" + inventory.whole_inventory[inventory.changed_slot].name + ".png", special_flags="Item"))
-						else:
-							world.particles.append(create_throw_particle(Object, Particle, player, world, game, inventory.whole_inventory[inventory.changed_slot].image, inventory.whole_inventory[inventory.changed_slot].name))
-						
-						inventory.reduce(inventory.changed_slot)
+		result = game.input_handler.handle_events(events)
+		if result:
+			return result
 
 		if game.inventory_open:
 			if click[0] and not game.hold_left:
@@ -375,7 +263,7 @@ def start_game():
 
 		# Если есть движение - двигаем игрока
 		if dx != 0 or dy != 0:
-			player.move(dx, dy, dt, world)
+			player.move(dx, dy, dt, game)
 			game.events.append({"event_type": "player_moved", "x": player.x, "y": player.y, "direction": player.direction})
 			if game.multiplayer:
 				game.net.peers[game.net.player_id].x = player.x
@@ -1552,9 +1440,9 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.in
 			if click[0]:
 
 				a = 0
-				if not check_collision(pygame.Rect((player.x + mouse_x - Width // 2) // 256 * 256 + 128, (player.y - mouse_y + Height // 2) // 256 * 256 + 128, 256, 256), world, False):
+				if not check_collision(pygame.Rect((player.x + mouse_x - Width // 2) // 256 * 256 + 128, (player.y - mouse_y + Height // 2) // 256 * 256 + 128, 256, 256), game, False):
 					world.chunk_manager.get_chunk_at((player.x + mouse_x - Width // 2) // 128, (player.y + mouse_y - Height // 2) // 256).objects.append(Portal())
-		new_object = check_build_objects(objects_templates, game, mouse_x, mouse_y)
+		new_object = check_build_objects(game, mouse_x, mouse_y)
 
 		if game.multiplayer and new_object:
 			game.events.append({"event_type": "object_added", "object": new_object.__getstate__()})
@@ -1564,7 +1452,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.in
 			farmland_pos = (player.x + mouse_x - Width // 2) // 128 * 128 + 128, (player.y - mouse_y + Height // 2) // 128 * 128
 			draw_select_image(128, 128, game, mouse_x, mouse_y)
 
-			if click[0] and farmland_pos not in world.visible_farmlands and not check_collision(pygame.Rect(farmland_pos[0] - 128, farmland_pos[1], 128, 128), world, False):
+			if click[0] and farmland_pos not in world.visible_farmlands and not check_collision(pygame.Rect(farmland_pos[0] - 128, farmland_pos[1], 128, 128), game, False):
 				world.chunk_manager.get_chunk_at(*farmland_pos).farmlands[farmland_pos] = Farmland(farmland_pos[0], farmland_pos[1])
 				game.events.append({"event_type": "farmland_added", "farmland_pos": farmland_pos})
 
@@ -1578,7 +1466,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.in
 			wall_pos = (player.x + mouse_x - Width // 2) // 256 * 256 + 128, (player.y - mouse_y + Height // 2) // 256 * 256 + 128
 			draw_select_image(256, 256, game, mouse_x, mouse_y)
 
-			if click[0] and wall_pos not in world.visible_walls and not check_collision(pygame.Rect(wall_pos[0], wall_pos[1], 256, 256), world, False, False):
+			if click[0] and wall_pos not in world.visible_walls and not check_collision(pygame.Rect(wall_pos[0] - 128, wall_pos[1] - 128, 256, 256), game, False, False, check_player=True):
 				world.chunk_manager.get_chunk_at(*wall_pos).walls[wall_pos] = Wall(world, inventory.whole_inventory[inventory.changed_slot].name, wall_pos[0], wall_pos[1])
 				for wall in (((wall_pos[0] - 256, wall_pos[1]), (wall_pos[0] + 256, wall_pos[1]), (wall_pos[0], wall_pos[1] - 256), (wall_pos[0], wall_pos[1] + 256))):
 					if wall in world.visible_walls:
@@ -1592,7 +1480,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.in
 			wall_pos = (player.x + mouse_x - Width // 2) // 256 * 256 + 128, (player.y - mouse_y + Height // 2) // 256 * 256 + 128
 			draw_select_image(256, 256, game, mouse_x, mouse_y)
 
-			if click[0] and wall_pos not in world.visible_walls and not check_collision(pygame.Rect(wall_pos[0], wall_pos[1], 256, 256), world, False, False):
+			if click[0] and wall_pos not in world.visible_walls and not check_collision(pygame.Rect(wall_pos[0] - 128, wall_pos[1] - 128, 256, 256), game, False, False, check_player=True):
 				world.chunk_manager.get_chunk_at(*wall_pos).walls[wall_pos] = Wall(world, inventory.whole_inventory[inventory.changed_slot].name, wall_pos[0], wall_pos[1], True)
 				for wall in (((wall_pos[0] - 256, wall_pos[1]), (wall_pos[0] + 256, wall_pos[1]), (wall_pos[0], wall_pos[1] - 256), (wall_pos[0], wall_pos[1] + 256))):
 					if wall in world.visible_walls:

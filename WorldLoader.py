@@ -21,7 +21,8 @@ class WorldLoader:
 			self.game.difficulty, self.game.player.god_mode = Saver.load_objects(path + "Saves/Worlds/" + self.game.world_name + "/Settings.save")
 			self.game.inventory.whole_inventory = Saver.load_objects(path + "Saves/Worlds/" + self.game.world_name + "/Inventory.save")
 			self.game.effects.effects = Saver.load_objects(path + "Saves/Worlds/" + self.game.world_name + "/Effects.save")
-
+			self.game.player.update_rect()
+			
 			if self.game.multiplayer:
 				self.game.net.peers[self.game.net.player_id].x = self.game.player.x
 				self.game.net.peers[self.game.net.player_id].y = self.game.player.y

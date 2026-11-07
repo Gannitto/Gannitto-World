@@ -104,6 +104,7 @@ class CommandSystem:
 			player = self.player
 		player.x = int(x)
 		player.y = int(y)
+		player.update_rect()
 		if self.game.multiplayer:
 			self.game.events.append({"event_type": "player_tp", "x": player.x, "y": player.y, "direction": player.direction})
 			self.game.net.peers[self.game.net.player_id].x = player.x

@@ -70,14 +70,17 @@ class Player:
 		
 		self.image = self.get_current_frame()
 
-	def collides_with_walls(self, world):
+	def collides_with_walls(self, game):
 		"""Проверяет, пересекается ли игрок с какой-либо стеной."""
 		if self.pass_through_walls:
 			return False
 		self.rect = pygame.Rect(self.x - 25, self.y - 112, 50, 224)
-		return check_collision(self.rect, world)
+		return check_collision(self.rect, game)
+	
+	def update_rect(self):
+		self.rect = pygame.Rect(self.x - 25, self.y - 112, 50, 224)
 
-	def move(self, dx, dy, dt, world):
+	def move(self, dx, dy, dt, game):
 		"""Двигает игрока и обновляет направление"""
 
 		self.is_moving = True
@@ -85,11 +88,11 @@ class Player:
 		# Обновление позиции
 
 		self.x += dx * self.speed * dt * 30
-		if self.collides_with_walls(world):
+		if self.collides_with_walls(game):
 			self.x -= dx * self.speed * dt * 30
 
 		self.y += dy * self.speed * dt * 30
-		if self.collides_with_walls(world):
+		if self.collides_with_walls(game):
 			self.y -= dy * self.speed * dt * 30
 		
 		# Определение направления
@@ -109,6 +112,8 @@ class Player:
 			self.direction = "Down-right"
 		elif dx < 0 and dy < 0:
 			self.direction = "Down-left"
+
+		self.update_rect()
 	
 	def stop(self):
 		"""Останавливает движение"""
@@ -123,7 +128,6 @@ class Player:
 		win.blit(shadow(self.image, f"Player {self.direction} {self.frame_index % len(frames)}"), (Width / 2 - 128, Height / 2 - 128))
 		
 		if Settings["Display"][3]:
-			self.rect = pygame.Rect(self.x - 25, self.y - 112, 50, 224)
 			pygame.draw.rect(win, (0, 255, 0), (Width / 2 - 128, Height / 2 - 128, 256, 256), 2)
 			pygame.draw.rect(win, (0, 0, 0), (self.rect[0] - self.x + Width // 2, self.y - self.rect[1] - self.rect[3] + Height // 2, self.rect[2], self.rect[3]), 3)
 
@@ -137,6 +141,9 @@ class Peer(Player):
 		self.x = X
 		self.y = Y
 		self.view_distance = view_distance
+
+	def update_rect(self):
+		self.rect = pygame.Rect(self.x - 25, self.y - 112, 50, 224)
 	
 	def render(self, game):
 		"""Отрисовывает игрока на экране"""
@@ -160,7 +167,6 @@ class Peer(Player):
 		text(self.name, text_x, text_y, (255, 255, 255), alignment=True)
 		
 		if Settings["Display"][3]:
-			self.rect = pygame.Rect(self.x - 25, self.y - 112, 50, 224)
 			pygame.draw.rect(win, (0, 255, 0), game.world_rect_to_screen(self.x, self.y, 256, 256), 2)
 			pygame.draw.rect(win, (0, 0, 0), (self.rect[0] - self.x + Width // 2, self.y - self.rect[1] - self.rect[3] + Height // 2, self.rect[2], self.rect[3]), 3)
 

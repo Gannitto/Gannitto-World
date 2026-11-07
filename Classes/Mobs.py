@@ -26,7 +26,7 @@ class Mob:
 		"""Обновляет состояние моба"""
 		self._update_animation(dt)
 		self._update_state(game.player)
-		self._update_position(game.world)
+		self._update_position(game)
 		
 	def _update_animation(self, dt):
 		self.animation_timer += dt * 5
@@ -47,18 +47,18 @@ class Mob:
 		else:
 			self.state = "Idle"
 			
-	def _update_position(self, world):
+	def _update_position(self, game):
 		"""Обновляет позицию в зависимости от состояния"""
 		if self.state == "chasing":
-			self._move_towards_player(world)
+			self._move_towards_player(game)
 		elif self.state == "idle":
-			self._random_movement(world)
+			self._random_movement(game.world)
 			
-	def _move_towards_player(self, world, player):
+	def _move_towards_player(self, game):
 		"""Движение к игроку с проверкой стен"""
-		dx = player.x - self.x
-		dy = player.y - self.y
-		distance = math.dist((self.x, self.y), (player.x, player.y))
+		dx = game.player.x - self.x
+		dy = game.player.y - self.y
+		distance = math.dist((self.x, self.y), (game.player.x, game.player.y))
 		
 		if distance > 0:
 			# Нормализуем вектор движения
@@ -67,12 +67,12 @@ class Mob:
 			
 			# Пробуем движение по X
 			new_x = self.x + dx
-			if not self._check_collision(new_x, self.y, world):
+			if not self._check_collision(new_x, self.y, game):
 				self.x = new_x
 				
 			# Пробуем движение по Y
 			new_y = self.y + dy
-			if not self._check_collision(self.x, new_y, world):
+			if not self._check_collision(self.x, new_y, game):
 				self.y = new_y
 
 class Slime(Mob):
@@ -117,7 +117,7 @@ class Slime(Mob):
 		# Флаг урона
 		self.damage_dealt = False
 	
-	def update(self, player, world, dt):
+	def update(self, game, dt):
 
 		self._update_animation(dt)
 		
@@ -127,16 +127,16 @@ class Slime(Mob):
 		self.attack_cooldown = max(0, self.attack_cooldown - dt * 30)
 
 		match self.state:
-			case "Wander": self._handle_wander(player, world, dt)
-			case "Prepare attak": self._handle_prepare_attack(player, world, dt)
-			case "Jumping": self._handle_jumping(player, world)
-			case "Retreat": self._handle_retreat(player, world)
+			case "Wander": self._handle_wander(game, dt)
+			case "Prepare attak": self._handle_prepare_attack(game.player, game.world, dt)
+			case "Jumping": self._handle_jumping(game)
+			case "Retreat": self._handle_retreat(game)
 	
-	def _handle_wander(self, player, world, dt):
+	def _handle_wander(self, game, dt):
 
 		"""Блуждание вокруг игрока"""
 
-		distance = math.dist((self.x, self.y), (player.x, player.y))
+		distance = math.dist((self.x, self.y), (game.player.x, game.player.y))
 		if (distance < self.detection_range and 
 			self.attack_cooldown <= 0 and
 			random.random() < 0.02):  # 2% шанс начать атаку
@@ -156,8 +156,8 @@ class Slime(Mob):
 			self.wander_distance = random.uniform(150, self.wander_radius)
 			
 		# Целевая точка для блуждания
-		target_x = player.x + math.cos(self.wander_angle) * self.wander_distance
-		target_y = player.y + math.sin(self.wander_angle) * self.wander_distance
+		target_x = game.player.x + math.cos(self.wander_angle) * self.wander_distance
+		target_y = game.player.y + math.sin(self.wander_angle) * self.wander_distance
 		
 		# Движение к целевой точке
 		dx = target_x - self.x
@@ -169,9 +169,9 @@ class Slime(Mob):
 			move_y = dy / dist * self.speed
 			
 			# Проверка стен
-			if not self._check_collision(self.x + move_x, self.y, world):
+			if not self._check_collision(self.x + move_x, self.y, game):
 				self.x += move_x
-			if not self._check_collision(self.x, self.y + move_y, world):
+			if not self._check_collision(self.x, self.y + move_y, game):
 				self.y += move_y
 				
 	def _handle_prepare_attack(self, player, world, dt):
@@ -192,7 +192,7 @@ class Slime(Mob):
 			self.start_x = self.x
 			self.start_y = self.y
 			
-	def _handle_jumping(self, player, world):
+	def _handle_jumping(self, game):
 		"""Прыжок на игрока"""
 		# Движение к цели
 		dx = self.target_x - self.x
@@ -205,9 +205,9 @@ class Slime(Mob):
 			move_y = dy / dist * self.jump_speed
 			
 			# Проверяем стены
-			if not self._check_collision(self.x + move_x, self.y, world):
+			if not self._check_collision(self.x + move_x, self.y, game):
 				self.x += move_x
-			if not self._check_collision(self.x, self.y + move_y, world):
+			if not self._check_collision(self.x, self.y + move_y, game):
 				self.y += move_y
 				
 			# Эффект прыжка - немного подпрыгиваем вверх
@@ -216,7 +216,7 @@ class Slime(Mob):
 			
 			# Наносим урон, если достигли игрока
 			if dist < 50 and not self.damage_dealt:
-				self._attack(player)
+				self._attack(game.player)
 				self.damage_dealt = True
 				self.state = "Retreat"
 				
@@ -227,7 +227,7 @@ class Slime(Mob):
 			
 			# TODO Создать частицы при столкновении
 			
-	def _handle_retreat(self, player, world):
+	def _handle_retreat(self, game):
 		"""Отскок на начальную позицию"""
 		# Движение обратно к начальной позиции
 		dx = self.start_x - self.x
@@ -238,9 +238,9 @@ class Slime(Mob):
 			move_x = dx / dist * self.retreat_speed
 			move_y = dy / dist * self.retreat_speed
 			
-			if not self._check_collision(self.x + move_x, self.y, world):
+			if not self._check_collision(self.x + move_x, self.y, game):
 				self.x += move_x
-			if not self._check_collision(self.x, self.y + move_y, world):
+			if not self._check_collision(self.x, self.y + move_y, game):
 				self.y += move_y
 		else:
 			# Вернулись на место
@@ -256,10 +256,10 @@ class Slime(Mob):
 				player.HP_animation_tick = 1
 		self.attack_cooldown = 100
 
-	def _check_collision(self, x, y, world):
+	def _check_collision(self, x, y, game):
 		"""Проверка столкновения со стенами"""
 		self.rect = pygame.Rect(x - 50, y - 50, 100, 100)
-		return check_collision(self.rect, world)
+		return check_collision(self.rect, game)
 
 	def draw(self, player):
 		"""Отрисовка слизня"""
@@ -327,7 +327,7 @@ class Spider(Mob):
 		# Флаг урона
 		self.damage_dealt = False
 	
-	def update(self, player, world, dt):
+	def update(self, game, dt):
 
 		if self.HP < 16 and self.speed < 8:
 			self.speed += 10  # Ускорение при низком HP
@@ -335,12 +335,12 @@ class Spider(Mob):
 		self.attack_cooldown = max(0, self.attack_cooldown - dt)
 		self.shoot_cooldown = max(0, self.shoot_cooldown - dt)
 
-		distance = math.dist((self.x, self.y), (player.x, player.y))
+		distance = math.dist((self.x, self.y), (game.player.x, game.player.y))
 
 		match self.state:
 			case "Attacking": self.state = "Going towards player"
-			case "Prepare shoot": self._handle_prepare_shoot(player, world)
-			case "Going towards player": self._handle_go_towards_player(player, world, dt)
+			case "Prepare shoot": self._handle_prepare_shoot(game.player, game.world)
+			case "Going towards player": self._handle_go_towards_player(game, dt)
 		
 	def _handle_prepare_shoot(self, player, world):
 		"""Подготовка к атаке паутиной (прицеливание)"""
@@ -362,26 +362,26 @@ class Spider(Mob):
 			world.particles.append(Particle(self.x, self.y, pygame.transform.rotate(web_texture, -math.degrees(math.atan2(-move_y, move_x))), move_x, move_y, del_self_condition=lambda particle: (pygame.Rect(particle.x - 32, particle.y + 32, 64, 64).colliderect(pygame.Rect(player.x - 100, player.y + 100, 200, 200))), end_time=1)) # TODO наложить эффект замедления
 			self.state = "Attacking"
 
-	def _handle_go_towards_player(self, player, world, dt):
+	def _handle_go_towards_player(self, game, dt):
 		
-		dx = player.x - self.x
-		dy = player.y - self.y
-		dist = math.dist((self.x, self.y), (player.x, player.y))
+		dx = game.player.x - self.x
+		dy = game.player.y - self.y
+		dist = math.dist((self.x, self.y), (game.player.x, game.player.y))
 
 		if dist <= self.detection_range:
 			if dist > 100:
 				# Движение к цели
 				move_x = dx / dist * self.speed * dt
 				move_y = dy / dist * self.speed * dt
-				if not self._check_collision(self.x + move_x, self.y, world):
+				if not self._check_collision(self.x + move_x, self.y, game):
 					self.x += move_x
 					if move_x > 0: self.direction = "Right"
 					else: self.direction = "Left"
-				if not self._check_collision(self.x, self.y + move_y, world):
+				if not self._check_collision(self.x, self.y + move_y, game):
 					self.y += move_y
 
 			else:
-				self._attack(player)
+				self._attack(game.player)
 			
 			if dist <= self.shoot_range and self.shoot_cooldown <= 0:
 				self.shoot_charge_timer = self.shoot_prepare_charge_time
@@ -396,10 +396,10 @@ class Spider(Mob):
 				player.HP_animation_tick = 1
 			self.attack_cooldown = self.attack_charge_time
 
-	def _check_collision(self, x, y, world):
+	def _check_collision(self, x, y, game):
 		"""Проверка столкновения со стенами"""
 		self.rect = pygame.Rect(x - 50, y - 50, 100, 100)
-		return check_collision(self.rect, world)
+		return check_collision(self.rect, game)
 		
 	def draw(self, player, show_hitbox=False):
 		"""Отрисовка паука"""

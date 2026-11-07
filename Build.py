@@ -2,6 +2,14 @@ import pygame
 from Assets import select_images
 from Functions import check_collision, win_fill
 from Globals import path, Width, Height, win
+from Classes import Object
+
+objects_templates = {
+		"Table": Object("Table", 0, 0, "Images/Objects/Table.png", (256, 256), is_solid=True, breakable_by_hammer=True),
+		"Wall table": Object("Wall table", 0, 0, "Images/Objects/Wall table.png", (256, 256), special_flags=1, is_solid=True, breakable_by_hammer=True),
+		"Furnace": Object("Furnace", 0, 0, "Images/Items/Furnace.png", (256, 256), special_flags=1, is_solid=True, breakable_by_hammer=True),
+		"Punch": Object("Punch", 0, 0, "Images/Objects/Punch 1.png", (256, 256), is_solid=True, breakable_by_hammer=True)
+		}
 
 for image in select_images.values():
 	image.set_alpha(70)
@@ -70,7 +78,7 @@ def build(
 	build_rect = pygame.Rect(grid_x - object_to_build.w // 2, grid_y - object_to_build.h // 2, object_to_build.w, object_to_build.h)
 
 	# Проверяем коллизии в мире
-	if check_collision(build_rect, game.world):
+	if check_collision(build_rect, game, check_player=True):
 		return None
 
 	# Проверяем ресурсы и списываем их
@@ -89,7 +97,7 @@ def build(
 	return new_object
 
 
-def check_build_objects(objects_templates, game, mouse_x, mouse_y):
+def check_build_objects(game, mouse_x, mouse_y):
 	"""Проверяет все шаблоны объектов на возможность постройки при клике."""
 	# Проверку нажатия мыши лучше вынести сюда или еще выше в контроллер ввода
 
