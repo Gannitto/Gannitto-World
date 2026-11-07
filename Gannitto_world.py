@@ -119,10 +119,6 @@ pygame.display.set_caption("Gannitto World")
 
 game = GameState()
 
-mouse_x = game.mouse_x
-mouse_y = game.mouse_y
-alt_pressed = game.alt_pressed
-
 game.player = Player()
 player = game.player
 game.inventory = inventory
@@ -150,46 +146,19 @@ game.world_loader = WorldLoader(game, save)
 game.input_handler = InputHandler(game, save, music_channel)
 weather = WeatherSystem(world)
 game.statistics[0] += 1
-# def show_bar(times):
-#	import matplotlib.pyplot as plt
-#	categories = range(len(times))
-#	values = []
-#	for i in times:
-#		values.append(sum(i) / len(i))
-
-#	plt.bar(categories, values, color="orange")
-#	plt.title("Время на обработку")
-#	plt.xlabel('Часть кода')
-#	plt.ylabel('Время')
-#	plt.show()
-#	plt.savefig("aboba.png")
-
-# time_values = []
-# time_index = 0
-
-# def add_time(t):
-#	global time_index
-#	if len(time_values) <= time_index:
-#		time_values.append([])
-#	time_values[time_index].append(t)
-#	time_index += 1
-# def reset_time():
-#	global time_index
-#	time_index = 0
-
 hot_keys = Saver.load_objects(path + "Saves/Settings/Hot keys.save")
 
 # Основной цикл игры
 
 def start_game():
 	
-	global backrooms, text_color, mouse_x, mouse_y, color, new_particles, game, alt_pressed, player, world, FPS, win
-
 	bigTextInfo = pygame.font.Font(path + "Font.ttf", 36)
 	aaa = 0
 	AA = 0
 	use_item_pressed = False
 	game.start_time = time.time()
+	mouse_x = game.mouse_x
+	mouse_y = game.mouse_y
 
 	tile_size = 256
 	Width, Height = pygame.display.get_surface().get_size()
@@ -198,8 +167,6 @@ def start_game():
 	dx = 0
 	dy = 0
 	game.craft_list_max_offset = (len(inventory.recipes) + 1) * -80 + Height
-
-	new_particles = []
 
 	if Settings["Game"][1]:
 		up_b = Button(Width - 148, Height - 148, arrow_up, arrow_up, sound=False, cooldown=0)
@@ -228,7 +195,6 @@ def start_game():
 		player.hovered_object = None
 		player.breaking_object = None
 
-		FPS = int(clock.get_fps())
 		dt = clock.tick(MAX_FPS) / 1000.0
 		time_system.update(dt)
 		player.changed_item = inventory.whole_inventory[inventory.changed_slot]
@@ -819,11 +785,6 @@ def start_game():
 
 				world.particles.remove(particle)
 
-		for particle in new_particles:
-			world.particles.append(particle)
-
-		new_particles.clear()
-
 		# Механика освещения
 
 		# 1 слой - естественный свет
@@ -834,9 +795,7 @@ def start_game():
 			light_level = 180
 
 		game.shadow_surface = pygame.Surface((Width, Height), pygame.SRCALPHA)
-		try:
-			game.shadow_surface.fill((0, 0, 0, light_level))
-		except:pass
+		game.shadow_surface.fill((0, 0, 0, light_level))
 		# 2 слой - тени
 		# 3 слой - искусственное освещение
 		world.chunk_manager.show_light_and_dark(light_level, player, game.shadow_surface) #TODO оптимизировать
@@ -968,11 +927,10 @@ def start_game():
 					inventory.whole_inventory[inventory.changed_slot].settings = []
 				if Width - 180 <= mouse_x <= Width - 120 and 278 <= mouse_y <= 338 and game.release:
 					inventory.whole_inventory[inventory.changed_slot].settings = ["All mechanisms, but wire"]
-					
 				
 				win.blit(bigTextInfo.render("x", True, (0, 150, 0)), (Width - 160, 130))
 				
-				if alt_pressed:
+				if game.alt_pressed:
 					draw_key("ESC", Width - 160, 170)
 					
 				if Width - 160 <= mouse_x <= Width - 130 and 130 <= mouse_y <= 160:
@@ -1015,7 +973,7 @@ def start_game():
 					
 			win.blit(bigTextInfo.render("x", True, (0, 150, 0)), (Width - 160, 130))
 			
-			if alt_pressed:
+			if game.alt_pressed:
 				draw_key("ESC", Width - 160, 170)
 				
 			if Width - 160 <= mouse_x <= Width - 130 and 130 <= mouse_y <= 160:
@@ -1049,7 +1007,7 @@ def start_game():
 			
 			win.blit(bigTextInfo.render("x", True, (0, 150, 0)), (Width - 160, 130))
 			
-			if alt_pressed:
+			if game.alt_pressed:
 				draw_key("ESC", Width - 160, 170)
 				
 			if Width - 160 <= mouse_x <= Width - 130 and 130 <= mouse_y <= 160:
@@ -1063,7 +1021,7 @@ def start_game():
 Y {player.y // 50}
 Ron X {ron.x // 50}
 Ron Y {ron.y // 50}
-FPS {FPS}""" + (f"""
+FPS {int(clock.get_fps())}""" + (f"""
 You are in backrooms lol
 Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.inventory_open else 300)
 		
@@ -1161,6 +1119,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.in
 				a = 0
 				if not check_collision(pygame.Rect((player.x + mouse_x - Width // 2) // 256 * 256 + 128, (player.y - mouse_y + Height // 2) // 256 * 256 + 128, 256, 256), game, False):
 					world.chunk_manager.get_chunk_at((player.x + mouse_x - Width // 2) // 128, (player.y + mouse_y - Height // 2) // 256).objects.append(Portal())
+
 		new_object = check_build_objects(game, mouse_x, mouse_y)
 
 		if game.multiplayer and new_object:
@@ -1176,9 +1135,6 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.in
 				game.events.append({"event_type": "farmland_added", "farmland_pos": farmland_pos})
 
 				play_sound("Dirt")
-				# for farmland in (((farmland_pos[0] - 128, farmland_pos[1]), (farmland_pos[0] + 128, farmland_pos[1]), (farmland_pos[0], farmland_pos[1] - 128), (farmland_pos[0], farmland_pos[1] + 128))):
-				#	if farmland in world.visible_farmlands:
-				#		world.visible_farmlands[farmland].update_neigboors()
 
 		if inventory.whole_inventory[inventory.changed_slot] is not None and inventory.whole_inventory[inventory.changed_slot].name in wall_types:
 			
@@ -1262,9 +1218,8 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.in
 
 			if game.chat_tick == 0:
 				game.chat.remove(game.chat[0])
-				try:
+				if len(game.chat) != 0:
 					game.chat_tick = len(game.chat[0]) // 1.5 * FPS
-				except: pass
 			
 		reversed_chat = game.main_chat.copy() if game.chat_open else game.chat.copy()
 		reversed_chat.reverse()
