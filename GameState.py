@@ -30,6 +30,7 @@ class GameState:
 		self.world_name = None
 		self.current_biome = None
 		self.night_playing = False
+		self.release = False
 
 		self.multiplayer = False
 		self.multiplayer_role = None

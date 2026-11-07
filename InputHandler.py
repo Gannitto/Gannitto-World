@@ -24,7 +24,7 @@ class InputHandler:
 
 			elif event.type == pygame.MOUSEBUTTONUP:
 				if event.button == 1:
-					release = True
+					self.game.release = True
 			
 			elif event.type == pygame.MOUSEWHEEL and not any((self.game.item_settings_open, self.game.ron.window[0], self.game.in_motherboard)):
 				if self.game.craft_list_open:
@@ -41,7 +41,7 @@ class InputHandler:
 						self.game.input_system.stop_input()
 				else:
 					if event.key == hot_keys["Show keys"]:
-						alt_pressed = not alt_pressed
+						self.game.alt_pressed = not self.game.alt_pressed
 					if event.key == hot_keys["Use item"]:
 						use_item_pressed = True
 					if event.key == hot_keys["Multiplayer menu"]:

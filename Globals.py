@@ -63,7 +63,6 @@ default_hot_keys = {
 		"Noclip in backrooms": pygame.K_n,
 		"Show keys": pygame.K_LALT,
 		"Close": pygame.K_ESCAPE,
-		"Plugin manager": pygame.K_p,
 		"Move left": pygame.K_a,
 		"Move right": pygame.K_d,
 		"Move down": pygame.K_s,

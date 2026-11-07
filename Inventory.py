@@ -1,12 +1,14 @@
 import pygame
 import os
 import json
-from Assets import Inventory_slot
-from Globals import path, win
+import math
+from itertools import product
+from Assets import Inventory_slot, Changed_inventory_slot, Object_inventory_slot, Tool_inventory_slot, Split_items1, Split_items2, Compact_inventory1, Compact_inventory2, Craft_list_inventory_slot, Changed_craft_list_inventory_slot, Heart
+from Functions import win_fill, draw_key, text, get_text_height
+from Globals import path, win, FPS, Settings, Width, Height, textInfo, text_color
 from Translator import t
 
 pygame.init()
-textInfo = pygame.font.Font(None, 20)
 types = ("Just an item", "Tool", "Food", "Drink", "Mechanism", "Flower", "Seed", "Build")
 
 class Resource:
@@ -132,8 +134,8 @@ class Inventory:
 		
 		self.inventory_panel = [None] * 10
 		self.whole_inventory = [None] * 30
-		self.start_cell = 0
-		self.end_cell = 0
+		self.start_cell = None
+		self.end_cell = None
 		self.end_cell_inventory = 0
 		self.Split_items = False
 		self.last_changed_item = None
@@ -247,8 +249,7 @@ class Inventory:
 		cell_x = cell_y = 10
 		for cell in self.whole_inventory:
 			if cell is not None:
-				try:win.blit(cell.image, (cell_x, cell_y))
-				except:print(cell)
+				win.blit(cell.image, (cell_x, cell_y))
 				if cell.amount > 1:
 					win.blit(textInfo.render(str(cell.amount), True, (0, 150, 0)), (cell_x + 10, cell_y + 42))
 			cell_x += 80
@@ -295,8 +296,13 @@ class Inventory:
 				if cell_x <= mouse_x <= cell_x + 64 and cell_y <= mouse_y <= cell_y + 64:
 					self.start_cell = yy * 10 + xx
 					return
+
+		self.start_cell = None
 	
 	def set_end_cell(self, mouse_x: int, mouse_y: int):
+		
+		if self.start_cell is None:
+			return None
 
 		for yy in range(0, 3):
 			for xx in range(0, 10):
@@ -400,5 +406,249 @@ class Inventory:
 			self.last_changed_item = new_changed_item
 		return new_item
 
+	def draw_inventory(self, game, mouse_x, mouse_y):
+
+		if game.inventory_open:
+
+			if 10 < mouse_x < 794 and 10 < mouse_y < 314:
+				mouse_object = t("Inventory (I)")
+
+			slot_x = 10
+			slot_y = 10
+
+			for slot in range(30):
+				
+				if slot == self.changed_slot: win.blit(Changed_inventory_slot, (slot_x, slot_y))
+				else:
+					
+					if game.slot_animations[slot][0]:
+						try:win.blit(pygame.transform.scale(Inventory_slot, (64 - game.slot_animations[slot][2], 64 - game.slot_animations[slot][2])), (slot_x, slot_y))
+						except: win.blit(pygame.transform.scale(Inventory_slot, (64, 64)), (slot_x, slot_y))
+
+					else:
+						win.blit(pygame.transform.scale(Inventory_slot, (64, 64)), (slot_x, slot_y))
+						
+				slot_x += 80
+				if slot_x == 810:
+					slot_x = 10
+					slot_y += 80
+			
+			win.blit(Object_inventory_slot, (10, 250))
+			
+			# TODO перенести это в функцию main у объекта
+			min_dist = 512
+			need_object = None
+			for object in game.world.visible_objects:
+				if object.name in ("Table", "Wall table", "Furnace"):
+					distance = math.dist((game.player.x, game.player.y), (object.x, object.y))
+					if distance < min_dist:
+						need_object = object.name
+						min_dist = distance
+
+			if need_object is not None:
+				win.blit(self.resources[need_object].image, (10, 250))
+
+			win.blit(Tool_inventory_slot, (90, 250))
+
+			item_to_get = self.check_recipies(need_object)
+			
+			if item_to_get is not None:
+
+				win.blit(Changed_inventory_slot, (730, 250))
+				win.blit(self.resources[item_to_get[0]].image, (730, 250))
+
+				if item_to_get[2] is not None:
+					win.blit(self.resources[item_to_get[2]].image, (10, 250))
+				if item_to_get[3] is not None:
+					win.blit(self.resources[item_to_get[3]].image, (90, 250))
+				if 730 <= mouse_x <= 810 and 250 <= mouse_y <= 330 and game.release:
+					self.increate(item_to_get[0], item_to_get[1])
+					self.craft_items_list = [None] * 7
+					self.craft_amounts_list = [None] * 7
+					self.craft_images_list = [None] * 7
+			
+			# Разделение предметов
+			if 810 <= mouse_x <= 874 and 10 <= mouse_y <= 74:
+				if game.special_slot_animations["Split items slot"][0]:
+					if game.special_slot_animations["Split items slot"][1] < FPS / 6:
+						game.special_slot_animations["Split items slot"][1] += 1
+						game.special_slot_animations["Split items slot"][2] -= 3
+						game.special_slot_animations["Split items slot"][2] = abs(game.special_slot_animations["Split items slot"][2])
+				else:
+					game.special_slot_animations["Split items slot"] = [True, 0, 10]
+				
+				if game.release:
+					self.Split_items = not self.Split_items
+				
+			elif game.special_slot_animations["Split items slot"][0]:
+				game.special_slot_animations["Split items slot"][0] = False
+				game.special_slot_animations["Split items slot"][1] = 0
+			elif game.special_slot_animations["Split items slot"][1] < FPS / 4:
+				game.special_slot_animations["Split items slot"][1] += 1   
+
+			if game.special_slot_animations["Split items slot"][0] or self.Split_items:
+				try:
+					if Settings["Display"][5]: win.blit(pygame.transform.scale(Split_items2, (64 - game.special_slot_animations["Split items slot"][2], 64 - game.special_slot_animations["Split items slot"][2])), (810, 10))
+					else: win.blit(pygame.transform.scale(Split_items2, (64, 64)), (810, 10))
+				except: win.blit(pygame.transform.scale(Split_items2, (64, 64)), (810, 10))
+				mouse_object = t("Split items")
+			
+			else:
+				win.blit(pygame.transform.scale(Split_items1, (64, 64)), (810, 10))
+			
+			# Сжатие инвентаря
+			
+			if 810 <= mouse_x <= 874 and 170 <= mouse_y <= 234:
+				if game.special_slot_animations["Compact inventory slot"][0]:
+					if game.special_slot_animations["Compact inventory slot"][1] < FPS / 6:
+						game.special_slot_animations["Compact inventory slot"][1] += 1
+						game.special_slot_animations["Compact inventory slot"][2] -= 3
+						game.special_slot_animations["Compact inventory slot"][2] = abs(game.special_slot_animations["Compact inventory slot"][2])
+				else:
+					game.special_slot_animations["Compact inventory slot"] = [True, 0, 10]
+				
+				if game.release:
+					self.inventory.compact_inventory()
+				
+			elif game.special_slot_animations["Compact inventory slot"][0]:
+				game.special_slot_animations["Compact inventory slot"][0] = False
+				game.special_slot_animations["Compact inventory slot"][1] = 0
+			elif game.special_slot_animations["Compact inventory slot"][1] < FPS / 4:
+				game.special_slot_animations["Compact inventory slot"][1] += 1	
+
+			if game.special_slot_animations["Compact inventory slot"][0]:
+				try:
+					if Settings["Display"][5]: win.blit(pygame.transform.scale(Compact_inventory2, (64 - game.special_slot_animations["Compact inventory slot"][2], 64 - game.special_slot_animations["Compact inventory slot"][2])), (810, 170))
+					else: win.blit(pygame.transform.scale(Compact_inventory2, (64, 64)), (810, 170))
+				except: win.blit(pygame.transform.scale(Compact_inventory2, (64, 64)), (810, 170))
+				mouse_object = t("Compact inventory")
+			
+			else:
+				win.blit(pygame.transform.scale(Compact_inventory1, (64, 64)), (810, 170))
+
+			self.draw_whole()
+			
+			if game.craft_list_open:
+
+				win.blit(Changed_craft_list_inventory_slot, (810, 90))
+				win_fill(rect=(970, 0, Width - 970, Height))
+					
+				for cell_y, recipe in enumerate(self.recipes):
+					cell_y += 1
+					cell_x = -1
+					for ii in recipe.ingredients:
+						if ii is None:
+							break
+						else:
+							cell_x += 1
+							win.blit(Inventory_slot, (970 + cell_x * 80, 10 + game.craft_list_offset + cell_y * 80))
+							win.blit(self.resources[ii].image, (970 + cell_x * 80, 10 + game.craft_list_offset + cell_y * 80))
+							win.blit(textInfo.render(str(recipe.ingredients_amounts[cell_x]), True, (0, 150, 0)), (980 + cell_x * 80, 52 + game.craft_list_offset + cell_y * 80))
+					if recipe.need_object is not None:
+						cell_x = 8
+						win.blit(Changed_inventory_slot, (990 + cell_x * 80, 10 + game.craft_list_offset + cell_y * 80))
+						win.blit(self.resources[recipe.need_object].image, (990 + cell_x * 80, 10 + game.craft_list_offset + cell_y * 80))
+					if recipe.need_tool is not None:
+						cell_x = 9
+						win.blit(Changed_inventory_slot, (990 + cell_x * 80, 10 + game.craft_list_offset + cell_y * 80))
+						win.blit(self.resources[recipe.need_tool].image, (990 + cell_x * 80, 10 + game.craft_list_offset + cell_y * 80))
+					cell_x = 10
+					win.blit(Changed_inventory_slot, (990 + cell_x * 80, 10 + game.craft_list_offset + cell_y * 80))
+					win.blit(self.resources[recipe.result].image, (990 + cell_x * 80, 10 + game.craft_list_offset + cell_y * 80))
+					win.blit(textInfo.render(str(recipe.result_amount), True, (0, 150, 0)), (1000 + cell_x * 80, 52 + game.craft_list_offset + cell_y * 80))
+
+				if 810 <= mouse_x <= 874 and 90 <= mouse_y <= 154 and game.release:
+					game.craft_list_open = False
+						
+			else:
+				
+				if 810 <= mouse_x <= 874 and 90 <= mouse_y <= 154:
+					if game.special_slot_animations["Craft list slot"][0]:
+						if game.special_slot_animations["Craft list slot"][1] < FPS / 6:
+							game.special_slot_animations["Craft list slot"][1] += 1
+							game.special_slot_animations["Craft list slot"][2] -= 3
+							game.special_slot_animations["Craft list slot"][2] = abs(game.special_slot_animations["Craft list slot"][2])
+					else:
+						game.special_slot_animations["Craft list slot"] = [True, 0, 10]
+					
+					if game.release:
+						game.craft_list_open = True
+					
+				elif game.special_slot_animations["Craft list slot"][0]:
+					game.special_slot_animations["Craft list slot"][0] = False
+					game.special_slot_animations["Craft list slot"][1] = 0
+				elif game.special_slot_animations["Craft list slot"][1] < FPS / 4:
+					game.special_slot_animations["Craft list slot"][1] += 1	 
+
+				if game.special_slot_animations["Craft list slot"][0] and Settings["Display"][5]:
+					try:win.blit(pygame.transform.scale(Changed_craft_list_inventory_slot, (64 - game.special_slot_animations["Craft list slot"][2], 64 - game.special_slot_animations["Craft list slot"][2])), (810, 90))
+					except: win.blit(pygame.transform.scale(Changed_craft_list_inventory_slot, (64, 64)), (810, 90))
+					mouse_object = t("Craft list")
+			
+				else:
+					win.blit(pygame.transform.scale(Craft_list_inventory_slot, (64, 64)), (810, 90))
+
+			if game.alt_pressed:
+				draw_key(" I ", 42, 344)
+
+			if self.whole_inventory[self.changed_slot] is not None and self.whole_inventory[self.changed_slot].name == "Wrench":
+
+				if 900 <= mouse_x <= 964 and 10 <= mouse_y <= 74:
+					win.blit(Changed_inventory_slot, (900, 10))
+					if game.release: game.item_settings_open = True
+				else:
+					win.blit(Inventory_slot, (900, 10))
+		else:
+			
+			if 10 < mouse_x < 794 and 10 < mouse_y < 74:
+				mouse_object = t("Inventory (I)")
+
+			for slot_x in range(10):
+				if slot_x == self.changed_slot: win.blit(Changed_inventory_slot, (slot_x * 80 + 10, 10))
+				else: win.blit(Inventory_slot, (slot_x * 80 + 10, 10))
+
+			self.draw_panel()
+			
+			if game.alt_pressed:
+				draw_key(" I ", 42, 104)
+
+	def show_description(self, mouse_x, mouse_y, click, game):
+
+		if game.inventory_open:
+			if click[0] and not game.hold_left:
+				self.set_start_cell(mouse_x, mouse_y)
+				game.hold_left = True
+			if game.hold_left and not click[0]:
+				result = self.set_end_cell(mouse_x, mouse_y)
+				if result:
+					self.craft_items_list, self.craft_amounts_list, self.craft_images_list = result
+				game.hold_left = False
+
+		if self.start_cell:
+			if self.whole_inventory[self.start_cell] is not None and self.start_cell > -1 and game.hold_left:
+
+				item_text = t("Item info " + self.whole_inventory[self.start_cell].name) + "\n" + t("Item purpose " + self.whole_inventory[self.start_cell].name)
+				
+				text_height = get_text_height(item_text) + 40
+				if self.whole_inventory[self.start_cell].type == "Food":
+					text_height += 84
+				
+				for yy, xx in product(range(0, 3), range(0, 10)):
+					cell_x = 10 + xx * 80
+					cell_y = 10 + yy * 80
+					if cell_x <= mouse_x <= cell_x + 64 and cell_y <= mouse_y <= cell_y + 64:
+						win_fill(rect=(cell_x, cell_y, 64, 64))
+						break
+
+				pygame.draw.rect(win, text_color, (mouse_x, mouse_y, Width // 3 + 40, text_height))
+				pygame.draw.rect(win, (0, 150, 0), (mouse_x, mouse_y, Width // 3 + 40, text_height), 3)
+				text(item_text, mouse_x + 20, mouse_y + 20, color=(0, 150, 0), max_width=Width // 3)
+				
+				if self.whole_inventory[self.start_cell].type == "Food":
+					win.blit(Heart, (mouse_x + 20, mouse_y + text_height - 84))
+					win.blit(textInfo.render(str(self.whole_inventory[self.start_cell].special_info), True, text_color), (mouse_x + 52 - textInfo.size(str(self.whole_inventory[self.start_cell].special_info))[0] // 2, mouse_y + text_height - 59))
+				
+				win.blit(self.whole_inventory[self.start_cell].image, (mouse_x - 32, mouse_y - 32))
+		
 inventory = Inventory()
 	
