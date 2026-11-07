@@ -23,6 +23,7 @@ from InputSystem import input_system
 from Weather import WeatherSystem
 from ItemActions import ItemActions
 from Effects import EffectsSystem
+from WorldLoader import WorldLoader
 from Assets import *
 from Globals import *
 from UI import SettingsMenu, CharactersMenu, WorldsMenu, EditWorldMenu, MultiplayerSettingsMenu, MainMenu, TabMenu
@@ -38,7 +39,6 @@ pygame.init()
 Карта кода:
 
 Инициализация игры
-Кнопки в меню
 Загрузка данных мира
 Основной цикл игры
 	Отображение объектов
@@ -145,6 +145,7 @@ game.tab_menu = TabMenu(game, save)
 game.effects = EffectsSystem()
 effects = game.effects
 game.Backrooms = Backrooms
+world_loader = WorldLoader(game, save)
 
 weather = WeatherSystem(world)
 
@@ -174,9 +175,6 @@ weather = WeatherSystem(world)
 # def reset_time():
 #	global time_index
 #	time_index = 0
-
-# Кнопки в меню
-
 
 hot_keys = Saver.load_objects(path + "Saves/Settings/Hot keys.save")
 objects_templates = {
@@ -221,78 +219,8 @@ def start_game():
 
 	# Загрузка данных мира
 	if not game.multiplayer or game.multiplayer_role == "Host":
-		world.chunk_manager.save_directory = path + "Saves/Worlds/" + game.world_name + "/Chunks/"
+		world_loader.load_world()
 
-		if os.path.exists(path + "Saves/Worlds/" + game.world_name):
-			
-			world.mobs = Saver.load_objects(path + "Saves/Worlds/" + game.world_name + "/Mobs.save")
-			player.x, player.y, Backrooms.InBackrooms, Backrooms.Level, world.current_cave, player.speed, player.HP, game.start_time, ron.x, ron.y, ron.home, ron.inventory, world.chunk_manager.generator.seed, time_system.current_time = Saver.load_objects(path + "Saves/Worlds/" + game.world_name + "/Info.save")
-			world.chunk_manager.update_seed()
-			game.difficulty, player.god_mode = Saver.load_objects(path + "Saves/Worlds/" + game.world_name + "/Settings.save")
-			inventory.whole_inventory = Saver.load_objects(path + "Saves/Worlds/" + game.world_name + "/Inventory.save")
-			effects.effects = Saver.load_objects(path + "Saves/Worlds/" + game.world_name + "/Effects.save")
-
-			if game.multiplayer:
-				game.net.peers[game.net.player_id].x = player.x
-				game.net.peers[game.net.player_id].y = player.y
-				game.net.peers[game.net.player_id].direction = player.direction
-			
-		else:
-
-			os.mkdir(path + "Saves/Worlds/" + game.world_name)
-			os.mkdir(path + "Saves/Worlds/" + game.world_name + "/Images")
-
-			save(False, True)
-		
-		# Старая система плагинов, которая уже толком не работает. От неё нужно отказываться в пользу модов (которые ещё не созданы)
-		plugins = []
-		for _, _, files in os.walk(os.path.dirname(path) + "/Plugins/"):
-			plugins = files
-			break
-		
-		for plugin in plugins:
-
-			for i in Saver.load_objects(path + "" + plugin):
-
-				match i[0]:
-
-					case "Item":
-						
-						from Inventory import Resource
-						try:
-							inventory.resources[i[1]] = Resource(i[1], i[2], [i[3], i[4]], [i[5], i[6]], i[7])
-						except FileNotFoundError:
-							inventory.resources[i[1]] = Resource(i[1], path + "Images/No-file texture.png", [i[3], i[4]], [i[5], i[6]], i[7])
-
-					case "Recipe":
-
-						from Inventory import Recipe
-						a = []
-						for ii in i[2]: a.append(str(ii))
-						inventory.recipes.append(Recipe(i[1], a, i[3], i[4], i[5], i[6]))
-						del Recipe
-			
-					case "Object":
-
-						try:
-							a = Object(i[1], i[3], i[4], i[2], (load(i[2]).get_width(), load(i[2]).get_height()), special_flags=i[5], add_path=False)
-						except FileNotFoundError:
-							a = Object(i[1], i[3], i[4], "Images/No-file texture.png", special_flags=i[5])
-						b = True
-						for object in world.visible_objects:
-							if a == object:
-								b = False
-						if b and game.world_name == i[6]:
-							world.visible_objects.append(a)
-
-					case "Command":
-
-						if i[2] == "1":
-							try:
-								eval(i[1])
-							except:
-								pass
-	
 	while True:
 
 		mouse_x, mouse_y = pygame.mouse.get_pos()
