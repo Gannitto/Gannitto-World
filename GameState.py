@@ -23,7 +23,6 @@ class GameState:
 		self.craft_list_open = False
 		self.inventory_open = False
 		self.menu_open = False
-		self.multiplayer_menu_open = False
 		self.alt_pressed = False
 		self.start_time = 0
 		self.hold_left = False

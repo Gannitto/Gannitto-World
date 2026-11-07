@@ -48,7 +48,6 @@ except FileNotFoundError:
 
 default_hot_keys = {
 	
-		"Multiplayer menu": pygame.K_m,
 		"TAB menu": pygame.K_TAB,
 		"Help": pygame.K_F1,
 		"Menu": pygame.K_F2,
