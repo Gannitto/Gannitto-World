@@ -894,50 +894,8 @@ def start_game():
 
 		effects.handle_effects(dt)
 	
-		if game.item_settings_open:
+		inventory.draw_item_settings(game, mouse_x, mouse_y)
 
-			if inventory.whole_inventory[inventory.changed_slot].name == "Wrench":
-
-				win_fill()
-
-				pygame.draw.rect(win, text_color, (100, 100, Width - 200, Height - 200))
-				pygame.draw.rect(win, (0, 150, 0), (100, 100, Width - 200, Height - 200), 10)
-				win.blit(pygame.transform.scale2x(inventory.whole_inventory[inventory.changed_slot].image), (Width // 2 - 64, 130))
-				pygame.draw.line(win, (0, 150, 0), (150, 308), (Width - 150, 308), 10)
-				win.blit(textInfo.render(t("Only wire"), True, (0, 150, 0)), (130, 348))
-				win.blit(textInfo.render(t("All mechanisms"), True, (0, 150, 0)), (Width // 2 - textInfo.size(t("All mechanisms"))[0] // 2, 348))
-				win.blit(textInfo.render(t("All mechanisms except wire"), True, (0, 150, 0)), (Width - 150 - textInfo.size(t("All mechanisms except wire"))[0], 378))
-
-				if inventory.whole_inventory[inventory.changed_slot].settings == ["Only wire"]:
-					pygame.draw.rect(win, (0, 150, 0), (120, 278, 60, 60), 30)
-					pygame.draw.circle(win, (0, 150, 0), (Width // 2, 308), 30)
-					pygame.draw.circle(win, (0, 150, 0), (Width - 150, 308), 30)
-				if inventory.whole_inventory[inventory.changed_slot].settings == []:
-					pygame.draw.circle(win, (0, 150, 0), (150, 308), 30)
-					pygame.draw.rect(win, (0, 150, 0), (Width // 2 - 30, 278, 60, 60), 30)
-					pygame.draw.circle(win, (0, 150, 0), (Width - 150, 308), 30)
-				if inventory.whole_inventory[inventory.changed_slot].settings == ["All mechanisms, but wire"]:
-					pygame.draw.circle(win, (0, 150, 0), (150, 308), 30)
-					pygame.draw.circle(win, (0, 150, 0), (Width // 2, 308), 30)
-					pygame.draw.rect(win, (0, 150, 0), (Width - 180, 278, 60, 60), 30)
-
-				if 120 <= mouse_x <= 180 and 278 <= mouse_y <= 338 and game.release:
-					inventory.whole_inventory[inventory.changed_slot].settings = ["Only wire"]
-				if Width // 2 - 30 <= mouse_x <= Width // 2 + 30 and 278 <= mouse_y <= 338 and game.release:
-					inventory.whole_inventory[inventory.changed_slot].settings = []
-				if Width - 180 <= mouse_x <= Width - 120 and 278 <= mouse_y <= 338 and game.release:
-					inventory.whole_inventory[inventory.changed_slot].settings = ["All mechanisms, but wire"]
-				
-				win.blit(bigTextInfo.render("x", True, (0, 150, 0)), (Width - 160, 130))
-				
-				if game.alt_pressed:
-					draw_key("ESC", Width - 160, 170)
-					
-				if Width - 160 <= mouse_x <= Width - 130 and 130 <= mouse_y <= 160:
-					win.blit(bigTextInfo.render("x", True, (0, 100, 0)), (Width - 160, 130))
-					if game.release:
-						game.item_settings_open = False
-		
 		if inventory.whole_inventory[inventory.changed_slot] is not None:
 			text(t("Item name " + inventory.whole_inventory[inventory.changed_slot].name), 10, 320 if game.inventory_open else 80)
 
