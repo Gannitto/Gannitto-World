@@ -43,7 +43,7 @@ class InputHandler:
 					if event.key == hot_keys["Show keys"]:
 						self.game.alt_pressed = not self.game.alt_pressed
 					if event.key == hot_keys["Use item"]:
-						use_item_pressed = True
+						self.game.use_item_pressed = True
 					if event.key == hot_keys["Multiplayer menu"]:
 						self.game.multiplayer_menu_open = True
 					if event.key == hot_keys["Set Ron home"]:

@@ -94,7 +94,7 @@ def save(darken:bool=True, save_world_settings:bool=False):
 
 			new_particles = []
 			particle_count = 1
-			for particle in new_particles:
+			for particle in world.particles:
 				if particle.save_particle:
 					pygame.image.save(particle.image, path + "Saves/Worlds/" + game.world_name +"/Images/Particle " + str(particle_count) + ".png")
 					particle.image_path = path + "Saves/Worlds/Images/Particle " + str(particle_count) + ".png"
@@ -155,7 +155,6 @@ def start_game():
 	bigTextInfo = pygame.font.Font(path + "Font.ttf", 36)
 	aaa = 0
 	AA = 0
-	use_item_pressed = False
 	game.start_time = time.time()
 	mouse_x = game.mouse_x
 	mouse_y = game.mouse_y
@@ -189,11 +188,11 @@ def start_game():
 		click = pygame.mouse.get_pressed()
 		Width, Height = pygame.display.get_surface().get_size()
 		game.release = False
-		use_item_pressed = False
 		dx = 0
 		dy = 0
 		player.hovered_object = None
 		player.breaking_object = None
+		game.use_item_pressed = False
 
 		dt = clock.tick(MAX_FPS) / 1000.0
 		time_system.update(dt)
@@ -475,50 +474,8 @@ def start_game():
 
 			# Отображение мобов
 			for mob in world.mobs:
-
 				mob.update(game, dt)
-				mob.draw(player)
-
-				if world.projectiles != []:
-
-					if mob.name == "Slime": mob_rect = pygame.Rect((mob.x, mob.y - 64, 128, 128))
-					else: mob_rect = pygame.Rect((mob.x, mob.y - 128, 256, 256))
-
-					if check_projectiles_collision(mob_rect, world):
-
-						mob.HP -= 15
-
-						if mob.name == "Slime":
-							temp = mob.animation_frames[int(mob.animation_timer) % 5].copy().convert_alpha()
-						if mob.name == "Spider":
-							temp = mob.animation_images[mob.direction].copy().convert_alpha()
-
-						for a, b in product(range(128 if mob.name == "Slime" else 256), range(128 if mob.name == "Slime" else 256)):
-							if temp.get_at((a, b)).a != 0:
-								temp.set_at((a, b), (200, 0, 0, 80))
-
-						world.particles.append(Particle(mob.x + random.randint(-64, 64), mob.y + random.randint(-64, 64), text("-15", 0, 0, (180, 10, 10), max_width=44, max_height=50, return_surface=True), y_bias=3, increased_transparency=30, end_time=0.5))
-
-						if mob.name == "Slime":
-							win.blit(temp, (mob.x - player.x + Width // 2 - 64, player.y - mob.y + Height // 2 - 64))
-						else:
-							win.blit(temp, (mob.x - player.x + Width // 2 - 128, player.y - mob.y + Height // 2 - 128))
-
-						win.blit(text(str(mob.HP), 0, 0, (180, 10, 10), return_surface=True), (mob.x + 58 - player.x + Width // 2 - 64, player.y - mob.y + Height // 2 - 32))
-
-				if mob.HP < 1:
-
-					if mob.name == "Slime":
-
-						for _ in range(random.randint(1, 3)):
-							rand_x, rand_y = mob.x + random.randint(-30, 30), mob.y + random.randint(-30, 30)
-							world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Blue slime" if mob.slime_type == 1 else "Pink slime", rand_x, rand_y, f"Images/Items/{'Blue' if mob.slime_type == 1 else 'Pink'} slime.png", pickable=True))
-						world.mobs.remove(mob)
-
-					elif mob.name == "Spider":
-						rand_x, rand_y = mob.x + random.randint(-30, 30), mob.y + random.randint(-30, 30)
-						world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object("Thread", mob.x + random.randint(-30, 30), mob.y + random.randint(-30, 30), "Images/Items/Thread.png", pickable=True))
-						world.mobs.remove(mob)
+				mob.draw(game)
 
 		# Отрисовка игрока
 		
@@ -754,7 +711,7 @@ def start_game():
 			win.blit(Inventory_slot, (Width - 370, Height - 74))
 			win.blit(inventory.whole_inventory[inventory.changed_slot].image, (Width - 370, Height - 74))
 		
-		if (inventory.whole_inventory[inventory.changed_slot] is not None and (use_item_pressed or (click[0] and Settings["Game"][1]))) and not game.chat_open:
+		if (inventory.whole_inventory[inventory.changed_slot] is not None and (game.use_item_pressed or (click[0] and Settings["Game"][1]))) and not game.chat_open:
 			item_actions.handle_item_actions(mouse_x, mouse_y)
 
 		if keys[hot_keys["Screenshot"]] and keys[hot_keys["Show keys"]]:

@@ -4,10 +4,10 @@ class TextureCache:
 	_textures = {}
 	
 	@classmethod
-	def get(cls, path, scale_x=None, scale_y=None, convert_alpha=True):
+	def get(cls, path, scale_x=None, scale_y=None, convert_alpha=True, use_cache=True):
 		scale = (scale_x, scale_y) if scale_y else (scale_x, scale_x)
 		key = (path, scale)
-		if key not in cls._textures:
+		if key not in cls._textures or not use_cache:
 			image = pygame.image.load(path)
 			if scale:
 				image = pygame.transform.scale(image, scale)

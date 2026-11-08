@@ -30,6 +30,7 @@ class GameState:
 		self.current_biome = None
 		self.night_playing = False
 		self.release = False
+		self.use_item_pressed = False
 
 		self.multiplayer = False
 		self.multiplayer_role = None

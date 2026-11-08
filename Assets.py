@@ -2,8 +2,8 @@ import pygame
 from Globals import path, Width, Height, Settings
 from Cache import load
 
-def load_textures(path_to_image: str, num: int, size: int):
-	return [load(f"{path_to_image}{i}.png", size) for i in range(num)]
+def load_textures(path_to_image: str, num: int, size: int, use_cache=True):
+	return [load(f"{path_to_image}{i}.png", size, use_cache=use_cache) for i in range(num)]
 
 wall_types = ("Wooden wall", "Brick wall", "Stone brick wall")
 door_types = ("Wooden door",)
@@ -22,8 +22,34 @@ for door_type in door_types:
 
 slime_types = ("Blue Slime", "Pink Slime")
 slime_images = {}
+red_slime_images = {}
+color_surface = pygame.Surface((128, 128), pygame.SRCALPHA)
+color_surface.fill((200, 0, 0, 200))
 for slime_type in slime_types:
 	slime_images[slime_type] = load_textures(f"{path}Images/Mobs/{slime_type} ", 4, 128)
+	red_slime_images[slime_type] = load_textures(f"{path}Images/Mobs/{slime_type} ", 4, 128, use_cache=False)
+	for frame in red_slime_images[slime_type]:
+		frame.blit(color_surface, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
+
+spider_animation_images = {
+		"Left": load(path + "Images/Mobs/Spider.png", 256),
+		"Left attack": load(path + "Images/Mobs/Spider attack.png", 256),
+		"Right": load(path + "Images/Mobs/Spider 2.png", 256),
+		"Right attack": load(path + "Images/Mobs/Spider 2 attack.png", 256)
+		}
+
+color_surface = pygame.Surface((256, 256), pygame.SRCALPHA)
+color_surface.fill((200, 0, 0, 150))
+
+spider_red_animation_images = {
+		"Left": load(path + "Images/Mobs/Spider.png", 256, use_cache=False),
+		"Left attack": load(path + "Images/Mobs/Spider attack.png", 256, use_cache=False),
+		"Right": load(path + "Images/Mobs/Spider 2.png", 256, use_cache=False),
+		"Right attack": load(path + "Images/Mobs/Spider 2 attack.png", 256, use_cache=False)
+		}
+
+for frame in spider_red_animation_images.values():
+	frame.blit(color_surface, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
 
 butterfly_images = load_textures(path + "Images/Mobs/Butterfly ", 3, 32)
 wire_images = load_textures(path + "Images/Objects/Wire ", 11, 64)

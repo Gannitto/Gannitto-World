@@ -1,26 +1,32 @@
 import pygame
 import math
 import random
+from itertools import product
 from Cache import load
-from Assets import slime_types, slime_images, web_texture, butterfly_images
-from Functions import check_collision
+from Assets import slime_types, slime_images, red_slime_images, web_texture, butterfly_images, spider_animation_images, spider_red_animation_images
+from Functions import check_collision, check_projectiles_collision, text
 from Globals import Width, Height, win, Settings, path
 from Classes.Particle import Particle
+from Classes.Object import Object
 
 class Mob:
-	def __init__(self, x, y, HP, speed, animation_frames):
+	def __init__(self, x, y, HP, speed, animation_frames, red_animation_frames, drop_items):
 		self.x = x
 		self.y = y
 		self.HP = HP
 		self.max_hp = HP
 		self.speed = speed
 		self.animation_frames = animation_frames
+		self.red_animation_frames = red_animation_frames
 		self.animation_timer = 0
 		self.rect = animation_frames[0].get_rect()
 		self.state = "Idle"  # Idle, Wonder, Jumping, Retreat
 		self.attack_cooldown = 0
 		self.detection_range = 1000
 		self.attack_range = 200
+		self.damage_cooldown = 0.1
+		self.damage_timer = 0
+		self.drop_items = drop_items
 		
 	def update(self, game, dt):
 		"""Обновляет состояние моба"""
@@ -75,21 +81,38 @@ class Mob:
 			if not self._check_collision(self.x, new_y, game):
 				self.y = new_y
 
+	def damage(self, game, HP):
+
+		self.HP -= HP
+		self.damage_timer = self.damage_cooldown
+
+		game.world.particles.append(Particle(self.x + random.randint(-64, 64), self.y + random.randint(-64, 64), text(str(-HP), 0, 0, (180, 10, 10), max_width=44, max_height=50, return_surface=True), y_bias=3, increased_transparency=30, end_time=0.5))
+		win.blit(text(str(self.HP), 0, 0, (180, 10, 10), return_surface=True), (self.x + 58 - game.player.x + Width // 2 - 64, game.player.y - self.y + Height // 2 - 32))
+
+		if self.HP < 1:
+			
+			for item_name, min_amount, max_amount in self.drop_items:
+				for _ in range(random.randint(min_amount, max_amount)):
+					rand_x, rand_y = self.x + random.randint(-self.rect[2] // 2, self.rect[2] // 2), self.y + random.randint(-self.rect[3] // 2, self.rect[3] // 2)
+					game.world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object(item_name, rand_x, rand_y, f"Images/Items/{item_name}.png", pickable=True))
+			game.world.mobs.remove(self)
+
 class Slime(Mob):
 	
 	def __init__(self, x, y):
 
-		slime_type = random.choice(slime_types)
+		self.slime_type = random.choice(slime_types)
 		self.name = "Slime"
 		
 		super().__init__(
 			x=x, y=y,
 			HP=50,
 			speed=random.randint(10, 20),
-			animation_frames=slime_images[slime_type]
+			animation_frames=slime_images[self.slime_type],
+			red_animation_frames=red_slime_images[self.slime_type],
+			drop_items=(("Blue slime" if self.slime_type == 1 else "Pink slime", 1, 3),)
 		)
-		
-		self.slime_type = slime_type
+
 		self.state = "Wander"
 
 		self.wander_radius = 1000
@@ -125,6 +148,8 @@ class Slime(Mob):
 			self.speed += 10  # Ускорение при низком HP
 	
 		self.attack_cooldown = max(0, self.attack_cooldown - dt * 30)
+		self.damage_timer = max(0, self.damage_timer - dt)
+		self.check_projectiles(game)
 
 		match self.state:
 			case "Wander": self._handle_wander(game, dt)
@@ -132,6 +157,13 @@ class Slime(Mob):
 			case "Jumping": self._handle_jumping(game)
 			case "Retreat": self._handle_retreat(game)
 	
+	def check_projectiles(self, game):
+
+		self.rect = pygame.Rect((self.x, self.y - 64, 128, 128))
+
+		if check_projectiles_collision(self.rect, game.world):
+			self.damage(game, 15)
+
 	def _handle_wander(self, game, dt):
 
 		"""Блуждание вокруг игрока"""
@@ -261,13 +293,13 @@ class Slime(Mob):
 		self.rect = pygame.Rect(x - 50, y - 50, 100, 100)
 		return check_collision(self.rect, game)
 
-	def draw(self, player):
+	def draw(self, game):
 		"""Отрисовка слизня"""
-		screen_x = self.x - player.x + Width // 2 - 64
-		screen_y = player.y - self.y + Height // 2 - 64
+		screen_x = self.x - game.player.x + Width // 2 - 64
+		screen_y = game.player.y - self.y + Height // 2 - 64
 		
 		frame_index = int(self.animation_timer) % 5
-		frame = self.animation_frames[frame_index]
+		frame = self.red_animation_frames[frame_index] if self.damage_timer > 0 else self.animation_frames[frame_index]
 		
 		win.blit(frame, (screen_x, screen_y))
 		
@@ -278,12 +310,14 @@ class Slime(Mob):
 		
 		state = self.__dict__.copy()
 		del state["animation_frames"]
+		del state["red_animation_frames"]
 		return state
 
 	def __setstate__(self, state):
 		
 		self.__dict__.update(state)
 		self.animation_frames = slime_images[self.slime_type]
+		self.red_animation_frames = red_slime_images[self.slime_type]
 
 class Spider(Mob):
 	
@@ -301,16 +335,15 @@ class Spider(Mob):
 			speed=random.randint(500, 1000),
 			animation_frames=[
 				load(path + "Images/Mobs/Spider.png", 256),
-				load(path + "Images/Mobs/Spider 2.png", 256)]
+				load(path + "Images/Mobs/Spider 2.png", 256)],
+			red_animation_frames=[
+				load(path + "Images/Mobs/Spider.png", 256),
+				load(path + "Images/Mobs/Spider 2.png", 256)],
+			drop_items=(("Thread", 1, 2),)
 		)
 		
-		self.animation_images = {
-				"Left": load(path + "Images/Mobs/Spider.png", 256),
-				"Left attack": load(path + "Images/Mobs/Spider attack.png", 256),
-				"Right": load(path + "Images/Mobs/Spider 2.png", 256),
-				"Right attack": load(path + "Images/Mobs/Spider 2 attack.png", 256)
-				}
-		
+		self.animation_images = spider_animation_images
+		self.red_animation_images = spider_red_animation_images
 		self.state = "Going towards player"
 
 		# Параметры атаки
@@ -334,6 +367,8 @@ class Spider(Mob):
 		
 		self.attack_cooldown = max(0, self.attack_cooldown - dt)
 		self.shoot_cooldown = max(0, self.shoot_cooldown - dt)
+		self.damage_timer = max(0, self.damage_timer - dt)
+		self.check_projectiles(game)
 
 		distance = math.dist((self.x, self.y), (game.player.x, game.player.y))
 
@@ -342,6 +377,13 @@ class Spider(Mob):
 			case "Prepare shoot": self._handle_prepare_shoot(game.player, game.world)
 			case "Going towards player": self._handle_go_towards_player(game, dt)
 		
+	def check_projectiles(self, game):
+
+		self.rect = pygame.Rect((self.x, self.y - 128, 256, 256))
+
+		if check_projectiles_collision(self.rect, game.world):
+			self.damage(game, 15)
+
 	def _handle_prepare_shoot(self, player, world):
 		"""Подготовка к атаке паутиной (прицеливание)"""
 		self.shoot_charge_timer -= 1
@@ -401,15 +443,15 @@ class Spider(Mob):
 		self.rect = pygame.Rect(x - 50, y - 50, 100, 100)
 		return check_collision(self.rect, game)
 		
-	def draw(self, player, show_hitbox=False):
+	def draw(self, game, show_hitbox=False):
 		"""Отрисовка паука"""
-		screen_x = self.x - player.x + Width // 2 - 128
-		screen_y = player.y - self.y + Height // 2 - 128
+		screen_x = self.x - game.player.x + Width // 2 - 128
+		screen_y = game.player.y - self.y + Height // 2 - 128
 		
 		if self.state == "Attacking":
-			frame = self.animation_images[self.direction + " attack"]
+			frame = self.red_animation_images[self.direction + " attack"] if self.damage_timer > 0 else self.animation_images[self.direction + " attack"]
 		else:
-			frame = self.animation_images[self.direction]
+			frame = self.red_animation_images[self.direction] if self.damage_timer > 0 else self.animation_images[self.direction]
 
 		win.blit(frame, (screen_x, screen_y))
 		
@@ -420,7 +462,9 @@ class Spider(Mob):
 		
 		state = self.__dict__.copy()
 		del state["animation_frames"]
+		del state["red_animation_frames"]
 		del state["animation_images"]
+		del state["red_animation_images"]
 		return state
 
 	def __setstate__(self, state):
@@ -430,12 +474,9 @@ class Spider(Mob):
 			load(path + "Images/Mobs/Spider.png", 256),
 			load(path + "Images/Mobs/Spider 2.png", 256)
 		)
-		self.animation_images = {
-				"Left": load(path + "Images/Mobs/Spider.png", 256),
-				"Left attack": load(path + "Images/Mobs/Spider attack.png", 256),
-				"Right": load(path + "Images/Mobs/Spider 2.png", 256),
-				"Right attack": load(path + "Images/Mobs/Spider 2 attack.png", 256)
-				}
+		self.red_animation_frames = self.animation_frames
+		self.animation_images = spider_animation_images
+		self.red_animation_images = spider_red_animation_images
 
 class Butterfly:
 
