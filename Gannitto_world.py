@@ -25,6 +25,7 @@ from ItemActions import ItemActions
 from Effects import EffectsSystem
 from WorldLoader import WorldLoader
 from InputHandler import InputHandler
+from PlayerAnimations import PlayerAnimations
 from Assets import *
 from Globals import *
 from UI import SettingsMenu, CharactersMenu, WorldsMenu, EditWorldMenu, MultiplayerSettingsMenu, MainMenu, TabMenu
@@ -144,6 +145,7 @@ game.statistics = statistics
 game.input_system = input_system
 game.world_loader = WorldLoader(game, save)
 game.input_handler = InputHandler(game, save, music_channel)
+game.player_animations = PlayerAnimations(game)
 weather = WeatherSystem(world)
 game.statistics[0] += 1
 hot_keys = Saver.load_objects(path + "Saves/Settings/Hot keys.save")
@@ -152,19 +154,11 @@ hot_keys = Saver.load_objects(path + "Saves/Settings/Hot keys.save")
 
 def start_game():
 	
-	bigTextInfo = pygame.font.Font(path + "Font.ttf", 36)
-	aaa = 0
-	AA = 0
 	game.start_time = time.time()
 	mouse_x = game.mouse_x
 	mouse_y = game.mouse_y
-
-	tile_size = 256
 	Width, Height = pygame.display.get_surface().get_size()
-	tiles_x = (Width // tile_size) + 3
-	tiles_y = (Height // tile_size) + 3
-	dx = 0
-	dy = 0
+
 	game.craft_list_max_offset = (len(inventory.recipes) + 1) * -80 + Height
 
 	if Settings["Game"][1]:
@@ -180,6 +174,7 @@ def start_game():
 	# Загрузка данных мира
 	if not game.multiplayer or game.multiplayer_role == "Host":
 		game.world_loader.load_world()
+	player.changed_item = inventory.whole_inventory[inventory.changed_slot].name
 
 	while True:
 
@@ -196,7 +191,6 @@ def start_game():
 
 		dt = clock.tick(MAX_FPS) / 1000.0
 		time_system.update(dt)
-		player.changed_item = inventory.whole_inventory[inventory.changed_slot]
 		if game.multiplayer:
 			game.events.clear()
 		events = pygame.event.get()
@@ -278,9 +272,6 @@ def start_game():
 
 			# play_sound("1", loops=-1)
 			# pygame.mixer.music.set_volume(0.5)
-
-			# aaa = 100
-			# AA = 0
 
 		elif Backrooms.InBackrooms:
 			
@@ -479,7 +470,7 @@ def start_game():
 
 		# Отрисовка игрока
 		
-		player.render()
+		player.render(game)
 
 		if game.multiplayer:
 			with game.net.lock:
@@ -516,185 +507,8 @@ def start_game():
 								object.image = crack_surface(world, Particle, object, (object.max_break - object.breaked) // object.max_break, 8)
 								break
 
-		# Анимации Хиро
-
-		if player.animation[0] is None:
-			
-			if random.randint(1, 300) == 1:
-				player.animation = ["Close eyes", 0, 16]
-
-		elif player.animation[1] <= player.animation[2]:
-			player.animation[1] += 1
-		else:
-			player.animation = [None, 0]
-
-		changed_item_x = 0
-		changed_item_y = 0
-
-		match player.direction:
-
-			case "Down":
-
-				match player.costum:
-					# 97, 209
-					case 0 | 1 | 3 | 4 | 6 | 7:
-
-						changed_item_x = Width // 2 - 80
-						changed_item_y = Height // 2
-
-						match player.animation[0]:
-
-							case "Close eyes":
-
-								if player.animation[1] < 9:
-									win.fill((62, 39, 49), (Width // 2 - 24, Height / 2 - 32, 8, player.animation[1] * 2))
-									win.fill((62, 39, 49), (Width // 2 + 16, Height / 2 - 32, 8, player.animation[1] * 2))
-								else:
-									win.fill((62, 39, 49), (Width // 2 - 24, Height / 2 - 32, 8, (8 - player.animation[1] + 8) * 2))
-									win.fill((62, 39, 49), (Width // 2 + 16, Height / 2 - 32, 8, (8 - player.animation[1] + 8) * 2))
-
-						match player.costum:
-
-							case 1 | 3:
-								
-								a = pygame.Surface((16, 24))
-								a.fill((0, 0, 0))
-								a.set_alpha(90)
-								world.particles.append(Particle(player.x + 16, player.y + 96, a, end_time=3))
-
-							case 4 | 6:
-
-								a = pygame.Surface((16, 24))
-								a.fill((0, 0, 0))
-								a.set_alpha(90)
-								world.particles.append(Particle(player.x - 32, player.y + 96, a, end_time=3))
-
-					case 2:
-
-						changed_item_x = Width // 2 - 74
-						changed_item_y = Height // 2 - 16
-
-						match player.animation[0]:
-
-							case "Close eyes":
-
-								if player.animation[1] < 9:
-									win.fill((62, 39, 49), (Width // 2 - 24, Height / 2 - 24, 8, player.animation[1] * 2))
-									win.fill((62, 39, 49), (Width // 2 + 16, Height / 2 - 24, 8, player.animation[1] * 2))
-								else:
-									win.fill((62, 39, 49), (Width // 2 - 24, Height / 2 - 24, 8, (8 - player.animation[1] + 8) * 2))
-									win.fill((62, 39, 49), (Width // 2 + 16, Height / 2 - 24, 8, (8 - player.animation[1] + 8) * 2))
-
-					case 5:
-
-						changed_item_x = Width // 2 - 94
-						changed_item_y = Height // 2 - 16
-
-						match player.animation[0]:
-
-							case "Close eyes":
-
-								if player.animation[1] < 9:
-									win.fill((62, 39, 49), (Width // 2 - 24, Height / 2 - 24, 8, player.animation[1] * 2))
-									win.fill((62, 39, 49), (Width // 2 + 16, Height / 2 - 24, 8, player.animation[1] * 2))
-								else:
-									win.fill((62, 39, 49), (Width // 2 - 24, Height / 2 - 24, 8, (8 - player.animation[1] + 8) * 2))
-									win.fill((62, 39, 49), (Width // 2 + 16, Height / 2 - 24, 8, (8 - player.animation[1] + 8) * 2))
-
-			case "Left":
-
-				match player.costum:
-
-					case 0 | 1 | 3 | 4 | 6 | 7:
-
-						changed_item_x = Width // 2 - 84
-						changed_item_y = Height // 2 - 16
-
-						match player.animation[0]:
-
-							case "Close eyes":
-
-								if player.animation[1] < 9:
-									win.fill((62, 39, 49), (Width // 2 - 24, Height / 2 - 32, 8, player.animation[1] * 2))
-								else:
-									win.fill((62, 39, 49), (Width // 2 - 24, Height / 2 - 32, 8, (8 - player.animation[1] + 8) * 2))
-
-					case 2:
-
-						changed_item_x = Width // 2 - 104
-						changed_item_y = Height // 2
-
-						match player.animation[0]:
-
-							case "Close eyes":
-
-								if player.animation[1] < 9:
-									win.fill((62, 39, 49), (Width // 2 - 24, Height / 2 - 24, 8, player.animation[1] * 2))
-								else:
-									win.fill((62, 39, 49), (Width // 2 - 24, Height / 2 - 24, 8, (8 - player.animation[1] + 8) * 2))
-
-					case 5:
-
-						changed_item_x = Width // 2 - 70
-						changed_item_y = Height // 2
-
-						match player.animation[0]:
-
-							case "Close eyes":
-
-								if player.animation[1] < 9:
-									win.fill((62, 39, 49), (Width // 2 - 24, Height / 2 - 24, 8, player.animation[1] * 2))
-								else:
-									win.fill((62, 39, 49), (Width // 2 - 24, Height / 2 - 24, 8, (8 - player.animation[1] + 8) * 2))
-
-			case "Right":
-
-				match player.costum:
-
-					case 0 | 1 | 3 | 4:
-
-						changed_item_x = Width // 2 - 20
-						changed_item_y = Height // 2
-
-						match player.animation[0]:
-
-							case "Close eyes":
-
-								if player.animation[1] < 9:
-									win.fill((62, 39, 49), (Width // 2 + 16, Height / 2 - 32, 8, player.animation[1] * 2))
-								else:
-									win.fill((62, 39, 49), (Width // 2 + 16, Height / 2 - 32, 8, (8 - player.animation[1] + 8) * 2))
-
-					case 2:
-
-						changed_item_x = Width // 2 - 32
-						changed_item_y = Height // 2
-
-						match player.animation[0]:
-
-							case "Close eyes":
-
-								if player.animation[1] < 9:
-									win.fill((62, 39, 49), (Width // 2 + 16, Height / 2 - 24, 8, player.animation[1] * 2))
-								else:
-									win.fill((62, 39, 49), (Width // 2 + 16, Height / 2 - 24, 8, (8 - player.animation[1] + 8) * 2))
-
-					case 5 | 6 | 7:
-
-						changed_item_x = Width // 2 - 16
-						changed_item_y = Height // 2 + 16
-
-						match player.animation[0]:
-
-							case "Close eyes":
-
-								if player.animation[1] < 9:
-									win.fill((62, 39, 49), (Width // 2 + 16, Height / 2 - 24, 8, player.animation[1] * 2))
-								else:
-									win.fill((62, 39, 49), (Width // 2 + 16, Height / 2 - 24, 8, (8 - player.animation[1] + 8) * 2))
-
-		if inventory.whole_inventory[inventory.changed_slot] is not None and player.direction != "Up" and not (changed_item_x == changed_item_y == 0):
-			win.blit(inventory.whole_inventory[inventory.changed_slot].image, (changed_item_x, changed_item_y))
+		# Анимации персонажа
+		game.player_animations.handle_animations()
 
 		# Рон
 		old_ron_pos = ron.x, ron.y

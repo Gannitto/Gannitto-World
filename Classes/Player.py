@@ -18,7 +18,6 @@ class Player:
 		self.animation_speed = 0.05  # Скорость анимации (секунды между кадрами)
 		self.animation_timer = 0
 		self.move_timer = 0
-		self.costum = 0
 		self.animation = [None, 0]
 		self.changed_character = "Hiro"
 
@@ -35,10 +34,15 @@ class Player:
 		self.breaking_object_info = None
 		self.breaking_object = None
 		self.changed_item = None
+		self.changed_item_x = 0
+		self.changed_item_y = 0
 		
 		# Спрайт
 		self.load_frames()
 		self.image = self.get_current_frame()
+
+		# Цвета для анимаций
+		self.eye_color = self.animations["Down"][0].get_at((112, 88))
 		
 	def load_frames(self):
 
@@ -122,10 +126,13 @@ class Player:
 		self.animation_timer = 0
 		self.move_timer = 0
 	
-	def render(self):
+	def render(self, game):
 		"""Отрисовывает игрока на экране"""
 		frames = self.animations[self.direction]
 		win.blit(shadow(self.image, f"Player {self.direction} {self.frame_index % len(frames)}"), (Width / 2 - 128, Height / 2 - 128))
+		if self.changed_item and not (self.changed_item_x == self.changed_item_y == 0):
+			print(self.changed_item_x, self.changed_item_y)
+			win.blit(inventory.resources[self.changed_item].image, (self.changed_item_x, self.changed_item_y))
 		
 		if Settings["Display"][3]:
 			pygame.draw.rect(win, (0, 255, 0), (Width / 2 - 128, Height / 2 - 128, 256, 256), 2)
