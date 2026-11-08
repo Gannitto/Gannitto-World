@@ -1,8 +1,10 @@
 import pygame
+import random
 from Cache import load
 from Inventory import inventory
 from Functions import shadow, text, check_collision
 from Globals import path, Settings, Width, Height, win
+from Classes.Particle import Particle
 
 class Player:
 
@@ -125,14 +127,193 @@ class Player:
 		self.frame_index = 0
 		self.animation_timer = 0
 		self.move_timer = 0
+
+	def handle_animations(self, game):
+
+		if self.animation[0] is None:
+			
+			if random.randint(1, 300) == 1:
+				self.animation = ["Close eyes", 0, 16]
+
+		elif self.animation[1] <= self.animation[2]:
+			self.animation[1] += 1
+		else:
+			self.animation = [None, 0]
+
+		self.changed_item_x = 0
+		self.changed_item_y = 0
+		frame = self.frame_index % len(self.animations[self.direction])
+
+		match self.direction:
+
+			case "Down":
+
+				match frame:
+					# 97, 209
+					case 0 | 1 | 3 | 4 | 6 | 7:
+
+						self.changed_item_x = -80
+						self.changed_item_y = 0
+
+						match self.animation[0]:
+
+							case "Close eyes":
+
+								if self.animation[1] < 9:
+									win.fill(self.eye_color, (Width // 2 - 24, Height / 2 - 32, 8, self.animation[1] * 2))
+									win.fill(self.eye_color, (Width // 2 + 16, Height / 2 - 32, 8, self.animation[1] * 2))
+								else:
+									win.fill(self.eye_color, (Width // 2 - 24, Height / 2 - 32, 8, (8 - self.animation[1] + 8) * 2))
+									win.fill(self.eye_color, (Width // 2 + 16, Height / 2 - 32, 8, (8 - self.animation[1] + 8) * 2))
+
+						match frame:
+
+							case 1 | 3:
+								
+								a = pygame.Surface((16, 24))
+								a.fill((0, 0, 0))
+								a.set_alpha(90)
+								game.world.particles.append(Particle(self.x + 16, self.y + 96, a, end_time=3))
+
+							case 4 | 6:
+
+								a = pygame.Surface((16, 24))
+								a.fill((0, 0, 0))
+								a.set_alpha(90)
+								game.world.particles.append(Particle(self.x - 32, self.y + 96, a, end_time=3))
+
+					case 2:
+
+						self.changed_item_x = -74
+						self.changed_item_y = -16
+
+						match self.animation[0]:
+
+							case "Close eyes":
+
+								if self.animation[1] < 9:
+									win.fill(self.eye_color, (Width // 2 - 24, Height / 2 - 24, 8, self.animation[1] * 2))
+									win.fill(self.eye_color, (Width // 2 + 16, Height / 2 - 24, 8, self.animation[1] * 2))
+								else:
+									win.fill(self.eye_color, (Width // 2 - 24, Height / 2 - 24, 8, (8 - self.animation[1] + 8) * 2))
+									win.fill(self.eye_color, (Width // 2 + 16, Height / 2 - 24, 8, (8 - self.animation[1] + 8) * 2))
+
+					case 5:
+
+						self.changed_item_x = -94
+						self.changed_item_y = -16
+
+						match self.animation[0]:
+
+							case "Close eyes":
+
+								if self.animation[1] < 9:
+									win.fill(self.eye_color, (Width // 2 - 24, Height / 2 - 24, 8, self.animation[1] * 2))
+									win.fill(self.eye_color, (Width // 2 + 16, Height / 2 - 24, 8, self.animation[1] * 2))
+								else:
+									win.fill(self.eye_color, (Width // 2 - 24, Height / 2 - 24, 8, (8 - self.animation[1] + 8) * 2))
+									win.fill(self.eye_color, (Width // 2 + 16, Height / 2 - 24, 8, (8 - self.animation[1] + 8) * 2))
+
+			case "Left":
+
+				match frame:
+
+					case 0 | 1 | 3 | 4 | 6 | 7:
+
+						self.changed_item_x = -84
+						self.changed_item_y = -16
+
+						match self.animation[0]:
+
+							case "Close eyes":
+
+								if self.animation[1] < 9:
+									win.fill(self.eye_color, (Width // 2 - 24, Height / 2 - 32, 8, self.animation[1] * 2))
+								else:
+									win.fill(self.eye_color, (Width // 2 - 24, Height / 2 - 32, 8, (8 - self.animation[1] + 8) * 2))
+
+					case 2:
+
+						self.changed_item_x = -104
+						self.changed_item_y = 0
+
+						match self.animation[0]:
+
+							case "Close eyes":
+
+								if self.animation[1] < 9:
+									win.fill(self.eye_color, (Width // 2 - 24, Height / 2 - 24, 8, self.animation[1] * 2))
+								else:
+									win.fill(self.eye_color, (Width // 2 - 24, Height / 2 - 24, 8, (8 - self.animation[1] + 8) * 2))
+
+					case 5:
+
+						self.changed_item_x = -70
+						self.changed_item_y = 0
+
+						match self.animation[0]:
+
+							case "Close eyes":
+
+								if self.animation[1] < 9:
+									win.fill(self.eye_color, (Width // 2 - 24, Height / 2 - 24, 8, self.animation[1] * 2))
+								else:
+									win.fill(self.eye_color, (Width // 2 - 24, Height / 2 - 24, 8, (8 - self.animation[1] + 8) * 2))
+
+			case "Right":
+
+				match frame:
+
+					case 0 | 1 | 3 | 4:
+
+						self.changed_item_x = -20
+						self.changed_item_y = 0
+
+						match self.animation[0]:
+
+							case "Close eyes":
+
+								if self.animation[1] < 9:
+									win.fill(self.eye_color, (Width // 2 + 16, Height / 2 - 32, 8, self.animation[1] * 2))
+								else:
+									win.fill(self.eye_color, (Width // 2 + 16, Height / 2 - 32, 8, (8 - self.animation[1] + 8) * 2))
+
+					case 2:
+
+						self.changed_item_x = -32
+						self.changed_item_y = 0
+
+						match self.animation[0]:
+
+							case "Close eyes":
+
+								if self.animation[1] < 9:
+									win.fill(self.eye_color, (Width // 2 + 16, Height / 2 - 24, 8, self.animation[1] * 2))
+								else:
+									win.fill(self.eye_color, (Width // 2 + 16, Height / 2 - 24, 8, (8 - self.animation[1] + 8) * 2))
+
+					case 5 | 6 | 7:
+
+						self.changed_item_x = -16
+						self.changed_item_y = 16
+
+						match self.animation[0]:
+
+							case "Close eyes":
+
+								if self.animation[1] < 9:
+									win.fill(self.eye_color, (Width // 2 + 16, Height / 2 - 24, 8, self.animation[1] * 2))
+								else:
+									win.fill(self.eye_color, (Width // 2 + 16, Height / 2 - 24, 8, (8 - self.animation[1] + 8) * 2))
+
 	
 	def render(self, game):
 		"""Отрисовывает игрока на экране"""
 		frames = self.animations[self.direction]
 		win.blit(shadow(self.image, f"Player {self.direction} {self.frame_index % len(frames)}"), (Width / 2 - 128, Height / 2 - 128))
+		self.handle_animations(game)
 		if self.changed_item and not (self.changed_item_x == self.changed_item_y == 0):
-			print(self.changed_item_x, self.changed_item_y)
-			win.blit(inventory.resources[self.changed_item].image, (self.changed_item_x, self.changed_item_y))
+			win.blit(inventory.resources[self.changed_item].image, (Width // 2 + self.changed_item_x, Height // 2 + self.changed_item_y))
 		
 		if Settings["Display"][3]:
 			pygame.draw.rect(win, (0, 255, 0), (Width / 2 - 128, Height / 2 - 128, 256, 256), 2)

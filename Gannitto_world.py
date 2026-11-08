@@ -25,7 +25,6 @@ from ItemActions import ItemActions
 from Effects import EffectsSystem
 from WorldLoader import WorldLoader
 from InputHandler import InputHandler
-from PlayerAnimations import PlayerAnimations
 from Assets import *
 from Globals import *
 from UI import SettingsMenu, CharactersMenu, WorldsMenu, EditWorldMenu, MultiplayerSettingsMenu, MainMenu, TabMenu
@@ -45,7 +44,6 @@ pygame.init()
 Основной цикл игры
 	Отображение объектов
 	Отображение мобов
-	Анимация игрока
 	Рон
 	Механика использования еды и некоторых предметов через пробел
 	Отрисовка погоды
@@ -145,7 +143,6 @@ game.statistics = statistics
 game.input_system = input_system
 game.world_loader = WorldLoader(game, save)
 game.input_handler = InputHandler(game, save, music_channel)
-game.player_animations = PlayerAnimations(game)
 weather = WeatherSystem(world)
 game.statistics[0] += 1
 hot_keys = Saver.load_objects(path + "Saves/Settings/Hot keys.save")
@@ -506,9 +503,6 @@ def start_game():
 							if (object.x, object.y, object.name) == (*peer.breaking_object_info,):
 								object.image = crack_surface(world, Particle, object, (object.max_break - object.breaked) // object.max_break, 8)
 								break
-
-		# Анимации персонажа
-		game.player_animations.handle_animations()
 
 		# Рон
 		old_ron_pos = ron.x, ron.y
