@@ -1,9 +1,12 @@
 import pygame
 import random
+from Assets import Heart
 from Cache import load
+from Translator import t
 from Functions import shadow, text, check_collision
 from Globals import path, Settings, Width, Height, win
 from Classes.Particle import Particle
+from Classes.Object import Object
 
 class Player:
 
@@ -305,7 +308,6 @@ class Player:
 								else:
 									win.fill(self.eye_color, (Width // 2 + 16, Height / 2 - 24, 8, (8 - self.animation[1] + 8) * 2))
 
-	
 	def render(self, game):
 		"""Отрисовывает игрока на экране"""
 		frames = self.animations[self.direction]
@@ -317,6 +319,41 @@ class Player:
 		if Settings["Display"][3]:
 			pygame.draw.rect(win, (0, 255, 0), (Width / 2 - 128, Height / 2 - 128, 256, 256), 2)
 			pygame.draw.rect(win, (0, 0, 0), (self.rect[0] - self.x + Width // 2, self.y - self.rect[1] - self.rect[3] + Height // 2, self.rect[2], self.rect[3]), 3)
+
+	def update_health_and_death(self, game, mouse_x, mouse_y):
+
+		if self.god_mode:
+			return
+		
+		for heart_x in range(self.HP // 10):
+			win.blit(Heart, (Width - 50 - heart_x * 40, 10))
+
+		if Width - 10 - self.HP // 10 * 40 < mouse_x < Width - 10 and 40 < mouse_y < 104:
+			mouse_object = t("Health bar")
+
+		self.HP_TICK += 1
+		if self.HP_TICK == 300:
+			self.HP_TICK = 0
+			if self.HP < 100:
+				self.HP += 10
+
+		if self.HP > 100:
+			self.HP = 100
+
+		if self.HP < 1:
+			self.death(game)
+
+	def death(self, game):
+
+			for item in game.inventory.whole_inventory:
+				if item is not None:
+					for _ in range(item.amount):
+						rand_x, rand_y = self.x + random.randint(-300, 300), self.y + random.randint(-300, 300)
+						game.world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object(item.name, rand_x, rand_y, item.image_path, add_path=False, pickable=True))
+			game.inventory.whole_inventory = [None] * 30
+			self.HP = 100
+			self.x = 0
+			self.y = 0
 
 class Peer(Player):
 

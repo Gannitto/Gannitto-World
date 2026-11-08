@@ -11,7 +11,7 @@ import sys
 import os
 import Backrooms
 import Saver
-from Functions import *
+from Functions import win_fill, win_darken, draw_key, text,get_text_height, show_error_window, animate_click, crack_surface, destroy_object
 from Build import check_build_objects, draw_select_image, draw_select_image_arbitrarily
 from Chunks import ChunkManager
 from Inventory import Inventory
@@ -26,8 +26,8 @@ from ItemActions import ItemActions
 from Effects import EffectsSystem
 from WorldLoader import WorldLoader
 from InputHandler import InputHandler
-from Assets import *
-from Globals import *
+from Assets import arrow_down, arrow_left, arrow_right, arrow_up, cave_texture, biome_textures, Inventory_slot, Open_inventory_slot, Open_inventory_slot2
+from Globals import path, Settings, win, MAX_FPS, Width, Height, text_color, textInfo, bigTextInfo, statistics, hot_keys, clock, colors
 from UI import SettingsMenu, CharactersMenu, WorldsMenu, EditWorldMenu, MultiplayerSettingsMenu, MainMenu, TabMenu
 from Classes import Player, World, Object, Particle, Slime, Spider, Butterfly, Projectile, ExplodingProjectile, Wall, Farmland, Wire, Lever, Motherboard, RandomBox, Ron, Button, Portal
 from GameState import GameState
@@ -608,35 +608,7 @@ def start_game():
 		# Отображение инвентаря
 		inventory.draw_inventory(mouse_x, mouse_y, dt)
 		# Отображение полосы здоровья
-
-		if not player.god_mode:
-			
-			for heart_x in range(player.HP // 10):
-				win.blit(Heart, (Width - 50 - heart_x * 40, 10))
-
-			if Width - 10 - player.HP // 10 * 40 < mouse_x < Width - 10 and 40 < mouse_y < 104:
-				mouse_object = t("Health bar")
-
-			player.HP_TICK += 1
-			if player.HP_TICK == 300:
-				player.HP_TICK = 0
-				if player.HP < 100:
-					player.HP += 10
-
-			if player.HP > 100:
-				player.HP = 100
-
-			if player.HP < 1:
-				for item in inventory.whole_inventory:
-					if item is not None:
-						for _ in range(item.amount):
-							rand_x, rand_y = player.x + random.randint(-300, 300), player.y + random.randint(-300, 300)
-							world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object(item.name, rand_x, rand_y, item.image_path, add_path=False, pickable=True))
-				inventory.whole_inventory = [None] * 30
-				player.HP = 100
-				player.x = 0
-				player.y = 0
-
+		player.update_health_and_death(game, mouse_x, mouse_y)
 		effects.handle_effects(dt)
 	
 		inventory.draw_item_settings(mouse_x, mouse_y)
