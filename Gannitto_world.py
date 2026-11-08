@@ -1,3 +1,4 @@
+from numpy import invert
 import pygame
 import pyperclip
 from pathlib import Path
@@ -13,7 +14,7 @@ import Saver
 from Functions import *
 from Build import check_build_objects, draw_select_image, draw_select_image_arbitrarily
 from Chunks import ChunkManager
-from Inventory import inventory
+from Inventory import Inventory
 from Translator import translator, t
 from Cache import load
 from TimeSystem import TimeSystem
@@ -120,7 +121,6 @@ game = GameState()
 
 game.player = Player()
 player = game.player
-game.inventory = inventory
 game.world_to_screen = lambda X, Y, W, H, player=player: (X - player.x + Width // 2 - W // 2, player.y - Y + Height // 2 - H // 2)
 world_to_screen = game.world_to_screen
 game.world_rect_to_screen = lambda X, Y, W, H: (X - player.x + Width // 2 - W // 2, player.y - Y + Height // 2 - H // 2, W, H)
@@ -131,6 +131,8 @@ game.time_system = TimeSystem()
 time_system = game.time_system
 game.ron = Ron(game)
 ron = game.ron
+game.inventory = Inventory(game)
+inventory = game.inventory
 game.command_system = CommandSystem(game)
 command_system = game.command_system
 game.item_actions = ItemActions(game)
@@ -604,7 +606,7 @@ def start_game():
 				player.HP_animation_tick = 0
 
 		# Отображение инвентаря
-		inventory.draw_inventory(game, mouse_x, mouse_y, dt)
+		inventory.draw_inventory(mouse_x, mouse_y, dt)
 		# Отображение полосы здоровья
 
 		if not player.god_mode:
@@ -637,7 +639,7 @@ def start_game():
 
 		effects.handle_effects(dt)
 	
-		inventory.draw_item_settings(game, mouse_x, mouse_y)
+		inventory.draw_item_settings(mouse_x, mouse_y)
 
 		if inventory.whole_inventory[inventory.changed_slot] is not None:
 			text(t("Item name " + inventory.whole_inventory[inventory.changed_slot].name), 10, 320 if game.inventory_open else 80)
@@ -794,7 +796,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.in
 		
 		game.chat_tick = max(0, game.chat_tick - dt)
 
-		inventory.show_description(mouse_x, mouse_y, click, game)
+		inventory.show_description(mouse_x, mouse_y, click)
 
 		# Механика мультиплеера
 		if game.multiplayer:

@@ -1,7 +1,6 @@
 import pygame
 import random
 from Cache import load
-from Inventory import inventory
 from Functions import shadow, text, check_collision
 from Globals import path, Settings, Width, Height, win
 from Classes.Particle import Particle
@@ -313,7 +312,7 @@ class Player:
 		win.blit(shadow(self.image, f"Player {self.direction} {self.frame_index % len(frames)}"), (Width / 2 - 128, Height / 2 - 128))
 		self.handle_animations(game)
 		if self.changed_item and not (self.changed_item_x == self.changed_item_y == 0):
-			win.blit(inventory.resources[self.changed_item].image, (Width // 2 + self.changed_item_x, Height // 2 + self.changed_item_y))
+			win.blit(game.inventory.resources[self.changed_item].image, (Width // 2 + self.changed_item_x, Height // 2 + self.changed_item_y))
 		
 		if Settings["Display"][3]:
 			pygame.draw.rect(win, (0, 255, 0), (Width / 2 - 128, Height / 2 - 128, 256, 256), 2)
@@ -350,7 +349,7 @@ class Peer(Player):
 				case "Right":
 					changed_item_x = -20
 					changed_item_y = 0
-			win.blit(inventory.resources[self.changed_item].image, game.world_to_screen(self.x + changed_item_x + 128, self.y + changed_item_y - 128, 256, 256))
+			win.blit(game.inventory.resources[self.changed_item].image, game.world_to_screen(self.x + changed_item_x + 128, self.y + changed_item_y - 128, 256, 256))
 		text_x, text_y = game.world_to_screen(self.x + 128, self.y + 32, 256, 256)
 		text(self.name, text_x, text_y, (255, 255, 255), alignment=True)
 		
