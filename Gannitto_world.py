@@ -173,7 +173,10 @@ def start_game():
 	# Загрузка данных мира
 	if not game.multiplayer or game.multiplayer_role == "Host":
 		game.world_loader.load_world()
-	player.changed_item = inventory.whole_inventory[inventory.changed_slot].name
+	if inventory.whole_inventory[inventory.changed_slot]:
+		player.changed_item = inventory.whole_inventory[inventory.changed_slot].name
+	else:
+		player.changed_item = None
 
 	while True:
 
@@ -606,7 +609,17 @@ def start_game():
 				player.HP_animation_tick = 0
 
 		# Отображение инвентаря
-		inventory.draw_inventory(mouse_x, mouse_y, dt)
+
+		min_dist = 512
+		near_object = None
+		for object in world.visible_objects:
+			if object.name in ("Table", "Wall table", "Furnace"):
+				distance = math.dist((player.x, player.y), (object.x, object.y))
+				if distance < min_dist:
+					near_object = object.name
+					min_dist = distance
+
+		inventory.draw_inventory(mouse_x, mouse_y, dt, near_object)
 		# Отображение полосы здоровья
 		player.update_health_and_death(game, mouse_x, mouse_y)
 		effects.handle_effects(dt)
@@ -766,6 +779,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.in
 			message_y += get_text_height(message)
 			text(message, 10, Height - message_y)
 		
+		input_system.handle_input(events)
 		game.chat_tick = max(0, game.chat_tick - dt)
 
 		inventory.show_description(mouse_x, mouse_y, click)
@@ -784,7 +798,6 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.in
 				pygame.display.update()
 			time.sleep(0.1)
 		
-		input_system.handle_input(events)
 		animate_click(dt, mouse_x, mouse_y)
 		win_fill((200, 0, 0), 100 - Settings["Display"][0])
 

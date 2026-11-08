@@ -117,7 +117,7 @@ class TabMenu:
 				is_hovered = (btn_x - 32 < mouse_x < btn_x + 32) and (btn_y - 32 < mouse_y < btn_y + 32)
 
 				# Управление состояниями анимации слота
-				anim_data = self.game.special_slot_animations.get(slot_name, [False, 0, 10])
+				anim_data = self.game.inventory.special_slot_animations.get(slot_name, [False, 0, 10])
 				
 				if is_hovered:
 					if anim_data[0]: # Если уже наведены
@@ -144,7 +144,7 @@ class TabMenu:
 						anim_data[1] += dt * 30
 
 				# Сохраняем обновленные данные анимации обратно в объект игры
-				self.game.special_slot_animations[slot_name] = anim_data
+				self.game.inventory.special_slot_animations[slot_name] = anim_data
 
 				# Отрисовка иконки кнопки
 				if anim_data[0] and Settings["Display"][5]:

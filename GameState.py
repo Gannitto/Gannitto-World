@@ -16,8 +16,6 @@ class GameState:
 		self.mouse_x, self.mouse_y = pygame.mouse.get_pos()
 		self.does_lighten = False
 		self.in_motherboard = None
-		self.slot_animations = [[False, 15] for _ in range(30)]   # Используется для анимации при наведении на слот
-		self.special_slot_animations = {"Craft list slot": [False, 0.6], "Game menu slot": [False, 0.6], "Menu slot": [False, 0.6], "Multiplayer slot": [False, 0.6], "Close slot": [False, 0.6], "Reference slot": [False, 0.6], "Close slot": [False, 0.6], "Split items slot": [False, 0.6], "Compact inventory slot": [False, 0.6]}   # Используется для анимации при наведении на слот, который выполняет какое-либо действие
 
 		self.item_settings_open = False
 		self.craft_list_open = False

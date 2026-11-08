@@ -35,10 +35,11 @@ class InputHandler:
 					if self.game.inventory.changed_slot < 0: self.game.inventory.changed_slot = 9
 
 			if event.type == pygame.KEYUP:
-				if self.game.chat_open:
-					if event.key == hot_keys["Close"]:
+				if self.game.input_system.inputting:
+					if self.game.chat_open and event.key == hot_keys["Close"]:
 						self.game.chat_open = False
 						self.game.input_system.stop_input()
+						continue
 				else:
 					if event.key == hot_keys["Show keys"]:
 						self.game.alt_pressed = not self.game.alt_pressed

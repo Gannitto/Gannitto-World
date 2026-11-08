@@ -96,37 +96,6 @@ def win_fill(fill_color=(0, 0, 0), alpha: int=90, rect: tuple=(0, 0, Width, Heig
 			temp_surface.set_alpha(alpha)
 			win.blit(temp_surface, rect[0:2])
 
-def reverse_fill_area(rect, fill_color=(0, 0, 0), alpha=90):
-
-	"""
-	Создаёт освещение на области экрана с помощью numpy и pygame.surfarray
-	"""
-
-	x, y, w, h = rect
-	a = alpha / 255.0
-	
-	if a >= 1.0:
-		return
-	
-	# Подповерхность
-	area = win.subsurface(rect)
-	mult = 1.0 - a
-	
-	pixels = pygame.surfarray.array3d(area).astype(np.float32)
-	
-	if fill_color[0] == fill_color[1] == fill_color[2]:
-		# Серый - 1 канал
-		pixels = (pixels - fill_color[0] * a) / mult
-	else:
-		# Цветной - 3 канала
-		fill_array = np.array(fill_color, dtype=np.float32)
-		pixels = (pixels - fill_array * a) / mult
-		
-	final_pixels = np.clip(pixels, 0, 255).astype(np.uint8)
-	
-	del pixels
-	pygame.surfarray.blit_array(area, final_pixels)
-
 def win_darken(win: pygame.Surface, screen: pygame.Surface=None, duration: float=0.3):
 	"""
 	Затемнить экран. Используется для переходов между окнами

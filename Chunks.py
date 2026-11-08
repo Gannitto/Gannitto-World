@@ -2,7 +2,7 @@ import pygame
 import random
 from itertools import product
 from NoiseGenerator import NoiseGenerator
-from Functions import win_fill, reverse_fill_area
+from Functions import win_fill
 from Saver import save_chunk, load_chunk, delete_chunk, chunk_exists
 from Assets import biomes, biome_textures
 from Globals import win, Width, Height, path
