@@ -58,30 +58,11 @@ class InputHandler:
 						self.game.input_system.start_input("Chat", 20, Height - 40, (255, 255, 255), input_text="/")
 
 					if event.key == hot_keys["Close"]:
-	
-						if self.game.item_settings_open:
-							self.game.item_settings_open = False
-						elif self.game.ron.window[0]:
-							self.game.ron.window[0] = False
-						elif self.game.in_motherboard is not None:
-							self.game.in_motherboard = None
-						elif self.game.craft_list_open:
-							self.game.craft_list_open = False
-						elif self.game.inventory_open:
-							self.game.inventory_open = False
-						else:
+						if self.game.close_sub_menus():
 							self.music_channel.stop()
+							self.game.clear_world_data()
 							self.game.statistics[1] += (time.time() - self.game.start_time) / 3600
 							self.save()
-							self.game.world.chunk_manager.chunks = {}
-							self.game.world.mobs = []
-							self.game.effects.effects = []
-							particles = []
-							self.game.chat = []
-							self.game.main_chat = []
-							self.game.chat_tick = 0
-							self.game.inventory.whole_inventory = [None] * 30
-							self.game.world_name = None
 							if self.game.multiplayer:
 								self.game.net.disconnect()
 							win_darken(win)
@@ -97,8 +78,10 @@ class InputHandler:
 
 					if event.key == hot_keys["Help"]:
 						self.music_channel.stop()
+						self.game.clear_world_data()
 						self.game.statistics[1] += (time.time() - self.game.start_time) / 3600
-						self.save(False)
+						self.save()
+						self.game.does_lighten = False
 						return self.game.settings_menu.help
 
 					if event.key == hot_keys["Inventory"]:

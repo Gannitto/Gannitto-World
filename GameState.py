@@ -38,3 +38,32 @@ class GameState:
 
 		self.craft_list_offset = 0
 		self.craft_list_max_offset = -1
+
+	def close_sub_menus(self):
+		
+		if self.item_settings_open:
+			self.item_settings_open = False
+		elif self.ron.window[0]:
+			self.ron.window[0] = False
+		elif self.in_motherboard is not None:
+			self.in_motherboard = None
+		elif self.craft_list_open:
+			self.craft_list_open = False
+		elif self.inventory_open:
+			self.inventory_open = False
+		else:
+			return True
+		return False
+
+	def clear_world_data(self):
+		
+		self.world.chunk_manager.chunks = {}
+		self.world.mobs = []
+		self.effects.effects = []
+		self.world.particles = []
+		self.chat = []
+		self.main_chat = []
+		self.chat_tick = 0
+		self.inventory.whole_inventory = [None] * 30
+		self.world_name = None
+

@@ -96,39 +96,42 @@ for biome in biomes:
 
 Backrooms_portal_images = load_textures(path + "Images/Objects/Backrooms portal ", 10, 256)
 
-Inventory_slot = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Inventory slot.png"), (64, 64)).convert_alpha()
-Changed_inventory_slot = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Inventory slot 2.png"), (64, 64)).convert_alpha()
+Inventory_slot = load(path + "Images/Slots/Inventory slot.png", 64).convert_alpha()
+Changed_inventory_slot = load(path + "Images/Slots/Inventory slot 2.png", 64).convert_alpha()
 
-Craft_list_inventory_slot = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Craft list slot.png"), (64, 64)).convert_alpha()
-Changed_craft_list_inventory_slot = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Craft list slot 2.png"), (64, 64)).convert_alpha()
+Craft_list_inventory_slot = load(path + "Images/Slots/Craft list slot.png", 64).convert_alpha()
+Changed_craft_list_inventory_slot = load(path + "Images/Slots/Craft list slot 2.png", 64).convert_alpha()
 
-Object_inventory_slot = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Object inventory slot 2.png"), (64, 64)).convert_alpha()
+Object_inventory_slot = load(path + "Images/Slots/Object inventory slot 2.png", 64).convert_alpha()
 
-Tool_inventory_slot = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Tool inventory slot 2.png"), (64, 64)).convert_alpha()
+Tool_inventory_slot = load(path + "Images/Slots/Tool inventory slot 2.png", 64).convert_alpha()
 
-Split_items1 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Split items.png"), (64, 64)).convert_alpha()
-Split_items2 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Split items 2.png"), (64, 64)).convert_alpha()
+Split_items1 = load(path + "Images/Slots/Split items.png", 64).convert_alpha()
+Split_items2 = load(path + "Images/Slots/Split items 2.png", 64).convert_alpha()
 
-Compact_inventory1 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Compact inventory.png"), (64, 64)).convert_alpha()
-Compact_inventory2 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Compact inventory 2.png"), (64, 64)).convert_alpha()
+Compact_inventory1 = load(path + "Images/Slots/Compact inventory.png", 64).convert_alpha()
+Compact_inventory2 = load(path + "Images/Slots/Compact inventory 2.png", 64).convert_alpha()
 
-Craft_list_slot1 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Craft list slot.png"), (64, 64)).convert_alpha()
-Craft_list_slot2 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Craft list slot 2.png"), (64, 64)).convert_alpha()
+Craft_list_slot1 = load(path + "Images/Slots/Craft list slot.png", 64).convert_alpha()
+Craft_list_slot2 = load(path + "Images/Slots/Craft list slot 2.png", 64).convert_alpha()
 
-Game_menu_slot1 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Game menu slot.png"), (64, 64)).convert_alpha()
-Game_menu_slot2 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Game menu slot 2.png"), (64, 64)).convert_alpha()
+Game_menu_slot1 = load(path + "Images/Slots/Game menu slot.png", 64).convert_alpha()
+Game_menu_slot2 = load(path + "Images/Slots/Game menu slot 2.png", 64).convert_alpha()
 
-Menu_slot1 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Menu slot.png"), (64, 64)).convert_alpha()
-Menu_slot2 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Menu slot 2.png"), (64, 64)).convert_alpha()
+Menu_slot1 = load(path + "Images/Slots/Menu slot.png", 64).convert_alpha()
+Menu_slot2 = load(path + "Images/Slots/Menu slot 2.png", 64).convert_alpha()
 
-Multiplayer_slot1 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Multiplayer slot.png"), (64, 64)).convert_alpha()
-Multiplayer_slot2 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Multiplayer slot 2.png"), (64, 64)).convert_alpha()
+Multiplayer_slot1 = load(path + "Images/Slots/Multiplayer slot.png", 64).convert_alpha()
+Multiplayer_slot2 = load(path + "Images/Slots/Multiplayer slot 2.png", 64).convert_alpha()
 
-Close_slot1 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Close slot.png"), (64, 64)).convert_alpha()
-Close_slot2 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Close slot 2.png"), (64, 64)).convert_alpha()
+Close_slot1 = load(path + "Images/Slots/Close slot.png", 64).convert_alpha()
+Close_slot2 = load(path + "Images/Slots/Close slot 2.png", 64).convert_alpha()
 
-Reference_slot1 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Reference slot.png"), (64, 64)).convert_alpha()
-Reference_slot2 = pygame.transform.scale(pygame.image.load(path + "Images/Slots/Reference slot 2.png"), (64, 64)).convert_alpha()
+Reference_slot1 = load(path + "Images/Slots/Reference slot.png", 64).convert_alpha()
+Reference_slot2 = load(path + "Images/Slots/Reference slot 2.png", 64).convert_alpha()
+
+Open_inventory_slot = load(path + "Images/Slots/Open inventory slot.png", 64).convert_alpha()
+Open_inventory_slot2 = load(path + "Images/Slots/Open inventory slot 2.png", 64).convert_alpha()
 
 Inventory_slot.set_alpha(Settings["Display"][1])
 Changed_inventory_slot.set_alpha(Settings["Display"][1])

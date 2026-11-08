@@ -105,37 +105,44 @@ class InputSystem:
 
 	def handle_input(self, events):
 
-		if self.inputting:
-			current_time = time.time() * 1000
+		if not self.inputting:
+			return
 
-			for event in events:
-				if event.type == pygame.KEYDOWN:
-					self.holding_key = event.key
-					self.key_timer = current_time + 500
-					self.trigger_key_action(event.key)
+		current_time = time.time() * 1000
 
-				elif event.type == pygame.KEYUP:
-					if hasattr(self, "holding_key") and event.key == self.holding_key:
-						self.holding_key = None
+		for event in events:
+			if event.type == pygame.KEYDOWN:
+				self.holding_key = event.key
+				self.key_timer = current_time + 500
+				self.trigger_key_action(event.key)
 
-				elif event.type == pygame.TEXTINPUT:
-					# Игнорируем ввод текста, если зажат Ctrl (чтобы при Ctrl+V или Ctrl+Backspace не вводились символы "v" и т.д.)
-					if not (pygame.key.get_mods() & pygame.KMOD_CTRL) and (self.max_len == -1 or len(self.input_text) < self.max_len) and (not self.only_numbers or event.text in "0123456789"):
-						self.input_text = self.input_text[:self.cursor_position] + event.text + self.input_text[self.cursor_position:]
-						self.cursor_position += len(event.text)
-
-			if hasattr(self, "holding_key") and self.holding_key is not None:
-				keys_pressed = pygame.key.get_pressed()
-				if keys_pressed[self.holding_key]:
-					if current_time >= self.key_timer:
-						self.trigger_key_action(self.holding_key)
-						self.key_timer = current_time + 25
-				else:
+			elif event.type == pygame.KEYUP:
+				if hasattr(self, "holding_key") and event.key == self.holding_key:
 					self.holding_key = None
 
-			if time.time() - self.cursor_timer >= Settings["Game"][3]:
-				self.cursor_timer = time.time()
-				self.show_cursor = not self.show_cursor
+			elif event.type == pygame.TEXTINPUT:
+				# Игнорируем ввод текста, если зажат Ctrl (чтобы при Ctrl+V или Ctrl+Backspace не вводились символы "v" и т.д.)
+				if not (pygame.key.get_mods() & pygame.KMOD_CTRL) and (self.max_len == -1 or len(self.input_text) < self.max_len) and (not self.only_numbers or event.text in "0123456789"):
+					self.input_text = self.input_text[:self.cursor_position] + event.text + self.input_text[self.cursor_position:]
+					self.cursor_position += len(event.text)
+
+		if hasattr(self, "holding_key") and self.holding_key is not None:
+			keys_pressed = pygame.key.get_pressed()
+			if keys_pressed[self.holding_key]:
+				if current_time >= self.key_timer:
+					self.trigger_key_action(self.holding_key)
+					self.key_timer = current_time + 25
+			else:
+				self.holding_key = None
+
+		if time.time() - self.cursor_timer >= Settings["Game"][3]:
+			self.cursor_timer = time.time()
+			self.show_cursor = not self.show_cursor
+
+		self.draw_input_text()
+	
+	def draw_input_text(self):
+
 			result_text = self.input_text
 			if self.show_cursor:
 				result_text = result_text[:self.cursor_position] + "|" + result_text[self.cursor_position:]

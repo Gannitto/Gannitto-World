@@ -584,11 +584,11 @@ def start_game():
 			down_b.main()
 			right_b.main()
 			if game.inventory_open:
-				win.blit(load(path + "Images/Slots/Open inventory slot.png", 64), (890, 10))
+				win.blit(load(Open_inventory_slot2, 64), (890, 10))
 				if 890 <= mouse_x <= 954 and 10 <= mouse_y <= 74 and click[0]:
 					game.inventory_open = False
 			else:
-				win.blit(load(path + "Images/Slots/Open inventory slot.png", 64), (810, 10))
+				win.blit(Open_inventory_slot, (810, 10))
 				if 810 <= mouse_x <= 874 and 10 <= mouse_y <= 74 and click[0]:
 					game.inventory_open = True
 		
@@ -768,9 +768,9 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.in
 						eval(input_system.last_text[2:])
 						# Команды через eval - опасная штука, так что они доступны только в режиме разработчика
 					except Exception as e:
-						command_system.chat_message(languages("<<< Команда " + Settings["User"][0] + f" получила ошибку {e}" + ". >>>", "<<< " + Settings["User"][0] + f"'s command got an {e}" + "error. >>>", ""))
+						command_system.chat_message(e)
 					else:
-						command_system.chat_message(languages("<<< Команда " + Settings["User"][0] + " была успешно исполнена. >>>", "<<< " + Settings["User"][0] + "'s command was successfully executed. >>>", ""))
+						command_system.chat_message(t("The command has been executed."))
 				elif input_system.last_text != "" and input_system.last_text[0] == "/":
 					command_system.chat_message(command_system.execute(input_system.last_text))
 				elif input_system.last_text != "":
