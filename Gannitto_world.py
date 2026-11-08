@@ -760,28 +760,6 @@ def start_game():
 			draw_select_image_arbitrarily(player.hovered_object.x, player.hovered_object.y, player.hovered_object.w, player.hovered_object.h, world_to_screen, world_rect_to_screen)
 			mouse_object = player.hovered_object.name
 
-		# Механика анимации слотов
-		if Settings["Display"][5]:
-			for yy, xx in product(range(0, 3), range(0, 10)):
-				
-				cell_x = 10 + xx * 80
-				cell_y = 10 + yy * 80
-			
-				if cell_x <= mouse_x <= cell_x + 64 and cell_y <= mouse_y <= cell_y + 64:
-					if game.slot_animations[yy * 10 + xx][0]:
-						if game.slot_animations[yy * 10 + xx][1] < dt * 150:
-							game.slot_animations[yy * 10 + xx][1] += 1
-							game.slot_animations[yy * 10 + xx][2] -= 3
-							game.slot_animations[yy * 10 + xx][2] = abs(game.slot_animations[yy * 10 + xx][2])
-					else:
-						game.slot_animations[yy * 10 + xx] = [True, 0, 10]
-					
-				elif game.slot_animations[yy * 10 + xx][0]:
-					game.slot_animations[yy * 10 + xx][0] = False
-					game.slot_animations[yy * 10 + xx][1] = 0
-				elif game.slot_animations[yy * 10 + xx][1] < dt * 250:
-					game.slot_animations[yy * 10 + xx][1] += 1	
-
 		# Меню на клавише TAB
 
 		if keys[hot_keys["TAB menu"]] and not game.chat_open:
@@ -818,7 +796,7 @@ def start_game():
 				player.HP_animation_tick = 0
 
 		# Отображение инвентаря
-		inventory.draw_inventory(game, mouse_x, mouse_y)
+		inventory.draw_inventory(game, mouse_x, mouse_y, dt)
 		# Отображение полосы здоровья
 
 		if not player.god_mode:
@@ -997,7 +975,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.in
 			if game.chat_tick == 0:
 				game.chat.remove(game.chat[0])
 				if len(game.chat) != 0:
-					game.chat_tick = len(game.chat[0]) // 1.5 * FPS
+					game.chat_tick = 10
 			
 		reversed_chat = game.main_chat.copy() if game.chat_open else game.chat.copy()
 		reversed_chat.reverse()
@@ -1006,7 +984,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.in
 			message_y += get_text_height(message)
 			text(message, 10, Height - message_y)
 		
-		game.chat_tick = max(0, game.chat_tick - 1)
+		game.chat_tick = max(0, game.chat_tick - dt)
 
 		inventory.show_description(mouse_x, mouse_y, click, game)
 

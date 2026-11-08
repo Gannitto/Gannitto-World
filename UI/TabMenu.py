@@ -4,7 +4,7 @@ import sys
 from Translator import t
 from Assets import Craft_list_slot1, Craft_list_slot2, Game_menu_slot1, Game_menu_slot2, Menu_slot1, Menu_slot2, Multiplayer_slot1, Multiplayer_slot2, Close_slot1, Close_slot2, Reference_slot1, Reference_slot2
 from Functions import text, win_darken
-from Globals import win, Width, Height, hot_keys, FPS, MAX_FPS, clock, Settings
+from Globals import win, Width, Height, hot_keys, MAX_FPS, clock, Settings
 
 class TabMenu:
 
@@ -23,30 +23,11 @@ class TabMenu:
 
 		while True:
 			
-			if b:
-
-				display_speed += 4
-				radius -= display_speed
-				if display_speed > 45:
-					break
-
-			else:
-
-				if radius < 200:
-					display_speed += 4
-					radius += display_speed
-
-				elif radius < 270 and a:
-					display_speed -= 5
-					radius += display_speed
-
-				elif 270 < radius < 300:
-					radius -= display_speed // 3
-					a = False
 
 			mouse_x, mouse_y = pygame.mouse.get_pos()
 			click = pygame.mouse.get_pressed()
 			release = False
+			dt = clock.tick(MAX_FPS) / 1000.0
 
 			for event in pygame.event.get():
 
@@ -61,6 +42,26 @@ class TabMenu:
 					if event.key == hot_keys["Close"]:
 						b = True
 						display_speed = 7
+			if b:
+
+				display_speed += 4
+				radius -= display_speed * dt * 50
+				if display_speed > 45:
+					break
+
+			else:
+
+				if radius < 200:
+					display_speed += 4
+					radius += display_speed * dt * 50
+
+				elif radius < 270 and a:
+					display_speed -= 5
+					radius += display_speed * dt * 50
+
+				elif 270 < radius < 300:
+					radius -= display_speed // 3 * dt * 50
+					a = False
 
 			win.blit(win_copy, (0, 0))
 			
@@ -68,9 +69,9 @@ class TabMenu:
 				
 			if Width // 2 + radius - 32 < mouse_x < Width // 2 + radius + 32 and Height // 2 - 32 < mouse_y < Height // 2 + 32:
 				if self.game.special_slot_animations["Craft list slot"][0]:
-					if self.game.special_slot_animations["Craft list slot"][1] < FPS / 6:
-						self.game.special_slot_animations["Craft list slot"][1] += 1
-						self.game.special_slot_animations["Craft list slot"][2] -= 3
+					if self.game.special_slot_animations["Craft list slot"][1] < dt * 150:
+						self.game.special_slot_animations["Craft list slot"][1] += dt * 30
+						self.game.special_slot_animations["Craft list slot"][2] -= dt * 90
 						self.game.special_slot_animations["Craft list slot"][2] = abs(self.game.special_slot_animations["Craft list slot"][2])
 				else:
 					self.game.special_slot_animations["Craft list slot"] = [True, 0, 10]
@@ -84,8 +85,8 @@ class TabMenu:
 			elif self.game.special_slot_animations["Craft list slot"][0]:
 				self.game.special_slot_animations["Craft list slot"][0] = False
 				self.game.special_slot_animations["Craft list slot"][1] = 0
-			elif self.game.special_slot_animations["Craft list slot"][1] < FPS / 4:
-				self.game.special_slot_animations["Craft list slot"][1] += 1	 
+			elif self.game.special_slot_animations["Craft list slot"][1] < dt * 250:
+				self.game.special_slot_animations["Craft list slot"][1] += dt * 30
 			if self.game.special_slot_animations["Craft list slot"][0] and Settings["Display"][5]:
 				try:win.blit(pygame.transform.scale(Craft_list_slot2, (64 - self.game.special_slot_animations["Craft list slot"][2], 64 - self.game.special_slot_animations["Craft list slot"][2])), (Width // 2 + radius - 32, Height // 2 - 32))
 				except: win.blit(Craft_list_slot2, (Width // 2 + radius - 32, Height // 2 - 32))
@@ -99,9 +100,9 @@ class TabMenu:
 
 			if Width // 2 + math.cos((2 * math.pi) / 6) * radius - 32 < mouse_x < Width // 2 + math.cos((2 * math.pi) / 6) * radius + 32 and Height // 2 + math.sin((2 * math.pi) / 6) * radius - 32 < mouse_y < Height // 2 + math.sin((2 * math.pi) / 6) * radius + 32:
 				if self.game.special_slot_animations["Game menu slot"][0]:
-					if self.game.special_slot_animations["Game menu slot"][1] < FPS / 6:
-						self.game.special_slot_animations["Game menu slot"][1] += 1
-						self.game.special_slot_animations["Game menu slot"][2] -= 3
+					if self.game.special_slot_animations["Game menu slot"][1] < dt * 150:
+						self.game.special_slot_animations["Game menu slot"][1] += dt * 30
+						self.game.special_slot_animations["Game menu slot"][2] -= dt * 90
 						self.game.special_slot_animations["Game menu slot"][2] = abs(self.game.special_slot_animations["Game menu slot"][2])
 				else:
 					self.game.special_slot_animations["Game menu slot"] = [True, 0, 10]
@@ -117,8 +118,8 @@ class TabMenu:
 			elif self.game.special_slot_animations["Game menu slot"][0]:
 				self.game.special_slot_animations["Game menu slot"][0] = False
 				self.game.special_slot_animations["Game menu slot"][1] = 0
-			elif self.game.special_slot_animations["Game menu slot"][1] < FPS / 4:
-				self.game.special_slot_animations["Game menu slot"][1] += 1
+			elif self.game.special_slot_animations["Game menu slot"][1] < dt * 250:
+				self.game.special_slot_animations["Game menu slot"][1] += dt * 30
 
 			if self.game.special_slot_animations["Game menu slot"][0] and Settings["Display"][5]:
 				try:win.blit(pygame.transform.scale(Game_menu_slot2, (64 - self.game.special_slot_animations["Game menu slot"][2], 64 - self.game.special_slot_animations["Game menu slot"][2])), (Width // 2 + math.cos((2 * math.pi) / 6) * radius - 32, Height // 2 + math.sin((2 * math.pi) / 6) * radius - 32))
@@ -133,9 +134,9 @@ class TabMenu:
 			
 			if Width // 2 + math.cos((2 * math.pi * 2) / 6) * radius - 32 < mouse_x < Width // 2 + math.cos((2 * math.pi * 2) / 6) * radius + 32 and Height // 2 + math.sin((2 * math.pi * 2) / 6) * radius - 32 < mouse_y < Height // 2 + math.sin((2 * math.pi * 2) / 6) * radius + 32:
 				if self.game.special_slot_animations["Menu slot"][0]:
-					if self.game.special_slot_animations["Menu slot"][1] < FPS / 6:
-						self.game.special_slot_animations["Menu slot"][1] += 1
-						self.game.special_slot_animations["Menu slot"][2] -= 3
+					if self.game.special_slot_animations["Menu slot"][1] < dt * 150:
+						self.game.special_slot_animations["Menu slot"][1] += dt * 30
+						self.game.special_slot_animations["Menu slot"][2] -= dt * 90
 						self.game.special_slot_animations["Menu slot"][2] = abs(self.game.special_slot_animations["Menu slot"][2])
 				else:
 					self.game.special_slot_animations["Menu slot"] = [True, 0, 10]
@@ -148,8 +149,8 @@ class TabMenu:
 			elif self.game.special_slot_animations["Menu slot"][0]:
 				self.game.special_slot_animations["Menu slot"][0] = False
 				self.game.special_slot_animations["Menu slot"][1] = 0
-			elif self.game.special_slot_animations["Menu slot"][1] < FPS / 4:
-				self.game.special_slot_animations["Menu slot"][1] += 1   
+			elif self.game.special_slot_animations["Menu slot"][1] < dt * 250:
+				self.game.special_slot_animations["Menu slot"][1] += dt * 30
 
 			if self.game.special_slot_animations["Menu slot"][0] and Settings["Display"][5]:
 				try:win.blit(pygame.transform.scale(Menu_slot2, (64 - self.game.special_slot_animations["Menu slot"][2], 64 - self.game.special_slot_animations["Menu slot"][2])), (Width // 2 + math.cos((2 * math.pi * 2) / 6) * radius - 32, Height // 2 + math.sin((2 * math.pi) / 6) * radius - 32))
@@ -164,9 +165,9 @@ class TabMenu:
 
 			if Width // 2 + math.cos((2 * math.pi * 3) / 6) * radius - 32 < mouse_x < Width // 2 + math.cos((2 * math.pi * 3) / 6) * radius + 32 and Height // 2 + math.sin((2 * math.pi * 3) / 6) * radius - 32 < mouse_y < Height // 2 + math.sin((2 * math.pi * 3) / 6) * radius + 32:
 				if self.game.special_slot_animations["Multiplayer slot"][0]:
-					if self.game.special_slot_animations["Multiplayer slot"][1] < FPS / 6:
-						self.game.special_slot_animations["Multiplayer slot"][1] += 1
-						self.game.special_slot_animations["Multiplayer slot"][2] -= 3
+					if self.game.special_slot_animations["Multiplayer slot"][1] < dt * 150:
+						self.game.special_slot_animations["Multiplayer slot"][1] += dt * 30
+						self.game.special_slot_animations["Multiplayer slot"][2] -= dt * 90
 						self.game.special_slot_animations["Multiplayer slot"][2] = abs(self.game.special_slot_animations["Multiplayer slot"][2])
 				else:
 					self.game.special_slot_animations["Multiplayer slot"] = [True, 0, 10]
@@ -179,8 +180,8 @@ class TabMenu:
 			elif self.game.special_slot_animations["Multiplayer slot"][0]:
 				self.game.special_slot_animations["Multiplayer slot"][0] = False
 				self.game.special_slot_animations["Multiplayer slot"][1] = 0
-			elif self.game.special_slot_animations["Multiplayer slot"][1] < FPS / 4:
-				self.game.special_slot_animations["Multiplayer slot"][1] += 1   
+			elif self.game.special_slot_animations["Multiplayer slot"][1] < dt * 250:
+				self.game.special_slot_animations["Multiplayer slot"][1] += dt * 30
 
 			if self.game.special_slot_animations["Multiplayer slot"][0] and Settings["Display"][5]:
 				try:win.blit(pygame.transform.scale(Multiplayer_slot2, (64 - self.game.special_slot_animations["Multiplayer slot"][2], 64 - self.game.special_slot_animations["Multiplayer slot"][2])), (Width // 2 + math.cos((2 * math.pi * 3) / 6) * radius - 32, Height // 2 + math.sin((2 * math.pi * 3) / 6) * radius - 32))
@@ -195,9 +196,9 @@ class TabMenu:
 			
 			if Width // 2 + math.cos((2 * math.pi * 4) / 6) * radius - 32 < mouse_x < Width // 2 + math.cos((2 * math.pi * 4) / 6) * radius + 32 and Height // 2 + math.sin((2 * math.pi * 4) / 6) * radius - 32 < mouse_y < Height // 2 + math.sin((2 * math.pi * 4) / 6) * radius + 32:
 				if self.game.special_slot_animations["Close slot"][0]:
-					if self.game.special_slot_animations["Close slot"][1] < FPS / 6:
-						self.game.special_slot_animations["Close slot"][1] += 1
-						self.game.special_slot_animations["Close slot"][2] -= 3
+					if self.game.special_slot_animations["Close slot"][1] < dt * 150:
+						self.game.special_slot_animations["Close slot"][1] += dt * 30
+						self.game.special_slot_animations["Close slot"][2] -= dt * 90
 						self.game.special_slot_animations["Close slot"][2] = abs(self.game.special_slot_animations["Close slot"][2])
 				else:
 					self.game.special_slot_animations["Close slot"] = [True, 0, 10]
@@ -209,8 +210,8 @@ class TabMenu:
 			elif self.game.special_slot_animations["Close slot"][0]:
 				self.game.special_slot_animations["Close slot"][0] = False
 				self.game.special_slot_animations["Close slot"][1] = 0
-			elif self.game.special_slot_animations["Close slot"][1] < FPS / 4:
-				self.game.special_slot_animations["Close slot"][1] += 1	
+			elif self.game.special_slot_animations["Close slot"][1] < dt * 250:
+				self.game.special_slot_animations["Close slot"][1] += dt * 30	
 
 			if self.game.special_slot_animations["Close slot"][0] and Settings["Display"][5]:
 				try:win.blit(pygame.transform.scale(Close_slot2, (64 - self.game.special_slot_animations["Close slot"][2], 64 - self.game.special_slot_animations["Close slot"][2])), (Width // 2 + math.cos((2 * math.pi * 4) / 6) * radius - 32, Height // 2 + math.sin((2 * math.pi * 4) / 6) * radius - 32))
@@ -225,9 +226,9 @@ class TabMenu:
 
 			if Width // 2 + math.cos((2 * math.pi * 5) / 6) * radius - 32 < mouse_x < Width // 2 + math.cos((2 * math.pi * 5) / 6) * radius + 32 and Height // 2 + math.sin((2 * math.pi * 5) / 6) * radius - 32 < mouse_y < Height // 2 + math.sin((2 * math.pi * 5) / 6) * radius + 32:
 				if self.game.special_slot_animations["Reference slot"][0]:
-					if self.game.special_slot_animations["Reference slot"][1] < FPS / 6:
-						self.game.special_slot_animations["Reference slot"][1] += 1
-						self.game.special_slot_animations["Reference slot"][2] -= 3
+					if self.game.special_slot_animations["Reference slot"][1] < dt * 150:
+						self.game.special_slot_animations["Reference slot"][1] += dt * 30
+						self.game.special_slot_animations["Reference slot"][2] -= dt * 90
 						self.game.special_slot_animations["Reference slot"][2] = abs(self.game.special_slot_animations["Reference slot"][2])
 				else:
 					self.game.special_slot_animations["Reference slot"] = [True, 0, 10]
@@ -239,8 +240,8 @@ class TabMenu:
 			elif self.game.special_slot_animations["Reference slot"][0]:
 				self.game.special_slot_animations["Reference slot"][0] = False
 				self.game.special_slot_animations["Reference slot"][1] = 0
-			elif self.game.special_slot_animations["Reference slot"][1] < FPS / 4:
-				self.game.special_slot_animations["Reference slot"][1] += 1	
+			elif self.game.special_slot_animations["Reference slot"][1] < dt * 250:
+				self.game.special_slot_animations["Reference slot"][1] += dt * 30
 
 			if self.game.special_slot_animations["Reference slot"][0] and Settings["Display"][5]:
 				try:win.blit(pygame.transform.scale(Reference_slot2, (64 - self.game.special_slot_animations["Reference slot"][2], 64 - self.game.special_slot_animations["Reference slot"][2])), (Width // 2 + math.cos((2 * math.pi * 5) / 6) * radius - 32, Height // 2 + math.sin((2 * math.pi * 4) / 6) * radius - 32))
@@ -252,4 +253,4 @@ class TabMenu:
 			text(t("Reference"), Width // 2 + math.cos((2 * math.pi * 5) / 6) * radius, Height // 2 + math.sin((2 * math.pi * 5) / 6) * radius + 40, alignment=True)
 
 			pygame.display.update()
-			clock.tick(MAX_FPS)
+

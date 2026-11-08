@@ -5,7 +5,7 @@ import math
 from itertools import product
 from Assets import Inventory_slot, Changed_inventory_slot, Object_inventory_slot, Tool_inventory_slot, Split_items1, Split_items2, Compact_inventory1, Compact_inventory2, Craft_list_inventory_slot, Changed_craft_list_inventory_slot, Heart
 from Functions import win_fill, draw_key, text, get_text_height
-from Globals import path, win, FPS, Settings, Width, Height, textInfo, bigTextInfo, text_color
+from Globals import path, win, Settings, Width, Height, textInfo, bigTextInfo, text_color
 from Translator import t
 
 pygame.init()
@@ -404,13 +404,34 @@ class Inventory:
 			self.last_changed_item = new_changed_item
 		return new_item
 
-	def draw_inventory(self, game, mouse_x, mouse_y):
+	def draw_inventory(self, game, mouse_x, mouse_y, dt):
 
 		if game.inventory_open:
 
 			if 10 < mouse_x < 794 and 10 < mouse_y < 314:
 				mouse_object = t("Inventory (I)")
 
+			# Механика анимации слотов
+			if Settings["Display"][5]:
+				for yy, xx in product(range(0, 3), range(0, 10)):
+					
+					cell_x = 10 + xx * 80
+					cell_y = 10 + yy * 80
+				
+					if cell_x <= mouse_x <= cell_x + 64 and cell_y <= mouse_y <= cell_y + 64:
+						if game.slot_animations[yy * 10 + xx][0]:
+							if game.slot_animations[yy * 10 + xx][1] < dt * 150:
+								game.slot_animations[yy * 10 + xx][1] += dt * 30
+								game.slot_animations[yy * 10 + xx][2] -= dt * 90
+								game.slot_animations[yy * 10 + xx][2] = abs(game.slot_animations[yy * 10 + xx][2])
+						else:
+							game.slot_animations[yy * 10 + xx] = [True, 0, 10]
+						
+					elif game.slot_animations[yy * 10 + xx][0]:
+						game.slot_animations[yy * 10 + xx][0] = False
+						game.slot_animations[yy * 10 + xx][1] = 0
+					elif game.slot_animations[yy * 10 + xx][1] < dt * 250:
+						game.slot_animations[yy * 10 + xx][1] += dt * 30
 			slot_x = 10
 			slot_y = 10
 
@@ -468,9 +489,9 @@ class Inventory:
 			# Разделение предметов
 			if 810 <= mouse_x <= 874 and 10 <= mouse_y <= 74:
 				if game.special_slot_animations["Split items slot"][0]:
-					if game.special_slot_animations["Split items slot"][1] < FPS / 6:
-						game.special_slot_animations["Split items slot"][1] += 1
-						game.special_slot_animations["Split items slot"][2] -= 3
+					if game.special_slot_animations["Split items slot"][1] < dt * 150:
+						game.special_slot_animations["Split items slot"][1] += dt * 30
+						game.special_slot_animations["Split items slot"][2] -= dt * 90
 						game.special_slot_animations["Split items slot"][2] = abs(game.special_slot_animations["Split items slot"][2])
 				else:
 					game.special_slot_animations["Split items slot"] = [True, 0, 10]
@@ -481,8 +502,8 @@ class Inventory:
 			elif game.special_slot_animations["Split items slot"][0]:
 				game.special_slot_animations["Split items slot"][0] = False
 				game.special_slot_animations["Split items slot"][1] = 0
-			elif game.special_slot_animations["Split items slot"][1] < FPS / 4:
-				game.special_slot_animations["Split items slot"][1] += 1   
+			elif game.special_slot_animations["Split items slot"][1] < dt * 250:
+				game.special_slot_animations["Split items slot"][1] += dt * 30
 
 			if game.special_slot_animations["Split items slot"][0] or self.Split_items:
 				try:
@@ -498,9 +519,9 @@ class Inventory:
 			
 			if 810 <= mouse_x <= 874 and 170 <= mouse_y <= 234:
 				if game.special_slot_animations["Compact inventory slot"][0]:
-					if game.special_slot_animations["Compact inventory slot"][1] < FPS / 6:
-						game.special_slot_animations["Compact inventory slot"][1] += 1
-						game.special_slot_animations["Compact inventory slot"][2] -= 3
+					if game.special_slot_animations["Compact inventory slot"][1] < dt * 150:
+						game.special_slot_animations["Compact inventory slot"][1] += dt * 30
+						game.special_slot_animations["Compact inventory slot"][2] -= dt * 90
 						game.special_slot_animations["Compact inventory slot"][2] = abs(game.special_slot_animations["Compact inventory slot"][2])
 				else:
 					game.special_slot_animations["Compact inventory slot"] = [True, 0, 10]
@@ -511,8 +532,8 @@ class Inventory:
 			elif game.special_slot_animations["Compact inventory slot"][0]:
 				game.special_slot_animations["Compact inventory slot"][0] = False
 				game.special_slot_animations["Compact inventory slot"][1] = 0
-			elif game.special_slot_animations["Compact inventory slot"][1] < FPS / 4:
-				game.special_slot_animations["Compact inventory slot"][1] += 1	
+			elif game.special_slot_animations["Compact inventory slot"][1] < dt * 250:
+				game.special_slot_animations["Compact inventory slot"][1] += dt * 30
 
 			if game.special_slot_animations["Compact inventory slot"][0]:
 				try:
@@ -562,9 +583,9 @@ class Inventory:
 				
 				if 810 <= mouse_x <= 874 and 90 <= mouse_y <= 154:
 					if game.special_slot_animations["Craft list slot"][0]:
-						if game.special_slot_animations["Craft list slot"][1] < FPS / 6:
-							game.special_slot_animations["Craft list slot"][1] += 1
-							game.special_slot_animations["Craft list slot"][2] -= 3
+						if game.special_slot_animations["Craft list slot"][1] < dt * 150:
+							game.special_slot_animations["Craft list slot"][1] += dt * 30
+							game.special_slot_animations["Craft list slot"][2] -= dt * 90
 							game.special_slot_animations["Craft list slot"][2] = abs(game.special_slot_animations["Craft list slot"][2])
 					else:
 						game.special_slot_animations["Craft list slot"] = [True, 0, 10]
@@ -575,8 +596,8 @@ class Inventory:
 				elif game.special_slot_animations["Craft list slot"][0]:
 					game.special_slot_animations["Craft list slot"][0] = False
 					game.special_slot_animations["Craft list slot"][1] = 0
-				elif game.special_slot_animations["Craft list slot"][1] < FPS / 4:
-					game.special_slot_animations["Craft list slot"][1] += 1	 
+				elif game.special_slot_animations["Craft list slot"][1] < dt * 250:
+					game.special_slot_animations["Craft list slot"][1] += dt * 30
 
 				if game.special_slot_animations["Craft list slot"][0] and Settings["Display"][5]:
 					try:win.blit(pygame.transform.scale(Changed_craft_list_inventory_slot, (64 - game.special_slot_animations["Craft list slot"][2], 64 - game.special_slot_animations["Craft list slot"][2])), (810, 90))

@@ -32,7 +32,6 @@ except FileNotFoundError:
 
 win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 MAX_FPS = Settings["Display"][6]
-FPS = MAX_FPS - 1
 Width, Height = pygame.display.get_surface().get_size()
 text_color = (0, 180, 0)
 menu_color_light = (192, 203, 220)

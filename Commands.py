@@ -1,6 +1,5 @@
 import re
 from typing import List, Tuple
-from Globals import FPS
 
 class CommandSystem:
 
@@ -8,7 +7,6 @@ class CommandSystem:
 
 		self.game = game
 		self.player = game.player
-		self.FPS = FPS
 		self.init_commands()
 	
 	def parse_command(self, command_text: str) -> Tuple[str, List[str]]:
@@ -115,7 +113,7 @@ class CommandSystem:
 		"""Отправляет сообщение в чат"""
 		self.game.chat.append(message)
 		self.game.main_chat.append(message)
-		self.game.chat_tick = len(message) // 1.5 * self.FPS #TODO заменить FPS на dt
+		self.game.chat_tick = 10
 		if self.game.multiplayer and bool(send_to_peers):
 			self.game.events.append({"event_type": "chat_message", "message_text": message})
 
