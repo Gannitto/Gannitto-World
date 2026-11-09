@@ -5,11 +5,14 @@ import time
 import pygame
 import random
 import math
+from pathlib import Path
 import pygame.surfarray as surfarray
 from subprocess import check_output
 import numpy as np
 from itertools import product
 from PIL import Image
+from Translator import t
+from Sound import play_sound
 from Globals import MAX_FPS, Width, Height, path, win, clock, Settings, bigTextInfo, text_color
 from Cache import load
 
@@ -467,3 +470,17 @@ def get_build_number():
 		build_num = "Error"
 	return build_num
 
+def take_screenshot(game):
+	pygame.image.save(win, str(Path.home()) + "/Your Screenshot " + time.asctime().replace(":", " ") + ".png")
+	game.command_system.chat_message(t("Game: Your screenshot is in ") + str(Path.home()) + "/Your Screenshot " + time.asctime().replace(":", " ") + ".png")
+	
+	for _ in range(3):
+		win.fill((200, 255, 200))
+		clock.tick(MAX_FPS)
+		pygame.display.update()
+
+def pick_up_item(game, Particle, item):
+	game.world.particles.append(Particle(item.x, item.y, item.image, lambda particle: round(((game.player.x - particle.x) // 2) / 10 * 5), lambda particle: round(((game.player.y - particle.y) // 2) / 10 * 5), track_ticks=True, del_self_condition=lambda particle: abs(particle.x - game.player.x) < 30 and abs(particle.y - game.player.y) < 30, end_command=lambda particle: (game.inventory.increate(particle.special_flags), play_sound("Pick an item")), special_flags=item.name))
+	if game.multiplayer:
+		game.events.append({"event_type": "item_removed", "x": item.x, "y": item.y, "name": item.name})
+	game.world.chunk_manager.get_chunk_at(item.x, item.y).items.remove(item)

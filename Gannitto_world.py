@@ -1,16 +1,11 @@
 import pygame
-import pyperclip
-from pathlib import Path
 import time
 import random
 import math
 from itertools import product
-import socket
-import sys
-import os
 import Backrooms
 import Saver
-from Functions import win_fill, win_darken, draw_key, text,get_text_height, show_error_window, animate_click, crack_surface, destroy_object
+from Functions import win_fill, win_darken, draw_key, text,get_text_height, show_error_window, animate_click, crack_surface, destroy_object, take_screenshot, pick_up_item
 from Build import check_build_objects, draw_select_image, draw_select_image_arbitrarily
 from Chunks import ChunkManager
 from Inventory import Inventory
@@ -25,6 +20,7 @@ from ItemActions import ItemActions
 from Effects import EffectsSystem
 from WorldLoader import WorldLoader
 from InputHandler import InputHandler
+from BarRenderer import BarRenderer
 from Assets import arrow_down, arrow_left, arrow_right, arrow_up, cave_texture, biome_textures, Inventory_slot, Open_inventory_slot, Open_inventory_slot2
 from Globals import path, Settings, win, MAX_FPS, Width, Height, text_color, textInfo, bigTextInfo, statistics, hot_keys, clock, colors
 from UI import SettingsMenu, CharactersMenu, WorldsMenu, EditWorldMenu, MultiplayerSettingsMenu, MainMenu, TabMenu
@@ -144,9 +140,8 @@ game.statistics = statistics
 game.input_system = input_system
 game.world_loader = WorldLoader(game, save)
 game.input_handler = InputHandler(game, save, music_channel)
+game.bar_renderer = BarRenderer(game)
 weather = WeatherSystem(world)
-game.statistics[0] += 1
-hot_keys = Saver.load_objects(path + "Saves/Settings/Hot keys.save")
 
 # Основной цикл игры
 
@@ -227,6 +222,8 @@ def start_game():
 		
 		# Обновляем анимацию
 		player.update_animation(dt)
+		# Обновление системы здоровья
+		player.update_health_and_death(game, mouse_x, mouse_y)
 
 		win.fill((0, 0, 0))
 
@@ -389,22 +386,14 @@ def start_game():
 					item.main(game, dt)
 					try_pick = True
 					if item.pickable and Settings["Game"][0] and player.x - 150 < item.x < player.x + 150 and player.y - 150 < item.y < player.y + 150:
-						world.particles.append(Particle(item.x, item.y, item.image, lambda particle: round(((player.x - particle.x) // 2) / 10 * 5), lambda particle: round(((player.y - particle.y) // 2) / 10 * 5), track_ticks=True, del_self_condition=lambda particle: abs(particle.x - player.x) < 30 and abs(particle.y - player.y) < 30, end_command=lambda particle: (inventory.increate(particle.special_flags), play_sound("Pick an item")), special_flags=item.name))
-						if game.multiplayer:
-							game.events.append({"event_type": "item_removed", "x": item.x, "y": item.y, "name": item.name})
-
-						world.chunk_manager.get_chunk_at(item.x, item.y).items.remove(item)
+						pick_up_item(game, Particle, item)
 						try_pick = False
 
 					if try_pick and item.x - player.x + Width // 2 - item.image.get_width() // 2 <= mouse_x <= item.x - player.x + Width // 2 + item.image.get_width() // 2 and player.y - item.y + Height // 2 - item.image.get_height() // 2 <= mouse_y <= player.y - item.y + Height // 2 + item.image.get_height() // 2:
 						mouse_object = t("Click to pick the ") + t("Item name " + item.name)
 						
 						if click[0]:
-							world.particles.append(Particle(item.x, item.y, item.image, lambda particle: round(((player.x - particle.x) // 2) / 10 * 5), lambda particle: round(((player.y - particle.y) // 2) / 10 * 5), track_ticks=True, del_self_condition=lambda particle: abs(particle.x - player.x) < 30 and abs(particle.y - player.y) < 30, end_command=lambda particle: (inventory.increate(particle.special_flags), play_sound("Pick an item")), special_flags=item.name))
-									
-							if game.multiplayer:
-								game.events.append({"event_type": "item_removed", "x": item.x, "y": item.y, "name": item.name})
-							world.chunk_manager.get_chunk_at(item.x, item.y).items.remove(item)
+							pick_up_item(game, Particle, item)
 						elif item.pickable and click[2] and inventory.whole_inventory[inventory.changed_slot] is not None and inventory.whole_inventory[inventory.changed_slot].name in ("Blue slime", "Pink slime"):
 							item.pickable = False
 							inventory.reduce(inventory.changed_slot)
@@ -527,16 +516,7 @@ def start_game():
 			item_actions.handle_item_actions(mouse_x, mouse_y)
 
 		if keys[hot_keys["Screenshot"]] and keys[hot_keys["Show keys"]]:
-			
-			pygame.image.save(win, str(Path.home()) + "/Your Screenshot " + time.asctime().replace(":", " ") + ".png")
-			command_system.chat_message(t("Game: Your screenshot is in ") + str(Path.home()) + "/Your Screenshot " + time.asctime().replace(":", " ") + ".png")
-			
-			for _ in range(3):
-				win.fill((200, 255, 200))
-				clock.tick(MAX_FPS)
-				pygame.display.update()
-			time.sleep(0.1)
-
+			take_screenshot(game)
 		# Отрисовка погоды
 
 		weather.update()
@@ -620,7 +600,8 @@ def start_game():
 
 		inventory.draw_inventory(mouse_x, mouse_y, dt, near_object)
 		# Отображение полосы здоровья
-		player.update_health_and_death(game, mouse_x, mouse_y)
+		game.bar_renderer.show_health_bar(mouse_x, mouse_y)
+
 		effects.handle_effects(dt)
 	
 		inventory.draw_item_settings(mouse_x, mouse_y)
@@ -630,44 +611,7 @@ def start_game():
 
 		if ron.x - player.x + Width // 2 - 128 <= mouse_x <= ron.x - player.x + Width // 2 + 128 and player.y - ron.y + Height // 2 - 128 <= mouse_y <= player.y - ron.y + Height // 2 + 128 and game.release and (not game.multiplayer or game.multiplayer_role == "Host"):
 			ron.window[0] = True
-
-		if ron.window[0]:
-			
-			win_fill()
-
-			pygame.draw.rect(win, text_color, (100, 100, Width - 200, Height - 200))
-			pygame.draw.rect(win, (0, 150, 0), (100, 100, Width - 200, Height - 200), 10)
-
-			win.blit(bigTextInfo.render(t("Set a home point"), True, (0, 150, 0)), (200, 150))
-			
-			if 200 <= mouse_x <= 200 + bigTextInfo.size(t("Set a home point"))[0] and 150 <= mouse_y <= 180:
-				
-				win.blit(bigTextInfo.render(t("Set a home point"), True, (0, 100, 0)), (200, 150))
-				
-				if game.release:
-					ron.home = [player.x, player.y]
-
-			if ron.home is not None:
-				win.blit(bigTextInfo.render(t("Current home point: ") + str(ron.home[0] // 50) + "; " + str(ron.home[1] // 50), True, (0, 150, 0)), (200, 200))
-
-			win.blit(bigTextInfo.render(t("Call"), True, (0, 150, 0)), (200, 250))
-			
-			if 200 <= mouse_x <= 200 + bigTextInfo.size(t("Call"))[0] and 250 <= mouse_y <= 280:
-				
-				win.blit(bigTextInfo.render(t("Call"), True, (0, 100, 0)), (200, 250))
-				if game.release:
-					ron.home = None
-					
-			win.blit(bigTextInfo.render("x", True, (0, 150, 0)), (Width - 160, 130))
-			
-			if game.alt_pressed:
-				draw_key("ESC", Width - 160, 170)
-				
-			if Width - 160 <= mouse_x <= Width - 130 and 130 <= mouse_y <= 160:
-				win.blit(bigTextInfo.render("x", True, (0, 100, 0)), (Width - 160, 130))
-				if game.release:
-					ron.window[0] = False
-					
+		ron.show_window(mouse_x, mouse_y)
 		if game.in_motherboard is not None:
 
 			win_fill()
@@ -788,14 +732,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.in
 			game.net.handle_multiplayer(game)
 
 		if keys[hot_keys["Screenshot"]] and not keys[hot_keys["Show keys"]]:
-			
-			pygame.image.save(win, str(Path.home()) + "/Your Screenshot " + str(time.asctime().replace(":", " ")) + ".png")
-	
-			for _ in range(3):
-				win.fill((200, 255, 200))
-				clock.tick(MAX_FPS)
-				pygame.display.update()
-			time.sleep(0.1)
+			take_screenshot(game)
 		
 		animate_click(dt, mouse_x, mouse_y)
 		win_fill((200, 0, 0), 100 - Settings["Display"][0])
@@ -810,31 +747,6 @@ game.multiplayer_settings_menu = MultiplayerSettingsMenu(game, world, command_sy
 game.worlds_menu = WorldsMenu(game, input_system)
 game.main_menu = MainMenu(game, save)
 
-def show_intro():
-	
-	# import cv2
-	# video = cv2.VideoCapture(path + "Intro.mp4")
-	# success, video_image = video.read()
-	
-	# while success:
-	#	for event in pygame.event.get():
-	#		if event.type == pygame.QUIT:
-	#			run = False
-
-	#	success, video_image = video.read()
-	#	if success:
-	#		video_surf = pygame.image.frombuffer(
-	#			video_image.tobytes(), 
-	#			video_image.shape[1::-1], 
-	#			"BGR"
-	#		)	
-	#	else:
-	#		run = False
-	#	win.blit(pygame.transform.scale(video_surf, (Width, Height)), (0, 0))
-	#	pygame.display.flip()
-	#	clock.tick(20)
-	pass
-
 def loop():
 	game.does_lighten = False
 	current_screen = game.main_menu.main_menu
@@ -845,8 +757,9 @@ def loop():
 
 def main():
 	
+	game.statistics[0] += 1
 	if Settings["Display"][10]:
-		show_intro()
+		pass # TODO сделать интро
 
 	if Settings["User"][1]:
 		loop()

@@ -327,12 +327,6 @@ class Player:
 
 		if self.god_mode:
 			return
-		
-		for heart_x in range(self.HP // 10):
-			win.blit(Heart, (Width - 50 - heart_x * 40, 10))
-
-		if Width - 10 - self.HP // 10 * 40 < mouse_x < Width - 10 and 40 < mouse_y < 104:
-			mouse_object = t("Health bar")
 
 		self.HP_TICK += 1
 		if self.HP_TICK == 300:

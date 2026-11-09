@@ -2,8 +2,9 @@ import pygame
 import os
 import math
 from random import randint
-from Globals import path, Width, Height, win
-from Functions import shadow
+from Translator import t
+from Globals import path, Width, Height, win, bigTextInfo, text_color
+from Functions import shadow, draw_key, win_fill
 from Classes.Projectile import Projectile
 
 class Ron:
@@ -128,3 +129,43 @@ class Ron:
 		self.inventory["Bow"] = 1
 		self.inventory["Arrow"] = 99
 
+	def show_window(self, mouse_x, mouse_y):
+
+		if not self.window[0]:
+			return
+		
+		win_fill()
+
+		pygame.draw.rect(win, text_color, (100, 100, Width - 200, Height - 200))
+		pygame.draw.rect(win, (0, 150, 0), (100, 100, Width - 200, Height - 200), 10)
+
+		win.blit(bigTextInfo.render(t("Set a home point"), True, (0, 150, 0)), (200, 150))
+		
+		if 200 <= mouse_x <= 200 + bigTextInfo.size(t("Set a home point"))[0] and 150 <= mouse_y <= 180:
+			
+			win.blit(bigTextInfo.render(t("Set a home point"), True, (0, 100, 0)), (200, 150))
+			
+			if self.game.release:
+				self.home = [self.game.player.x, self.game.player.y]
+
+		if self.home is not None:
+			win.blit(bigTextInfo.render(t("Current home point: ") + str(self.home[0] // 50) + "; " + str(self.home[1] // 50), True, (0, 150, 0)), (200, 200))
+
+		win.blit(bigTextInfo.render(t("Call"), True, (0, 150, 0)), (200, 250))
+		
+		if 200 <= mouse_x <= 200 + bigTextInfo.size(t("Call"))[0] and 250 <= mouse_y <= 280:
+			
+			win.blit(bigTextInfo.render(t("Call"), True, (0, 100, 0)), (200, 250))
+			if self.game.release:
+				self.home = None
+				
+		win.blit(bigTextInfo.render("x", True, (0, 150, 0)), (Width - 160, 130))
+		
+		if self.game.alt_pressed:
+			draw_key("ESC", Width - 160, 170)
+			
+		if Width - 160 <= mouse_x <= Width - 130 and 130 <= mouse_y <= 160:
+			win.blit(bigTextInfo.render("x", True, (0, 100, 0)), (Width - 160, 130))
+			if self.game.release:
+				self.window[0] = False
+					
