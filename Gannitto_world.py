@@ -20,8 +20,10 @@ from ItemActions import ItemActions
 from Effects import EffectsSystem
 from WorldLoader import WorldLoader
 from InputHandler import InputHandler
+from MobileControl import MobileControl
+from VisualEffects import VisualEffects
 from BarRenderer import BarRenderer
-from Assets import arrow_down, arrow_left, arrow_right, arrow_up, cave_texture, biome_textures, Inventory_slot, Open_inventory_slot, Open_inventory_slot2
+from Assets import cave_texture, biome_textures, Inventory_slot
 from Globals import path, Settings, win, MAX_FPS, Width, Height, text_color, textInfo, bigTextInfo, statistics, hot_keys, clock, colors
 from UI import SettingsMenu, CharactersMenu, WorldsMenu, EditWorldMenu, MultiplayerSettingsMenu, MainMenu, TabMenu
 from Classes import Player, World, Object, Particle, Slime, Spider, Butterfly, Projectile, ExplodingProjectile, Wall, Farmland, Wire, Lever, Motherboard, RandomBox, Ron, Button, Portal
@@ -46,7 +48,6 @@ pygame.init()
 	Отображение частиц
 	Механика освещения
 	Механика анимации слотов
-	Меню на клавише TAB
 	Отображение инвентаря
 	Отображение полосы здоровья
 	Механика мультиплеера
@@ -141,7 +142,9 @@ game.input_system = input_system
 game.world_loader = WorldLoader(game, save)
 game.input_handler = InputHandler(game, save, music_channel)
 game.bar_renderer = BarRenderer(game)
-weather = WeatherSystem(world)
+game.weather = WeatherSystem(world)
+game.mobile_control = MobileControl(game)
+game.visual_effects = VisualEffects(game)
 
 # Основной цикл игры
 
@@ -153,13 +156,6 @@ def start_game():
 	Width, Height = pygame.display.get_surface().get_size()
 
 	game.craft_list_max_offset = (len(inventory.recipes) + 1) * -80 + Height
-
-	if Settings["Game"][1]:
-		up_b = Button(Width - 148, Height - 148, arrow_up, arrow_up, sound=False, cooldown=0)
-		left_b = Button(Width - 222, Height - 74, arrow_left, arrow_left, sound=False, cooldown=0)
-		down_b = Button(Width - 148, Height - 74, arrow_down, arrow_down, sound=False, cooldown=0)
-		right_b = Button(Width - 74, Height - 74, arrow_right, arrow_right, sound=False, cooldown=0)
-
 	
 	craft_list_back_button = Button(114, Height - 176, bigTextInfo.render("<", True, (0, 150, 0)), bigTextInfo.render("<", True, (0, 100, 0)))
 	craft_list_next_button = Button(Width - 144, Height - 176, bigTextInfo.render(">", True, (0, 150, 0)), bigTextInfo.render(">", True, (0, 100, 0)))
@@ -519,8 +515,8 @@ def start_game():
 			take_screenshot(game)
 		# Отрисовка погоды
 
-		weather.update()
-		weather.draw()
+		game.weather.update()
+		game.weather.draw()
 		
 		# Отображение частиц
 
@@ -552,40 +548,8 @@ def start_game():
 			draw_select_image_arbitrarily(player.hovered_object.x, player.hovered_object.y, player.hovered_object.w, player.hovered_object.h, world_to_screen, world_rect_to_screen)
 			mouse_object = player.hovered_object.name
 
-		# Меню на клавише TAB
-
-		if keys[hot_keys["TAB menu"]] and not game.chat_open:
-			result = game.tab_menu.tab_menu()
-			if result:
-				return result
-
-		if Settings["Game"][1]:
-
-			up_b.main()
-			left_b.main()
-			down_b.main()
-			right_b.main()
-			if game.inventory_open:
-				win.blit(load(Open_inventory_slot2, 64), (890, 10))
-				if 890 <= mouse_x <= 954 and 10 <= mouse_y <= 74 and click[0]:
-					game.inventory_open = False
-			else:
-				win.blit(Open_inventory_slot, (810, 10))
-				if 810 <= mouse_x <= 874 and 10 <= mouse_y <= 74 and click[0]:
-					game.inventory_open = True
-		
-		if player.HP_animation_tick > 0 and not player.god_mode:
-			
-			player.HP_animation_tick += 1
-			
-			if player.HP_animation_tick < 6:
-				win_fill((200, 0, 0), player.HP_animation_tick * 20)
-				win.blit(pygame.transform.scale(win, (Width + player.HP_animation_tick * 2, Height + player.HP_animation_tick * 2)), (-player.HP_animation_tick, -player.HP_animation_tick))
-			else:
-				win_fill((200, 0, 0), (player.HP_animation_tick - 10 - player.HP_animation_tick - 10) * 20)
-
-			if player.HP_animation_tick == 21:
-				player.HP_animation_tick = 0
+		game.mobile_control.show_buttons(mouse_x, mouse_y, click)
+		game.visual_effects.show_effects()
 
 		# Отображение инвентаря
 
@@ -612,40 +576,6 @@ def start_game():
 		if ron.x - player.x + Width // 2 - 128 <= mouse_x <= ron.x - player.x + Width // 2 + 128 and player.y - ron.y + Height // 2 - 128 <= mouse_y <= player.y - ron.y + Height // 2 + 128 and game.release and (not game.multiplayer or game.multiplayer_role == "Host"):
 			ron.window[0] = True
 		ron.show_window(mouse_x, mouse_y)
-		if game.in_motherboard is not None:
-
-			win_fill()
-
-			pygame.draw.rect(win, text_color, (Width // 2 - 300, Height // 2 - 300, 600, 600))
-			pygame.draw.rect(win, (0, 150, 0), (Width // 2 - 300, Height // 2 - 300, 600, 600), 10)
-			
-			a = -1
-			b = 0
-
-			for i in game.in_motherboard.objects:
-				a += 1
-				if a == 32:
-					a = 0
-					b += 1
-				if i is None:
-					pygame.draw.rect(win, (0, 150, 0), (Width // 2 - 300 + a * 18.75, Height // 2 - 300 + b * 18.75, 18.75, 18.75), 2)
-				else:
-					i.main()
-					if i.condition == "On":
-						pygame.draw.rect(win, (180, 0, 0), (Width // 2 - 300 + a * 18.75, Height // 2 - 300 + b * 18.75, 18.75, 18.75))
-					if i.condition == "Off":
-						pygame.draw.rect(win, (180, 100, 100), (Width // 2 - 300 + a * 18.75, Height // 2 - 300 + b * 18.75, 18.75, 18.75))
-			
-			win.blit(bigTextInfo.render("x", True, (0, 150, 0)), (Width - 160, 130))
-			
-			if game.alt_pressed:
-				draw_key("ESC", Width - 160, 170)
-				
-			if Width - 160 <= mouse_x <= Width - 130 and 130 <= mouse_y <= 160:
-				win.blit(bigTextInfo.render("x", True, (0, 100, 0)), (Width - 160, 130))
-				if game.release:
-					game.in_motherboard = None
-
 		if game.menu_open:
 
 			text(f"""X {player.x // 50}

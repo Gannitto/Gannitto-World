@@ -48,6 +48,11 @@ class InputHandler:
 						self.game.use_item_pressed = True
 					if event.key == hot_keys["Multiplayer menu"]:
 						self.game.multiplayer_menu_open = True
+					if event.key == hot_keys["TAB menu"]:
+						result = self.game.tab_menu.tab_menu()
+						if result:
+							return result
+		
 					if event.key == hot_keys["Set Ron home"]:
 						self.game.ron.home = [self.game.player.x, self.game.player.y]
 					if event.key == hot_keys["Menu"]:
