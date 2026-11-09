@@ -2,6 +2,33 @@ import pygame
 from Assets import wall_images
 from Globals import win, Settings
 
+# Смещения и битовые веса соседей: (dx, dy, bit_weight)
+NEIGHBOR_BITS = (
+    (0, 256, 1),   # Верх
+    (256, 0, 2),   # Право
+    (0, -256, 4),  # Низ
+    (-256, 0, 8)   # Лево
+)
+
+# Хитбоксы
+WALL_RECTS = (
+    (-24, -128, 48, 256),   # 0: одиночная
+    (-24, -128, 48, 256),   # 1: верх
+    (-24, -128, 152, 256),  # 2: право
+    (-24, -128, 152, 256),  # 3: верх + право
+    (-24, -128, 48, 256),   # 4: низ
+    (-24, -128, 48, 256),   # 5: верх + низ
+    (-24, -128, 152, 256),  # 6: право + низ
+    (-24, -128, 152, 256),  # 7: верх + право + низ
+    (-128, -128, 152, 256), # 8: лево
+    (-128, -128, 152, 256), # 9: верх + лево
+    (-128, -128, 256, 256), # 10: право + лево
+    (-128, -128, 256, 256), # 11: верх + право + лево
+    (-128, -128, 152, 256), # 12: низ + лево
+    (-128, -128, 152, 256), # 13: верх + низ + лево
+    (-128, -128, 256, 256), # 14: право + низ + лево
+    (-128, -128, 256, 256)  # 15: все стороны
+)
 class Wall:
 
 	def __init__(self, world, wall_type: str, X, Y, is_door: bool=False):
@@ -21,100 +48,17 @@ class Wall:
 
 	def update_neigboors(self, world):
 
-		self.neigbords = []
-		for wall in ((self.x - 256, self.y), (self.x + 256, self.y), (self.x, self.y - 256), (self.x, self.y + 256)):
-			chunk = world.chunk_manager.get_chunk_at(*wall)
-			if chunk is not None and wall in chunk.walls:
-				self.neigbords.append(wall)
+		mask = 0
+		for dx, dy, bit in NEIGHBOR_BITS:
+			nx, ny = self.x + dx, self.y + dy
+			chunk = world.chunk_manager.get_chunk_at(nx, ny)
+			if chunk is not None and (nx, ny) in chunk.walls:
+				mask |= bit  # Побитовое ИЛИ добавляет вес соседа к маске
 
-		if self.is_door:
+		self.image = self.images[mask]
+		rx, ry, rw, rh = WALL_RECTS[mask]
+		self.rect = pygame.Rect(self.x + rx, self.y + ry, rw, rh)		
 
-			if len(self.neigbords) == 0:
-				if self.open:
-					self.image = self.images[2]
-				else:
-					self.image = self.images[0]
-
-			if len(self.neigbords) == 1:
-
-				if self.neigbords[0][0] == self.x:
-					if self.open:
-						self.image = self.images[3]
-					else:
-						self.image = self.images[1]
-				else:
-					if self.open:
-						self.image = self.images[2]
-					else:
-						self.image = self.images[0]
-
-			elif len(self.neigbords) == 2:
-
-				if self.neigbords[0][0] == self.x == self.neigbords[1][0]:
-					if self.open:
-						self.image = self.images[3]
-					else:
-						self.image = self.images[1]
-				elif self.neigbords[0][1] == self.y == self.neigbords[1][1]:
-					if self.open:
-						self.image = self.images[2]
-					else:
-						self.image = self.images[0]
-
-		else:
-
-			if len(self.neigbords) == 1:
-
-				if self.neigbords[0][0] < self.x:
-					self.image = self.images[3]
-					self.rect = pygame.Rect(self.x - 128, self.y - 128, 152, 256)
-				elif self.neigbords[0][0] > self.x:
-					self.image = self.images[4]
-					self.rect = pygame.Rect(self.x - 24, self.y - 128, 152, 256)
-				else:
-					self.image = self.images[2]
-					self.rect = pygame.Rect(self.x - 24, self.y - 128, 48, 256)
-
-			elif len(self.neigbords) == 2:
-
-				if self.neigbords[0][0] == self.x == self.neigbords[1][0]:
-					self.image = self.images[2]
-					self.rect = pygame.Rect(self.x - 24, self.y - 128, 48, 256)
-				elif self.neigbords[0][1] == self.y == self.neigbords[1][1]:
-					self.image = self.images[1]
-					self.rect = pygame.Rect(self.x - 128, self.y - 128, 256, 256)
-				elif (self.neigbords[0][0] == self.x - 256 and self.neigbords[1][1] == self.y + 256) or (self.neigbords[1][0] == self.x - 256 and self.neigbords[0][1] == self.y + 256):
-					self.image = self.images[5]
-					self.rect = pygame.Rect(self.x - 128, self.y - 128, 152, 256)
-				elif (self.neigbords[0][0] == self.x + 256 and self.neigbords[1][1] == self.y + 256) or (self.neigbords[1][0] == self.x + 256 and self.neigbords[0][1] == self.y + 256):
-					self.image = self.images[6]
-					self.rect = pygame.Rect(self.x - 24, self.y - 128, 152, 256)
-				elif (self.neigbords[0][0] == self.x + 256 and self.neigbords[1][1] == self.y - 256) or (self.neigbords[1][0] == self.x + 256 and self.neigbords[0][1] == self.y - 256):
-					self.image = self.images[7]
-					self.rect = pygame.Rect(self.x - 24, self.y - 128, 152, 256)
-				elif (self.neigbords[0][0] == self.x - 256 and self.neigbords[1][1] == self.y - 256) or (self.neigbords[1][0] == self.x - 256 and self.neigbords[0][1] == self.y - 256):
-					self.image = self.images[8]
-					self.rect = pygame.Rect(self.x - 128, self.y - 128, 152, 256)
-
-			elif len(self.neigbords) == 3:
-
-				if self.neigbords[0][1] != self.y + 256 and self.neigbords[1][1] != self.y + 256 and self.neigbords[2][1] != self.y + 256:
-					self.image = self.images[9]
-					self.rect = pygame.Rect(self.x - 128, self.y - 128, 256, 256)
-				if self.neigbords[0][1] != self.y - 256 and self.neigbords[1][1] != self.y - 256 and self.neigbords[2][1] != self.y - 256:
-					self.image = self.images[10]
-					self.rect = pygame.Rect(self.x - 128, self.y - 128, 256, 256)
-				if self.neigbords[0][0] != self.x + 256 and self.neigbords[1][0] != self.x + 256 and self.neigbords[2][0] != self.x + 256:
-					self.image = self.images[11]
-					self.rect = pygame.Rect(self.x - 128, self.y - 128, 152, 256)
-				if self.neigbords[0][0] != self.x - 256 and self.neigbords[1][0] != self.x - 256 and self.neigbords[2][0] != self.x - 256:
-					self.image = self.images[12]
-					self.rect = pygame.Rect(self.x - 24, self.y - 128, 152, 256)
-
-			elif len(self.neigbords) == 4:
-				self.image = self.images[12]
-				self.rect = pygame.Rect(self.x - 128, self.y - 128, 256, 256)
-		
 	def main(self, release, mouse_x, mouse_y, game):
 		screen_x, screen_y = game.world_to_screen(self.x, self.y, 256, 256)
 		if self.is_door and release and screen_x <= mouse_x <= screen_x + 256 and screen_y <= mouse_y <= screen_y + 256:

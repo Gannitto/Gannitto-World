@@ -10,7 +10,7 @@ door_types = ("Wooden door",)
 wall_images = {}
 
 for wall_type in wall_types:
-	wall_images[wall_type] = load_textures(f"{path}Images/Walls/{wall_type}/", 14, 256)
+	wall_images[wall_type] = load_textures(f"{path}Images/Walls/{wall_type}/", 16, 256)
 
 for door_type in door_types:
 	wall_images[door_type] = (
@@ -52,7 +52,7 @@ for frame in spider_red_animation_images.values():
 	frame.blit(color_surface, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
 
 butterfly_images = load_textures(path + "Images/Mobs/Butterfly ", 3, 32)
-wire_images = load_textures(path + "Images/Objects/Wire ", 11, 64)
+wire_images = load_textures(path + "Images/Objects/Wire ", 16, 64)
 random_box_images = load_textures(path + "Images/Objects/Random Box ", 4, 64)
 
 Portal_1 = load(path + "Images/Objects/Portal 1.png", 128, 256)
