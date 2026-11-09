@@ -19,8 +19,6 @@ class ItemActions:
 						if self.game.multiplayer:
 							self.game.events.append({"event_type": "projectile_added", "x": self.game.player.x, "y": self.game.player.y, "mouse_x": mouse_x, "mouse_y": mouse_y, "projectile_type": "Bullet"})
 						break
-				else:
-					text(t("You don't have bullets to shoot"), Width // 2, Height // 2, (200, 30, 30), alignment=True)
 
 			case "Bow":
 				for item_index, slot in enumerate(self.game.inventory.whole_inventory):
@@ -30,8 +28,6 @@ class ItemActions:
 						if self.game.multiplayer:
 							self.game.events.append({"event_type": "projectile_added", "x": self.game.player.x, "y": self.game.player.y, "mouse_x": mouse_x, "mouse_y": mouse_y, "projectile_type": "Arrow"})
 						break
-				else:
-					text(t("You don't have arrows to shoot"), Width // 2, Height // 2, (200, 30, 30), alignment=True)
 
 			case "Beer":
 
@@ -44,7 +40,7 @@ class ItemActions:
 
 				self.game.inventory.reduce(self.game.inventory.changed_slot)
 					
-		if self.game.inventory.whole_inventory[self.game.inventory.changed_slot] is not None and self.game.inventory.whole_inventory[self.game.inventory.changed_slot].type == "Food":
+		if self.game.inventory.whole_inventory[self.game.inventory.changed_slot] is not None and self.game.inventory.whole_inventory[self.game.inventory.changed_slot].type == "Food" and self.game.HP < 100:
 			
 			self.game.player.HP += self.game.inventory.whole_inventory[self.game.inventory.changed_slot].special_info
 			self.game.inventory.reduce(self.game.inventory.changed_slot)

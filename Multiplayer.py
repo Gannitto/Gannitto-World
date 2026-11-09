@@ -410,7 +410,7 @@ class NetworkManager:
 							self._broadcast({
 								"type": "server_event",
 								"event_type": "player_stopped",
-								"player_id": player_id,
+								"player_id": player_id
 							}, exclude_ids)
 
 						case "object_added":
@@ -991,8 +991,12 @@ class NetworkManager:
 			else:
 				game.player.changed_item = game.inventory.whole_inventory[game.inventory.changed_slot].name
 			game.events.append({"event_type": "changed_item", "changed_item": game.player.changed_item})
-		if len(game.events) != 0:
+		if game.events:
 			self.send_events(tuple(game.events))
+		with self.lock:
+			game_events = self.server_events.get("Game", []).copy()
+			self.server_events["Game"] = []
+
 		for event in self.server_events["Game"]:
 			remove_event = True
 

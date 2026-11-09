@@ -235,6 +235,7 @@ class Chunk:
 		self.biome = None
 		self.is_loaded = False
 		self.is_generated = False
+		self.transition_image = None
 		self.modified = True # TODO изменён ли чанк игроком
 		
 	def get_world_bounds(self):

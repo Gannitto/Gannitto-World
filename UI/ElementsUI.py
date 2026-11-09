@@ -140,7 +140,7 @@ class Button(UIElement):
 		self.color = color
 	
 	def draw(self):
-		pygame.draw.rect(self.color, self.rect, 2)
+		pygame.draw.rect(win, self.color, self.rect, 2)
 		text_surface = self.font.render(t(self.label), True, self.color)
 		text_rect = text_surface.get_rect(center=self.rect.center)
 		win.blit(text_surface, text_rect)

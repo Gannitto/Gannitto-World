@@ -43,7 +43,7 @@ class WorldLoader:
 		
 		for plugin in plugins:
 
-			for i in Saver.load_objects(path + "" + plugin):
+			for i in Saver.load_objects(os.path.dirname(path) + "/Plugins/" + plugin):
 
 				match i[0]:
 
