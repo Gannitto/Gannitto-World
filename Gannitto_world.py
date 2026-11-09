@@ -1,4 +1,3 @@
-from numpy import invert
 import pygame
 import pyperclip
 from pathlib import Path
@@ -547,7 +546,7 @@ def start_game():
 
 		for particle in world.particles:
 
-			particle.main(dt, world)
+			particle.main(dt, game)
 			
 			if (particle.end_time is not None and time.time() - particle.start_time >= particle.end_time) or (particle.del_self_condition is not None and particle.del_self_condition(particle)):
 				if particle.end_command is not None:

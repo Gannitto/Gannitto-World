@@ -112,7 +112,7 @@ class Object:
 							game.world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object(item_name, rand_x, rand_y, f"Images/Items/{item_name}.png", pickable=True))
 					return
 
-		if player.x - Width // 2 - self.w // 2 <= self.x <= player.x + Width // 2 + self.w // 2 and player.y - Height // 2 <= player.y + Height // 2:
+		if player.x - Width // 2 - self.w // 2 <= self.x <= player.x + Width // 2 + self.w // 2 and player.y - Height // 2 - self.h // 2 <= self.y <= player.y + Height // 2 + self.h // 2:
 			win.blit(self.image, game.world_to_screen(self.x, self.y, self.w, self.h, player))
 		if Settings["Display"][3]:
 			pygame.draw.rect(win, (0, 0, 0), (*game.world_to_screen(self.rect[0] + self.w // 2, self.rect[1] + self.h // 2, self.rect[2], self.rect[3], player), self.rect[2], self.rect[3]), 3)

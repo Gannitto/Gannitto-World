@@ -47,7 +47,7 @@ class Farmland:
 		if self.plant is None:
 			if slot is not None and slot.name in seed_types:
 				self.plant = seed_types[slot.name]
-				game.inventory.reduce(game.changed_slot)
+				game.inventory.reduce(game.inventory.changed_slot)
 				self.grow_timer = random.randint(250, 350)
 		elif self.plant_growth_stage == 1:
 			if slot is not None and slot.name == "Water bucket":

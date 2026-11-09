@@ -58,7 +58,10 @@ class Player:
 			frames = []
 			for frame_num in range(1, 7):
 				path_to_image = f"{path}Images/Players/{self.changed_character}/Normal/{direction}/{frame_num}.png"
-				frames.append(load(path_to_image, 256))	
+				frame = load(path_to_image, 256)
+				if Settings["Display"][4]:
+					frame = shadow(frame, f"Player {direction} {frame_num}")
+				frames.append(frame)
 			self.animations[direction] = frames
 
 	def get_current_frame(self):
@@ -175,14 +178,14 @@ class Player:
 								a = pygame.Surface((16, 24))
 								a.fill((0, 0, 0))
 								a.set_alpha(90)
-								game.world.particles.append(Particle(self.x + 16, self.y + 96, a, end_time=3))
+								# game.world.particles.append(Particle(self.x + 16, self.y + 96, a, end_time=3))
 
 							case 4 | 6:
 
 								a = pygame.Surface((16, 24))
 								a.fill((0, 0, 0))
 								a.set_alpha(90)
-								game.world.particles.append(Particle(self.x - 32, self.y + 96, a, end_time=3))
+								# game.world.particles.append(Particle(self.x - 32, self.y + 96, a, end_time=3))
 
 					case 2:
 
@@ -311,7 +314,7 @@ class Player:
 	def render(self, game):
 		"""Отрисовывает игрока на экране"""
 		frames = self.animations[self.direction]
-		win.blit(shadow(self.image, f"Player {self.direction} {self.frame_index % len(frames)}"), (Width / 2 - 128, Height / 2 - 128))
+		win.blit(self.image, (Width / 2 - 128, Height / 2 - 128))
 		self.handle_animations(game)
 		if self.changed_item and not (self.changed_item_x == self.changed_item_y == 0):
 			win.blit(game.inventory.resources[self.changed_item].image, (Width // 2 + self.changed_item_x, Height // 2 + self.changed_item_y))
@@ -372,7 +375,7 @@ class Peer(Player):
 	def render(self, game):
 		"""Отрисовывает игрока на экране"""
 		frames = self.animations[self.direction]
-		win.blit(shadow(self.image, f"Player {self.direction} {self.frame_index % len(frames)}"), game.world_to_screen(self.x, self.y, 256, 256))
+		win.blit(self.image, game.world_to_screen(self.x, self.y, 256, 256))
 		if self.changed_item is not None and self.direction != "Up":
 			changed_item_x = 0
 			changed_item_y = 0

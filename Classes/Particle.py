@@ -67,16 +67,7 @@ class Particle:
 		self.x_bias = x_bias
 		self.y_bias = y_bias
 		self.rotate = rotate
-		if display_mode is None:
-			import sys
-			main_module = sys.modules.get("__main__")
-			if main_module and hasattr(main_module, "world_to_screen"):
-				self.display_mode = main_module.world_to_screen
-			else:
-				# Безопасный дефолтный вариант (на случай тестов без главного файла)
-				self.display_mode = lambda X, Y, W, H: (X - start_x, Y - start_y)
-		else:
-			self.display_mode = display_mode
+		self.display_mode = display_mode
 		
 		self.tick_command = tick_command
 
@@ -119,7 +110,7 @@ class Particle:
 		self.__dict__.update(state)
 		self.image = load(self.image_path, self.w, self.h)
 	
-	def main(self, dt, world):
+	def main(self, dt, game):
 		
 		self.dt = dt
 		if self.tick_command is not None:
@@ -139,7 +130,7 @@ class Particle:
 			except:
 				if self.remove_particle_after_twisting:
 					if self.end_command is not None: self.end_command(self)
-					world.particles.remove(self)
+					game.world.particles.remove(self)
 					return
 		if self.x_bias:
 			self.x += dt * 25 * self.x_bias if self.x_bias.__class__ in (int, float) else self.x_bias(self)
@@ -155,9 +146,12 @@ class Particle:
 			
 		if (self.end_x is not None and self.end_y is None and self.end_x - self.end_zone <= self.x <= self.end_x + self.end_zone) or (self.end_y is not None and self.end_x is None and self.end_y - self.end_zone <= self.y <= self.end_y + self.end_zone) or (self.end_x is not None and self.end_y is not None and self.end_x - self.end_zone <= self.x <= self.end_x + self.end_zone and self.end_y - self.end_zone <= self.y <= self.end_y + self.end_zone):
 			if self.end_command is not None: self.end_command(self)
-			world.particles.remove(self)
-
-		win.blit(self.image, (self.display_mode(self.x, self.y, self.w, self.h)))
+			game.world.particles.remove(self)
+		if self.display_mode:
+			display_mode = self.display_mode
+		else:
+			display_mode = game.world_to_screen
+		win.blit(self.image, (display_mode(self.x, self.y, self.w, self.h)))
 
 		if Settings["Display"][3]:
-			pygame.draw.rect(win, (0, 0, 0), (self.display_mode(self.x, self.y, self.w, self.h)[0], self.display_mode(self.x, self.y, self.w, self.h)[1], self.w, self.h), 3)
+			pygame.draw.rect(win, (0, 0, 0), (display_mode(self.x, self.y, self.w, self.h)[0], display_mode(self.x, self.y, self.w, self.h)[1], self.w, self.h), 3)

@@ -1,6 +1,7 @@
 import pygame
 import sys
 import time
+import Classes
 from Functions import create_throw_particle, win_darken
 from Globals import hot_keys, win, Width, Height, Settings
 from Classes import Object, Particle
@@ -41,6 +42,9 @@ class InputHandler:
 						self.game.input_system.stop_input()
 						continue
 				else:
+					if event.key == pygame.K_o:
+						from Classes import Spider
+						self.game.world.mobs.append(Spider(self.game.player.x, self.game.player.y))
 					if event.key == hot_keys["Show keys"]:
 						self.game.alt_pressed = not self.game.alt_pressed
 					if event.key == hot_keys["Use item"]:

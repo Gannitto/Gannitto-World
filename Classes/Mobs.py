@@ -87,7 +87,6 @@ class Mob:
 		self.damage_timer = self.damage_cooldown
 
 		game.world.particles.append(Particle(self.x + random.randint(-64, 64), self.y + random.randint(-64, 64), text(str(-HP), 0, 0, (180, 10, 10), max_width=44, max_height=50, return_surface=True), y_bias=3, increased_transparency=30, end_time=0.5))
-		win.blit(text(str(self.HP), 0, 0, (180, 10, 10), return_surface=True), (self.x + 58 - game.player.x + Width // 2 - 64, game.player.y - self.y + Height // 2 - 32))
 
 		if self.HP < 1:
 			
@@ -107,7 +106,7 @@ class Slime(Mob):
 		super().__init__(
 			x=x, y=y,
 			HP=50,
-			speed=random.randint(10, 20),
+			speed=random.randint(300, 400),
 			animation_frames=slime_images[self.slime_type],
 			red_animation_frames=red_slime_images[self.slime_type],
 			drop_items=(("Blue slime" if self.slime_type == 1 else "Pink slime", 1, 3),)
@@ -197,8 +196,8 @@ class Slime(Mob):
 		dist = math.dist((self.x, self.y), (target_x, target_y))
 		
 		if dist > 10:  # Если не достигли цели
-			move_x = dx / dist * self.speed
-			move_y = dy / dist * self.speed
+			move_x = dx / dist * self.speed * dt
+			move_y = dy / dist * self.speed * dt
 			
 			# Проверка стен
 			if not self._check_collision(self.x + move_x, self.y, game):
@@ -333,12 +332,8 @@ class Spider(Mob):
 			x=x, y=y,
 			HP=50,
 			speed=random.randint(500, 1000),
-			animation_frames=[
-				load(path + "Images/Mobs/Spider.png", 256),
-				load(path + "Images/Mobs/Spider 2.png", 256)],
-			red_animation_frames=[
-				load(path + "Images/Mobs/Spider.png", 256),
-				load(path + "Images/Mobs/Spider 2.png", 256)],
+			animation_frames=list(spider_animation_images.values()),
+			red_animation_frames=list(spider_red_animation_images.values()),
 			drop_items=(("Thread", 1, 2),)
 		)
 		
@@ -470,12 +465,9 @@ class Spider(Mob):
 	def __setstate__(self, state):
 		
 		self.__dict__.update(state)
-		self.animation_frames=(
-			load(path + "Images/Mobs/Spider.png", 256),
-			load(path + "Images/Mobs/Spider 2.png", 256)
-		)
-		self.red_animation_frames = self.animation_frames
-		self.animation_images = spider_animation_images
+		self.animation_frames = list(spider_animation_images.values())
+		self.red_animation_frames = spider_red_animation_images
+		self.animation_images = list(spider_animation_images.values())
 		self.red_animation_images = spider_red_animation_images
 
 class Butterfly:

@@ -68,7 +68,7 @@ class ExplodingProjectile:
 		self.dist_x = abs(target_pos[0] - self.x)
 		self.dist_y = abs(target_pos[1] - self.y)
 
-	def main(self, world, world_to_screen, world_rect_to_screen):
+	def main(self, game):
 
 		"""Показывает снаряд"""
 
@@ -79,17 +79,16 @@ class ExplodingProjectile:
 		rect_rotated = pygame.transform.rotate(self.image, -10)
 		rect_copy = rect.copy()
 		rect_copy.center = rect_rotated.get_rect().center
-		self.image = rect_rotated.subsurface(rect_copy).copy()
-
-		win.blit(self.image, world_to_screen(self.x, self.y, 64, 64))
+		
+		win.blit(rect_rotated.subsurface(rect_copy).copy(), game.world_to_screen(self.x, self.y, 64, 64))
 
 		if Settings["Display"][3]:
-			pygame.draw.rect(win, (0, 0, 0), world_rect_to_screen(self.x, self.y, 64, 64), 3)
+			pygame.draw.rect(win, (0, 0, 0), game.world_rect_to_screen(self.x, self.y, 64, 64), 3)
 		if abs(self.x - self.start_x) > self.dist_x or abs(self.y - self.start_y) > self.dist_y:
 			radius = 20
 			for _ in range(150):
 				angle = random.uniform(0, 2 * math.pi)
 				radius -= 0.1
-				world.particles.append(Particle(self.x, self.y, explosion_texture.copy(), x_bias=radius * math.cos(angle), y_bias=radius * math.sin(angle), increased_transparency=30, end_time=0.3))
-			world.projectiles.remove(self)
+				game.world.particles.append(Particle(self.x, self.y, explosion_texture.copy(), x_bias=radius * math.cos(angle), y_bias=radius * math.sin(angle), increased_transparency=30, end_time=0.3))
+			game.world.projectiles.remove(self)
 
