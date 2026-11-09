@@ -549,7 +549,7 @@ def start_game():
 			mouse_object = player.hovered_object.name
 
 		game.mobile_control.show_buttons(mouse_x, mouse_y, click)
-		game.visual_effects.show_effects()
+		game.visual_effects.show_effects(dt)
 
 		# Отображение инвентаря
 

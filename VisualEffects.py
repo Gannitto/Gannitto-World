@@ -7,20 +7,17 @@ class VisualEffects:
 	def __init__(self, game):
 		self.game = game
 
-	def show_effects(self):
+	def show_effects(self, dt):
 
-		if self.game.player.HP_animation_tick > 0 and not self.game.player.god_mode:
-			self._damage()
+		if self.game.player.damage_timer > 0 and not self.game.player.god_mode:
+			self._damage(dt)
 
-	def _damage(self):
-			self.game.player.HP_animation_tick += 1
-			
-			if self.game.player.HP_animation_tick < 6:
-				win_fill((200, 0, 0), self.game.player.HP_animation_tick * 20)
-				win.blit(pygame.transform.scale(win, (Width + self.game.player.HP_animation_tick * 2, Height + self.game.player.HP_animation_tick * 2)), (-self.game.player.HP_animation_tick, -self.game.player.HP_animation_tick))
-			else:
-				win_fill((200, 0, 0), (self.game.player.HP_animation_tick - 10 - self.game.player.HP_animation_tick - 10) * 20)
-
-			if self.game.player.HP_animation_tick == 21:
-				self.game.player.HP_animation_tick = 0
+	def _damage(self, dt):
+		self.game.player.damage_timer = max(self.game.player.damage_timer - dt, 0)
+		
+		if self.game.player.damage_timer < self.game.player.damage_cooldown / 2:
+			damage_value = self.game.player.damage_timer / self.game.player.damage_cooldown
+		else:
+			damage_value = (self.game.player.damage_cooldown - self.game.player.damage_timer) / self.game.player.damage_cooldown
+		win_fill((200, 0, 0), damage_value * 150)
 

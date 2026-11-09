@@ -28,7 +28,6 @@ class Player:
 		# Игровые параметры
 		self.HP = 100
 		self.HP_TICK = 90
-		self.HP_animation_tick = 0
 		self.god_mode = False
 		self.pass_through_walls = False # TODO
 		self.is_moving = False
@@ -40,6 +39,8 @@ class Player:
 		self.changed_item = None
 		self.changed_item_x = 0
 		self.changed_item_y = 0
+		self.damage_cooldown = 0.3
+		self.damage_timer = 0
 		
 		# Спрайт
 		self.load_frames()
@@ -322,6 +323,10 @@ class Player:
 		if Settings["Display"][3]:
 			pygame.draw.rect(win, (0, 255, 0), (Width / 2 - 128, Height / 2 - 128, 256, 256), 2)
 			pygame.draw.rect(win, (0, 0, 0), (self.rect[0] - self.x + Width // 2, self.y - self.rect[1] - self.rect[3] + Height // 2, self.rect[2], self.rect[3]), 3)
+
+	def damage(self, HP):
+		self.HP -= HP
+		self.damage_timer = self.damage_cooldown
 
 	def update_health_and_death(self, game, mouse_x, mouse_y):
 

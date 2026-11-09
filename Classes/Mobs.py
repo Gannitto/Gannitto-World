@@ -283,8 +283,7 @@ class Slime(Mob):
 		"""Атака игрока"""
 		if not player.god_mode and self.attack_cooldown <= 0:
 			if pygame.Rect(self.x - 50, self.y + 50, 100, 100).colliderect(pygame.Rect(player.x - 100, player.y + 100, 200, 200)):
-				player.HP -= 10
-				player.HP_animation_tick = 1
+				player.damage(10)
 		self.attack_cooldown = 100
 
 	def _check_collision(self, x, y, game):
@@ -429,8 +428,7 @@ class Spider(Mob):
 		if not player.god_mode and self.attack_cooldown <= 0:
 			self.state = "Attacking"
 			if pygame.Rect(self.x - 50, self.y + 50, 100, 100).colliderect(pygame.Rect(player.x - 100, player.y + 100, 200, 200)):
-				player.HP -= 10
-				player.HP_animation_tick = 1
+				player.damage(10)
 			self.attack_cooldown = self.attack_charge_time
 
 	def _check_collision(self, x, y, game):
@@ -466,8 +464,8 @@ class Spider(Mob):
 		
 		self.__dict__.update(state)
 		self.animation_frames = list(spider_animation_images.values())
-		self.red_animation_frames = spider_red_animation_images
-		self.animation_images = list(spider_animation_images.values())
+		self.red_animation_frames = list(spider_red_animation_images.values())
+		self.animation_images = spider_animation_images
 		self.red_animation_images = spider_red_animation_images
 
 class Butterfly:
