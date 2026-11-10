@@ -316,26 +316,14 @@ class Player:
 								else:
 									win.fill(self.eye_color, (Width // 2 + 16, Height / 2 - 24, 8, (8 - self.animation[1] + 8) * 2))
 
-	def render_old(self, game):
-		"""Отрисовывает игрока на экране"""
-		frames = self.animations[self.direction]
-		win.blit(self.image, (Width / 2 - 128, Height / 2 - 128))
-		self.handle_animations(game)
-		if self.changed_item and not (self.changed_item_x == self.changed_item_y == 0):
-			win.blit(game.inventory.resources[self.changed_item].image, (Width // 2 + self.changed_item_x, Height // 2 + self.changed_item_y))
-		
-		if Settings["Display"]["Display hitboxes"]:
-			pygame.draw.rect(win, (0, 255, 0), (Width / 2 - 128, Height / 2 - 128, 256, 256), 2)
-			pygame.draw.rect(win, (0, 0, 0), (self.rect[0] - self.x + Width // 2, self.y - self.rect[1] - self.rect[3] + Height // 2, self.rect[2], self.rect[3]), 3)
-
-	def render(self, game):
+	def render(self, game, dt):
 		frame = self.frame_index % len(self.animations[self.direction])
 
 		center = (Width // 2, Height // 2)
 		win.blit(self.image, (center[0] - 128, center[1] - 128))
 
 		# 2. Офсет предмета
-		offset = self.animator.item_offset(self.direction, frame)
+		offset = self.animator.item_offset(frame)
 		if self.changed_item and offset is not None:
 			dx, dy = offset
 			win.blit(
@@ -343,8 +331,9 @@ class Player:
 				(center[0] + dx, center[1] + dy),
 			)
 
-		# 3. Моргание
-		self.animator.draw_blink(win, self.direction, frame, center)
+		# 3. Анимации
+		self.animator.update(dt)
+		self.animator.draw_blink(win, frame, center)
 
 		# 4. Отладка
 		if Settings["Display"]["Display hitboxes"]:
@@ -403,7 +392,7 @@ class Peer(Player):
 	def update_rect(self):
 		self.rect = pygame.Rect(self.x - 25, self.y - 112, 50, 224)
 	
-	def render(self, game):
+	def render(self, game, dt):
 		"""Отрисовывает игрока на экране"""
 		frames = self.animations[self.direction]
 		win.blit(self.image, game.world_to_screen(self.x, self.y, 256, 256))

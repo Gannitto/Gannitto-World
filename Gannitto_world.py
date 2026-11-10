@@ -456,7 +456,7 @@ def start_game():
 
 		# Отрисовка игрока
 		
-		player.render(game)
+		player.render(game, dt)
 
 		if game.multiplayer:
 			with game.net.lock:
@@ -485,7 +485,7 @@ def start_game():
 									peer.breaking_object_info = None
 
 							game.net.server_events[pid].remove(event)
-					peer.render(game)
+					peer.render(game, dt)
 					peer.update_animation(dt)
 					if peer.breaking_object_info is not None:
 						for object in world.visible_objects:

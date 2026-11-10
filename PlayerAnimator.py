@@ -40,8 +40,8 @@ class PlayerAnimator:
 		else:
 			self.blink.update()
 
-	def item_offset(self, direction: str, frame: int) -> tuple[int, int] | None:
-		return ITEM_OFFSETS.get(direction, {}).get(frame)
+	def item_offset(self, frame: int) -> tuple[int, int] | None:
+		return ITEM_OFFSETS.get(self.player.direction, {}).get(frame)
 
 	def eye_anchor(self, direction: str, frame: int) -> tuple[int, int] | None:
 		anchors = EYE_ANCHORS_REL.get(direction)
@@ -49,10 +49,10 @@ class PlayerAnimator:
 			return None
 		return anchors.get(frame, anchors.get(None))
 
-	def draw_blink(self, surface, direction: str, frame: int, center):
-		if not self.blink.active or direction not in EYE_ANCHORS_REL:
+	def draw_blink(self, surface, frame: int, center):
+		if not self.blink.active or self.player.direction not in EYE_ANCHORS_REL:
 			return
-		anchor = self.eye_anchor(direction, frame)
+		anchor = self.eye_anchor(self.player.direction, frame)
 		if anchor is None:
 			return
 		cx, cy = center
@@ -61,7 +61,7 @@ class PlayerAnimator:
 		if h <= 0:
 			return
 		surface.fill(self.player.eye_color, (ax, ay, 8, h))
-		second = EYE_OFFSETS.get(direction)
+		second = EYE_OFFSETS.get(self.player.direction)
 		if second is not None:
 			surface.fill(self.player.eye_color, (ax + second[0], ay + second[1], 8, h))
 
