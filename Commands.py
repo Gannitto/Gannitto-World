@@ -1,5 +1,6 @@
 import re
 from typing import List, Tuple
+from Translator import t
 
 class CommandSystem:
 
@@ -85,12 +86,13 @@ class CommandSystem:
 		
 		if cmd_name not in self.commands:
 			return f"Нет такой команды: {cmd_name}. Используйте /help"
-		
 		try:
 			result = self.commands[cmd_name][0](*args)
-			return result if result is not None else "Команда выполнена"
+			return result if result is not None else t("The command has been executed.")
 		except TypeError as e:
 			return f"Ошибка в аргументах команды {cmd_name}: {e}"
+		except SyntaxError as e:
+			return f"Ошибка в синтаксисе команды {cmd_name}: {e}"
 		except Exception as e:
 			return f"Ошибка выполнения команды {cmd_name}: {e}"
 

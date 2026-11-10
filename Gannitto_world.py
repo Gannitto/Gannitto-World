@@ -626,7 +626,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.in
 						eval(input_system.last_text[2:])
 						# Команды через eval - опасная штука, так что они доступны только в режиме разработчика
 					except Exception as e:
-						command_system.chat_message(e)
+						command_system.chat_message(f"Ошибка выполнения команды {input_system.last_text[2:]}: {e}")
 					else:
 						command_system.chat_message(t("The command has been executed."))
 				elif input_system.last_text != "" and input_system.last_text[0] == "/":

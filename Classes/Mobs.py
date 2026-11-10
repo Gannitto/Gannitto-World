@@ -126,8 +126,8 @@ class Slime(Mob):
 		self.attack_cooldown = 0
 		self.attack_charge_time = 30
 		self.charge_timer = 0
-		self.jump_speed = 50  # Скорость прыжка
-		self.retreat_speed = 50	# Скорость отскока
+		self.jump_speed = 3000  # Скорость прыжка
+		self.retreat_speed = 3000	# Скорость отскока
 		self.attack_range = 150  # Дистанция атаки
 		self.detection_range = 1000	# Дистанция обнаружения
 		
@@ -154,8 +154,8 @@ class Slime(Mob):
 		match self.state:
 			case "Wander": self._handle_wander(game, dt)
 			case "Prepare attak": self._handle_prepare_attack(game.player, game.world, dt)
-			case "Jumping": self._handle_jumping(game)
-			case "Retreat": self._handle_retreat(game)
+			case "Jumping": self._handle_jumping(game, dt)
+			case "Retreat": self._handle_retreat(game, dt)
 	
 	def check_projectiles(self, game):
 
@@ -224,17 +224,17 @@ class Slime(Mob):
 			self.start_x = self.x
 			self.start_y = self.y
 			
-	def _handle_jumping(self, game):
+	def _handle_jumping(self, game, dt):
 		"""Прыжок на игрока"""
 		# Движение к цели
 		dx = self.target_x - self.x
 		dy = self.target_y - self.y
 		dist = math.dist((self.x, self.y), (self.target_x, self.target_y))
 		
-		if dist > 5:
+		if dist > 1:
 			# Движение к цели
-			move_x = dx / dist * self.jump_speed
-			move_y = dy / dist * self.jump_speed
+			move_x = dx / dist * self.jump_speed * dt
+			move_y = dy / dist * self.jump_speed * dt
 			
 			# Проверяем стены
 			if not self._check_collision(self.x + move_x, self.y, game):
@@ -259,7 +259,7 @@ class Slime(Mob):
 			
 			# TODO Создать частицы при столкновении
 			
-	def _handle_retreat(self, game):
+	def _handle_retreat(self, game, dt):
 		"""Отскок на начальную позицию"""
 		# Движение обратно к начальной позиции
 		dx = self.start_x - self.x
@@ -267,8 +267,8 @@ class Slime(Mob):
 		dist = math.dist((self.x, self.y), (self.start_x, self.start_y))
 		
 		if dist > 10:
-			move_x = dx / dist * self.retreat_speed
-			move_y = dy / dist * self.retreat_speed
+			move_x = dx / dist * self.retreat_speed * dt
+			move_y = dy / dist * self.retreat_speed * dt
 			
 			if not self._check_collision(self.x + move_x, self.y, game):
 				self.x += move_x
@@ -369,7 +369,7 @@ class Spider(Mob):
 
 		match self.state:
 			case "Attacking": self.state = "Going towards player"
-			case "Prepare shoot": self._handle_prepare_shoot(game.player, game.world)
+			case "Prepare shoot": self._handle_prepare_shoot(game.player, game.world, dt)
 			case "Going towards player": self._handle_go_towards_player(game, dt)
 		
 	def check_projectiles(self, game):
@@ -379,9 +379,9 @@ class Spider(Mob):
 		if check_projectiles_collision(self.rect, game.world):
 			self.damage(game, 15)
 
-	def _handle_prepare_shoot(self, player, world):
+	def _handle_prepare_shoot(self, player, world, dt):
 		"""Подготовка к атаке паутиной (прицеливание)"""
-		self.shoot_charge_timer -= 1
+		self.shoot_charge_timer -= dt
 		
 		# Паук слегка дрожит в процессе подготовки
 		if self.shoot_charge_timer % 4 < 2:

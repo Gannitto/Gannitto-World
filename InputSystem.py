@@ -136,7 +136,7 @@ class InputSystem:
 			else:
 				self.holding_key = None
 
-		if time.time() - self.cursor_timer >= Settings["Game"][3]:
+		if time.time() - self.cursor_timer >= Settings["Game"]["Cursor blink rate"]:
 			self.cursor_timer = time.time()
 			self.show_cursor = not self.show_cursor
 
