@@ -1,4 +1,4 @@
-![Gannitto World Logo](doc/Gannitto_World_logo.png)
+![Gannitto World Logo](doc/Gannitto_World_logo.png)  
 🌍 **Язык:** [English](README.md) | Русский
 # Описание игры
 **Gannitto World** - это инди-игра песочница с открытым исходным кодом. Она оформлена в стиле pixel art с видом сверху (top-down). Проект написан на Python с использованием графической библиотеки pygame. Так же используются библиотеки numpy, vnoise и др.  

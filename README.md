@@ -1,4 +1,4 @@
-![Gannitto World Logo](doc/Gannitto_World_logo.png)
+![Gannitto World Logo](doc/Gannitto_World_logo.png)  
 🌍 **Language:** English | [Русский](README.ru.md)
 # Game Description
 **Gannitto World** is an open-source indie sandbox game. It features a top-down pixel art style. The project is written in Python using the pygame graphics library, alongside numpy, vnoise, and others.  
@@ -13,7 +13,7 @@ It includes many diverse mechanics, such as:
 
 # Download the Game (for Players)
 
-Standalone builds that do not require Python to be installed will soon be available in the **[Releases](https://github.com)** section. In the future, users will be able to download the archive for their OS, extract it, and run the executable file.
+Standalone builds that do not require Python to be installed will soon be available in the **[Releases](https://github.com/Gannitto/Gannitto-World/releases)** section. In the future, users will be able to download the archive for their OS, extract it, and run the executable file.
 
 # Installation from Source (for Developers)
 
@@ -23,7 +23,7 @@ Standalone builds that do not require Python to be installed will soon be availa
 	- Windows  
 	  `winget install Python.Python.3.14`  
 	  Or from the official website:  
-	  https://python.org
+	  https://python.org/downloads/
 	- Linux  
 	  Depends on your distribution.  
 	  Arch: `sudo pacman -S python`  
@@ -33,7 +33,7 @@ Standalone builds that do not require Python to be installed will soon be availa
 	- MacOS  
 	  `brew install python`  
 	  Or download the .pkg installer from the official website:  
-	  https://python.org
+	  https://python.org/downloads/
 3. Navigate to the game directory  
    This depends on where you downloaded the source code, likely your Downloads or home directory.  
    `cd Gannitto-World-master`  
