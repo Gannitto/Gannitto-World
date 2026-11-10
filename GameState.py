@@ -1,4 +1,5 @@
 import pygame
+from Config import Settings, statistics
 from Globals import Width, Height
 
 class GameState:
@@ -29,6 +30,8 @@ class GameState:
 		self.night_playing = False
 		self.release = False
 		self.use_item_pressed = False
+		self.max_fps = Settings["Display"]["FPS"]
+		self.statistics = statistics
 
 		self.multiplayer = False
 		self.multiplayer_role = None

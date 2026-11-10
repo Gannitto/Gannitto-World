@@ -13,25 +13,59 @@ else:
 
 default_settings = {
 		
-		"Display": [100, 90, 0, False, True, True, 60, True, True, True, True],
-		"Languages": ["English"],
-		"User": ["Player", False],
-		"Sound": [100, 100],
-		"Keys": ["a", "s", "w", "d", "e", "c", "TAB", "SPACE"],
-		"Game": [True, False, 100, 0.7],
-		"Multiplayer": [True, 5555, 5555, "127.0.0.1", 5555],
-		"Edit world": ["", False]
+		"Display": {
+			"Brightness": 100,
+			"Inventory transparency": 90,
+			"Distance": 0,
+			"Display hitboxes": False,
+			"Shadows": True,
+			"Inventory slots animation": True,
+			"FPS": 60,
+			"Mouse click display": True,
+			"Description of the object on hover": True,
+			"Dim screen when turned off": True,
+			"Show intro": True
+			},
+		"User": {
+			"Nickname": "Player",
+			"Developer mode": False
+			},
+		"Sound": {
+			"Music volume": 100,
+			"Sound volume": 100
+			},
+		"Game": {
+			"Automatically pick up items": True,
+			"Telephone control": False,
+			"Mouse wheel sensitivity": 100,
+			"Cursor blink rate": 0.7
+			},
+		"Languages": [
+			"English"
+			],
+		"Keys": ["a",
+		   "s",
+		   "w",
+		   "d",
+		   "e",
+		   "c",
+		   "TAB", "SPACE"
+		   ],
+		"Multiplayer": {
+			"Соединение через интернет": True,
+			"Порт": 5555,
+			"Внешний порт": 5555,
+			"IP хоста": "127.0.0.1",
+			"Порт хоста": 5555
+			},
+		"Edit world": {
+			"World name": "",
+			"God mode": False
+			}
 		
 		}
 
-try:
-	Settings = Saver.load_objects(path + "Saves/Settings/Settings.save")
-except FileNotFoundError:
-	Settings = default_settings
-	Saver.save_objects(path + "Saves/Settings/Settings.save", Settings)
-
 win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-MAX_FPS = Settings["Display"][6]
 Width, Height = pygame.display.get_surface().get_size()
 text_color = (0, 180, 0)
 menu_color_light = (192, 203, 220)
@@ -39,11 +73,6 @@ menu_color_medium = (139, 155, 180)
 menu_color_dark = (58, 68, 102)
 textInfo = pygame.font.Font(path + "Font.ttf", 18)
 bigTextInfo = pygame.font.Font(path + "Font.ttf", 36)
-
-try:
-	statistics = Saver.load_objects(path + "Saves/Settings/Statistics.save")
-except FileNotFoundError:
-	statistics = [0, 0, 0]   # Заходы в игру, срублено деревьев
 
 default_hot_keys = {
 	
@@ -68,15 +97,6 @@ default_hot_keys = {
 		
 		}
 
-try:
-	
-	hot_keys = Saver.load_objects(path + "Saves/Settings/Hot keys.save")
-	
-except FileNotFoundError:
-	
-	hot_keys = default_hot_keys
-	Saver.save_objects(path + "Saves/Settings/Hot keys.save", hot_keys)
-
 clock = pygame.time.Clock()
 colors = {
 	"Normal": (39, 155, 80),
@@ -84,3 +104,4 @@ colors = {
 	"Backrooms": (100, 100, 0),
 	"Backrooms2": (100, 80, 0)
 }
+

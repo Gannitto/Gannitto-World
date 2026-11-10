@@ -2,7 +2,8 @@ import pygame
 import time
 from Cache import load
 from Assets import no_file_texture
-from Globals import win, Settings
+from Globals import win
+from Config import Settings
 
 class Particle:
 
@@ -153,5 +154,5 @@ class Particle:
 			display_mode = game.world_to_screen
 		win.blit(self.image, (display_mode(self.x, self.y, self.w, self.h)))
 
-		if Settings["Display"][3]:
+		if Settings["Display"]["Display hitboxes"]:
 			pygame.draw.rect(win, (0, 0, 0), (display_mode(self.x, self.y, self.w, self.h)[0], display_mode(self.x, self.y, self.w, self.h)[1], self.w, self.h), 3)

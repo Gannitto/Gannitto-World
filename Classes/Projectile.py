@@ -4,7 +4,8 @@ import random
 import time
 from Cache import load
 from Assets import explosion_texture
-from Globals import Width, Height, path, Settings, win
+from Globals import Width, Height, path, win
+from Config import Settings
 from Classes.Particle import Particle
 
 class Projectile:
@@ -38,7 +39,7 @@ class Projectile:
 		
 		win.blit(self.image, game.world_to_screen(self.x, self.y, 64, 64))
 
-		if Settings["Display"][3]:
+		if Settings["Display"]["Display hitboxes"]:
 			pygame.draw.rect(win, (0, 0, 0), game.world_rect_to_screen(self.x, self.y, 64, 64), 3)
 		if time.time() >= self.end_time:
 			game.world.projectiles.remove(self)
@@ -82,7 +83,7 @@ class ExplodingProjectile:
 		
 		win.blit(rect_rotated.subsurface(rect_copy).copy(), game.world_to_screen(self.x, self.y, 64, 64))
 
-		if Settings["Display"][3]:
+		if Settings["Display"]["Display hitboxes"]:
 			pygame.draw.rect(win, (0, 0, 0), game.world_rect_to_screen(self.x, self.y, 64, 64), 3)
 		if abs(self.x - self.start_x) > self.dist_x or abs(self.y - self.start_y) > self.dist_y:
 			radius = 20

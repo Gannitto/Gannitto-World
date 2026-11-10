@@ -1,6 +1,7 @@
 import pygame
 from Assets import wall_images
-from Globals import win, Settings
+from Globals import win
+from Config import Settings
 
 # Смещения и битовые веса соседей: (dx, dy, bit_weight)
 NEIGHBOR_BITS = (
@@ -67,7 +68,7 @@ class Wall:
 			if game.multiplayer:
 				game.game_events.append({"event_type": "wall_interaction", "wall_pos": (self.x, self.y)})
 		win.blit(self.image, game.world_to_screen(self.x, self.y, 256, 256))
-		if Settings["Display"][3]:
+		if Settings["Display"]["Display hitboxes"]:
 			pygame.draw.rect(win, (0, 0, 0), game.world_rect_to_screen(self.rect[0] + self.rect[2] // 2, self.rect[1] + self.rect[3] // 2, self.rect[2], self.rect[3]), 3)
 		
 	def __getstate__(self):

@@ -3,7 +3,8 @@ import sys
 import time
 import Classes
 from Functions import create_throw_particle, win_darken
-from Globals import hot_keys, win, Width, Height, Settings
+from Globals import win, Width, Height
+from Config import Settings, hot_keys
 from Classes import Object, Particle
 
 class InputHandler:

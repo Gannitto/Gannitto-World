@@ -6,7 +6,8 @@ import Saver
 from Translator import t
 from Assets import load
 from Functions import win_darken, win_lighten, win_fill, draw_key
-from Globals import path, win, hot_keys, clock, menu_color_dark, menu_color_medium, menu_color_light, textInfo, bigTextInfo, Width, Height
+from Globals import path, win, clock, menu_color_dark, menu_color_medium, menu_color_light, textInfo, bigTextInfo, Width, Height
+from Config import hot_keys
 from Classes import Button
 from UI.UISystem import UISystem
 
@@ -40,8 +41,8 @@ class EditWorldMenu():
 			self.game.difficulty = "norm"
 			self.player.god_mode = False
 			create_world = True
-		self.Settings["Edit world"][0] = self.game.world_name
-		self.Settings["Edit world"][1] = self.player.god_mode
+		self.Settings["Edit world"]["World name"] = self.game.world_name
+		self.Settings["Edit world"]["God mode"] = self.player.god_mode
 
 		input_text = ""
 		world_name_input = False
@@ -62,10 +63,10 @@ class EditWorldMenu():
 
 				if event.type == pygame.QUIT:
 					if not create_world:
-						if self.game.world_name != self.Settings["Edit world"][0]:
-							os.rename(path + "Saves/Worlds/" + self.game.world_name, path + "Worlds/" + self.Settings["Edit world"][0])
-						self.game.world_name = self.Settings["Edit world"][0]
-						self.player.god_mode = self.Settings["Edit world"][1]
+						if self.game.world_name != self.Settings["Edit world"]["World name"]:
+							os.rename(path + "Saves/Worlds/" + self.game.world_name, path + "Worlds/" + self.Settings["Edit world"]["World name"])
+						self.game.world_name = self.Settings["Edit world"]["World name"]
+						self.player.god_mode = self.Settings["Edit world"]["Edit world"]
 						Saver.save_objects(path + "Saves/Worlds/" + self.game.world_name + "/Settings.save", [self.game.difficulty, self.player.god_mode])
 					win_darken(win)
 					sys.exit()
@@ -90,10 +91,10 @@ class EditWorldMenu():
 				if event.type == pygame.KEYUP:
 					
 					if event.key == hot_keys["Close"] and not create_world:
-						if self.game.world_name != self.Settings["Edit world"][0]:
-							os.rename(path + "Saves/Worlds/" + self.game.world_name, path + "Worlds/" + self.Settings["Edit world"][0])
-						self.game.world_name = self.Settings["Edit world"][0]
-						self.player.god_mode = self.Settings["Edit world"][1]
+						if self.game.world_name != self.Settings["Edit world"]["World name"]:
+							os.rename(path + "Saves/Worlds/" + self.game.world_name, path + "Worlds/" + self.Settings["Edit world"]["World name"])
+						self.game.world_name = self.Settings["Edit world"]["World name"]
+						self.player.god_mode = self.Settings["Edit world"]["Edit world"]
 						Saver.save_objects(path + "Saves/Worlds/" + self.game.world_name + "/Settings.save", [self.game.difficulty, self.player.god_mode])
 						win_darken(win)
 						self.game.does_lighten = False
@@ -115,9 +116,9 @@ class EditWorldMenu():
 				if pygame.mouse.get_pressed()[0]:
 					
 					if not create_world:
-						os.rename(path + "Saves/Worlds/" + self.game.world_name, path + "Saves/Worlds/" + self.Settings["Edit world"][0])
-						self.game.world_name = self.Settings["Edit world"][0]
-						self.player.god_mode = self.Settings["Edit world"][1]
+						os.rename(path + "Saves/Worlds/" + self.game.world_name, path + "Saves/Worlds/" + self.Settings["Edit world"]["World name"])
+						self.game.world_name = self.Settings["Edit world"]["World name"]
+						self.player.god_mode = self.Settings["Edit world"]["Edit world"]
 						Saver.save_objects(path + "Saves/Worlds/" + self.game.world_name + "/Settings.save", [self.game.difficulty, self.player.god_mode])
 					win_darken(win)
 					self.game.does_lighten = False
@@ -174,8 +175,8 @@ class EditWorldMenu():
 					
 					win.blit(bigTextInfo.render(t("Create world"), True, menu_color_dark), (Width - bigTextInfo.size(t("Create world"))[0] - 50, 150))
 					if release:
-						self.game.world_name = self.Settings["Edit world"][0]
-						self.player.god_mode = self.Settings["Edit world"][1]
+						self.game.world_name = self.Settings["Edit world"]["World name"]
+						self.player.god_mode = self.Settings["Edit world"]["Edit world"]
 						win_darken(win)
 						self.game.does_lighten = False
 						return self.game.start_game
@@ -226,10 +227,10 @@ class EditWorldMenu():
 							if no_button.is_released or keys[hot_keys["Close"]]:
 								break
 						
-							win_fill(alpha=100 - self.Settings["Display"][0])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
+							win_fill(alpha=100 - self.Settings["Display"]["Brightness"])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
 						
 							pygame.display.update()
-							clock.tick(30)
+							clock.tick(self.game.max_fps)
 						
 				win.blit(bigTextInfo.render(t("Copy world"), True, menu_color_medium), (50, 600))
 
@@ -248,7 +249,7 @@ class EditWorldMenu():
 			if self.game.alt_pressed:
 				draw_key("ESC", Width - 50, 55)
 				
-			win_fill(alpha=100 - self.Settings["Display"][0])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
+			win_fill(alpha=100 - self.Settings["Display"]["Brightness"])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
 			
 			if not create_world:
 				Saver.save_objects(path + "Saves/Worlds/" + self.game.world_name + "/Settings.save", [self.game.difficulty, self.player.god_mode])
@@ -258,5 +259,5 @@ class EditWorldMenu():
 				self.game.does_lighten = True
 			
 			pygame.display.update()
-			clock.tick(30)
+			clock.tick(self.game.max_fps)
 

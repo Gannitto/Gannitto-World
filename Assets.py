@@ -1,5 +1,6 @@
 import pygame
-from Globals import path, Width, Height, Settings
+from Globals import path, Width, Height
+from Config import Settings
 from Cache import load
 
 def load_textures(path_to_image: str, num: int, size: int, use_cache=True):
@@ -133,28 +134,28 @@ Reference_slot2 = load(path + "Images/Slots/Reference slot 2.png", 64).convert_a
 Open_inventory_slot = load(path + "Images/Slots/Open inventory slot.png", 64).convert_alpha()
 Open_inventory_slot2 = load(path + "Images/Slots/Open inventory slot 2.png", 64).convert_alpha()
 
-Inventory_slot.set_alpha(Settings["Display"][1])
-Changed_inventory_slot.set_alpha(Settings["Display"][1])
-Craft_list_inventory_slot.set_alpha(Settings["Display"][1])
-Changed_craft_list_inventory_slot.set_alpha(Settings["Display"][1])
-Object_inventory_slot.set_alpha(Settings["Display"][1])
-Tool_inventory_slot.set_alpha(Settings["Display"][1])
-Split_items1.set_alpha(Settings["Display"][1])
-Split_items2.set_alpha(Settings["Display"][1])
-Compact_inventory1.set_alpha(Settings["Display"][1])
-Compact_inventory2.set_alpha(Settings["Display"][1])
-Craft_list_slot1.set_alpha(Settings["Display"][1])
-Craft_list_slot2.set_alpha(Settings["Display"][1])
-Game_menu_slot1.set_alpha(Settings["Display"][1])
-Game_menu_slot2.set_alpha(Settings["Display"][1])
-Menu_slot1.set_alpha(Settings["Display"][1])
-Menu_slot2.set_alpha(Settings["Display"][1])
-Multiplayer_slot1.set_alpha(Settings["Display"][1])
-Multiplayer_slot2.set_alpha(Settings["Display"][1])
-Close_slot1.set_alpha(Settings["Display"][1])
-Close_slot2.set_alpha(Settings["Display"][1])
-Reference_slot1.set_alpha(Settings["Display"][1])
-Reference_slot2.set_alpha(Settings["Display"][1])
+Inventory_slot.set_alpha(Settings["Display"]["Inventory transparency"])
+Changed_inventory_slot.set_alpha(Settings["Display"]["Inventory transparency"])
+Craft_list_inventory_slot.set_alpha(Settings["Display"]["Inventory transparency"])
+Changed_craft_list_inventory_slot.set_alpha(Settings["Display"]["Inventory transparency"])
+Object_inventory_slot.set_alpha(Settings["Display"]["Inventory transparency"])
+Tool_inventory_slot.set_alpha(Settings["Display"]["Inventory transparency"])
+Split_items1.set_alpha(Settings["Display"]["Inventory transparency"])
+Split_items2.set_alpha(Settings["Display"]["Inventory transparency"])
+Compact_inventory1.set_alpha(Settings["Display"]["Inventory transparency"])
+Compact_inventory2.set_alpha(Settings["Display"]["Inventory transparency"])
+Craft_list_slot1.set_alpha(Settings["Display"]["Inventory transparency"])
+Craft_list_slot2.set_alpha(Settings["Display"]["Inventory transparency"])
+Game_menu_slot1.set_alpha(Settings["Display"]["Inventory transparency"])
+Game_menu_slot2.set_alpha(Settings["Display"]["Inventory transparency"])
+Menu_slot1.set_alpha(Settings["Display"]["Inventory transparency"])
+Menu_slot2.set_alpha(Settings["Display"]["Inventory transparency"])
+Multiplayer_slot1.set_alpha(Settings["Display"]["Inventory transparency"])
+Multiplayer_slot2.set_alpha(Settings["Display"]["Inventory transparency"])
+Close_slot1.set_alpha(Settings["Display"]["Inventory transparency"])
+Close_slot2.set_alpha(Settings["Display"]["Inventory transparency"])
+Reference_slot1.set_alpha(Settings["Display"]["Inventory transparency"])
+Reference_slot2.set_alpha(Settings["Display"]["Inventory transparency"])
 
 select_images = {
 	(512, 512): load(path + "Images/Select/512x512.png", 512),

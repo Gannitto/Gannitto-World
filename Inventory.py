@@ -5,7 +5,8 @@ import math
 from itertools import product
 from Assets import Inventory_slot, Changed_inventory_slot, Object_inventory_slot, Tool_inventory_slot, Split_items1, Split_items2, Compact_inventory1, Compact_inventory2, Craft_list_inventory_slot, Changed_craft_list_inventory_slot, Heart
 from Functions import win_fill, draw_key, text, get_text_height
-from Globals import path, win, Settings, Width, Height, textInfo, bigTextInfo, text_color
+from Globals import path, win, Width, Height, textInfo, bigTextInfo, text_color
+from Config import Settings
 from Translator import t
 
 pygame.init()
@@ -413,7 +414,7 @@ class Inventory:
 				mouse_object = t("Inventory (I)")
 
 			# Механика анимации слотов
-			if Settings["Display"][5]:
+			if Settings["Display"]["Inventory slots animation"]:
 				for yy, xx in product(range(0, 3), range(0, 10)):
 					
 					cell_x = 10 + xx * 80
@@ -498,7 +499,7 @@ class Inventory:
 
 			if self.special_slot_animations["Split items slot"][0] or self.Split_items:
 				try:
-					if Settings["Display"][5]: win.blit(pygame.transform.scale(Split_items2, (64 - self.special_slot_animations["Split items slot"][2], 64 - self.special_slot_animations["Split items slot"][2])), (810, 10))
+					if Settings["Display"]["Inventory slots animation"]: win.blit(pygame.transform.scale(Split_items2, (64 - self.special_slot_animations["Split items slot"][2], 64 - self.special_slot_animations["Split items slot"][2])), (810, 10))
 					else: win.blit(pygame.transform.scale(Split_items2, (64, 64)), (810, 10))
 				except: win.blit(pygame.transform.scale(Split_items2, (64, 64)), (810, 10))
 				mouse_object = t("Split items")
@@ -528,7 +529,7 @@ class Inventory:
 
 			if self.special_slot_animations["Compact inventory slot"][0]:
 				try:
-					if Settings["Display"][5]: win.blit(pygame.transform.scale(Compact_inventory2, (64 - self.special_slot_animations["Compact inventory slot"][2], 64 - self.special_slot_animations["Compact inventory slot"][2])), (810, 170))
+					if Settings["Display"]["Inventory slots animation"]: win.blit(pygame.transform.scale(Compact_inventory2, (64 - self.special_slot_animations["Compact inventory slot"][2], 64 - self.special_slot_animations["Compact inventory slot"][2])), (810, 170))
 					else: win.blit(pygame.transform.scale(Compact_inventory2, (64, 64)), (810, 170))
 				except: win.blit(pygame.transform.scale(Compact_inventory2, (64, 64)), (810, 170))
 				mouse_object = t("Compact inventory")
@@ -590,7 +591,7 @@ class Inventory:
 				elif self.special_slot_animations["Craft list slot"][1] < dt * 250:
 					self.special_slot_animations["Craft list slot"][1] += dt * 30
 
-				if self.special_slot_animations["Craft list slot"][0] and Settings["Display"][5]:
+				if self.special_slot_animations["Craft list slot"][0] and Settings["Display"]["Inventory slots animation"]:
 					try:win.blit(pygame.transform.scale(Changed_craft_list_inventory_slot, (64 - self.special_slot_animations["Craft list slot"][2], 64 - self.special_slot_animations["Craft list slot"][2])), (810, 90))
 					except: win.blit(pygame.transform.scale(Changed_craft_list_inventory_slot, (64, 64)), (810, 90))
 					mouse_object = t("Craft list")

@@ -5,7 +5,7 @@ import Saver
 from Assets import load, arrow_down, arrow_left, arrow_right, arrow_up, Inventory_slot, Changed_inventory_slot
 from Functions import text, win_darken, win_lighten, languages, draw_key, animate_click, win_fill
 from UI.UISystem import UISystem
-from Globals import path, Width, Height, win, textInfo, bigTextInfo, menu_color_dark, menu_color_medium, menu_color_light, default_settings, default_hot_keys, clock, MAX_FPS
+from Globals import path, Width, Height, win, textInfo, bigTextInfo, menu_color_dark, menu_color_medium, menu_color_light, default_settings, default_hot_keys, clock
 from Classes import Button
 
 ui_system = UISystem()
@@ -63,7 +63,7 @@ class SettingsMenu():
 		while True:
 
 			self.game.mouse_x, self.game.mouse_y = pygame.mouse.get_pos()
-			dt = clock.tick(MAX_FPS) / 1000.0
+			dt = clock.tick(self.game.max_fps) / 1000.0
 
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
@@ -171,7 +171,7 @@ class SettingsMenu():
 
 			animate_click(dt, self.game.mouse_x, self.game.mouse_y)
 
-			win_fill(alpha=100 - self.Settings["Display"][0])	# Если в настройках установлена яркость ниже 100, то экран становится темнее
+			win_fill(alpha=100 - self.Settings["Display"]["Brightness"])	# Если в настройках установлена яркость ниже 100, то экран становится темнее
 			
 			if not self.game.does_lighten:
 				win_lighten(win)
@@ -191,7 +191,7 @@ class SettingsMenu():
 			self.game.mouse_x, self.game.mouse_y = pygame.mouse.get_pos()
 			release = False
 			events = pygame.event.get()
-			dt = clock.tick(MAX_FPS) / 1000.0
+			dt = clock.tick(self.game.max_fps) / 1000.0
 			
 			for event in events:
 				if event.type == pygame.QUIT:
@@ -257,7 +257,7 @@ class SettingsMenu():
 				
 			# Анимация и эффекты
 			animate_click(dt, self.game.mouse_x, self.game.mouse_y)
-			win_fill(alpha=100 - self.Settings["Display"][0])
+			win_fill(alpha=100 - self.Settings["Display"]["Brightness"])
 			
 			pygame.display.update()
 
@@ -266,7 +266,7 @@ class SettingsMenu():
 		while True:
 			
 			self.game.mouse_x, self.game.mouse_y = pygame.mouse.get_pos()
-			dt = clock.tick(MAX_FPS) / 1000.0
+			dt = clock.tick(self.game.max_fps) / 1000.0
 
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
@@ -367,7 +367,7 @@ class SettingsMenu():
 				draw_key("ESC", 44, 108)
 
 			animate_click(dt, self.game.mouse_x, self.game.mouse_y)
-			win_fill(alpha=100 - self.Settings["Display"][0])	# Если в настройках установлена яркость ниже 100, то экран становится темнее
+			win_fill(alpha=100 - self.Settings["Display"]["Brightness"])	# Если в настройках установлена яркость ниже 100, то экран становится темнее
 
 			if not self.game.does_lighten:
 				win_lighten(win)
@@ -386,7 +386,7 @@ class SettingsMenu():
 			click = pygame.mouse.get_pressed()
 			self.game.mouse_x, self.game.mouse_y = pygame.mouse.get_pos()
 			release = False
-			dt = clock.tick(MAX_FPS) / 1000.0
+			dt = clock.tick(self.game.max_fps) / 1000.0
 			
 			events = pygame.event.get()
 			
@@ -454,7 +454,7 @@ class SettingsMenu():
 				
 			# Анимация и эффекты
 			animate_click(dt, self.game.mouse_x, self.game.mouse_y)
-			win_fill(alpha=100 - self.Settings["Display"][0])
+			win_fill(alpha=100 - self.Settings["Display"]["Brightness"])
 			
 			pygame.display.update()
 
@@ -469,7 +469,7 @@ class SettingsMenu():
 			click = pygame.mouse.get_pressed()
 			self.game.mouse_x, self.game.mouse_y = pygame.mouse.get_pos()
 			release = False
-			dt = clock.tick(MAX_FPS) / 1000.0
+			dt = clock.tick(self.game.max_fps) / 1000.0
 			
 			events = pygame.event.get()
 			
@@ -542,7 +542,7 @@ class SettingsMenu():
 				
 			# Анимация и эффекты
 			animate_click(dt, self.game.mouse_x, self.game.mouse_y)
-			win_fill(alpha=100 - self.Settings["Display"][0])
+			win_fill(alpha=100 - self.Settings["Display"]["Brightness"])
 			
 			pygame.display.update()
 
@@ -557,7 +557,7 @@ class SettingsMenu():
 			click = pygame.mouse.get_pressed()
 			self.game.mouse_x, self.game.mouse_y = pygame.mouse.get_pos()
 			release = False
-			dt = clock.tick(MAX_FPS) / 1000.0
+			dt = clock.tick(self.game.max_fps) / 1000.0
 			
 			events = pygame.event.get()
 			
@@ -624,7 +624,7 @@ class SettingsMenu():
 				
 			# Анимация и эффекты
 			animate_click(dt, self.game.mouse_x, self.game.mouse_y)
-			win_fill(alpha=100 - self.Settings["Display"][0])
+			win_fill(alpha=100 - self.Settings["Display"]["Brightness"])
 			
 			pygame.display.update()
 
@@ -751,7 +751,7 @@ class SettingsMenu():
 			click = pygame.mouse.get_pressed()
 			self.game.mouse_x, self.game.mouse_y = pygame.mouse.get_pos()
 			release = False
-			dt = clock.tick(MAX_FPS) / 1000.0
+			dt = clock.tick(self.game.max_fps) / 1000.0
 			
 			for event in pygame.event.get():
 
@@ -884,7 +884,7 @@ class SettingsMenu():
 
 			animate_click(dt, self.game.mouse_x, self.game.mouse_y)
 
-			win_fill(alpha=100 - self.Settings["Display"][0])	# Если в настройках установлена яркость ниже 100, то экран становится темнее
+			win_fill(alpha=100 - self.Settings["Display"]["Brightness"])	# Если в настройках установлена яркость ниже 100, то экран становится темнее
 			
 			if not self.game.does_lighten:
 				win_lighten(win)
@@ -903,7 +903,7 @@ class SettingsMenu():
 			click = pygame.mouse.get_pressed()
 			self.game.mouse_x, self.game.mouse_y = pygame.mouse.get_pos()
 			release = False
-			dt = clock.tick(MAX_FPS) / 1000.0
+			dt = clock.tick(self.game.max_fps) / 1000.0
 			
 			events = pygame.event.get()
 			
@@ -971,7 +971,7 @@ class SettingsMenu():
 				
 			# Анимация и эффекты
 			animate_click(dt, self.game.mouse_x, self.game.mouse_y)
-			win_fill(alpha=100 - self.Settings["Display"][0])
+			win_fill(alpha=100 - self.Settings["Display"]["Brightness"])
 			
 			pygame.display.update()
 	

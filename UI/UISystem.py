@@ -1,6 +1,7 @@
 import pygame
 from UI.ElementsUI import ToggleButton, InputField, Button
-from Globals import win, Settings, statistics, Width, Height
+from Globals import win, Width, Height
+from Config import Settings, statistics
 
 class UISystem:
 
@@ -17,86 +18,86 @@ class UISystem:
 				
 				InputField(
 					400, 0, "Brightness",
-					lambda: Settings["Display"][0],
+					lambda: Settings["Display"]["Brightness"],
 					lambda v: Settings["Display"].__setitem__(0, v),
 					unit="%"
 				),
 				InputField(
 					400, 0, "Inventory transparency",
-					lambda: Settings["Display"][1],
+					lambda: Settings["Display"]["Inventory transparency"],
 					lambda v: Settings["Display"].__setitem__(1, v),
 					unit="%"
 				),
 				InputField(
 					400, 0, "Distance",
-					lambda: Settings["Display"][2],
+					lambda: Settings["Display"]["Distance"],
 					lambda v: Settings["Display"].__setitem__(2, v),
 					unit="%"
 				),
 				ToggleButton(
 					400, 0, "Display hitboxes",
-					lambda: Settings["Display"][3],
+					lambda: Settings["Display"]["Display hitboxes"],
 					lambda v: Settings["Display"].__setitem__(3, v)
 				),
 				ToggleButton(
 					400, 0, "Shadows",
-					lambda: Settings["Display"][4],
+					lambda: Settings["Display"]["Shadows"],
 					lambda v: Settings["Display"].__setitem__(4, v)
 				),
 				ToggleButton(
 					400, 0, "Inventory slots animation",
-					lambda: Settings["Display"][5],
+					lambda: Settings["Display"]["Inventory slots animation"],
 					lambda v: Settings["Display"].__setitem__(5, v)
 				),
 				InputField(
 					400, 0, "FPS",
-					lambda: Settings["Display"][6],
+					lambda: Settings["Display"]["FPS"],
 					lambda v: Settings["Display"].__setitem__(6, v)
 				),
 				ToggleButton(
 					400, 0, "Mouse click display",
-					lambda: Settings["Display"][7],
+					lambda: Settings["Display"]["Mouse click display"],
 					lambda v: Settings["Display"].__setitem__(7, v)
 				),
 				ToggleButton(
 					400, 0, "Description of the object on hover",
-					lambda: Settings["Display"][8],
+					lambda: Settings["Display"]["Description of the object on hover"],
 					lambda v: Settings["Display"].__setitem__(8, v)
 				),
 				ToggleButton(
 					400, 0, "Dim screen when turned off",
-					lambda: Settings["Display"][9],
+					lambda: Settings["Display"]["Dim screen when turned off"],
 					lambda v: Settings["Display"].__setitem__(9, v)
 				),
 				ToggleButton(
 					400, 0, "Show intro",
-					lambda: Settings["Display"][10],
+					lambda: Settings["Display"]["Show intro"],
 					lambda v: Settings["Display"].__setitem__(10, v)
 				)
 			],
 		"User": [
 				InputField(
 					400, 0, "Nickname",
-					lambda: Settings["User"][0],
+					lambda: Settings["User"]["Nickname"],
 					lambda v: Settings["User"].__setitem__(0, v),
 					can_write_text=True, max_len=10
 				),
 				ToggleButton(
 					400, 0, "Developer mode",
-					lambda: Settings["User"][1],
+					lambda: Settings["User"]["Developer mode"],
 					lambda v: Settings["User"].__setitem__(1, v)
 				)
 			],
 		"Sound": [
 				InputField(
 					400, 0, "Music volume",
-					lambda: Settings["Sound"][0],
+					lambda: Settings["Sound"]["Music volume"],
 					lambda v: Settings["Sound"].__setitem__(0, min(v, 100)),
 					unit="%"
 				),
 				InputField(
 					400, 0, "Sound volume",
-					lambda: Settings["Sound"][1],
+					lambda: Settings["Sound"]["Sound volume"],
 					lambda v: Settings["Sound"].__setitem__(1, min(v, 100)),
 					unit="%"
 				)
@@ -121,70 +122,70 @@ class UISystem:
 		"Game": [
 				ToggleButton(
 					400, 0, "Automatically pick up items",
-					lambda: Settings["Game"][0],
+					lambda: Settings["Game"]["Automatically pick up items"],
 					lambda v: Settings["Game"].__setitem__(0, v)
 				),
 				ToggleButton(
 					400, 0, "Telephone control",
-					lambda: Settings["Game"][1],
+					lambda: Settings["Game"]["Telephone control"],
 					lambda v: Settings["Game"].__setitem__(1, v)
 				),
 				InputField(
 					400, 0, "Mouse wheel sensitivity",
-					lambda: Settings["Game"][2],
+					lambda: Settings["Game"]["Mouse wheel sensitivity"],
 					lambda v: Settings["Game"].__setitem__(2, int(v))
 				),
 				InputField(
 					400, 0, "Cursor blink rate",
-					lambda: int(Settings["Game"][3] * 1000),
+					lambda: int(Settings["Game"]["Cursor blink rate"] * 1000),
 					lambda v: Settings["Game"].__setitem__(3, int(v) / 1000)
 				)
 			],
 		"World settings": [
 				InputField(
 					50, 60, "World name",
-					lambda: Settings["Edit world"][0],
+					lambda: Settings["Edit world"]["World name"],
 					lambda v: Settings["Edit world"].__setitem__(0, v),
 					can_write_text=True, max_len=50
 				),
 				ToggleButton(
 					50, 520, "God mode",
-					lambda: Settings["Edit world"][1],
+					lambda: Settings["Edit world"]["God mode"],
 					lambda v: Settings["Edit world"].__setitem__(1, v)
 				)
 			],
 		"Multiplayer settings menu": [
 				ToggleButton(
 					10, 0, "Соединение через интернет",
-					lambda: Settings["Multiplayer"][0],
+					lambda: Settings["Multiplayer"]["Соединение через интернет"],
 					lambda v: Settings["Multiplayer"].__setitem__(0, v)
 				),
 				ToggleButton(
 					10, 0, "Соединение по локальной сети",
-					lambda: not Settings["Multiplayer"][0],
+					lambda: not Settings["Multiplayer"]["Соединение через интернет"],
 					lambda v: Settings["Multiplayer"].__setitem__(0, not v)
 				),
 				InputField(
 					10, 0, "Порт",
-					lambda: Settings["Multiplayer"][1],
+					lambda: Settings["Multiplayer"]["Порт"],
 					lambda v: Settings["Multiplayer"].__setitem__(1, v),
 					max_len=5
 				),
 				InputField(
 					10, 0, "Внешний порт",
-					lambda: Settings["Multiplayer"][2],
+					lambda: Settings["Multiplayer"]["Внешний порт"],
 					lambda v: Settings["Multiplayer"].__setitem__(2, v),
 					max_len=10
 				),
 				InputField(
 					10, 0, "IP хоста",
-					lambda: Settings["Multiplayer"][3],
+					lambda: Settings["Multiplayer"]["IP хоста"],
 					lambda v: Settings["Multiplayer"].__setitem__(3, v),
 					can_write_text=True, max_len=15
 				),
 				InputField(
 					10, 0, "Порт хоста",
-					lambda: Settings["Multiplayer"][4],
+					lambda: Settings["Multiplayer"]["Порт хоста"],
 					lambda v: Settings["Multiplayer"].__setitem__(4, v),
 					max_len=10
 				)

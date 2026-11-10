@@ -4,7 +4,8 @@ import os
 from Multiplayer import NetworkManager
 from Assets import load
 from Functions import win_darken, win_lighten, win_fill, draw_key, animate_click
-from Globals import textInfo, menu_color_dark, menu_color_medium, menu_color_light, textInfo, bigTextInfo, Width, Height, path, clock, MAX_FPS, win, hot_keys, Settings
+from Globals import textInfo, menu_color_dark, menu_color_medium, menu_color_light, textInfo, bigTextInfo, Width, Height, path, clock, win
+from Config import Settings, hot_keys
 from Classes import Button, Peer
 from UI.UISystem import UISystem
 
@@ -41,7 +42,7 @@ class MultiplayerSettingsMenu():
 			keys = pygame.key.get_pressed()
 			release = False
 			events = pygame.event.get()
-			dt = clock.tick(MAX_FPS) / 1000.0
+			dt = clock.tick(self.game.max_fps) / 1000.0
 
 			for event in events:
 
@@ -90,18 +91,18 @@ class MultiplayerSettingsMenu():
 			if self.start_game_button.is_released:
 				self.game.net = NetworkManager(Peer, self.command_system.chat_message, self.world.chunk_manager.view_distance)
 				if self.game.multiplayer_role == "Host":
-					if Settings["Multiplayer"][0]:
-						self.game.net.start_host(Settings["Multiplayer"][1], Settings["Multiplayer"][2])
+					if Settings["Multiplayer"]["Соединение через интернет"]:
+						self.game.net.start_host(Settings["Multiplayer"]["Порт"], Settings["Multiplayer"]["Внешний порт"])
 					else:
-						self.game.net.start_local_host(Settings["Multiplayer"][1])
+						self.game.net.start_local_host(Settings["Multiplayer"]["Порт"])
 				else:
 					if not os.path.exists(path + "Saves/Cache/Multiplayer"):
 						os.mkdir(path + "Saves/Cache/Multiplayer")
 					self.world.chunk_manager.save_directory = path + "Saves/Cache/Multiplayer/"
-					if Settings["Multiplayer"][0]:
-						self.game.net.connect_to_host(Settings["Multiplayer"][3], Settings["Multiplayer"][4])
+					if Settings["Multiplayer"]["Соединение через интернет"]:
+						self.game.net.connect_to_host(Settings["Multiplayer"]["IP хоста"], Settings["Multiplayer"]["Порт хоста"])
 					else:
-						self.game.net.connect_to_local_host(Settings["Multiplayer"][3], Settings["Multiplayer"][1])
+						self.game.net.connect_to_local_host(Settings["Multiplayer"]["IP хоста"], Settings["Multiplayer"]["Порт"])
 					# connecting = True
 					# while connecting:
 					#	mouse_x, mouse_y = pygame.mouse.get_pos()
@@ -115,12 +116,12 @@ class MultiplayerSettingsMenu():
 					#			connecting = False
 					#	animate_click(dt, mouse_x, mouse_y)
 					#	pygame.display.update()
-					#	clock.tick(MAX_FPS)
+					#	clock.tick(self.game.max_fps)
 				return self.start_game
 
 			if self.game.alt_pressed: draw_key("ESC", 44, 108)
 			animate_click(dt, mouse_x, mouse_y)
-			win_fill(alpha=100 - Settings["Display"][0])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
+			win_fill(alpha=100 - Settings["Display"]["Brightness"])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
 
 			if not self.game.does_lighten:
 				win_lighten(win)

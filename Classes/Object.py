@@ -3,7 +3,8 @@ import random
 import time
 from Cache import load
 from Functions import crack_surface, destroy_object
-from Globals import Width, Height, path, win, Settings, statistics
+from Globals import Width, Height, path, win
+from Config import Settings
 from Classes.Particle import Particle
 
 class Object:
@@ -105,7 +106,7 @@ class Object:
 						game.events.append({"event_type": "object_removed", "x": self.x, "y": self.y, "name": self.name})
 					game.world.chunk_manager.get_chunk_at(self.x, self.y).objects.remove(self)
 					
-					statistics[2] += 1
+					game.statistics[2] += 1
 					for item_name, min_amount, max_amount in self.drop_items:
 						for _ in range(random.randint(min_amount, max_amount)):
 							rand_x, rand_y = self.x + random.randint(-self.w // 2, self.w // 2), self.y + random.randint(-self.h // 2, self.h // 2)
@@ -114,7 +115,7 @@ class Object:
 
 		if player.x - Width // 2 - self.w // 2 <= self.x <= player.x + Width // 2 + self.w // 2 and player.y - Height // 2 - self.h // 2 <= self.y <= player.y + Height // 2 + self.h // 2:
 			win.blit(self.image, game.world_to_screen(self.x, self.y, self.w, self.h, player))
-		if Settings["Display"][3]:
+		if Settings["Display"]["Display hitboxes"]:
 			pygame.draw.rect(win, (0, 0, 0), (*game.world_to_screen(self.rect[0] + self.w // 2, self.rect[1] + self.h // 2, self.rect[2], self.rect[3], player), self.rect[2], self.rect[3]), 3)
 
 	def get_left_pressed(self, mouse_x, mouse_y, player):

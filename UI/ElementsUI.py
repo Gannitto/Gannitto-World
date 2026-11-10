@@ -2,7 +2,8 @@ import pygame
 import time
 from typing import Callable, Any, Optional
 from Translator import t
-from Globals import Settings, bigTextInfo, win, path
+from Globals import bigTextInfo, win, path
+from Config import Settings
 from InputSystem import input_system
 from Sound import play_sound
 

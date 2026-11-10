@@ -3,7 +3,8 @@ import sys
 from Assets import load, Screensaver2
 from Translator import t
 from Functions import win_lighten, win_darken, win_fill, get_build_number, text, animate_click
-from Globals import Width, Height, win, path, Settings, clock, MAX_FPS, hot_keys, menu_color_dark, menu_color_light, menu_color_medium
+from Globals import Width, Height, win, path, clock, menu_color_dark, menu_color_light, menu_color_medium
+from Config import Settings, hot_keys
 from Classes import Button
 
 class MainMenu():
@@ -27,7 +28,7 @@ class MainMenu():
 			mouse_x, mouse_y = pygame.mouse.get_pos()
 			click = pygame.mouse.get_pressed()
 			release = False
-			dt = clock.tick(MAX_FPS) / 1000.0
+			dt = clock.tick(self.game.max_fps) / 1000.0
 
 			for event in pygame.event.get():
 
@@ -103,7 +104,7 @@ class MainMenu():
 
 			animate_click(dt, mouse_x, mouse_y)
 
-			win_fill(alpha=100 - Settings["Display"][0])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
+			win_fill(alpha=100 - Settings["Display"]["Brightness"])   # Если в настройках установлена яркость ниже 100, то экран становится темнее
 
 			if not self.game.does_lighten:
 				win_lighten(win)

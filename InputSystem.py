@@ -2,7 +2,8 @@ import pygame
 import time
 import pyperclip
 import re
-from Globals import win, menu_color_medium, Settings
+from Globals import win, menu_color_medium
+from Config import Settings
 from Functions import text
 
 pygame.key.set_repeat(500, 50) 

@@ -24,7 +24,8 @@ from MobileControl import MobileControl
 from VisualEffects import VisualEffects
 from BarRenderer import BarRenderer
 from Assets import cave_texture, biome_textures, Inventory_slot
-from Globals import path, Settings, win, MAX_FPS, Width, Height, text_color, textInfo, bigTextInfo, statistics, hot_keys, clock, colors
+from Globals import path, win, Width, Height, text_color, textInfo, bigTextInfo, clock, colors
+from Config import Settings, hot_keys
 from UI import SettingsMenu, CharactersMenu, WorldsMenu, EditWorldMenu, MultiplayerSettingsMenu, MainMenu, TabMenu
 from Classes import Player, World, Object, Particle, Slime, Spider, Butterfly, Projectile, ExplodingProjectile, Wall, Farmland, Wire, Lever, Motherboard, RandomBox, Ron, Button, Portal
 from GameState import GameState
@@ -99,7 +100,7 @@ def save(darken:bool=True, save_world_settings:bool=False):
 			Saver.save_objects(path + "Saves/Worlds/" + game.world_name + "/Particles.save", new_particles)
 			world.chunk_manager.save_all_loaded_chunks()
 				
-	if darken and Settings["Display"][9]:
+	if darken and Settings["Display"]["Dim screen when turned off"]:
 		win_darken(win)
 		
 	if save_world_settings: Saver.save_objects(path + "Saves/Worlds/" + game.world_name + "/Settings.save", [game.difficulty, player.god_mode])
@@ -137,7 +138,6 @@ game.tab_menu = TabMenu(game, save, music_channel)
 game.effects = EffectsSystem()
 effects = game.effects
 game.Backrooms = Backrooms
-game.statistics = statistics
 game.input_system = input_system
 game.world_loader = WorldLoader(game, save)
 game.input_handler = InputHandler(game, save, music_channel)
@@ -181,7 +181,7 @@ def start_game():
 		player.breaking_object = None
 		game.use_item_pressed = False
 
-		dt = clock.tick(MAX_FPS) / 1000.0
+		dt = clock.tick(game.max_fps) / 1000.0
 		time_system.update(dt)
 		if game.multiplayer:
 			game.events.clear()
@@ -381,7 +381,7 @@ def start_game():
 				for item in world.visible_items:
 					item.main(game, dt)
 					try_pick = True
-					if item.pickable and Settings["Game"][0] and player.x - 150 < item.x < player.x + 150 and player.y - 150 < item.y < player.y + 150:
+					if item.pickable and Settings["Game"]["Automatically pick up items"] and player.x - 150 < item.x < player.x + 150 and player.y - 150 < item.y < player.y + 150:
 						pick_up_item(game, Particle, item)
 						try_pick = False
 
@@ -501,14 +501,14 @@ def start_game():
 
 		# Механика использования еды и некоторых предметов через пробел
 
-		for i in range(Settings["Display"][2]):
+		for i in range(Settings["Display"]["Distance"]):
 			win.blit(pygame.transform.scale(win, (Width - i * 2, Height - i * 2)), (i, i))
 
-		if inventory.whole_inventory[inventory.changed_slot] is not None and inventory.whole_inventory[inventory.changed_slot].name in ("Gun", "Bow") and Settings["Game"][1]:
+		if inventory.whole_inventory[inventory.changed_slot] is not None and inventory.whole_inventory[inventory.changed_slot].name in ("Gun", "Bow") and Settings["Game"]["Telephone control"]:
 			win.blit(Inventory_slot, (Width - 370, Height - 74))
 			win.blit(inventory.whole_inventory[inventory.changed_slot].image, (Width - 370, Height - 74))
 		
-		if (inventory.whole_inventory[inventory.changed_slot] is not None and (game.use_item_pressed or (click[0] and Settings["Game"][1]))) and not game.chat_open:
+		if (inventory.whole_inventory[inventory.changed_slot] is not None and (game.use_item_pressed or (click[0] and Settings["Game"]["Telephone control"]))) and not game.chat_open:
 			item_actions.handle_item_actions(mouse_x, mouse_y)
 
 		if keys[hot_keys["Screenshot"]] and keys[hot_keys["Show keys"]]:
@@ -611,7 +611,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.in
 						world.chunk_manager.get_chunk_at(object.x, object.y).objects.remove(object)
 						break
 
-		if mouse_object is not None and Settings["Display"][8]:
+		if mouse_object is not None and Settings["Display"]["Description of the object on hover"]:
 			# text(mouse_object, Width - textInfo.size(mouse_object)[0] - 10, 10)
 			win.blit(textInfo.render(mouse_object, True, text_color), (Width - textInfo.size(mouse_object)[0] - 10, 10))
 		
@@ -621,7 +621,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.in
 			if not input_system.inputting:
 
 				game.chat_open = False
-				if input_system.last_text[0:2] == "/!" and Settings["User"][1]:
+				if input_system.last_text[0:2] == "/!" and Settings["User"]["Nickname"]:
 					try:
 						eval(input_system.last_text[2:])
 						# Команды через eval - опасная штука, так что они доступны только в режиме разработчика
@@ -665,7 +665,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.in
 			take_screenshot(game)
 		
 		animate_click(dt, mouse_x, mouse_y)
-		win_fill((200, 0, 0), 100 - Settings["Display"][0])
+		win_fill((200, 0, 0), 100 - Settings["Display"]["Brightness"])
 
 		pygame.display.update()
 
@@ -688,10 +688,10 @@ def loop():
 def main():
 	
 	game.statistics[0] += 1
-	if Settings["Display"][10]:
+	if Settings["Display"]["Show intro"]:
 		pass # TODO сделать интро
 
-	if Settings["User"][1]:
+	if Settings["User"]["Nickname"]:
 		loop()
 	else:
 		try:

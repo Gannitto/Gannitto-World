@@ -3,7 +3,8 @@ import sys
 from Assets import load
 from Translator import t
 from Functions import win_lighten, win_darken, draw_key, animate_click, win_fill
-from Globals import Width, Height, path, win, clock, MAX_FPS, hot_keys, menu_color_medium, menu_color_light, textInfo, bigTextInfo, Settings
+from Globals import Width, Height, path, win, clock, menu_color_medium, menu_color_light, textInfo, bigTextInfo
+from Config import Settings, hot_keys
 from Classes import Button
 
 class CharactersMenu():
@@ -53,7 +54,7 @@ class CharactersMenu():
 		while True:
 
 			mouse_x, mouse_y = pygame.mouse.get_pos()
-			dt = clock.tick(MAX_FPS) / 1000.0
+			dt = clock.tick(self.game.max_fps) / 1000.0
 
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
@@ -121,7 +122,7 @@ class CharactersMenu():
 
 			animate_click(dt, mouse_x, mouse_y)
 
-			win_fill(alpha=100 - Settings["Display"][0])
+			win_fill(alpha=100 - Settings["Display"]["Brightness"])
 			
 			if not self.game.does_lighten:
 				win_lighten(win)
@@ -134,7 +135,7 @@ class CharactersMenu():
 		while True:
 			
 			mouse_x, mouse_y = pygame.mouse.get_pos()
-			dt = clock.tick(MAX_FPS) / 1000.0
+			dt = clock.tick(self.game.max_fps) / 1000.0
 
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
@@ -165,7 +166,7 @@ class CharactersMenu():
 
 			animate_click(dt, mouse_x, mouse_y)
 
-			win_fill(alpha=100 - Settings["Display"][0])
+			win_fill(alpha=100 - Settings["Display"]["Brightness"])
 			
 			if not self.game.does_lighten:
 				win_lighten(win)

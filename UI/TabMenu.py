@@ -6,8 +6,9 @@ from Translator import t
 from Assets import (Craft_list_slot1, Craft_list_slot2, Game_menu_slot1, Game_menu_slot2, 
 					Menu_slot1, Menu_slot2, Multiplayer_slot1, Multiplayer_slot2, 
 					Close_slot1, Close_slot2, Reference_slot1, Reference_slot2)
-from Functions import text, win_darken
-from Globals import win, Width, Height, hot_keys, MAX_FPS, clock, Settings
+from Functions import text, win_darken, animate_click, win_fill
+from Globals import win, Width, Height, clock
+from Config import Settings, hot_keys
 
 class TabMenu:
 	def __init__(self, game, save, music_channel):
@@ -70,7 +71,7 @@ class TabMenu:
 			mouse_x, mouse_y = pygame.mouse.get_pos()
 			click = pygame.mouse.get_pressed()
 			release = False
-			dt = clock.tick(MAX_FPS) / 1000.0
+			dt = clock.tick(self.game.max_fps) / 1000.0
 
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
@@ -147,7 +148,7 @@ class TabMenu:
 				self.game.inventory.special_slot_animations[slot_name] = anim_data
 
 				# Отрисовка иконки кнопки
-				if anim_data[0] and Settings["Display"][5]:
+				if anim_data[0] and Settings["Display"]["Inventory slots animation"]:
 					size = max(1, int(64 - anim_data[2])) # Защита от нулевого/отрицательного размера scale
 					try:
 						scaled_img = pygame.transform.scale(img2, (size, size))
@@ -161,4 +162,6 @@ class TabMenu:
 				text(t(text_key), btn_x, btn_y + 40, alignment=True)
 
 			pygame.display.update()
+			animate_click(dt, self.game.mouse_x, self.game.mouse_y)
+			win_fill(alpha=100 - self.Settings["Display"]["Brightness"])
 

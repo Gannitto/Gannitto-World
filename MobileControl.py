@@ -1,6 +1,7 @@
 from Assets import arrow_down, arrow_left, arrow_right, arrow_up, Open_inventory_slot, Open_inventory_slot2
 from Classes import Button
-from Globals import Settings, Width, Height, win
+from Globals import Width, Height, win
+from Config import Settings
 
 class MobileControl:
 	def __init__(self, game):
@@ -15,7 +16,7 @@ class MobileControl:
 		self.right_b = Button(Width - 74, Height - 74, arrow_right, arrow_right, sound=False, cooldown=0)
 
 	def show_buttons(self, mouse_x, mouse_y, click):
-		if Settings["Game"][1]:
+		if Settings["Game"]["Telephone control"]:
 
 			self.up_b.main()
 			self.left_b.main()

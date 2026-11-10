@@ -3,7 +3,8 @@ import random
 from Assets import farmland_images, plant_images, seed_types
 from Sound import play_sound
 from Functions import destroy_object
-from Globals import win, Settings
+from Globals import win
+from Config import Settings
 from Classes.Object import Object
 from Classes.Particle import Particle
 
@@ -38,7 +39,7 @@ class Farmland:
 				self.grow_timer = random.randint(250, 350)
 				if self.plant_growth_stage == 2 and not self.watered:
 					self.plant_growth_stage = 3
-		if Settings["Display"][3]:
+		if Settings["Display"]["Display hitboxes"]:
 			pygame.draw.rect(win, (0, 0, 0), world_rect, 3)
 		
 	def handle_click(self, game):

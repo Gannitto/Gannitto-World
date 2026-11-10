@@ -1,6 +1,7 @@
 import pygame
 from Assets import Backrooms_portal_images
-from Globals import Width, Height, win, Settings
+from Globals import Width, Height, win
+from Config import Settings
 
 class BackroomsPortal:
 
@@ -19,6 +20,6 @@ class BackroomsPortal:
 		if self.image == 10:
 			self.image = 0
 
-		if Settings["Display"][3]:
+		if Settings["Display"]["Display hitboxes"]:
 			pygame.draw.rect(win, (0, 0, 0), (self.x - player.x + Width // 2 - 128, player.y - self.y + Height // 2 - 128, 256, 256), 3)
 

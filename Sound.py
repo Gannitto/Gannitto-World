@@ -1,7 +1,8 @@
 import pygame
 import os
 import random
-from Globals import path, Settings
+from Globals import path
+from Config import Settings
 
 sounds = {}
 for root, dirs, files in os.walk(path + "Sounds/"):
@@ -10,7 +11,7 @@ for root, dirs, files in os.walk(path + "Sounds/"):
 		sounds[name] = pygame.mixer.Sound(os.path.join(root, file))
 
 music_channel = pygame.mixer.Channel(0)
-music_channel.set_volume(Settings["Sound"][0], Settings["Sound"][0])
+music_channel.set_volume(Settings["Sound"]["Music volume"], Settings["Sound"]["Music volume"])
 def play_sound(sound, rand_num=0, loops=0, maxtime=0, fade_ms=0):
 	if rand_num != 0:
 		sound += " " + str(random.randint(1, rand_num))
@@ -26,7 +27,7 @@ def set_sound_volume(volume):
 	for channel in sound_channels:
 		channel.set_volume(volume)
 
-set_sound_volume(Settings["Sound"][1] / 100)
+set_sound_volume(Settings["Sound"]["Sound volume"] / 100)
 
 def update_sounds(game, player, world):
 	if game.time_system.day_phase == "Night" and not game.night_playing:

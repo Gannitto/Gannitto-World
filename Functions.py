@@ -13,7 +13,8 @@ from itertools import product
 from PIL import Image
 from Translator import t
 from Sound import play_sound
-from Globals import MAX_FPS, Width, Height, path, win, clock, Settings, bigTextInfo, text_color
+from Globals import Width, Height, path, win, clock, bigTextInfo, text_color
+from Config import Settings
 from Cache import load
 
 changed_language = "Russian"
@@ -32,7 +33,7 @@ def shadow(
 		y_bias: int=1
 		) -> pygame.Surface:
 	
-	if not Settings["Display"][4]:
+	if not Settings["Display"]["Shadows"]:
 		return surface
 	
 	cache_path = path + "/Saves/Cache/"
@@ -333,7 +334,7 @@ def animate_click(dt, mouse_x, mouse_y):
 
 	global mouse_click_timer
 
-	if Settings["Display"][7]:
+	if Settings["Display"]["Mouse click display"]:
 
 		if pygame.mouse.get_pressed()[0] == 1:
 			mouse_click_timer = 0
@@ -476,7 +477,7 @@ def take_screenshot(game):
 	
 	for _ in range(3):
 		win.fill((200, 255, 200))
-		clock.tick(MAX_FPS)
+		clock.tick(game.max_fps)
 		pygame.display.update()
 
 def pick_up_item(game, Particle, item):

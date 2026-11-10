@@ -4,7 +4,8 @@ from Assets import Heart
 from Cache import load
 from Translator import t
 from Functions import shadow, text, check_collision
-from Globals import path, Settings, Width, Height, win
+from Globals import path, Width, Height, win
+from Config import Settings
 from Classes.Particle import Particle
 from Classes.Object import Object
 
@@ -60,7 +61,7 @@ class Player:
 			for frame_num in range(1, 7):
 				path_to_image = f"{path}Images/Players/{self.changed_character}/Normal/{direction}/{frame_num}.png"
 				frame = load(path_to_image, 256)
-				if Settings["Display"][4]:
+				if Settings["Display"]["Shadows"]:
 					frame = shadow(frame, f"Player {direction} {frame_num}")
 				frames.append(frame)
 			self.animations[direction] = frames
@@ -320,7 +321,7 @@ class Player:
 		if self.changed_item and not (self.changed_item_x == self.changed_item_y == 0):
 			win.blit(game.inventory.resources[self.changed_item].image, (Width // 2 + self.changed_item_x, Height // 2 + self.changed_item_y))
 		
-		if Settings["Display"][3]:
+		if Settings["Display"]["Display hitboxes"]:
 			pygame.draw.rect(win, (0, 255, 0), (Width / 2 - 128, Height / 2 - 128, 256, 256), 2)
 			pygame.draw.rect(win, (0, 0, 0), (self.rect[0] - self.x + Width // 2, self.y - self.rect[1] - self.rect[3] + Height // 2, self.rect[2], self.rect[3]), 3)
 
@@ -392,7 +393,7 @@ class Peer(Player):
 		text_x, text_y = game.world_to_screen(self.x + 128, self.y + 32, 256, 256)
 		text(self.name, text_x, text_y, (255, 255, 255), alignment=True)
 		
-		if Settings["Display"][3]:
+		if Settings["Display"]["Display hitboxes"]:
 			pygame.draw.rect(win, (0, 255, 0), game.world_rect_to_screen(self.x, self.y, 256, 256), 2)
 			pygame.draw.rect(win, (0, 0, 0), (self.rect[0] - self.x + Width // 2, self.y - self.rect[1] - self.rect[3] + Height // 2, self.rect[2], self.rect[3]), 3)
 

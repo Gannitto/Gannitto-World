@@ -5,7 +5,8 @@ from itertools import product
 from Cache import load
 from Assets import slime_types, slime_images, red_slime_images, web_texture, butterfly_images, spider_animation_images, spider_red_animation_images
 from Functions import check_collision, check_projectiles_collision, text
-from Globals import Width, Height, win, Settings, path
+from Globals import Width, Height, win, path
+from Config import Settings
 from Classes.Particle import Particle
 from Classes.Object import Object
 
@@ -301,7 +302,7 @@ class Slime(Mob):
 		
 		win.blit(frame, (screen_x, screen_y))
 		
-		if Settings["Display"][3]:
+		if Settings["Display"]["Display hitboxes"]:
 			pygame.draw.rect(win, (0, 0, 0), (screen_x, screen_y - 8, 128, 128), 3)
 
 	def __getstate__(self):
@@ -541,5 +542,5 @@ class Butterfly:
 				self.y -= 1
 		
 		win.blit(self.animation_images[(self.animation_count - self.animation_count % 2) // 2], (self.x - player.x + Width // 2 - 64, player.y - self.y + Height // 2 - 32))
-		if Settings["Display"][3]:
+		if Settings["Display"]["Display hitboxes"]:
 			pygame.draw.rect(win, (0, 0, 0), (self.x - player.x + Width // 2 - 32, player.y - self.y + Height // 2 - 32, 64, 64), 3)

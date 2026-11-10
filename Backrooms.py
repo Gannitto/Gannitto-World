@@ -4,8 +4,8 @@ import random
 import pygame
 from itertools import product
 from Sound import play_sound
-from Globals import win, Width, Height, hot_keys
-pygame.init()
+from Globals import win, Width, Height
+from Config import hot_keys
 
 InBackrooms = False
 objects = []
