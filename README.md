@@ -1,58 +1,58 @@
-[[Gannitto World]]
-
 ![Gannitto World Logo](doc/Gannitto_World_logo.png)
-# Описание игры
-**Gannitto World** - это инди-игра песочница с открытым исходным кодом. Она оформлена в стиле pixel art с видом сверху (top-down). Проект написан на Python с использованием графической библиотеки pygame. Так же используются библиотеки numpy, vnoise и др.  
-Присутствует много разнообразных механик, например:
-- Процедурная генерация мира
-- Мультиплеер
-- Логика мобов
-- Система строительства
-- Динамическое освещение
+🌍 **Language:** English | [Русский](README.ru.md)
+# Game Description
+**Gannitto World** is an open-source indie sandbox game. It features a top-down pixel art style. The project is written in Python using the pygame graphics library, alongside numpy, vnoise, and others.  
+It includes many diverse mechanics, such as:
+- Procedural world generation
+- Multiplayer
+- Mob logic
+- Building system
+- Dynamic lighting
 
 ![Gameplay](doc/Gameplay.gif)
 
-# Скачать игру (для игроков)
+# Download the Game (for Players)
 
-Готовые сборки, не требующие установки Python, скоро будут доступны в разделе **[Releases](https://github.com/Gannitto/Gannitto-World/releases)**. В будущем пользователи смогут скачать архив для своей ОС, распаковать и запустить исполняемый файл.
+Standalone builds that do not require Python to be installed will soon be available in the **[Releases](https://github.com)** section. In the future, users will be able to download the archive for their OS, extract it, and run the executable file.
 
-# Установка из исходного кода (для разработчиков)
+# Installation from Source (for Developers)
 
-1. Клонируйте репозиторий  
-   Команда `git clone` либо на сайте нажмите Code, Download ZIP и разархивируйте.
-2. Убедитесь, что в системе установлен Python. Если его нет, то установите его  
+1. Clone the repository  
+   Use the `git clone` command, or click Code -> Download ZIP on the website and extract the archive.
+2. Make sure Python is installed on your system. If it is not, install it:  
 	- Windows  
 	  `winget install Python.Python.3.14`  
-	  Либо с официального сайта  
-	  https://www.python.org/downloads/
+	  Or from the official website:  
+	  https://python.org
 	- Linux  
-	  Зависит от дистрибутива.  
+	  Depends on your distribution.  
 	  Arch: `sudo pacman -S python`  
-	  Debian/Ubuntu/Mint `sudo apt install python3 python3-pip -y`  
-	  Fedora `sudo dnf install python3`  
-	  Аналогично с другими пакетными менеджерами.
+	  Debian/Ubuntu/Mint: `sudo apt install python3 python3-pip -y`  
+	  Fedora: `sudo dnf install python3`  
+	  Similarly for other package managers.
 	- MacOS  
 	  `brew install python`  
-	  Либо с официального сайта скачайте .pkg установщик  
-	  https://www.python.org/downloads/
-3. Перейдите в директорию игры  
-   Зависит от того, куда вы скачали исходный код. Скорее всего, это загрузки или домашняя директория.  
+	  Or download the .pkg installer from the official website:  
+	  https://python.org
+3. Navigate to the game directory  
+   This depends on where you downloaded the source code, likely your Downloads or home directory.  
    `cd Gannitto-World-master`  
-   Если Вы скачивали архивом, то внутри Gannitto-World-master будет ещё одна Gannitto-World-master. Перейдите в неё.
-4. Установите зависимости  
+   If you downloaded the ZIP archive, there will be another `Gannitto-World-master` folder inside the first one. Navigate into that one.
+4. Install dependencies  
    `pip install -r requirements.txt`
-5. Запустите главный файл  
+5. Run the main file  
    `python Gannitto_world.py`  
-   Если не сработало, попробуйте использовать с флагом -m:  
+   If that doesn't work, try running it with the `-m` flag:  
    `python -m Gannitto_world`
 
-# Будущее проекта и участие в разработке
-Игра прошла через масштабный рефакторинг. Фундамент для крупных обновлений готов, и сейчас проект переходит в стадию открытого бета-тестирования.
+# Project Future & Contributing
+The game has undergone a major refactoring. The foundation for large updates is ready, and the project is now moving into open beta testing.
 
-У меня много идей для развития, и я ищу единомышленников:
-* **Python-разработчиков**
-* **Pixel-art художников и саунд-дизайнеров**
-* **Создателей плагинов и тестировщиков**.
+I have many ideas for future development and am looking for like-minded contributors:
+* **Python developers**
+* **Pixel-art artists and sound designers**
+* **Plugin creators and testers**
 
-Если хотите помочь проекту, загляните во вкладку **[Issues](https://github.com/Gannitto/Gannitto-World/issues)**, создайте Pull Request или свяжитесь со мной:  
+If you want to help the project, check out the **[Issues](https://github.com/Gannitto/Gannitto-World/issues)** tab, submit a Pull Request, or contact me directly:  
 https://t.me/@Gannitto
+
