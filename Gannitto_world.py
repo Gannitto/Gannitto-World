@@ -635,7 +635,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.in
 					if game.multiplayer:
 						message_text = f"{game.net.peers[game.net.player_id].name}: {input_system.last_text}"
 					else:
-						message_text = f"{Settings['User'][0]}: {input_system.last_text}"
+						message_text = f"{Settings['User']['Nickname']}: {input_system.last_text}"
 					command_system.chat_message(message_text, True)
 		
 		if len(game.chat) != 0:

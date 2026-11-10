@@ -110,7 +110,7 @@ class Slime(Mob):
 			speed=random.randint(300, 400),
 			animation_frames=slime_images[self.slime_type],
 			red_animation_frames=red_slime_images[self.slime_type],
-			drop_items=(("Blue slime" if self.slime_type == 1 else "Pink slime", 1, 3),)
+			drop_items=(("Blue slime" if self.slime_type == "Blue Slime" else "Pink slime", 1, 3),)
 		)
 
 		self.state = "Wander"
