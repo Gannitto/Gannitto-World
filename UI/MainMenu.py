@@ -20,7 +20,7 @@ class MainMenu():
 		self.change_a_character_button = Button(Width / 2, Height / 2 + 150, pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Change a character.png"), (960, 128)), pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Change a character 2.png"), (960, 128)), alignment=True)
 
 	def main_menu(self):
-		version = f"Version {open(path + 'Version.txt').read()} (Build {str(get_build_number())})"
+		version = f"Version Alpha 1.5 (Build {str(get_build_number())})"
 		more_menu_open = False
 
 		while True:
