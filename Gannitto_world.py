@@ -672,7 +672,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.in
 game.start_game = start_game
 game.settings_menu = SettingsMenu(game, save, music_channel, set_sound_volume, Settings, hot_keys)
 game.characters_menu = CharactersMenu(game, player, save)
-game.edit_world_menu = EditWorldMenu(game, player, Settings, world)
+game.edit_world_menu = EditWorldMenu(game, Settings)
 game.multiplayer_settings_menu = MultiplayerSettingsMenu(game, world, command_system, start_game)
 game.worlds_menu = WorldsMenu(game, input_system)
 game.main_menu = MainMenu(game, save)

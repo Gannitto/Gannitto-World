@@ -43,6 +43,9 @@ class InputHandler:
 						self.game.input_system.stop_input()
 						continue
 				else:
+					if event.key == pygame.K_o:
+						from Classes.Mobs import Slime
+						self.game.world.mobs.append(Slime(self.game.player.x, self.game.player.y))
 					if event.key == hot_keys["Show keys"]:
 						self.game.alt_pressed = not self.game.alt_pressed
 					if event.key == hot_keys["Use item"]:
