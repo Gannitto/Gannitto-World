@@ -45,9 +45,9 @@ class Wall:
 		self.images = wall_images[self.wall_type]
 
 		self.image = self.images[0]
-		self.update_neigboors(world)
+		self.update_neighbors(world)
 
-	def update_neigboors(self, world):
+	def update_neighbors(self, world):
 
 		mask = 0
 		for dx, dy, bit in NEIGHBOR_BITS:
@@ -64,7 +64,7 @@ class Wall:
 		screen_x, screen_y = game.world_to_screen(self.x, self.y, 256, 256)
 		if self.is_door and release and screen_x <= mouse_x <= screen_x + 256 and screen_y <= mouse_y <= screen_y + 256:
 			self.open = not self.open
-			self.update_neigboors(game.world)
+			self.update_neighbors(game.world)
 			if game.multiplayer:
 				game.game_events.append({"event_type": "wall_interaction", "wall_pos": (self.x, self.y)})
 		win.blit(self.image, game.world_to_screen(self.x, self.y, 256, 256))

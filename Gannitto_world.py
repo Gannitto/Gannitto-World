@@ -27,9 +27,8 @@ from Assets import cave_texture, biome_textures, Inventory_slot
 from Globals import path, win, Width, Height, text_color, textInfo, bigTextInfo, clock, colors
 from Config import Settings, hot_keys
 from UI import SettingsMenu, CharactersMenu, WorldsMenu, EditWorldMenu, MultiplayerSettingsMenu, MainMenu, TabMenu
-from Classes import Player, World, Object, Particle, Slime, Spider, Butterfly, Projectile, ExplodingProjectile, Wall, Farmland, Wire, Lever, Motherboard, RandomBox, Ron, Button, Portal
+from Classes import Player, World, Object, Particle, Slime, Spider, Butterfly, Projectile, ExplodingProjectile, Wall, Farmland, Wire, Lever, Motherboard, RandomBox, Ron, Button
 from GameState import GameState
-from Light import create_light_circle, create_light_circle_with_falloff, remove_light_circle
 
 pygame.init()
 
@@ -156,9 +155,6 @@ def start_game():
 	Width, Height = pygame.display.get_surface().get_size()
 
 	game.craft_list_max_offset = (len(inventory.recipes) + 1) * -80 + Height
-	
-	craft_list_back_button = Button(114, Height - 176, bigTextInfo.render("<", True, (0, 150, 0)), bigTextInfo.render("<", True, (0, 100, 0)))
-	craft_list_next_button = Button(Width - 144, Height - 176, bigTextInfo.render(">", True, (0, 150, 0)), bigTextInfo.render(">", True, (0, 100, 0)))
 
 	# Загрузка данных мира
 	if not game.multiplayer or game.multiplayer_role == "Host":
@@ -444,43 +440,10 @@ def start_game():
 				mob.draw(game)
 
 		# Отрисовка игрока
-		
 		player.render(game, dt)
 
 		if game.multiplayer:
-			with game.net.lock:
-				peers_copy = dict(game.net.peers.items())  # Создаем копию
-			for pid, peer in peers_copy.items():
-				if pid != game.net.player_id:
-					if pid in game.net.server_events:
-						for event in game.net.server_events[pid]:
-							match event["event_type"]:
-								case "player_moved":
-									peer.x = event["x"]
-									peer.y = event["y"]
-									peer.direction = event["direction"]
-									peer.is_moving = True
-								case "player_tp":
-									peer.x = event["x"]
-									peer.y = event["y"]
-									peer.direction = event["direction"]
-								case "changed_item":
-									peer.changed_item = event["changed_item"]
-								case "player_stopped":
-									peer.stop()
-								case "object_started_breaking":
-									peer.breaking_object_info = (event["x"], event["y"], event["name"])
-								case "object_stopped_breaking":
-									peer.breaking_object_info = None
-
-						game.net.server_events[pid].clear()
-					peer.render(game, dt)
-					peer.update_animation(dt)
-					if peer.breaking_object_info is not None:
-						for object in world.visible_objects:
-							if (object.x, object.y, object.name) == (*peer.breaking_object_info,):
-								object.image = crack_surface(world, Particle, object, (object.max_break - object.breaked) // object.max_break, 8)
-								break
+			game.net.show_players(game, dt)
 
 		# Рон
 		old_ron_pos = ron.x, ron.y
@@ -593,7 +556,7 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.in
 					world.chunk_manager.get_chunk_at(*break_pos).walls.pop(break_pos, None)
 					for wall in ((break_pos[0] - 256, break_pos[1]), (break_pos[0] + 256, break_pos[1]), (break_pos[0], break_pos[1] - 256), (break_pos[0], break_pos[1] + 256)):
 						if wall in world.chunk_manager.get_chunk_at(*wall).walls:
-							world.chunk_manager.get_chunk_at(*wall).walls[wall].update_neigboors(world)
+							world.chunk_manager.get_chunk_at(*wall).walls[wall].update_neighbors(world)
 
 				for object in world.visible_objects:
 					if object.breakable_by_hammer and (object.x, object.y) == break_pos:

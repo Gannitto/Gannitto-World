@@ -6,7 +6,7 @@ import uuid
 import upnpclient
 from typing import Dict, List, Optional
 from Sound import play_sound
-from Functions import destroy_object
+from Functions import destroy_object, crack_surface
 from Classes import Object, Particle, Farmland, Wall, Projectile
 
 # Версия протокола для совместимости
@@ -867,6 +867,7 @@ class NetworkManager:
 				if packet is None:
 					self.chat_message("Ошибка отправки: неизвестный тип пакета")
 				else:
+					exclude_ids = self.get_exclude_ids(self.peers[self.player_id].x, self.peers[self.player_id].y, self.player_id)
 					self._broadcast(packet, exclude_ids)
 		else:
 			packet = {
@@ -982,6 +983,42 @@ class NetworkManager:
 	def is_connected(self) -> bool:
 		"""Подключен ли к сети"""
 		return self.role != "Disconnected"
+
+	def show_players(self, game, dt):
+
+			with self.lock:
+				peers_copy = dict(self.peers.items())  # Создаем копию
+			for pid, peer in peers_copy.items():
+				if pid != self.player_id:
+					if pid in self.server_events:
+						for event in self.server_events[pid]:
+							match event["event_type"]:
+								case "player_moved":
+									peer.x = event["x"]
+									peer.y = event["y"]
+									peer.direction = event["direction"]
+									peer.is_moving = True
+								case "player_tp":
+									peer.x = event["x"]
+									peer.y = event["y"]
+									peer.direction = event["direction"]
+								case "changed_item":
+									peer.changed_item = event["changed_item"]
+								case "player_stopped":
+									peer.stop()
+								case "object_started_breaking":
+									peer.breaking_object_info = (event["x"], event["y"], event["name"])
+								case "object_stopped_breaking":
+									peer.breaking_object_info = None
+
+						self.server_events[pid].clear()
+					peer.render(game, dt)
+					peer.update_animation(dt)
+					if peer.breaking_object_info is not None:
+						for object in game.world.visible_objects:
+							if (object.x, object.y, object.name) == (*peer.breaking_object_info,):
+								object.image = crack_surface(game.world, Particle, object, (object.max_break - object.breaked) // object.max_break, 8)
+								break
 
 	def handle_multiplayer(self, game):
 
