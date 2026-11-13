@@ -36,7 +36,7 @@ class InputHandler:
 					if self.game.inventory.changed_slot > 9: self.game.inventory.changed_slot = 0
 					if self.game.inventory.changed_slot < 0: self.game.inventory.changed_slot = 9
 
-			if event.type == pygame.KEYUP:
+			elif event.type == pygame.KEYUP:
 				if self.game.input_system.inputting:
 					if self.game.chat_open and event.key == hot_keys["Close"]:
 						self.game.chat_open = False
@@ -113,4 +113,12 @@ class InputHandler:
 							self.game.world.particles.append(create_throw_particle(Object, Particle, self.game.player, self.game.world, self.game, self.game.inventory.whole_inventory[self.game.inventory.changed_slot].image, self.game.inventory.whole_inventory[self.game.inventory.changed_slot].name))
 						
 						self.game.inventory.reduce(self.game.inventory.changed_slot)
+
+		keys = pygame.key.get_pressed()
+		
+		if not self.game.input_system.inputting:
+			if keys[hot_keys["Move left"]]: self.game.player.dx = -1
+			if keys[hot_keys["Move right"]]: self.game.player.dx = 1
+			if keys[hot_keys["Move down"]]: self.game.player.dy = -1
+			if keys[hot_keys["Move up"]]: self.game.player.dy = 1
 

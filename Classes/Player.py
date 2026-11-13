@@ -18,6 +18,8 @@ class Player:
 		self.x = X
 		self.y = Y
 		self.speed = 50
+		self.dx = 0
+		self.dy = 0
 		
 		# Анимация
 		self.direction = "Down"
@@ -96,37 +98,41 @@ class Player:
 	def update_rect(self):
 		self.rect = pygame.Rect(self.x - 25, self.y - 112, 50, 224)
 
-	def move(self, dx, dy, dt, game):
+	def move(self, dt, game):
 		"""Двигает игрока и обновляет направление"""
 
 		self.is_moving = True
 
+		# Движение по диагонали немного замедляется, иначе будет слишком быстрое
+		if abs(self.dx) == abs(self.dy) == 1:
+			self.dx *= 0.7
+			self.dy *= 0.7
+
 		# Обновление позиции
-
-		self.x += dx * self.speed * dt * 30
+		self.x += self.dx * self.speed * dt * 30
 		if self.collides_with_walls(game):
-			self.x -= dx * self.speed * dt * 30
+			self.x -= self.dx * self.speed * dt * 30
 
-		self.y += dy * self.speed * dt * 30
+		self.y += self.dy * self.speed * dt * 30
 		if self.collides_with_walls(game):
-			self.y -= dy * self.speed * dt * 30
+			self.y -= self.dy * self.speed * dt * 30
 		
 		# Определение направления
-		if dx > 0 and dy == 0:
+		if self.dx > 0 and self.dy == 0:
 			self.direction = "Right"
-		elif dx < 0 and dy == 0:
+		elif self.dx < 0 and self.dy == 0:
 			self.direction = "Left"
-		elif dy > 0 and dx == 0:
+		elif self.dy > 0 and self.dx == 0:
 			self.direction = "Up"
-		elif dy < 0 and dx == 0:
+		elif self.dy < 0 and self.dx == 0:
 			self.direction = "Down"
-		elif dx > 0 and dy > 0:
+		elif self.dx > 0 and self.dy > 0:
 			self.direction = "Up-right"
-		elif dx < 0 and dy > 0:
+		elif self.dx < 0 and self.dy > 0:
 			self.direction = "Up-left"
-		elif dx > 0 and dy < 0:
+		elif self.dx > 0 and self.dy < 0:
 			self.direction = "Down-right"
-		elif dx < 0 and dy < 0:
+		elif self.dx < 0 and self.dy < 0:
 			self.direction = "Down-left"
 
 		self.update_rect()
@@ -325,10 +331,10 @@ class Player:
 		# 2. Офсет предмета
 		offset = self.animator.item_offset(frame)
 		if self.changed_item and offset is not None:
-			dx, dy = offset
+			self.dx, self.dy = offset
 			win.blit(
 				game.inventory.resources[self.changed_item].image,
-				(center[0] + dx, center[1] + dy),
+				(center[0] + self.dx, center[1] + self.dy),
 			)
 
 		# 3. Анимации

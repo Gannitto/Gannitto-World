@@ -94,7 +94,7 @@ def save(darken:bool=True, save_world_settings:bool=False):
 			for particle in world.particles:
 				if particle.save_particle:
 					pygame.image.save(particle.image, path + "Saves/Worlds/" + game.world_name +"/Images/Particle " + str(particle_count) + ".png")
-					particle.image_path = path + "Saves/Worlds/Images/Particle " + str(particle_count) + ".png"
+					particle.image_path = path + "Saves/Worlds/" + game.world_name + "/Images/Particle " + str(particle_count) + ".png"
 					particle_count += 1
 					new_particles.append(particle)
 			Saver.save_objects(path + "Saves/Worlds/" + game.world_name + "/Particles.save", new_particles)
@@ -175,8 +175,6 @@ def start_game():
 		click = pygame.mouse.get_pressed()
 		Width, Height = pygame.display.get_surface().get_size()
 		game.release = False
-		dx = 0
-		dy = 0
 		player.hovered_object = None
 		player.breaking_object = None
 		game.use_item_pressed = False
@@ -192,20 +190,9 @@ def start_game():
 
 		keys = pygame.key.get_pressed()
 
-		if not game.chat_open:
-
-			if keys[hot_keys["Move left"]]: dx = -1
-			if keys[hot_keys["Move right"]]: dx = 1
-			if keys[hot_keys["Move down"]]: dy = -1
-			if keys[hot_keys["Move up"]]: dy = 1
-
-			if abs(dx) == abs(dy) == 1:
-				dx *= 0.7
-				dy *= 0.7
-
 		# Если есть движение - двигаем игрока
-		if dx != 0 or dy != 0:
-			player.move(dx, dy, dt, game)
+		if player.dx != 0 or player.dy != 0:
+			player.move(dt, game)
 			game.events.append({"event_type": "player_moved", "x": player.x, "y": player.y, "direction": player.direction})
 			if game.multiplayer:
 				game.net.peers[game.net.player_id].x = player.x
@@ -216,7 +203,9 @@ def start_game():
 				game.events.append({"event_type": "player_stopped", "x": player.x, "y": player.y})
 			player.stop()
 		
-		# Обновляем анимацию
+		# Обновляем анимацию и положение
+		player.dx = 0
+		player.dy = 0
 		player.update_animation(dt)
 		# Обновление системы здоровья
 		player.update_health_and_death(game, mouse_x, mouse_y)
@@ -484,7 +473,7 @@ def start_game():
 								case "object_stopped_breaking":
 									peer.breaking_object_info = None
 
-							game.net.server_events[pid].remove(event)
+						game.net.server_events[pid].clear()
 					peer.render(game, dt)
 					peer.update_animation(dt)
 					if peer.breaking_object_info is not None:
@@ -520,6 +509,7 @@ def start_game():
 		
 		# Отображение частиц
 
+		particles_to_delete = []
 		for particle in world.particles:
 
 			particle.main(dt, game)
@@ -527,8 +517,10 @@ def start_game():
 			if (particle.end_time is not None and time.time() - particle.start_time >= particle.end_time) or (particle.del_self_condition is not None and particle.del_self_condition(particle)):
 				if particle.end_command is not None:
 					particle.end_command(particle)
-
-				world.particles.remove(particle)
+				particles_to_delete.append(particle)
+		
+		for particle in particles_to_delete:
+			world.particles.remove(particle)
 
 		# Механика освещения
 
