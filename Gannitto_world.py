@@ -44,7 +44,6 @@ pygame.init()
 	Отображение объектов
 	Отображение мобов
 	Рон
-	Механика использования еды и некоторых предметов через пробел
 	Отрисовка погоды
 	Отображение частиц
 	Механика освещения
@@ -211,6 +210,7 @@ def start_game():
 
 		if Backrooms.InBackrooms:
 			
+			Backrooms.handle_backrooms_logic(game, keys)
 			for i, ii in product(range(-6, 6), range(-3, 3)):
 				win.blit(biome_textures["Backrooms " + str(Backrooms.Level)], (Width - player.x % 256 + i * 256, player.y % 256 + ii * 256))
 
@@ -249,10 +249,6 @@ def start_game():
 
 			# play_sound("1", loops=-1)
 			# pygame.mixer.music.set_volume(0.5)
-
-		elif Backrooms.InBackrooms:
-			
-			Backrooms.handle_backrooms_logic(game, keys)
 
 		if not Backrooms.InBackrooms:
 
@@ -380,40 +376,7 @@ def start_game():
 		else:
 
 			for object in world.backrooms_objects:
-
 				object.main()
-
-				if click[0] and object.x - player.x + Width // 2 - object.w // 2 <= mouse_x <= object.x - player.x + Width // 2 + object.w // 2 and player.y - object.y + Height // 2 - object.h // 2 <= mouse_y <= player.y - object.y + Height // 2 + object.h // 2:
-
-					mouse_object = object.name
-
-					if object.name == "Pot":
-
-						if object.get_right_pressed(mouse_x, mouse_y, player) and inventory.whole_inventory[inventory.changed_slot] is not None and inventory.whole_inventory[inventory.changed_slot].type == "Flower":
-							world.chunk_manager.get_chunk_at(object.x, object.y).items.append(Object(inventory.whole_inventory[inventory.changed_slot].name, object.x, object.y + 36, 64, 64, inventory.whole_inventory[inventory.changed_slot].image))
-							inventory.reduce(inventory.changed_slot)
-
-						if not object.x - 60 < object.special_flags[0] < object.x + 60:
-							if object.x < object.special_flags[0]:
-								object.x += 30
-								i = object.image.get_rect()
-								key = pygame.transform.rotate(object.image, -10)
-								ii = i.copy()
-								ii.center = key.get_rect().center
-								object.image = key.subsurface(ii).copy()
-							else:
-								object.x -= 30
-								i = object.image.get_rect()
-								key = pygame.transform.rotate(object.image, 10)
-								ii = i.copy()
-								ii.center = key.get_rect().center
-								object.image = key.subsurface(ii).copy()
-
-						if not object.y - 60 < object.special_flags[1] < object.y + 60:
-							if object.y < object.special_flags[1]:
-								object.y += 30
-							else:
-								object.y -= 30
 		
 		if not Backrooms.InBackrooms and world.current_cave is None and len(world.mobs) < 5:
 
@@ -448,8 +411,6 @@ def start_game():
 		ron.update(world, dt, not game.multiplayer or game.multiplayer_role == "Host")
 		if game.multiplayer and game.multiplayer_role == "Host" and old_ron_pos != (ron.x, ron.y):
 			game.events.append({"event_type": "ron_moved", "x": ron.x, "y": ron.y, "direction": ron.direction})
-
-		# Механика использования еды и некоторых предметов через пробел
 
 		for i in range(Settings["Display"]["Distance"]):
 			win.blit(pygame.transform.scale(win, (Width - i * 2, Height - i * 2)), (i, i))
