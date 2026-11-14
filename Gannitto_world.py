@@ -24,6 +24,7 @@ from MobileControl import MobileControl
 from VisualEffects import VisualEffects
 from BarRenderer import BarRenderer
 from ModLoader import ModLoader
+from Updater import Updater
 from Assets import cave_texture, biome_textures, Inventory_slot
 from Globals import path, win, Width, Height, text_color, textInfo, bigTextInfo, clock, colors
 from Config import Settings, hot_keys
@@ -241,8 +242,8 @@ def start_game():
 			# i = -1
 
 			# for object in Backrooms.objects:
-			# 	i += 1
-			# 	world.backrooms_objects.append(Object(object, Backrooms.objects_x[i], Backrooms.objects_y[i], "Images/Items/" + inventory.resources[object].name + ".png", special_flags="Item"))
+			#	i += 1
+			#	world.backrooms_objects.append(Object(object, Backrooms.objects_x[i], Backrooms.objects_y[i], "Images/Items/" + inventory.resources[object].name + ".png", special_flags="Item"))
 
 			# x = 0
 			# y = 0
@@ -602,8 +603,21 @@ def loop():
 	win_darken(win)
 	game.does_lighten = False
 
+def check_updates():
+
+	channel = Settings["Game"].get("Update channel", "dev")
+	updater = Updater(channel=channel)
+	update_info = updater.check_for_updates()
+
+	if update_info:
+		# Здесь можно отрисовать окно Pygame "Загрузка обновления..." на экране win
+		if updater.install_update(update_info):
+			Updater.restart_game()
+
 def main():
-	
+
+	# Обновление временно отключено, так как Updater пока что не работает
+	# check_updates()
 	game.statistics[0] += 1
 	if Settings["Display"]["Show intro"]:
 		pass # TODO сделать интро

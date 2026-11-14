@@ -23,7 +23,7 @@ class ModAPI:
 class ModLoader:
 	def __init__(self, game):
 		self.api = ModAPI(game)
-		self.mods_folder = path + "Mods/"
+		self.mods_folder = path + "Saves/Mods/"
 		self.load_mods()
 
 	def load_mods(self):
