@@ -97,7 +97,7 @@ class Inventory:
 			with open(path + "Items.json", "r", encoding="utf-8") as f:
 				for item_type, items in json.load(f).items():
 					for name, item in items.items():
-						self.resources[name] = Resource(name=name, item_type=item_type, **item)
+						self.add_item(name, item_type, item)
 		
 		self.recipes = [
 			
@@ -148,6 +148,9 @@ class Inventory:
 		self.slot_animations = [[False, 15] for _ in range(30)]   # Используется для анимации при наведении на слот
 		self.special_slot_animations = {"Craft list slot": [False, 0.6], "Game menu slot": [False, 0.6], "Menu slot": [False, 0.6], "Multiplayer slot": [False, 0.6], "Reference slot": [False, 0.6], "Close slot": [False, 0.6], "Split items slot": [False, 0.6], "Compact inventory slot": [False, 0.6]}   # Используется для анимации при наведении на слот, который выполняет какое-либо действие
 	
+	def add_item(self, name, item_type, item):
+		self.resources[name] = Resource(name=name, item_type=item_type, **item)
+
 	def increate(self, name: str, amount: int=1):
 		
 		"""Выдаёт предмет в инвентарь"""

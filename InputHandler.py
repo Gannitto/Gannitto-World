@@ -43,8 +43,8 @@ class InputHandler:
 						self.game.input_system.stop_input()
 						continue
 				else:
-					if event.key == pygame.K_o: pass
-						# self.game.player.animator.blink_a
+					# if event.key == pygame.K_o:
+					# 	self.game.player.damage(10)
 					if event.key == hot_keys["Show keys"]:
 						self.game.alt_pressed = not self.game.alt_pressed
 					if event.key == hot_keys["Use item"]:

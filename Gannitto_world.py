@@ -23,6 +23,7 @@ from InputHandler import InputHandler
 from MobileControl import MobileControl
 from VisualEffects import VisualEffects
 from BarRenderer import BarRenderer
+from ModLoader import ModLoader
 from Assets import cave_texture, biome_textures, Inventory_slot
 from Globals import path, win, Width, Height, text_color, textInfo, bigTextInfo, clock, colors
 from Config import Settings, hot_keys
@@ -141,6 +142,7 @@ game.input_system = input_system
 game.world_loader = WorldLoader(game, save)
 game.input_handler = InputHandler(game, save, music_channel)
 game.bar_renderer = BarRenderer(game)
+game.mod_loader = ModLoader(game)
 game.weather = WeatherSystem(world)
 game.mobile_control = MobileControl(game)
 game.visual_effects = VisualEffects(game)
@@ -163,6 +165,8 @@ def start_game():
 		player.changed_item = inventory.whole_inventory[inventory.changed_slot].name
 	else:
 		player.changed_item = None
+
+	game.mod_loader.api.trigger("on_world_load")
 
 	while True:
 
@@ -199,9 +203,7 @@ def start_game():
 				game.events.append({"event_type": "player_stopped", "x": player.x, "y": player.y})
 			player.stop()
 		
-		# Обновляем анимацию и положение
-		player.dx = 0
-		player.dy = 0
+		# Обновляем анимацию
 		player.update_animation(dt)
 		# Обновление системы здоровья
 		player.update_health_and_death(game, mouse_x, mouse_y)
@@ -615,6 +617,9 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.in
 		# Механика мультиплеера
 		if game.multiplayer:
 			game.net.handle_multiplayer(game)
+
+		# Моды
+		game.mod_loader.api.trigger("on_tick", dt)
 
 		if keys[hot_keys["Screenshot"]] and not keys[hot_keys["Show keys"]]:
 			take_screenshot(game)
