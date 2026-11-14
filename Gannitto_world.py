@@ -161,10 +161,6 @@ def start_game():
 	# Загрузка данных мира
 	if not game.multiplayer or game.multiplayer_role == "Host":
 		game.world_loader.load_world()
-	if inventory.whole_inventory[inventory.changed_slot]:
-		player.changed_item = inventory.whole_inventory[inventory.changed_slot].name
-	else:
-		player.changed_item = None
 
 	game.mod_loader.api.trigger("on_world_load")
 

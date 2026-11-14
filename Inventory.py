@@ -3,7 +3,7 @@ import os
 import json
 import math
 from itertools import product
-from Assets import Inventory_slot, Changed_inventory_slot, Object_inventory_slot, Tool_inventory_slot, Split_items1, Split_items2, Compact_inventory1, Compact_inventory2, Craft_list_inventory_slot, Changed_craft_list_inventory_slot, Heart
+from Assets import load, Inventory_slot, Changed_inventory_slot, Object_inventory_slot, Tool_inventory_slot, Split_items1, Split_items2, Compact_inventory1, Compact_inventory2, Craft_list_inventory_slot, Changed_craft_list_inventory_slot, Heart
 from Functions import win_fill, draw_key, text, get_text_height
 from Globals import path, win, Width, Height, textInfo, bigTextInfo, text_color
 from Config import Settings
@@ -28,7 +28,8 @@ class Resource:
 			self.image_path = path + "Images/Items/" + name + ".png"
 		else:
 			self.image_path = image_path
-		self.image = pygame.transform.scale(pygame.image.load(self.image_path), (64, 64))
+		self.image = load(self.image_path, 64)
+		self.flipped_image = pygame.transform.flip(self.image, True, False)
 		self.special_info = special_info
 		self.max_stack = max_stack
 		
@@ -36,12 +37,14 @@ class Resource:
 		
 		state = self.__dict__.copy()
 		del state["image"]
+		del state["flipped_image"]
 		return state
 
 	def __setstate__(self, state):
 
 		self.__dict__.update(state)
-		self.image = pygame.transform.scale(pygame.image.load(self.image_path), (64, 64))
+		self.image = load(self.image_path, 64)
+		self.flipped_image = pygame.transform.flip(self.image, True, False)
 
 class Recipe:
 

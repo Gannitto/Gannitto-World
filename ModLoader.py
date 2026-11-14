@@ -37,7 +37,7 @@ class ModLoader:
 				spec = importlib.util.spec_from_file_location(filename[:-3], mod_path)
 				module = importlib.util.module_from_spec(spec)
 				spec.loader.exec_module(module)
-				# Запускаем точку входа мода
+				# Точка входа мода
 				if hasattr(module, "setup"):
 					module.setup(self.api)
 

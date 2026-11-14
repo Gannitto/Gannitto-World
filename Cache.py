@@ -19,3 +19,4 @@ class TextureCache:
 		return cls._textures[key]
 
 load = TextureCache.get
+

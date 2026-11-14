@@ -140,8 +140,8 @@ class Player:
 		"""Останавливает движение"""
 		self.is_moving = False
 		self.frame_index = 0
-		self.animation_timer = 0
 		self.move_timer = 0
+		self.animation_timer = 0
 
 	def render(self, game, dt):
 		frame = self.frame_index % len(self.animations[self.direction])
@@ -149,11 +149,17 @@ class Player:
 		center = (Width // 2, Height // 2)
 		win.blit(self.image, (center[0] - 128, center[1] - 128))
 
+		if game.inventory.whole_inventory[game.inventory.changed_slot]:
+			self.changed_item = game.inventory.whole_inventory[game.inventory.changed_slot].name
+		else:
+			self.changed_item = None
+
 		# 2. Офсет предмета
 		offset = self.animator.item_offset(frame)
 		if self.changed_item and offset is not None:
+			item_image = game.inventory.resources[self.changed_item].flipped_image if self.direction in ("Left", "Down-left") else game.inventory.resources[self.changed_item].image
 			win.blit(
-				game.inventory.resources[self.changed_item].image,
+				item_image,
 				(center[0] + offset[0], center[1] + offset[1]),
 			)
 
