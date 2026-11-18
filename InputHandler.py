@@ -49,8 +49,6 @@ class InputHandler:
 						self.game.alt_pressed = not self.game.alt_pressed
 					if event.key == hot_keys["Use item"]:
 						self.game.use_item_pressed = True
-					if event.key == hot_keys["Multiplayer menu"]:
-						self.game.multiplayer_menu_open = True
 					if event.key == hot_keys["TAB menu"]:
 						result = self.game.tab_menu.tab_menu()
 						if result:

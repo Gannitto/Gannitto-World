@@ -7,7 +7,7 @@ import sys
 pygame.init()
 
 if getattr(sys, "frozen", False):
-	path = sys._MEIPASS
+	path = sys._MEIPASS + "/"
 else:
 	path = os.path.dirname(os.path.abspath(__file__)) + os.sep
 
