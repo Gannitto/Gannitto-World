@@ -17,7 +17,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12' # Стабильная версия для pygame-ce и pyinstaller
+          python-version: "3.12" # Стабильная версия для pygame-ce и pyinstaller
 
       - name: Install dependencies
         run: |
@@ -26,7 +26,7 @@ jobs:
 
       - name: Patch Gannitto_world.py for pkg_resources
         run: |
-          python -c '
+          python -c "
           patch = """import sys
           import types
           import importlib.metadata
@@ -41,12 +41,13 @@ jobs:
               content = f.read()
           with open("Gannitto_world.py", "w", encoding="utf-8") as f:
               f.write(patch + content)
-          '
+          "
 
       - name: Build with PyInstaller
         run: |
           pyinstaller --clean --noconfirm --onedir --windowed `
             --name "GannittoWorld" `
+			--icon="icon.ico" `
             --add-data "Images;Images" `
             --add-data "Locales;Locales" `
             --add-data "Sounds;Sounds" `
