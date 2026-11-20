@@ -1,0 +1,78 @@
+name: Build Game Executable
+
+on:
+  push:
+    branches: [ "master" ]
+    tags: [ "v*" ]
+  workflow_dispatch: # Позволяет запускать сборку вручную во вкладке Actions
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12' # Стабильная версия для pygame-ce и pyinstaller
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt pyinstaller setuptools
+
+      - name: Patch Gannitto_world.py for pkg_resources
+        run: |
+          python -c '
+          patch = """import sys
+          import types
+          import importlib.metadata
+          if "pkg_resources" not in sys.modules:
+              pkg_res = types.ModuleType("pkg_resources")
+              pkg_res.get_distribution = lambda name: types.SimpleNamespace(
+                  version=importlib.metadata.version(name)
+              )
+              sys.modules["pkg_resources"] = pkg_res
+          """
+          with open("Gannitto_world.py", "r", encoding="utf-8") as f:
+              content = f.read()
+          with open("Gannitto_world.py", "w", encoding="utf-8") as f:
+              f.write(patch + content)
+          '
+
+      - name: Build with PyInstaller
+        run: |
+          pyinstaller --clean --noconfirm --onedir --windowed `
+            --name "GannittoWorld" `
+            --add-data "Images;Images" `
+            --add-data "Locales;Locales" `
+            --add-data "Sounds;Sounds" `
+            --add-data "Soundtracks;Soundtracks" `
+            --add-data "Font.ttf;." `
+            --add-data "Items.json;." `
+            --hidden-import=pkg_resources `
+            --copy-metadata vnoise `
+            --collect-all upnpclient `
+            --collect-all vnoise `
+            Gannitto_world.py
+
+      - name: Create Saves directories
+        run: |
+          New-Item -ItemType Directory -Force -Path "dist\GannittoWorld\_internal\Saves\Cache"
+          New-Item -ItemType Directory -Force -Path "dist\GannittoWorld\_internal\Saves\Mods"
+          New-Item -ItemType Directory -Force -Path "dist\GannittoWorld\_internal\Saves\Settings"
+          New-Item -ItemType Directory -Force -Path "dist\GannittoWorld\_internal\Saves\Worlds"
+
+      - name: Archive build
+        run: |
+          Compress-Archive -Path "dist\GannittoWorld\*" -DestinationPath "GannittoWorld-Windows.zip"
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: GannittoWorld-Windows
+          path: GannittoWorld-Windows.zip
+
