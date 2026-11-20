@@ -2,9 +2,11 @@ name: Build Game Executable
 
 on:
   push:
-    branches: [ "master" ]
-    tags: [ "v*" ]
-  workflow_dispatch: # Позволяет запускать сборку вручную во вкладке Actions
+    branches:
+      - master
+    tags:
+      - "v*"
+  workflow_dispatch:
 
 jobs:
   build-windows:
@@ -17,7 +19,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12" # Стабильная версия для pygame-ce и pyinstaller
+          python-version: "3.12"
 
       - name: Install dependencies
         run: |
@@ -25,23 +27,23 @@ jobs:
           pip install -r requirements.txt pyinstaller setuptools
 
       - name: Patch Gannitto_world.py for pkg_resources
+        shell: python
         run: |
-          python -c "
-          patch = """import sys
-          import types
-          import importlib.metadata
-          if "pkg_resources" not in sys.modules:
-              pkg_res = types.ModuleType("pkg_resources")
-              pkg_res.get_distribution = lambda name: types.SimpleNamespace(
-                  version=importlib.metadata.version(name)
-              )
-              sys.modules["pkg_resources"] = pkg_res
-          """
+          patch = (
+              "import sys\n"
+              "import types\n"
+              "import importlib.metadata\n"
+              "if 'pkg_resources' not in sys.modules:\n"
+              "    pkg_res = types.ModuleType('pkg_resources')\n"
+              "    pkg_res.get_distribution = lambda name: types.SimpleNamespace(\n"
+              "        version=importlib.metadata.version(name)\n"
+              "    )\n"
+              "    sys.modules['pkg_resources'] = pkg_res\n"
+          )
           with open("Gannitto_world.py", "r", encoding="utf-8") as f:
               content = f.read()
           with open("Gannitto_world.py", "w", encoding="utf-8") as f:
               f.write(patch + content)
-          "
 
       - name: Build with PyInstaller
         run: |
@@ -75,10 +77,9 @@ jobs:
         with:
           name: GannittoWorld-Windows
           path: GannittoWorld-Windows.zip
-
-    - name: Create GitHub Release
-      if: startsWith(github.ref, 'refs/tags/')
-      uses: softprops/action-gh-release@v2
-      with:
-        files: GannittoWorld-Windows.zip
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: GannittoWorld-Windows.zip
 
