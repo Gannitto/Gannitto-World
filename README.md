@@ -13,7 +13,7 @@ It includes many diverse mechanics, such as:
 
 # Download the Game (for Players)
 
-Standalone builds that do not require Python to be installed will soon be available in the **[Releases](https://github.com/Gannitto/Gannitto-World/releases)** section. In the future, users will be able to download the archive for their OS, extract it, and run the executable file.
+Standalone builds that do not require Python to be installed are in the **[Releases](https://github.com/Gannitto/Gannitto-World/releases)** section. You need to download the archive for your OS, extract it, and run the executable file.
 
 # Installation from Source (for Developers)
 
