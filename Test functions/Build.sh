@@ -8,6 +8,7 @@ source .venv/bin/activate
 pip install -r requirements.txt pyinstaller setuptools
 pyinstaller --clean --noconfirm --onedir --windowed \
   --name "GannittoWorld" \
+  --icon="icon.ico" \
   --add-data "Images:Images" \
   --add-data "Locales:Locales" \
   --add-data "Sounds:Sounds" \

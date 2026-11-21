@@ -33,7 +33,10 @@ class WorldsMenu():
 		inside_folders.sort()
 		release = False
 		bias = 0
+
 		world_name_input = len(inside_folders) == 0
+		if world_name_input:
+			self.input_system.start_input("World name", Width // 2, Height // 2 + 20, text_alignment=True)
 
 		while True:
 

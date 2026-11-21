@@ -29,6 +29,9 @@ class WorldLoader:
 				self.game.net.peers[self.game.net.player_id].direction = self.game.player.direction
 			
 		else:
+			
+			if not os.path.exists(path + "Saves/Worlds/"):
+				os.mkdir(cache_path + "Saves/Worlds/")
 
 			os.mkdir(path + "Saves/Worlds/" + self.game.world_name)
 			os.mkdir(path + "Saves/Worlds/" + self.game.world_name + "/Images")

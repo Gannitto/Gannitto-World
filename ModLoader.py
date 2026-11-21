@@ -23,6 +23,8 @@ class ModAPI:
 class ModLoader:
 	def __init__(self, game):
 		self.api = ModAPI(game)
+		if not os.path.exists(path + "Saves/Mods/"):
+			os.mkdir(cache_path + "Saves/Mods/")
 		self.mods_folder = path + "Saves/Mods/"
 		self.load_mods()
 

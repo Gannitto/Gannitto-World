@@ -25,6 +25,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt pyinstaller setuptools
+		  pip install "numpy<2" --force-reinstall
 
       - name: Patch Gannitto_world.py for pkg_resources
         shell: python
@@ -59,6 +60,7 @@ jobs:
             --copy-metadata vnoise `
             --collect-all upnpclient `
             --collect-all vnoise `
+            --collect-all numpy `
             Gannitto_world.py
 
       - name: Create Saves directories
