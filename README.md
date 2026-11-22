@@ -56,3 +56,7 @@ I have many ideas for future development and am looking for like-minded contribu
 If you want to help the project, check out the **[Issues](https://github.com/Gannitto/Gannitto-World/issues)** tab, submit a Pull Request, or contact me directly:  
 https://t.me/@Gannitto
 
+# License
+Copyright (C) 2026 Gannitto
+This project is distributed under the GNU GPL v3 license. See the [LICENSE](LICENSE) file for details.
+

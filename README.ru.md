@@ -55,3 +55,8 @@
 
 Если хотите помочь проекту, загляните во вкладку **[Issues](https://github.com/Gannitto/Gannitto-World/issues)**, создайте Pull Request или свяжитесь со мной:  
 https://t.me/@Gannitto
+
+# Лицензия
+Copyright (C) 2026 Gannitto
+Этот проект распространяется под лицензией GNU GPL v3. Подробности в файле [LICENSE](LICENSE).
+
