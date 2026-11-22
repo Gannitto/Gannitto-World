@@ -20,7 +20,11 @@ class MainMenu():
 		self.change_a_character_button = Button(Width / 2, Height / 2 + 150, pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Change a character.png"), (960, 128)), pygame.transform.scale(pygame.image.load(path + "Images/Buttons/Change a character 2.png"), (960, 128)), alignment=True)
 
 	def main_menu(self):
-		version = f"Version Alpha 1.5 (Build {str(get_build_number())})"
+		build_num = get_build_number()
+		if build_num:
+			version = f"🄯 Gannitto World Version Beta 1.0 (Build {str(build_num)})"
+		else:
+			version = "🄯 Gannitto World Version Beta 1.0"
 		more_menu_open = False
 
 		while True:

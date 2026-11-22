@@ -468,7 +468,7 @@ def get_build_number():
 	try:
 		build_num = int(check_output(("git", "rev-list", "--count", "HEAD"), text=True).strip())
 	except:
-		build_num = "Error"
+		build_num = None
 	return build_num
 
 def take_screenshot(game):
