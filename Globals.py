@@ -108,6 +108,12 @@ default_hot_keys = {
 		
 		}
 
+default_statistics = {
+		"Visits to game": 0,
+		"Hours played": 0,
+		"Objects destroyed": 0,
+		}
+
 clock = pygame.time.Clock()
 colors = {
 	"Normal": (39, 155, 80),

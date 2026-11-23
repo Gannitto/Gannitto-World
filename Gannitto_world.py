@@ -77,14 +77,18 @@ def save(darken:bool=True, save_world_settings:bool=False):
 	Saver.save_objects(path + "Saves/Settings/Statistics.save", game.statistics)
 	
 	if game.world_name is not None:
-		
+
+		if game.start_time is not None:
+			game.statistics["Hours played"] += (time.time() - game.start_time) / 3600
+			game.start_time = time.time() # Сбрасываем точку отсчёта на случай автосохранений
+
 		if game.multiplayer:
 			pass
 			# TODO сохранение данных о других игроках
 		else:
 			
 			Saver.save_objects(path + "Saves/Worlds/" + game.world_name + "/Mobs.save", world.mobs)
-			Saver.save_objects(path + "Saves/Worlds/" + game.world_name + "/Info.save", [player.x, player.y, Backrooms.InBackrooms, Backrooms.Level, world.current_cave, player.speed, player.HP, game.start_time, ron.x, ron.y, ron.home, ron.inventory, world.chunk_manager.generator.seed, time_system.current_time])
+			Saver.save_objects(path + "Saves/Worlds/" + game.world_name + "/Info.save", [player.x, player.y, Backrooms.InBackrooms, Backrooms.Level, world.current_cave, player.speed, player.HP, ron.x, ron.y, ron.home, ron.inventory, world.chunk_manager.generator.seed, time_system.current_time])
 			Saver.save_objects(path + "Saves/Worlds/" + game.world_name + "/Inventory.save", inventory.whole_inventory)
 			Saver.save_objects(path + "Saves/Worlds/" + game.world_name + "/Resources.save", inventory.resources)
 			Saver.save_objects(path + "Saves/Worlds/" + game.world_name + "/Effects.save", effects.effects)
@@ -607,7 +611,7 @@ def main():
 
 	# Обновление временно отключено, так как Updater пока что не работает
 	# check_updates()
-	game.statistics[0] += 1
+	game.statistics["Visits to game"] += 1
 	if Settings["Display"]["Show intro"]:
 		pass # TODO сделать интро
 

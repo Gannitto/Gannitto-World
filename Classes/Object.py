@@ -106,7 +106,7 @@ class Object:
 						game.events.append({"event_type": "object_removed", "x": self.x, "y": self.y, "name": self.name})
 					game.world.chunk_manager.get_chunk_at(self.x, self.y).objects.remove(self)
 					
-					game.statistics[2] += 1
+					game.statistics["Objects destroyed"] += 1
 					for item_name, min_amount, max_amount in self.drop_items:
 						for _ in range(random.randint(min_amount, max_amount)):
 							rand_x, rand_y = self.x + random.randint(-self.w // 2, self.w // 2), self.y + random.randint(-self.h // 2, self.h // 2)

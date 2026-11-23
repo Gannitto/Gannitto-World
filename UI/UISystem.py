@@ -109,18 +109,18 @@ class UISystem:
 			],
 		"Statistics": [
 				InputField(
-					400, 0, "Visits to the game",
-					lambda: statistics[0],
+					400, 0, "Visits to game",
+					lambda: statistics["Visits to game"],
 					lambda v: ...
 				),
 				InputField(
 					400, 0, "Hours played",
-					lambda: int(statistics[1]),
+					lambda: int(statistics["Hours played"]),
 					lambda v: ...
 				),
 				InputField(
-					400, 0, "Trees felled",
-					lambda: statistics[2],
+					400, 0, "Objects destroyed",
+					lambda: statistics["Objects destroyed"],
 					lambda v: ...
 				)
 				],

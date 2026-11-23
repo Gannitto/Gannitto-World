@@ -1,5 +1,5 @@
 import Saver
-from Globals import default_settings, default_hot_keys, path
+from Globals import default_settings, default_hot_keys, default_statistics, path
 
 try:
 	Settings = Saver.load_objects(path + "Saves/Settings/Settings.save")
@@ -16,5 +16,5 @@ except FileNotFoundError:
 try:
 	statistics = Saver.load_objects(path + "Saves/Settings/Statistics.save")
 except FileNotFoundError:
-	statistics = [0, 0, 0]
+	statistics = default_statistics
 
