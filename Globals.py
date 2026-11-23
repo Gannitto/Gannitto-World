@@ -94,6 +94,16 @@ default_hot_keys = {
 		"Move right": pygame.K_d,
 		"Move down": pygame.K_s,
 		"Move up": pygame.K_w,
+		"Slot 1": pygame.K_1,
+		"Slot 2": pygame.K_2,
+		"Slot 3": pygame.K_3,
+		"Slot 4": pygame.K_4,
+		"Slot 5": pygame.K_5,
+		"Slot 6": pygame.K_6,
+		"Slot 7": pygame.K_7,
+		"Slot 8": pygame.K_8,
+		"Slot 9": pygame.K_9,
+		"Slot 0": pygame.K_0
 		
 		}
 

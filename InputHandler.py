@@ -77,9 +77,9 @@ class InputHandler:
 							self.game.does_lighten = False
 							return self.game.main_menu.main_menu
 
-					if event.key in (pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_4, pygame.K_5, pygame.K_6, pygame.K_7, pygame.K_8, pygame.K_9, pygame.K_0):
+					if event.key in (hot_keys["Slot 1"], hot_keys["Slot 2"], hot_keys["Slot 3"], hot_keys["Slot 4"], hot_keys["Slot 5"], hot_keys["Slot 6"], hot_keys["Slot 7"], hot_keys["Slot 8"], hot_keys["Slot 9"], hot_keys["Slot 0"]):
 						last_changed_slot = self.game.inventory.changed_slot
-						self.game.inventory.changed_slot = int(event.unicode) - 1 + 10 * (event.key == pygame.K_0)
+						self.game.inventory.changed_slot = int(event.unicode) - 1 + 10 * (event.key == hot_keys["Slot 0"])
 
 					if event.key == hot_keys["Help"]:
 						self.music_channel.stop()
