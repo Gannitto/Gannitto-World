@@ -125,7 +125,7 @@ def check_build_objects(game, mouse_x, mouse_y):
 				# Обновление соседей
 				for n_pos in ((wall_pos[0]-256, wall_pos[1]), (wall_pos[0]+256, wall_pos[1]), (wall_pos[0], wall_pos[1]-256), (wall_pos[0], wall_pos[1]+256)):
 					if n_pos in game.world.visible_walls:
-						game.world.visible_walls[n_pos].update_neigboors(game.world)
+						game.world.visible_walls[n_pos].update_neighbors(game.world)
 						
 				if game.multiplayer:
 					game.events.append({"event_type": "wall_added", "wall": new_wall.__getstate__()})

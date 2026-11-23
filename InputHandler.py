@@ -43,8 +43,8 @@ class InputHandler:
 						self.game.input_system.stop_input()
 						continue
 				else:
-					# if event.key == pygame.K_o:
-					# 	self.game.player.damage(10)
+					if event.key == pygame.K_o:
+						aaaaa
 					if event.key == hot_keys["Show keys"]:
 						self.game.alt_pressed = not self.game.alt_pressed
 					if event.key == hot_keys["Use item"]:
@@ -68,9 +68,9 @@ class InputHandler:
 					if event.key == hot_keys["Close"]:
 						if self.game.close_sub_menus():
 							self.music_channel.stop()
+							self.save()
 							self.game.clear_world_data()
 							self.game.statistics[1] += (time.time() - self.game.start_time) / 3600
-							self.save()
 							if self.game.multiplayer:
 								self.game.net.disconnect()
 							win_darken(win)
