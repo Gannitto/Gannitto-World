@@ -115,3 +115,4 @@ class MainMenu():
 				self.game.does_lighten = True
 
 			pygame.display.update()
+
