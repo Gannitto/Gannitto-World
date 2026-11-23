@@ -6,6 +6,7 @@ from Functions import win_fill
 from Saver import save_chunk, load_chunk, delete_chunk, chunk_exists
 from Assets import biomes, biome_textures
 from Globals import win, Width, Height, path
+from Config import Settings
 
 chunk_size = 2048
 tile_size = 256
@@ -258,7 +259,6 @@ class ChunkManager:
 	def __init__(self, Object, world_rect_to_screen):
 		self.chunks = {}
 		self.loaded_chunks = set()
-		self.view_distance = 1
 		self.generator = NoiseGenerator(random.randint(0, 2**31 - 1))
 		self.save_directory = ""
 		self.Object = Object # Класс объекта передаётся как аргумент чтобы избежать циклического импорта
@@ -408,7 +408,7 @@ class ChunkManager:
 		new_visible_chunks = set()
 		chunks_to_get = []
 		
-		for dx, dy in product(range(-self.view_distance, self.view_distance + 1), range(-self.view_distance, self.view_distance + 1)):
+		for dx, dy in product(range(-Settings["Display"]["View distance"], Settings["Display"]["View distance"] + 1), range(-Settings["Display"]["View distance"], Settings["Display"]["View distance"] + 1)):
 			chunk_x = center_chunk_x + dx
 			chunk_y = center_chunk_y + dy
 			

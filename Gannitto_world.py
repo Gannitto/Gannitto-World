@@ -335,17 +335,6 @@ def start_game():
 								else:
 									world.particles.append(Particle(object.x, object.y, load(path + "Images/Items/Dandelion seed.png", 32), random.randint(-30, 30), random.randint(-30, 30), end_time=5))
 
-					if object.name == "Punch" and False:
-
-						if object.get_left_pressed(mouse_x, mouse_y, player) and inventory.whole_inventory[inventory.changed_slot] is not None and inventory.whole_inventory[inventory.changed_slot].name in ("Mushroom", "Red mushroom", "Thread", "Poppy", "Purple tulip", "Orange tulip", "Black tulip", "Red tulip", "Yellow tulip", "Dandelion", "Cotton grass", "Onion"):
-							if object.special_flags < 11:
-								object.special_flags += 1
-								if object.special_flags > 6:
-									object.image = load(path + "Images/Objects/Punch " + str(object.special_flags - 5) + ".png")
-							else:
-								object.special_flags = 1
-								world.chunk_manager.get_chunk_at(object.x, object.y).items.append(Object("Punch", object.x, object.y, "Images/Items/Powder.png"))
-
 				if player.breaking_object is None and player.started_break:
 					player.started_break = False
 					if game.multiplayer:

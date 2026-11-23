@@ -211,7 +211,7 @@ class SettingsMenu():
 						self.game.does_lighten = False
 						return self.game.main_menu.main_menu
 				elif event.type == pygame.MOUSEWHEEL:
-					bias = max((min(bias + event.y * self.Settings["Game"][2], 0)), max_bias)
+					bias = max((min(bias + event.y * self.Settings["Game"]["Mouse wheel sensitivity"], 0)), max_bias)
 					ui_system._set_positions(bias, "Display")
 			
 			# Очистка экрана
@@ -408,7 +408,7 @@ class SettingsMenu():
 						self.game.does_lighten = False
 						return self.game.main_menu.main_menu
 				elif event.type == pygame.MOUSEWHEEL:
-					bias = max((min(bias + event.y * self.Settings["Game"][2], 0)), max_bias)
+					bias = max((min(bias + event.y * self.Settings["Game"]["Mouse wheel sensitivity"], 0)), max_bias)
 					ui_system._set_positions(bias, "User")
 			
 			# Очистка экрана
@@ -492,11 +492,11 @@ class SettingsMenu():
 						return self.game.main_menu.main_menu
 					if event.key == pygame.K_RETURN:
 
-						self.music_channel.set_volume(self.Settings["Sound"][0], self.Settings["Sound"][0] / 100)
-						self.set_sound_volume(self.Settings["Sound"][1] / 100)
+						self.music_channel.set_volume(self.Settings["Sound"]["Music volume"], self.Settings["Sound"]["Music volume"] / 100)
+						self.set_sound_volume(self.Settings["Sound"]["Sound volume"] / 100)
 
 				elif event.type == pygame.MOUSEWHEEL:
-					bias = max((min(bias + event.y * self.Settings["Game"][2], 0)), max_bias)
+					bias = max((min(bias + event.y * self.Settings["Game"]["Mouse wheel sensitivity"], 0)), max_bias)
 					ui_system._set_positions(bias, "Sound")
 			
 			# Очистка экрана
@@ -579,7 +579,7 @@ class SettingsMenu():
 						self.game.does_lighten = False
 						return self.game.main_menu.main_menu
 				elif event.type == pygame.MOUSEWHEEL:
-					bias = max((min(bias + event.y * self.Settings["Game"][2], 0)), max_bias)
+					bias = max((min(bias + event.y * self.Settings["Game"]["Mouse wheel sensitivity"], 0)), max_bias)
 					ui_system._set_positions(bias, "Statistics")
 			
 			# Очистка экрана
@@ -925,7 +925,7 @@ class SettingsMenu():
 						self.game.does_lighten = False
 						return self.game.main_menu.main_menu
 				elif event.type == pygame.MOUSEWHEEL:
-					bias = max((min(bias + event.y * self.Settings["Game"][2], 0)), max_bias)
+					bias = max((min(bias + event.y * self.Settings["Game"]["Mouse wheel sensitivity"], 0)), max_bias)
 					ui_system._set_positions(bias, "Game")
 			
 			# Очистка экрана

@@ -24,7 +24,8 @@ default_settings = {
 			"Mouse click display": True,
 			"Description of the object on hover": True,
 			"Dim screen when turned off": True,
-			"Show intro": True
+			"Show intro": True,
+			"View distance": 1
 			},
 		"User": {
 			"Nickname": "Player",

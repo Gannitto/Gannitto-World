@@ -73,7 +73,12 @@ class UISystem:
 					400, 0, "Show intro",
 					lambda: Settings["Display"]["Show intro"],
 					lambda v: Settings["Display"].__setitem__("Show intro", v)
-				)
+				),
+				InputField(
+					400, 0, "View distance",
+					lambda: Settings["Display"]["View distance"],
+					lambda v: Settings["Display"].__setitem__("View distance", v)
+				),
 			],
 		"User": [
 				InputField(
