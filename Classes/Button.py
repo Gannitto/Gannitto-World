@@ -1,6 +1,7 @@
 import pygame
 from Sound import play_sound
-from Globals import win, textInfo, menu_color_medium, menu_color_light
+from Globals import win, textInfo
+from Config import menu_color_medium, menu_color_light
 
 class Button:
 

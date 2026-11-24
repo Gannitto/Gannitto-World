@@ -6,8 +6,8 @@ import Saver
 from Translator import t
 from Assets import load
 from Functions import win_darken, win_lighten, win_fill, draw_key
-from Globals import path, win, clock, menu_color_dark, menu_color_medium, menu_color_light, textInfo, bigTextInfo, Width, Height
-from Config import hot_keys
+from Globals import path, win, clock, textInfo, bigTextInfo, Width, Height
+from Config import hot_keys, menu_color_dark, menu_color_light, menu_color_medium
 from Classes import Button
 from UI.UISystem import UISystem
 

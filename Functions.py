@@ -13,8 +13,8 @@ from itertools import product
 from PIL import Image
 from Translator import t
 from Sound import play_sound
-from Globals import Width, Height, path, win, clock, bigTextInfo, text_color
-from Config import Settings
+from Globals import Width, Height, path, win, clock, bigTextInfo
+from Config import Settings, text_color
 from Cache import load
 
 changed_language = "Russian"

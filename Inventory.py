@@ -5,8 +5,8 @@ import math
 from itertools import product
 from Assets import load, Inventory_slot, Changed_inventory_slot, Object_inventory_slot, Tool_inventory_slot, Split_items1, Split_items2, Compact_inventory1, Compact_inventory2, Craft_list_inventory_slot, Changed_craft_list_inventory_slot, Heart
 from Functions import win_fill, draw_key, text, get_text_height
-from Globals import path, win, Width, Height, textInfo, bigTextInfo, text_color
-from Config import Settings
+from Globals import path, win, Width, Height, textInfo, bigTextInfo
+from Config import Settings, text_color
 from Translator import t
 
 pygame.init()

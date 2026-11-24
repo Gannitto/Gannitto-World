@@ -26,8 +26,8 @@ from BarRenderer import BarRenderer
 from ModLoader import ModLoader
 from Updater import Updater
 from Assets import cave_texture, biome_textures, Inventory_slot
-from Globals import path, win, Width, Height, text_color, textInfo, bigTextInfo, clock, colors
-from Config import Settings, hot_keys
+from Globals import path, win, Width, Height, textInfo, bigTextInfo, clock, colors
+from Config import Settings, hot_keys, text_color
 from UI import SettingsMenu, CharactersMenu, WorldsMenu, EditWorldMenu, MultiplayerSettingsMenu, MainMenu, TabMenu
 from Classes import Player, World, Object, Particle, Slime, Spider, Butterfly, Projectile, ExplodingProjectile, Wall, Farmland, Wire, Lever, Motherboard, RandomBox, Ron, Button
 from GameState import GameState

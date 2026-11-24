@@ -3,8 +3,8 @@ import sys
 from Assets import load
 from Translator import t
 from Functions import win_lighten, win_darken, draw_key, animate_click, win_fill
-from Globals import Width, Height, path, win, clock, menu_color_medium, menu_color_light, textInfo, bigTextInfo
-from Config import Settings, hot_keys
+from Globals import Width, Height, path, win, clock, textInfo, bigTextInfo
+from Config import Settings, hot_keys, menu_color_medium, menu_color_light
 from Classes import Button
 
 class CharactersMenu():

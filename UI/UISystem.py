@@ -1,7 +1,7 @@
 import pygame
 from UI.ElementsUI import ToggleButton, InputField, Button
 from Globals import win, Width, Height
-from Config import Settings, statistics
+from Config import Settings, statistics, menu_color_light, menu_color_medium
 
 class UISystem:
 
@@ -146,6 +146,68 @@ class UISystem:
 					lambda v: Settings["Game"].__setitem__("Cursor blink rate", int(v) / 1000)
 				)
 			],
+		"Color": [
+				InputField(
+					400, 0, "Text color R",
+					lambda: Settings["Color"]["Text color"][0],
+					lambda v: Settings["Color"].__setitem__("Text color", (min(int(v), 255), Settings["Color"]["Text color"][1], Settings["Color"]["Text color"][2]))
+				),
+				InputField(
+					400, 0, "Text color G",
+					lambda: Settings["Color"]["Text color"][1],
+					lambda v: Settings["Color"].__setitem__("Text color", (Settings["Color"]["Text color"][0], min(int(v), 255), Settings["Color"]["Text color"][2]))
+				),
+				InputField(
+					400, 0, "Text color B",
+					lambda: Settings["Color"]["Text color"][2],
+					lambda v: Settings["Color"].__setitem__("Text color", (Settings["Color"]["Text color"][0], Settings["Color"]["Text color"][1], min(int(v), 255)))
+				),
+				InputField(
+					400, 0, "Menu color light R",
+					lambda: Settings["Color"]["Menu color light"][0],
+					lambda v: Settings["Color"].__setitem__("Menu color light", (min(int(v), 255), Settings["Color"]["Menu color light"][1], Settings["Color"]["Menu color light"][2]))
+				),
+				InputField(
+					400, 0, "Menu color light G",
+					lambda: Settings["Color"]["Menu color light"][1],
+					lambda v: Settings["Color"].__setitem__("Menu color light", (Settings["Color"]["Menu color light"][0], min(int(v), 255), Settings["Color"]["Menu color light"][2]))
+				),
+				InputField(
+					400, 0, "Menu color light B",
+					lambda: Settings["Color"]["Menu color light"][2],
+					lambda v: Settings["Color"].__setitem__("Menu color light", (Settings["Color"]["Menu color light"][0], Settings["Color"]["Menu color light"][1], min(int(v), 255)))
+				),
+				InputField(
+					400, 0, "Menu color medium R",
+					lambda: Settings["Color"]["Menu color medium"][0],
+					lambda v: Settings["Color"].__setitem__("Menu color medium", (min(int(v), 255), Settings["Color"]["Menu color medium"][1], Settings["Color"]["Menu color medium"][2]))
+				),
+				InputField(
+					400, 0, "Menu color medium G",
+					lambda: Settings["Color"]["Menu color medium"][1],
+					lambda v: Settings["Color"].__setitem__("Menu color medium", (Settings["Color"]["Menu color medium"][0], min(int(v), 255), Settings["Color"]["Menu color medium"][2]))
+				),
+				InputField(
+					400, 0, "Menu color medium B",
+					lambda: Settings["Color"]["Menu color medium"][2],
+					lambda v: Settings["Color"].__setitem__("Menu color medium", (Settings["Color"]["Menu color medium"][0], Settings["Color"]["Menu color medium"][1], min(int(v), 255)))
+				),
+				InputField(
+					400, 0, "Menu color dark R",
+					lambda: Settings["Color"]["Menu color dark"][0],
+					lambda v: Settings["Color"].__setitem__("Menu color dark", (min(int(v), 255), Settings["Color"]["Menu color dark"][1], Settings["Color"]["Menu color dark"][2]))
+				),
+				InputField(
+					400, 0, "Menu color dark G",
+					lambda: Settings["Color"]["Menu color dark"][1],
+					lambda v: Settings["Color"].__setitem__("Menu color dark", (Settings["Color"]["Menu color dark"][0], min(int(v), 255), Settings["Color"]["Menu color dark"][2]))
+				),
+				InputField(
+					400, 0, "Menu color dark B",
+					lambda: Settings["Color"]["Menu color dark"][2],
+					lambda v: Settings["Color"].__setitem__("Menu color dark", (Settings["Color"]["Menu color dark"][0], Settings["Color"]["Menu color dark"][1], min(int(v), 255)))
+				),
+			],
 		"World settings": [
 				InputField(
 					50, 60, "World name",
@@ -241,9 +303,9 @@ class UISystem:
 
 	def show_settings_elements(self, bias, max_bias):
 		
-		pygame.draw.rect(win, (192, 203, 220), (0, 0, Width, 103))
-		pygame.draw.rect(win, (139, 155, 180), (-8, 100, 373, Height), 8)
-		pygame.draw.line(win, (139, 155, 180), (307, 103), (Width, 103), 8)
+		pygame.draw.rect(win, menu_color_light, (0, 0, Width, 103))
+		pygame.draw.rect(win, menu_color_medium, (-8, 100, 373, Height), 8)
+		pygame.draw.line(win, menu_color_medium, (307, 103), (Width, 103), 8)
 
 		visible_height = Height - 103
 		content_height = visible_height + abs(max_bias)
@@ -254,5 +316,5 @@ class UISystem:
 		scroll_rel = abs(bias) / max_scroll if max_scroll > 0 else 0
 		bar_y = 103 + scroll_rel * (scrollbar_height - bar_height)
 		
-		pygame.draw.rect(win, (139, 155, 180), (Width - 10, bar_y, 10, bar_height))
+		pygame.draw.rect(win, menu_color_medium, (Width - 10, bar_y, 10, bar_height))
 

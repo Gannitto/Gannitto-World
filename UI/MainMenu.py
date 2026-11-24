@@ -3,8 +3,8 @@ import sys
 from Assets import load, Screensaver2
 from Translator import t
 from Functions import win_lighten, win_darken, win_fill, get_build_number, text, animate_click
-from Globals import Width, Height, win, path, clock, menu_color_dark, menu_color_light, menu_color_medium
-from Config import Settings, hot_keys
+from Globals import Width, Height, win, path, clock
+from Config import Settings, hot_keys, menu_color_dark, menu_color_light, menu_color_medium
 from Classes import Button
 
 class MainMenu():

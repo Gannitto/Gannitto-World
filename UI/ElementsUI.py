@@ -3,7 +3,7 @@ import time
 from typing import Callable, Any, Optional
 from Translator import t
 from Globals import bigTextInfo, win, path
-from Config import Settings
+from Config import Settings, menu_color_medium
 from InputSystem import input_system
 from Sound import play_sound
 
@@ -32,7 +32,7 @@ class UIElement:
 class ToggleButton(UIElement):
 	"""Переключатель (вкл/выкл)"""
 	def __init__(self, x: int, y: int, label: str, get_value: Callable, set_value: Callable, 
-				 font=bigTextInfo, color=(139, 155, 180)):
+				 font=bigTextInfo, color=menu_color_medium):
 		self.get_value = get_value
 		self.set_value = set_value
 		self.font = font
@@ -61,7 +61,7 @@ class ToggleButton(UIElement):
 
 class InputField(UIElement):
 	"""Поле ввода текста или числа"""
-	def __init__(self, x: int, y: int, label: str, get_value: Callable, set_value: Callable, font=bigTextInfo, color=(139, 155, 180), width=None, unit="", can_write_text=False, max_len=3):
+	def __init__(self, x: int, y: int, label: str, get_value: Callable, set_value: Callable, font=bigTextInfo, color=menu_color_medium, width=None, unit="", can_write_text=False, max_len=3):
 		self.get_value = get_value
 		self.set_value = set_value
 		self.font = font
@@ -133,7 +133,7 @@ class InputField(UIElement):
 class Button(UIElement):
 	"""Обычная кнопка"""
 	def __init__(self, x: int, y: int, width: int, height: int, label: str, 
-				 callback: Callable, font=bigTextInfo, color=(139, 155, 180)):
+				 callback: Callable, font=bigTextInfo, color=menu_color_medium):
 		super().__init__(x, y, width, height)
 		self.label = label
 		self.callback = callback

@@ -1,6 +1,7 @@
 import pygame
 import random
-from Globals import Width, Height, textInfo, text_color, win
+from Globals import Width, Height, textInfo, win
+from Config import text_color
 
 class EffectsSystem:
 	def __init__(self):

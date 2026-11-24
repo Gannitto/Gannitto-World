@@ -41,6 +41,12 @@ default_settings = {
 			"Mouse wheel sensitivity": 100,
 			"Cursor blink rate": 0.7
 			},
+		"Color": {
+			"Text color": (0, 180, 0),
+			"Menu color light": (192, 203, 220),
+			"Menu color medium": (139, 155, 180),
+			"Menu color dark": (58, 68, 102)
+			},
 		"Languages": [
 			"English"
 			],
@@ -68,10 +74,6 @@ default_settings = {
 
 win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 Width, Height = pygame.display.get_surface().get_size()
-text_color = (0, 180, 0)
-menu_color_light = (192, 203, 220)
-menu_color_medium = (139, 155, 180)
-menu_color_dark = (58, 68, 102)
 textInfo = pygame.font.Font(path + "Font.ttf", 18)
 bigTextInfo = pygame.font.Font(path + "Font.ttf", 36)
 

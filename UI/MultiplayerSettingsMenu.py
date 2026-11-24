@@ -4,8 +4,8 @@ import os
 from Multiplayer import NetworkManager
 from Assets import load
 from Functions import win_darken, win_lighten, win_fill, draw_key, animate_click
-from Globals import textInfo, menu_color_dark, menu_color_medium, menu_color_light, textInfo, bigTextInfo, Width, Height, path, clock, win
-from Config import Settings, hot_keys
+from Globals import textInfo, textInfo, bigTextInfo, Width, Height, path, clock, win
+from Config import Settings, hot_keys, menu_color_dark, menu_color_light, menu_color_medium
 from Classes import Button, Peer
 from UI.UISystem import UISystem
 

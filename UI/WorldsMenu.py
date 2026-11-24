@@ -4,8 +4,8 @@ import os
 from Translator import t
 from Assets import load
 from Functions import win_darken, win_lighten, text, draw_key, animate_click, win_fill
-from Globals import Width, Height, menu_color_medium, menu_color_dark, menu_color_light, textInfo, win, clock, path
-from Config import Settings, hot_keys
+from Globals import Width, Height, textInfo, win, clock, path
+from Config import Settings, hot_keys, menu_color_medium, menu_color_light, menu_color_dark
 from Classes import Button
 
 class WorldsMenu():

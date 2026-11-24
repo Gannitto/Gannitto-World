@@ -5,7 +5,8 @@ import Saver
 from Assets import load, arrow_down, arrow_left, arrow_right, arrow_up, Inventory_slot, Changed_inventory_slot
 from Functions import text, win_darken, win_lighten, languages, draw_key, animate_click, win_fill
 from UI.UISystem import UISystem
-from Globals import path, Width, Height, win, textInfo, bigTextInfo, menu_color_dark, menu_color_medium, menu_color_light, default_settings, default_hot_keys, clock
+from Globals import path, Width, Height, win, textInfo, bigTextInfo, default_settings, default_hot_keys, clock
+from Config import menu_color_light, menu_color_medium, menu_color_dark
 from Classes import Button
 
 ui_system = UISystem()
@@ -41,6 +42,7 @@ class SettingsMenu():
 		self.statistics_button = Button(10, 492, load(path + "Images/Buttons/Statistics.png", 300, 64), load(path + "Images/Buttons/Statistics 2.png", 300, 64))
 		self.keys_button = Button(10, 567, load(path + "Images/Buttons/Keys.png", 132, 64), load(path + "Images/Buttons/Keys 2.png", 132, 64))
 		self.game_button = Button(10, 642, load(path + "Images/Buttons/Game.png", 132, 64), load(path + "Images/Buttons/Game 2.png", 132, 64))
+		self.color_button = Button(10, 717, load(path + "Images/Buttons/Color.png", 160, 64), load(path + "Images/Buttons/Color 2.png", 160, 64))
 		
 		self.english_button = Button(385, 198, load(path + "Images/Buttons/English.png", 220, 64), load(path + "Images/Buttons/English 2.png", 220, 64))
 		self.russian_button = Button(385, 267, load(path + "Images/Buttons/Russian.png", 220, 64), load(path + "Images/Buttons/Russian 2.png", 220, 64))
@@ -111,6 +113,8 @@ class SettingsMenu():
 			if self.keys_button.is_released: return self.Keys
 			self.game_button.main()
 			if self.game_button.is_released: return self.Game
+			self.color_button.main()
+			if self.color_button.is_released: return self.Color
 
 			if self.page == 1:
 				
@@ -245,6 +249,8 @@ class SettingsMenu():
 			if self.keys_button.is_released: return self.Keys
 			self.game_button.main()
 			if self.game_button.is_released: return self.Game
+			self.color_button.main()
+			if self.color_button.is_released: return self.Color
 			
 			if self.game.alt_pressed:
 				draw_key("ESC", 44, 108)
@@ -361,6 +367,8 @@ class SettingsMenu():
 			if self.keys_button.is_released: return self.Keys
 			self.game_button.main()
 			if self.game_button.is_released: return self.Game
+			self.color_button.main()
+			if self.color_button.is_released: return self.Color
 			
 			if self.game.alt_pressed:
 				
@@ -442,6 +450,8 @@ class SettingsMenu():
 			if self.keys_button.is_released: return self.Keys
 			self.game_button.main()
 			if self.game_button.is_released: return self.Game
+			self.color_button.main()
+			if self.color_button.is_released: return self.Color
 
 			if self.game.alt_pressed:
 				draw_key("ESC", 44, 108)
@@ -530,6 +540,8 @@ class SettingsMenu():
 			if self.keys_button.is_released: return self.Keys
 			self.game_button.main()
 			if self.game_button.is_released: return self.Game
+			self.color_button.main()
+			if self.color_button.is_released: return self.Color
 
 			if self.game.alt_pressed:
 				draw_key("ESC", 44, 108)
@@ -612,6 +624,8 @@ class SettingsMenu():
 			if self.keys_button.is_released: return self.Keys
 			self.game_button.main()
 			if self.game_button.is_released: return self.Game
+			self.color_button.main()
+			if self.color_button.is_released: return self.Color
 
 			if self.game.alt_pressed:
 				draw_key("ESC", 44, 108)
@@ -814,6 +828,8 @@ class SettingsMenu():
 			win.blit(load(path + "Images/Buttons/Keys 2.png", 132, 64), (10, 567))
 			self.game_button.main()
 			if self.game_button.is_released: return self.Game
+			self.color_button.main()
+			if self.color_button.is_released: return self.Color
 
 			littleTextInfo = pygame.font.Font(path + "Font.ttf", 8)
 			key_color = menu_color_medium
@@ -959,6 +975,93 @@ class SettingsMenu():
 			self.keys_button.main()
 			if self.keys_button.is_released: return self.Keys
 			win.blit(load(path + "Images/Buttons/Game 2.png", 132, 64), (10, 642))
+			self.color_button.main()
+			if self.color_button.is_released: return self.Color
+
+			if self.game.alt_pressed:
+				draw_key("ESC", 44, 108)
+
+			if self.back_button.is_released:
+				Saver.save_objects(path + "Saves/Settings/Settings.save", self.Settings)
+				win_darken(win)
+				self.game.does_lighten = False
+				return self.game.main_menu.main_menu
+				
+			# Анимация и эффекты
+			animate_click(dt, self.game.mouse_x, self.game.mouse_y)
+			win_fill(alpha=100 - self.Settings["Display"]["Brightness"])
+			
+			pygame.display.update()
+	
+	def Color(self):
+
+		bias = 0
+		max_bias = -ui_system._set_positions(bias, "Color")
+		max_bias = (max_bias + Height - 103) * max_bias > Height - 103
+
+		while True:
+			
+			click = pygame.mouse.get_pressed()
+			self.game.mouse_x, self.game.mouse_y = pygame.mouse.get_pos()
+			release = False
+			dt = clock.tick(self.game.max_fps) / 1000.0
+			
+			events = pygame.event.get()
+			
+			for event in events:
+				if event.type == pygame.QUIT:
+					Saver.save_objects(path + "Saves/Settings/Settings.save", self.Settings)
+					self.save()
+					sys.exit()
+				
+				elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+					release = True
+				
+				elif event.type == pygame.KEYUP:
+					if event.key == self.hot_keys["Show keys"]:
+						self.game.alt_pressed = not self.game.alt_pressed
+					if event.key == self.hot_keys["Close"]:
+						Saver.save_objects(path + "Saves/Settings/Settings.save", self.Settings)
+						win_darken(win)
+						self.game.does_lighten = False
+						return self.game.main_menu.main_menu
+				elif event.type == pygame.MOUSEWHEEL:
+					bias = max((min(bias + event.y * self.Settings["Game"]["Mouse wheel sensitivity"], 0)), max_bias)
+					ui_system._set_positions(bias, "Color")
+			
+			# Очистка экрана
+			win.fill(menu_color_light)
+			
+			# Обработка UI
+			ui_system.handle_events(events, self.game.mouse_x, self.game.mouse_y, release, "Color")
+			ui_system.draw("Color", bias, max_bias)
+			
+			self.back_button.main()
+			self.show_reset_settings()
+			
+			if self.back_button.is_released:
+				Saver.save_objects(path + "Saves/Settings/Settings.save", self.Settings)
+				win_darken(win)
+				self.game.does_lighten = False
+				return self.game.main_menu.main_menu
+
+			self.help_button.main()
+			if self.help_button.is_released: return self.help
+			self.display_button.main()
+			if self.display_button.is_released: return self.display
+			self.languages_button.main()
+			if self.languages_button.is_released: return self.Languages
+			self.user_button.main()
+			if self.user_button.is_released: return self.User
+			self.sound_button.main()
+			if self.sound_button.is_released: return self.Sound
+			self.statistics_button.main()
+			if self.statistics_button.is_released: return self.Statistics
+			self.keys_button.main()
+			if self.keys_button.is_released: return self.Keys
+			self.game_button.main()
+			if self.game_button.is_released: return self.Game
+			win.blit(load(path + "Images/Buttons/Color 2.png", 132, 64), (10, 717))
 
 			if self.game.alt_pressed:
 				draw_key("ESC", 44, 108)

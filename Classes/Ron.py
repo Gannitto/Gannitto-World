@@ -3,7 +3,8 @@ import os
 import math
 from random import randint
 from Translator import t
-from Globals import path, Width, Height, win, bigTextInfo, text_color
+from Globals import path, Width, Height, win, bigTextInfo
+from Config import text_color
 from Functions import shadow, draw_key, win_fill
 from Classes.Projectile import Projectile
 

@@ -18,3 +18,8 @@ try:
 except FileNotFoundError:
 	statistics = default_statistics
 
+text_color = Settings["Color"]["Text color"]
+menu_color_light = Settings["Color"]["Menu color light"]
+menu_color_medium = Settings["Color"]["Menu color medium"]
+menu_color_dark = Settings["Color"]["Menu color dark"]
+
