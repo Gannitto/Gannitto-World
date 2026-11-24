@@ -7,6 +7,9 @@ from Classes import Object, Wall, Farmland, Wire, Lever, Motherboard, RandomBox
 
 objects_templates = {
 	"Table": Object("Table", 0, 0, "Images/Objects/Table.png", (256, 256), is_solid=True, breakable_by_hammer=True),
+	"Dark wood table": Object("Bark wood table", 0, 0, "Images/Objects/Dark wood table.png", (256, 256), is_solid=True, breakable_by_hammer=True),
+	"Birch wood table": Object("Birch wood table", 0, 0, "Images/Objects/Birch wood table.png", (256, 256), is_solid=True, breakable_by_hammer=True),
+	"Spruce wood table": Object("Spruce wood table", 0, 0, "Images/Objects/Spruce wood table.png", (256, 256), is_solid=True, breakable_by_hammer=True),
 	"Wall table": Object("Wall table", 0, 0, "Images/Objects/Wall table.png", (256, 256), special_flags=1, is_solid=True, breakable_by_hammer=True),
 	"Furnace": Object("Furnace", 0, 0, "Images/Items/Furnace.png", (256, 256), special_flags=1, is_solid=True, breakable_by_hammer=True),
 	"Punch": Object("Punch", 0, 0, "Images/Objects/Punch 1.png", (256, 256), is_solid=True, breakable_by_hammer=True)
@@ -85,7 +88,6 @@ def build(
 	# Вызов кастомной логики создания конкретного класса
 	created_instance = spawn_callback(grid_x, grid_y, build_rect)
 	return created_instance
-
 
 def check_build_objects(game, mouse_x, mouse_y):
 	"""Проверяет все типы построек (объекты, стены, механизмы, грядки) при клике."""
