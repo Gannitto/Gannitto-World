@@ -6,7 +6,7 @@ from Cache import load
 def load_textures(path_to_image: str, num: int, size: int, use_cache=True):
 	return [load(f"{path_to_image}{i}.png", size, use_cache=use_cache) for i in range(num)]
 
-wall_types = ("Wooden wall", "Brick wall", "Stone brick wall")
+wall_types = ("Wooden wall", "Dark wood wall", "Birch wood wall", "Spruce wood wall", "Brick wall", "Stone brick wall")
 door_types = ("Wooden door",)
 wall_images = {}
 

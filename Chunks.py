@@ -79,7 +79,7 @@ biomes_objects = {
 					"breakable": True,
 					"max_break": 500,
 					"drop_items": (
-						("Wooden", 2, 5),
+						("Wood", 2, 5),
 						("Stick", 1, 3)
 						)}),
 				(2, {
@@ -91,7 +91,7 @@ biomes_objects = {
 					"breakable": True,
 					"max_break": 500,
 					"drop_items": (
-						("Birch wooden", 2, 5),
+						("Birch wood", 2, 5),
 						("Stick", 1, 3)
 						)}),
 				(0.5, {
@@ -160,7 +160,7 @@ biomes_objects = {
 					"breakable": True,
 					"max_break": 500,
 					"drop_items": (
-						("Dark wooden", 2, 5),
+						("Dark wood", 2, 5),
 						("Stick", 1, 3)
 						)}),),
 			"Items": (
@@ -187,8 +187,11 @@ biomes_objects = {
 					"special_flags": 100,
 					"is_solid": True,
 					"breakable": True,
-					"max_break": 600
-					}),
+					"max_break": 600,
+					"drop_items": (
+						("Spruce wood", 4, 7),
+						("Stick", 1, 3)
+						)}),
 				(0.5, {
 					"name": "Dark bush",
 					"image_path": "Images/Objects/Dark bush.png",
