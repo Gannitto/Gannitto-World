@@ -130,6 +130,79 @@ class InputField(UIElement):
 			return
 		input_system.text_y = self.y + 10
 
+class ColorInputField(UIElement):
+	"""Поле ввода цвета"""
+	def __init__(self, x: int, y: int, label: str, get_value: Callable, set_value: Callable, font=bigTextInfo, color=menu_color_medium, width=None):
+		self.get_value = get_value
+		self.set_value = set_value
+		self.font = font
+		self.color = color
+		self.is_active = False
+		self.input_text = ["", "", ""]
+		self.active_input_num = 0
+		self.width = (font.size("a" * 3)[0] + 20) or width
+		super().__init__(x, y, self.width, 71, label)
+		self.rects = (
+				pygame.Rect(self.x + self.label_width, self.y, self.width, 71),
+				pygame.Rect(self.x + self.label_width + self.width + 10, self.y, self.width, 71),
+				pygame.Rect(self.x + self.label_width + self.width * 2 + 20, self.y, self.width, 71)
+				)
+	
+	def draw(self):
+
+		text_surface = self.font.render(t(self.label), True, self.color)
+		win.blit(text_surface, (self.x, self.y + 10))
+
+		# Отрисовка рамки
+		for num, rect in enumerate(self.rects):
+			pygame.draw.rect(win, self.color, rect, 5)
+		
+			# Отрисовка значения или вводимого текста
+			if not self.is_active or num != self.active_input_num:
+				text = str(self.get_value(num))
+				text_surface = self.font.render(text, True, self.color)
+				win.blit(text_surface, (self.x + self.label_width + 10 + (self.width + 10) * num, self.y + 10))
+	
+	def handle_click(self, mouse_x: int, mouse_y: int, release: bool) -> bool:
+
+		for num, rect in enumerate(self.rects):
+			if rect.collidepoint(mouse_x, mouse_y) and release:
+				play_sound("Button click")
+				self.is_active = not self.is_active
+				self.active_input_num = num
+				if self.is_active:
+					self.input_text[self.active_input_num] = str(self.get_value(self.active_input_num))
+					input_system.start_input(self.label + " Input Field", self.x + self.label_width + 10 + (self.width + 10) * self.active_input_num, self.y + 10, text_size=36, only_numbers=False, max_len=3, input_text=str(self.get_value(self.active_input_num)))
+				else:
+					input_system.stop_input()
+					self.input_text[self.active_input_num] = input_system.last_text
+					if self.input_text[self.active_input_num]:
+						try:
+							self.set_value(self.input_text[self.active_input_num], self.active_input_num)
+						except ValueError:
+							pass
+				return True
+		return False
+	
+	def handle_keyboard(self, events):
+		if not self.is_active:
+			return False
+		input_system.handle_input(events)
+		self.input_text[0] = input_system.last_text
+		if not input_system.inputting:
+			self.is_active = False
+			if self.input_text[0]:
+				try:
+					self.set_value(int(self.input_text[0]), self.active_input_num)
+				except ValueError:
+					pass
+			self.input_text[0] = ""
+
+	def update_text_pos(self):
+		if not self.is_active:
+			return
+		input_system.text_y = self.y + 10
+
 class Button(UIElement):
 	"""Обычная кнопка"""
 	def __init__(self, x: int, y: int, width: int, height: int, label: str, 

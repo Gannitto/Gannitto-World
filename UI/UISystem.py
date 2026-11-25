@@ -1,5 +1,5 @@
 import pygame
-from UI.ElementsUI import ToggleButton, InputField, Button
+from UI.ElementsUI import ToggleButton, InputField, ColorInputField, Button
 from Globals import win, Width, Height
 from Config import Settings, statistics, menu_color_light, menu_color_medium
 
@@ -147,66 +147,27 @@ class UISystem:
 				)
 			],
 		"Color": [
-				InputField(
-					400, 0, "Text color R",
-					lambda: Settings["Color"]["Text color"][0],
-					lambda v: Settings["Color"].__setitem__("Text color", (min(int(v), 255), Settings["Color"]["Text color"][1], Settings["Color"]["Text color"][2]))
+				
+				ColorInputField(
+					400, 0, "Text color",
+					lambda i: Settings["Color"]["Text color"][i],
+					lambda v, i: Settings["Color"].__setitem__("Text color", tuple(list(Settings["Color"]["Text color"][:i]) + [min(v, 255)] + list(Settings["Color"]["Text color"][i + 1:])))
 				),
-				InputField(
-					400, 0, "Text color G",
-					lambda: Settings["Color"]["Text color"][1],
-					lambda v: Settings["Color"].__setitem__("Text color", (Settings["Color"]["Text color"][0], min(int(v), 255), Settings["Color"]["Text color"][2]))
+				ColorInputField(
+					400, 0, "Menu color light",
+					lambda i: Settings["Color"]["Menu color light"][i],
+					lambda v, i: Settings["Color"].__setitem__("Menu color light", tuple(list(Settings["Color"]["Menu color light"][:i]) + [min(v, 255)] + list(Settings["Color"]["Menu color light"][i + 1:])))
 				),
-				InputField(
-					400, 0, "Text color B",
-					lambda: Settings["Color"]["Text color"][2],
-					lambda v: Settings["Color"].__setitem__("Text color", (Settings["Color"]["Text color"][0], Settings["Color"]["Text color"][1], min(int(v), 255)))
+				ColorInputField(
+					400, 0, "Menu color medium",
+					lambda i: Settings["Color"]["Menu color medium"][i],
+					lambda v, i: Settings["Color"].__setitem__("Menu color medium", tuple(list(Settings["Color"]["Menu color medium"][:i]) + [min(v, 255)] + list(Settings["Color"]["Menu color medium"][i + 1:])))
 				),
-				InputField(
-					400, 0, "Menu color light R",
-					lambda: Settings["Color"]["Menu color light"][0],
-					lambda v: Settings["Color"].__setitem__("Menu color light", (min(int(v), 255), Settings["Color"]["Menu color light"][1], Settings["Color"]["Menu color light"][2]))
-				),
-				InputField(
-					400, 0, "Menu color light G",
-					lambda: Settings["Color"]["Menu color light"][1],
-					lambda v: Settings["Color"].__setitem__("Menu color light", (Settings["Color"]["Menu color light"][0], min(int(v), 255), Settings["Color"]["Menu color light"][2]))
-				),
-				InputField(
-					400, 0, "Menu color light B",
-					lambda: Settings["Color"]["Menu color light"][2],
-					lambda v: Settings["Color"].__setitem__("Menu color light", (Settings["Color"]["Menu color light"][0], Settings["Color"]["Menu color light"][1], min(int(v), 255)))
-				),
-				InputField(
-					400, 0, "Menu color medium R",
-					lambda: Settings["Color"]["Menu color medium"][0],
-					lambda v: Settings["Color"].__setitem__("Menu color medium", (min(int(v), 255), Settings["Color"]["Menu color medium"][1], Settings["Color"]["Menu color medium"][2]))
-				),
-				InputField(
-					400, 0, "Menu color medium G",
-					lambda: Settings["Color"]["Menu color medium"][1],
-					lambda v: Settings["Color"].__setitem__("Menu color medium", (Settings["Color"]["Menu color medium"][0], min(int(v), 255), Settings["Color"]["Menu color medium"][2]))
-				),
-				InputField(
-					400, 0, "Menu color medium B",
-					lambda: Settings["Color"]["Menu color medium"][2],
-					lambda v: Settings["Color"].__setitem__("Menu color medium", (Settings["Color"]["Menu color medium"][0], Settings["Color"]["Menu color medium"][1], min(int(v), 255)))
-				),
-				InputField(
-					400, 0, "Menu color dark R",
-					lambda: Settings["Color"]["Menu color dark"][0],
-					lambda v: Settings["Color"].__setitem__("Menu color dark", (min(int(v), 255), Settings["Color"]["Menu color dark"][1], Settings["Color"]["Menu color dark"][2]))
-				),
-				InputField(
-					400, 0, "Menu color dark G",
-					lambda: Settings["Color"]["Menu color dark"][1],
-					lambda v: Settings["Color"].__setitem__("Menu color dark", (Settings["Color"]["Menu color dark"][0], min(int(v), 255), Settings["Color"]["Menu color dark"][2]))
-				),
-				InputField(
-					400, 0, "Menu color dark B",
-					lambda: Settings["Color"]["Menu color dark"][2],
-					lambda v: Settings["Color"].__setitem__("Menu color dark", (Settings["Color"]["Menu color dark"][0], Settings["Color"]["Menu color dark"][1], min(int(v), 255)))
-				),
+				ColorInputField(
+					400, 0, "Menu color dark",
+					lambda i: Settings["Color"]["Menu color dark"][i],
+					lambda v, i: Settings["Color"].__setitem__("Menu color dark", tuple(list(Settings["Color"]["Menu color dark"][:i]) + [min(v, 255)] + list(Settings["Color"]["Menu color dark"][i + 1:])))
+				)
 			],
 		"World settings": [
 				InputField(
@@ -266,6 +227,9 @@ class UISystem:
 			y += 80
 			element.y = start_y + bias + y
 			element.rect.y = start_y + bias + y
+			if hasattr(element, "rects"):
+				for rect in element.rects:
+					rect.y = start_y + bias + y
 			if hasattr(element, "handle_keyboard") and element.is_active:
 				element.update_text_pos()
 

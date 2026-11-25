@@ -1061,7 +1061,7 @@ class SettingsMenu():
 			if self.keys_button.is_released: return self.Keys
 			self.game_button.main()
 			if self.game_button.is_released: return self.Game
-			win.blit(load(path + "Images/Buttons/Color 2.png", 132, 64), (10, 717))
+			win.blit(load(path + "Images/Buttons/Color 2.png", 160, 64), (10, 717))
 
 			if self.game.alt_pressed:
 				draw_key("ESC", 44, 108)
