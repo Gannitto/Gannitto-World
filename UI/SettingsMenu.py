@@ -60,7 +60,7 @@ class SettingsMenu():
 		else:
 			win.blit(bigTextInfo.render(t("Reset settings"), True, menu_color_medium), (Width - 30 - bigTextInfo.size(t("Reset settings"))[0], 30))
 
-	def help(self):
+	def Help(self):
 
 		while True:
 
@@ -69,6 +69,7 @@ class SettingsMenu():
 
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
+					Saver.save_objects(path + "Saves/Settings/Settings.save", self.Settings)
 					self.save()
 					sys.exit()
 				if event.type == pygame.KEYUP:
@@ -235,7 +236,7 @@ class SettingsMenu():
 				return self.game.main_menu.main_menu
 
 			self.help_button.main()
-			if self.help_button.is_released: return self.help
+			if self.help_button.is_released: return self.Help
 			win.blit(load(path + "Images/Buttons/Display 2.png", 222, 64), (10, 192))
 			self.languages_button.main()
 			if self.languages_button.is_released: return self.Languages
@@ -276,6 +277,7 @@ class SettingsMenu():
 
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
+					Saver.save_objects(path + "Saves/Settings/Settings.save", self.Settings)
 					self.save()
 					sys.exit()
 				if event.type == pygame.KEYUP:
@@ -353,7 +355,7 @@ class SettingsMenu():
 						element.rect = pygame.Rect(element.x + element.label_width, element.y, element.width, element.height)
 
 			self.help_button.main()
-			if self.help_button.is_released: return self.help
+			if self.help_button.is_released: return self.Help
 			self.display_button.main()
 			if self.display_button.is_released: return self.display
 			win.blit(load(path + "Images/Buttons/Languages 2.png", 272, 64), (10, 267))
@@ -436,7 +438,7 @@ class SettingsMenu():
 				return self.game.main_menu.main_menu
 
 			self.help_button.main()
-			if self.help_button.is_released: return self.help
+			if self.help_button.is_released: return self.Help
 			self.display_button.main()
 			if self.display_button.is_released: return self.display
 			self.languages_button.main()
@@ -526,7 +528,7 @@ class SettingsMenu():
 				return self.game.main_menu.main_menu
 
 			self.help_button.main()
-			if self.help_button.is_released: return self.help
+			if self.help_button.is_released: return self.Help
 			self.display_button.main()
 			if self.display_button.is_released: return self.display
 			self.languages_button.main()
@@ -610,7 +612,7 @@ class SettingsMenu():
 				return self.game.main_menu.main_menu
 
 			self.help_button.main()
-			if self.help_button.is_released: return self.help
+			if self.help_button.is_released: return self.Help
 			self.display_button.main()
 			if self.display_button.is_released: return self.display
 			self.languages_button.main()
@@ -770,6 +772,7 @@ class SettingsMenu():
 			for event in pygame.event.get():
 
 				if event.type == pygame.QUIT:
+					Saver.save_objects(path + "Saves/Settings/Settings.save", self.Settings)
 					Saver.save_objects(path + "Saves/Settings/Hot keys.save", self.hot_keys)
 					self.save()
 					sys.exit()
@@ -813,7 +816,7 @@ class SettingsMenu():
 				return self.game.main_menu.main_menu
 
 			self.help_button.main()
-			if self.help_button.is_released: return self.help
+			if self.help_button.is_released: return self.Help
 			self.display_button.main()
 			if self.display_button.is_released: return self.display
 			self.languages_button.main()
@@ -961,7 +964,7 @@ class SettingsMenu():
 				return self.game.main_menu.main_menu
 
 			self.help_button.main()
-			if self.help_button.is_released: return self.help
+			if self.help_button.is_released: return self.Help
 			self.display_button.main()
 			if self.display_button.is_released: return self.display
 			self.languages_button.main()
@@ -1046,7 +1049,7 @@ class SettingsMenu():
 				return self.game.main_menu.main_menu
 
 			self.help_button.main()
-			if self.help_button.is_released: return self.help
+			if self.help_button.is_released: return self.Help
 			self.display_button.main()
 			if self.display_button.is_released: return self.display
 			self.languages_button.main()

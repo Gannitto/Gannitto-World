@@ -369,7 +369,7 @@ class Spider(Mob):
 
 		match self.state:
 			case "Attacking": self.state = "Going towards player"
-			case "Prepare shoot": self._handle_prepare_shoot(game.player, game.world, dt)
+			case "Prepare shoot": self._handle_prepare_shoot(game, dt)
 			case "Going towards player": self._handle_go_towards_player(game, dt)
 		
 	def check_projectiles(self, game):
@@ -379,7 +379,7 @@ class Spider(Mob):
 		if check_projectiles_collision(self.rect, game.world):
 			self.damage(game, 15)
 
-	def _handle_prepare_shoot(self, player, world, dt):
+	def _handle_prepare_shoot(self, game, dt):
 		"""Подготовка к атаке паутиной (прицеливание)"""
 		self.shoot_charge_timer -= dt
 		
@@ -391,12 +391,13 @@ class Spider(Mob):
 			
 		if self.shoot_charge_timer <= 0:
 			self.shoot_cooldown = self.shoot_charge_time
-			dx = player.x - self.x
-			dy = player.y - self.y
-			dist = math.dist((self.x, self.y), (player.x, player.y))
+			dx = game.player.x - self.x
+			dy = game.player.y - self.y
+			dist = math.dist((self.x, self.y), (game.player.x, game.player.y))
 			move_x = dx / dist * 100
 			move_y = dy / dist * 100
-			world.particles.append(Particle(self.x, self.y, pygame.transform.rotate(web_texture, -math.degrees(math.atan2(-move_y, move_x))), move_x, move_y, del_self_condition=lambda particle: (pygame.Rect(particle.x - 32, particle.y + 32, 64, 64).colliderect(pygame.Rect(player.x - 100, player.y + 100, 200, 200))), end_time=1)) # TODO наложить эффект замедления
+			game.world.particles.append(Particle(self.x, self.y, pygame.transform.rotate(web_texture, -math.degrees(math.atan2(-move_y, move_x))), move_x, move_y, del_self_condition=lambda particle: (pygame.Rect(particle.x - 32, particle.y + 32, 64, 64).colliderect(pygame.Rect(game.player.x - 100, game.player.y + 100, 200, 200))), end_time=1))
+			game.effects.add_effect("Slowdown", 5)
 			self.state = "Attacking"
 
 	def _handle_go_towards_player(self, game, dt):

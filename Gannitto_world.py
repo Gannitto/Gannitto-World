@@ -91,7 +91,7 @@ def save(darken:bool=True, save_world_settings:bool=False):
 			Saver.save_objects(path + "Saves/Worlds/" + game.world_name + "/Info.save", [player.x, player.y, Backrooms.InBackrooms, Backrooms.Level, world.current_cave, player.speed, player.HP, ron.x, ron.y, ron.home, ron.inventory, world.chunk_manager.generator.seed, time_system.current_time])
 			Saver.save_objects(path + "Saves/Worlds/" + game.world_name + "/Inventory.save", inventory.whole_inventory)
 			Saver.save_objects(path + "Saves/Worlds/" + game.world_name + "/Resources.save", inventory.resources)
-			Saver.save_objects(path + "Saves/Worlds/" + game.world_name + "/Effects.save", effects.effects)
+			Saver.save_objects(path + "Saves/Worlds/" + game.world_name + "/Effects.save", game.effects.effects)
 
 			new_particles = []
 			particle_count = 1
@@ -139,8 +139,7 @@ command_system = game.command_system
 game.item_actions = ItemActions(game)
 item_actions = game.item_actions
 game.tab_menu = TabMenu(game, save, music_channel)
-game.effects = EffectsSystem()
-effects = game.effects
+game.effects = EffectsSystem(game)
 game.Backrooms = Backrooms
 game.input_system = input_system
 game.world_loader = WorldLoader(game, save)
@@ -474,7 +473,7 @@ def start_game():
 		# Отображение полосы здоровья
 		game.bar_renderer.show_health_bar(mouse_x, mouse_y)
 
-		effects.handle_effects(dt)
+		game.effects.handle_effects(dt)
 	
 		inventory.draw_item_settings(mouse_x, mouse_y)
 

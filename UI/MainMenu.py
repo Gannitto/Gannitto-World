@@ -60,7 +60,7 @@ class MainMenu():
 				if self.settings_button.is_released:
 					win_darken(win)
 					self.game.does_lighten = False
-					return self.game.settings_menu.help
+					return self.game.settings_menu.Help
 				self.change_a_character_button.main()
 				if self.change_a_character_button.is_released:
 					win_darken(win)

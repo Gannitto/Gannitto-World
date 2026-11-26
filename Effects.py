@@ -4,8 +4,17 @@ from Globals import Width, Height, textInfo, win
 from Config import text_color
 
 class EffectsSystem:
-	def __init__(self):
+
+	def __init__(self, game):
+		self.game = game
 		self.effects = []
+
+	def add_effect(self, effect, timer):
+		self.effects.append([effect, timer])
+		match effect:
+			case "Slowdown":
+				self.game.player.speed /= 2
+
 	def handle_effects(self, dt):
 		
 		for effect_y, effect in enumerate(self.effects):
@@ -27,5 +36,8 @@ class EffectsSystem:
 
 			effect[1] -= dt
 			if effect[1] <= 0:
+				match effect[0]:
+					case "Slowdown":
+						self.game.player.speed *= 2
 				self.effects.remove(effect)
 		

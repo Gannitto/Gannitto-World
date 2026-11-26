@@ -82,7 +82,7 @@ class InputHandler:
 						self.game.clear_world_data()
 						self.save()
 						self.game.does_lighten = False
-						return self.game.settings_menu.help
+						return self.game.settings_menu.Help
 
 					if event.key == hot_keys["Inventory"]:
 						self.game.inventory_open = not self.game.inventory_open
