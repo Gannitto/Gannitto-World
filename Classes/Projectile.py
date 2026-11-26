@@ -2,6 +2,7 @@ import pygame
 import math
 import random
 import time
+import math
 from Cache import load
 from Assets import explosion_texture
 from Globals import Width, Height, path, win
@@ -10,24 +11,25 @@ from Classes.Particle import Particle
 
 class Projectile:
 
-	def __init__(self, X: int, Y: int, mouse_x, mouse_y, type: str):
+	def __init__(self, x: int, y: int, mouse_x: int, mouse_y: int, type: str, damage_count: int):
 		
 		"""
 		Снаряд, который непрерывно летит в заданном направлении
-		X - Координата x
-		Y - Координата y
+		x - Координата x
+		y - Координата y
 		mouse_x - x мыши
 		mouse_y - y мыши
 		type - Тип патрона, например стрела
 		"""
 
-		self.x = X
-		self.y = Y
+		self.x = x
+		self.y = y
 
 		self.angle = math.atan2(Height / 2 - mouse_y, Width / 2 - mouse_x)
 		self.x_vel = math.cos(self.angle) * 100
 		self.y_vel = math.sin(self.angle) * 100
 		self.image = pygame.transform.rotate(load(path + "Images/Items/" + type + ".png", 64), math.atan2(mouse_x - Width / 2, mouse_y - Height / 2) * 180 / math.pi + 180)
+		self.damage_count = damage_count
 		self.end_time = int(time.time()) + 3
 
 	def main(self, game):
@@ -44,28 +46,40 @@ class Projectile:
 		if time.time() >= self.end_time:
 			game.world.projectiles.remove(self)
 
+		for mob in game.world.mobs:
+			if mob.rect.collidepoint((self.x, self.y)):
+				game.world.projectiles.remove(self)
+				mob.damage(game, self.damage_count)
+
+		for object in game.world.visible_objects:
+			if object.rect.collidepoint((self.x, self.y)) and object.breakable:
+				game.world.projectiles.remove(self)
+				object.damage(game, self.damage_count)
+
 class ExplodingProjectile:
 
-	def __init__(self, X: int, Y: int, mouse_x: int, mouse_y: int, type: str, target_pos: tuple):
+	def __init__(self, x: int, y: int, mouse_x: int, mouse_y: int, type: str, damage_count: int, target_pos: tuple, explosion_radius: int = 256):
 		
 		"""
 		Снаряд, который летит до заданной точки и потом взрывается
-		X - Координата x
-		Y - Координата y
+		x - Координата x
+		y - Координата y
 		mouse_x - x мыши
 		mouse_y - y мыши
 		type - Тип патрона, например граната
 		"""
 
-		self.x = X
-		self.y = Y
-		self.start_x = X
-		self.start_y = Y
+		self.x = x
+		self.y = y
+		self.start_x = x
+		self.start_y = y
+		self.explosion_radius = explosion_radius
 
 		self.angle = math.atan2(Height / 2 - mouse_y, Width / 2 - mouse_x)
 		self.x_vel = math.cos(self.angle) * 50
 		self.y_vel = math.sin(self.angle) * 50
 		self.image = pygame.transform.rotate(load(path + "Images/Items/" + type + ".png", 64), math.atan2(mouse_x - Width / 2, mouse_y - Height / 2) * 180 / math.pi + 180)
+		self.damage_count = damage_count
 		self.dist_x = abs(target_pos[0] - self.x)
 		self.dist_y = abs(target_pos[1] - self.y)
 
@@ -92,4 +106,14 @@ class ExplodingProjectile:
 				radius -= 0.1
 				game.world.particles.append(Particle(self.x, self.y, explosion_texture.copy(), x_bias=radius * math.cos(angle), y_bias=radius * math.sin(angle), increased_transparency=30, end_time=0.3))
 			game.world.projectiles.remove(self)
+			for mob in game.world.mobs:
+				dist = math.dist((self.x, self.y), (mob.x, mob.y))
+				if dist <= self.explosion_radius:
+					mob.damage(game, int((self.explosion_radius - dist) / self.damage_count * 8))
+
+			for object in game.world.visible_objects:
+				if object.breakable:
+					dist = math.dist((self.x, self.y), (object.x, object.y))
+					if dist <= self.explosion_radius:
+						object.damage(game, int((self.explosion_radius - dist) / self.damage_count * 8))
 

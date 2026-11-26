@@ -4,7 +4,7 @@ import random
 from itertools import product
 from Cache import load
 from Assets import slime_types, slime_images, red_slime_images, web_texture, butterfly_images, spider_animation_images, spider_red_animation_images
-from Functions import check_collision, check_projectiles_collision, text
+from Functions import check_collision, text
 from Globals import Width, Height, win, path
 from Config import Settings
 from Classes.Particle import Particle
@@ -149,20 +149,13 @@ class Slime(Mob):
 	
 		self.attack_cooldown = max(0, self.attack_cooldown - dt * 30)
 		self.damage_timer = max(0, self.damage_timer - dt)
-		self.check_projectiles(game)
+		self.rect = pygame.Rect((self.x, self.y - 64, 128, 128))
 
 		match self.state:
 			case "Wander": self._handle_wander(game, dt)
 			case "Prepare attak": self._handle_prepare_attack(game.player, game.world, dt)
 			case "Jumping": self._handle_jumping(game, dt)
 			case "Retreat": self._handle_retreat(game, dt)
-	
-	def check_projectiles(self, game):
-
-		self.rect = pygame.Rect((self.x, self.y - 64, 128, 128))
-
-		if check_projectiles_collision(self.rect, game.world):
-			self.damage(game, 15)
 
 	def _handle_wander(self, game, dt):
 
@@ -363,7 +356,7 @@ class Spider(Mob):
 		self.attack_cooldown = max(0, self.attack_cooldown - dt)
 		self.shoot_cooldown = max(0, self.shoot_cooldown - dt)
 		self.damage_timer = max(0, self.damage_timer - dt)
-		self.check_projectiles(game)
+		self.rect = pygame.Rect((self.x, self.y - 128, 256, 256))
 
 		distance = math.dist((self.x, self.y), (game.player.x, game.player.y))
 
@@ -372,13 +365,6 @@ class Spider(Mob):
 			case "Prepare shoot": self._handle_prepare_shoot(game, dt)
 			case "Going towards player": self._handle_go_towards_player(game, dt)
 		
-	def check_projectiles(self, game):
-
-		self.rect = pygame.Rect((self.x, self.y - 128, 256, 256))
-
-		if check_projectiles_collision(self.rect, game.world):
-			self.damage(game, 15)
-
 	def _handle_prepare_shoot(self, game, dt):
 		"""Подготовка к атаке паутиной (прицеливание)"""
 		self.shoot_charge_timer -= dt
@@ -421,7 +407,7 @@ class Spider(Mob):
 			else:
 				self._attack(game.player)
 			
-			if dist <= self.shoot_range and self.shoot_cooldown <= 0:
+			if dist <= self.shoot_range and self.shoot_cooldown <= 0 and not game.player.god_mode:
 				self.shoot_charge_timer = self.shoot_prepare_charge_time
 				self.state = "Prepare shoot"
 			

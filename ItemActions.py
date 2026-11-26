@@ -15,7 +15,7 @@ class ItemActions:
 				for item_index, slot in enumerate(self.game.inventory.whole_inventory):
 					if slot is not None and slot.name == "Bullet":
 						self.game.inventory.reduce(item_index)
-						self.game.world.projectiles.append(Projectile(self.game.player.x, self.game.player.y, mouse_x, mouse_y, "Bullet"))
+						self.game.world.projectiles.append(Projectile(self.game.player.x, self.game.player.y, mouse_x, mouse_y, "Bullet", 20))
 						if self.game.multiplayer:
 							self.game.events.append({"event_type": "projectile_added", "x": self.game.player.x, "y": self.game.player.y, "mouse_x": mouse_x, "mouse_y": mouse_y, "projectile_type": "Bullet"})
 						break
@@ -24,7 +24,7 @@ class ItemActions:
 				for item_index, slot in enumerate(self.game.inventory.whole_inventory):
 					if slot is not None and slot.name == "Arrow":
 						self.game.inventory.reduce(item_index)
-						self.game.world.projectiles.append(Projectile(self.game.player.x, self.game.player.y, mouse_x, mouse_y, "Arrow"))
+						self.game.world.projectiles.append(Projectile(self.game.player.x, self.game.player.y, mouse_x, mouse_y, "Arrow", 15))
 						if self.game.multiplayer:
 							self.game.events.append({"event_type": "projectile_added", "x": self.game.player.x, "y": self.game.player.y, "mouse_x": mouse_x, "mouse_y": mouse_y, "projectile_type": "Arrow"})
 						break
@@ -36,7 +36,7 @@ class ItemActions:
 
 			case "Grenade":
 
-				self.game.world.projectiles.append(ExplodingProjectile(self.game.player.x, self.game.player.y, mouse_x, mouse_y, "Grenade", (self.game.player.x + mouse_x - Width // 2, self.game.player.y - mouse_y + Height // 2)))
+				self.game.world.projectiles.append(ExplodingProjectile(self.game.player.x, self.game.player.y, mouse_x, mouse_y, "Grenade", 32, (self.game.player.x + mouse_x - Width // 2, self.game.player.y - mouse_y + Height // 2)))
 
 				self.game.inventory.reduce(self.game.inventory.changed_slot)
 					

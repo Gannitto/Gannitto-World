@@ -29,7 +29,7 @@ from Assets import cave_texture, biome_textures, Inventory_slot
 from Globals import path, win, Width, Height, textInfo, bigTextInfo, clock, colors
 from Config import Settings, hot_keys, text_color
 from UI import SettingsMenu, CharactersMenu, WorldsMenu, EditWorldMenu, MultiplayerSettingsMenu, MainMenu, TabMenu
-from Classes import Player, World, Object, Particle, Slime, Spider, Butterfly, Projectile, ExplodingProjectile, Wall, Farmland, Wire, Lever, Motherboard, RandomBox, Ron, Button
+from Classes import Player, World, Object, Particle, Slime, Spider, Ron
 from GameState import GameState
 
 pygame.init()

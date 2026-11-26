@@ -96,27 +96,32 @@ class Object:
 					game.events.append({"event_type": "object_started_breaking", "x": self.x, "y": self.y, "name": self.name})
 				player.started_break = True
 				player.breaking_object_info = (self.x, self.y, self.name)
-				self.breaked -= dt * 100
-				self.image = crack_surface(game.world, Particle, self, (self.max_break - self.breaked) // self.max_break, 8)
-
-				if self.breaked < 1:
-
-					destroy_object(self.image, self.x, self.y, game.world, Particle)
-					if game.multiplayer:
-						game.events.append({"event_type": "object_removed", "x": self.x, "y": self.y, "name": self.name})
-					game.world.chunk_manager.get_chunk_at(self.x, self.y).objects.remove(self)
-					
-					game.statistics["Objects destroyed"] += 1
-					for item_name, min_amount, max_amount in self.drop_items:
-						for _ in range(random.randint(min_amount, max_amount)):
-							rand_x, rand_y = self.x + random.randint(-self.w // 2, self.w // 2), self.y + random.randint(-self.h // 2, self.h // 2)
-							game.world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object(item_name, rand_x, rand_y, f"Images/Items/{item_name}.png", pickable=True))
-					return
+				if self.damage(game, dt * 100):
+					pass
 
 		if player.x - Width // 2 - self.w // 2 <= self.x <= player.x + Width // 2 + self.w // 2 and player.y - Height // 2 - self.h // 2 <= self.y <= player.y + Height // 2 + self.h // 2:
 			win.blit(self.image, game.world_to_screen(self.x, self.y, self.w, self.h, player))
 		if Settings["Display"]["Display hitboxes"]:
 			pygame.draw.rect(win, (0, 0, 0), (*game.world_to_screen(self.rect[0] + self.w // 2, self.rect[1] + self.h // 2, self.rect[2], self.rect[3], player), self.rect[2], self.rect[3]), 3)
+
+	def damage(self, game, damage_count):
+		self.breaked -= damage_count
+		self.image = crack_surface(game.world, Particle, self, (self.max_break - self.breaked) // self.max_break, 8)
+
+		if self.breaked < 1:
+
+			destroy_object(self.image, self.x, self.y, game.world, Particle)
+			if game.multiplayer:
+				game.events.append({"event_type": "object_removed", "x": self.x, "y": self.y, "name": self.name})
+			game.world.chunk_manager.get_chunk_at(self.x, self.y).objects.remove(self)
+			
+			game.statistics["Objects destroyed"] += 1
+			for item_name, min_amount, max_amount in self.drop_items:
+				for _ in range(random.randint(min_amount, max_amount)):
+					rand_x, rand_y = self.x + random.randint(-self.w // 2, self.w // 2), self.y + random.randint(-self.h // 2, self.h // 2)
+					game.world.chunk_manager.get_chunk_at(rand_x, rand_y).items.append(Object(item_name, rand_x, rand_y, f"Images/Items/{item_name}.png", pickable=True))
+			return True
+		return False
 
 	def get_left_pressed(self, mouse_x, mouse_y, player):
 

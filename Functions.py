@@ -455,15 +455,6 @@ def check_collision(rect: pygame.Rect, game, only_solid=True, check_walls=True, 
 		
 	return False
 
-def check_projectiles_collision(rect: pygame.Rect, world, remove_projectile=True):
-
-	for projectile in world.projectiles:
-		if rect.collidepoint((projectile.x, projectile.y)):
-			if remove_projectile:
-				world.projectiles.remove(projectile)
-			return True
-	return False
-
 def get_build_number():
 	try:
 		build_num = int(check_output(("git", "rev-list", "--count", "HEAD"), text=True).strip())
