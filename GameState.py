@@ -40,6 +40,9 @@ class GameState:
 		self.craft_list_offset = 0
 		self.craft_list_max_offset = -1
 
+	def check_windows(self):
+		return any((self.item_settings_open, self.ron.window[0], not not self.in_motherboard, self.craft_list_open, self.inventory_open))
+
 	def close_sub_menus(self):
 		
 		if self.item_settings_open:

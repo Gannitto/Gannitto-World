@@ -87,7 +87,7 @@ class Object:
 			
 		player = game.player
 
-		if player.hovered_object is None and self.get_hovered(game):
+		if not game.check_windows() and player.hovered_object is None and self.get_hovered(game):
 			player.hovered_object = self
 			if self.breakable and pygame.mouse.get_pressed()[0]:
 

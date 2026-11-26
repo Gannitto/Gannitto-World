@@ -60,6 +60,7 @@ def build(
 	размеры size=(w, h)
 	spawn_callback — функция вида f(grid_x, grid_y, build_rect), которая размещает объект в мире.
 	"""
+
 	item = game.inventory.whole_inventory[game.inventory.changed_slot]
 	if item is None or item.name != item_name:
 		return None
@@ -90,7 +91,10 @@ def build(
 	return created_instance
 
 def check_build_objects(game, mouse_x, mouse_y):
-	"""Проверяет все типы построек (объекты, стены, механизмы, грядки) при клике."""
+	"""Проверяет все типы построек при клике."""
+
+	if game.check_windows():
+		return None
 	item = game.inventory.whole_inventory[game.inventory.changed_slot]
 	if not item:
 		return None
