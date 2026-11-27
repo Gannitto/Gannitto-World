@@ -521,9 +521,8 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.in
 		if game.sign_input:
 			win_fill()
 			win.blit(sign_images[game.sign_input.name], (Width // 2 - 512, Height // 2 - 512))
-			if game.input_system.inputting:
-				game.sign_input.text = game.input_system.input_text
-			else:
+			if not game.input_system.inputting:
+				game.sign_input.text = game.input_system.last_text
 				game.sign_input.update_text_surface()
 				game.sign_input = None
 

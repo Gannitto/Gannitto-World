@@ -27,7 +27,8 @@ class InputSystem:
 				 text_space_between_strings=10,
 				 only_numbers=False,
 				 max_len=-1,
-				 input_text=""
+				 input_text="",
+				 allow_new_lines=False
 				 ):
 
 		self.input_text = input_text
@@ -48,6 +49,7 @@ class InputSystem:
 		self.text_space_between_strings = text_space_between_strings
 		self.only_numbers = only_numbers
 		self.max_len = max_len
+		self.allow_new_lines = allow_new_lines
 
 	def stop_input(self):
 
@@ -70,6 +72,7 @@ class InputSystem:
 		self.text_space_between_strings = 10
 		self.only_numbers = False
 		self.max_len = -1
+		self.allow_new_lines = False
 
 	def _find_word_start(self):
 		"""Ищет индекс начала слова слева от курсора (для Ctrl+Left и Ctrl+Backspace)"""
@@ -154,7 +157,11 @@ class InputSystem:
 		ctrl_pressed = pygame.key.get_mods() & pygame.KMOD_CTRL
 
 		if key == pygame.K_RETURN:
-			self.stop_input()
+			if self.allow_new_lines:
+				self.input_text = self.input_text[:self.cursor_position] + "\n" + self.input_text[self.cursor_position:]
+				self.cursor_position += 1
+			else:
+				self.stop_input()
 			
 		elif key == pygame.K_BACKSPACE:
 			if self.cursor_position > 0:

@@ -167,10 +167,11 @@ class Sign(Object):
 	def __init__(self, name: str, object_x: int, object_y: int, image_path: str, scale: tuple[int, int] = (64, 64), image=None, special_flags: str = None, add_path=True, start_time=None, is_solid=False, rect=(), pickable=False, breakable=False, max_break=1, breakable_by_hammer=False, drop_items=()):
 		super().__init__(name, object_x, object_y, image_path, scale, image, special_flags, add_path, start_time, is_solid, rect, pickable, breakable, max_break, breakable_by_hammer, drop_items)
 		self.text = ""
+		self.update_text_surface()
 
 	def open_input_window(self, game):
 		game.sign_input = self
-		game.input_system.start_input(f"Sign {self.x} {self.y}", Width // 2, Height // 2 - 160, (0, 0, 0), 80, True, input_text=self.text)
+		game.input_system.start_input(f"Sign {self.x} {self.y}", Width // 2, Height // 2 - 416, (0, 0, 0), 80, True, input_text=self.text, allow_new_lines=True)
 
 	def main(self, game, dt):
 
@@ -200,9 +201,9 @@ class Sign(Object):
 
 	def update_text_surface(self):
 		if not self.text:
+			self.text_image = None
 			return
-		self.text_image = text(self.text, 64, 44, (0, 0, 0), 10, True, max_width=128, max_height=128, return_surface=True)
-		# pygame.image.save(self.text_image, "1111.png")
+		self.text_image = text(self.text, 64, 12, (0, 0, 0), 10, True, max_width=128, max_height=128, space_between_strings=2, return_surface=True)
 
 	def copy(self):
 		return Sign(self.name, self.x, self.y, self.image_path, self.scale, self.image, self.special_flags, self.add_path, self.start_time, self.is_solid, self.rect, self.is_solid, self.breakable, self.max_break, self.breakable_by_hammer, self.drop_items)
