@@ -1,5 +1,5 @@
 import pygame
-from UI.ElementsUI import ToggleButton, InputField, ColorInputField, Button
+from UI.ElementsUI import DropdownList, ToggleButton, InputField, ColorInputField, Button
 from Globals import win, Width, Height
 from Config import Settings, statistics, menu_color_light, menu_color_medium
 
@@ -80,6 +80,18 @@ class UISystem:
 					lambda v: Settings["Display"].__setitem__("View distance", v)
 				),
 			],
+
+		"Languages":
+			[
+				DropdownList(
+					400, 0, "Language",
+					lambda: Settings["Languages"]["Language"],
+					lambda v: Settings["Languages"].__setitem__("Language", v),
+					max_len=8,
+					options=("English", "Russian", "Kazach")
+				),
+			],
+
 		"User": [
 				InputField(
 					400, 0, "Nickname",
@@ -227,6 +239,8 @@ class UISystem:
 			y += 80
 			element.y = start_y + bias + y
 			element.rect.y = start_y + bias + y
+			if hasattr(element, "right_rect"):
+				element.right_rect.y = start_y + bias + y
 			if hasattr(element, "rects"):
 				for rect in element.rects:
 					rect.y = start_y + bias + y

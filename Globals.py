@@ -47,9 +47,9 @@ default_settings = {
 			"Menu color medium": (139, 155, 180),
 			"Menu color dark": (58, 68, 102)
 			},
-		"Languages": [
-			"English"
-			],
+		"Languages": {
+			"Language": "English"
+			},
 		"Keys": ["a",
 		   "s",
 		   "w",

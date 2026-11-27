@@ -4,7 +4,7 @@ from Globals import path
 from Config import Settings
 
 class Translator:
-	def __init__(self, lang=Settings["Languages"][0]):
+	def __init__(self, lang=Settings["Languages"]["Language"]):
 		self.lang = lang
 		self.load_language(lang)
 	

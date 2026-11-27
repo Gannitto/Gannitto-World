@@ -84,8 +84,7 @@ class InputField(UIElement):
 		
 		# Отрисовка значения или вводимого текста
 		if not self.is_active:
-			text = str(self.get_value())
-			text_surface = self.font.render(text, True, self.color)
+			text_surface = self.font.render(str(self.get_value()), True, self.color)
 			win.blit(text_surface, (self.x + self.label_width + 10, self.y + 10))
 		
 		# Отрисовка знака для некоторых полей
@@ -130,6 +129,72 @@ class InputField(UIElement):
 			return
 		input_system.text_y = self.y + 10
 
+class DropdownList(UIElement):
+	"""Поле ввода текста или числа"""
+	def __init__(self, x: int, y: int, label: str, get_value: Callable, set_value: Callable, font=bigTextInfo, color=menu_color_medium, width=None, unit="", can_write_text=False, max_len=3, options=()):
+		self.get_value = get_value
+		self.set_value = set_value
+		self.font = font
+		self.color = color
+		self.is_active = False
+		self.input_text = ""
+		self.unit = unit
+		self.can_write_text = can_write_text
+		self.max_len = max_len
+		self.width = (font.size("a" * max_len)[0] + 20) or width
+		super().__init__(x, y, self.width, 71, label)
+		self.right_rect = pygame.Rect(x + self.label_width + self.width - 5, y, 71, 71)
+		self.options = options
+	
+	def draw(self):
+
+		text_surface = self.font.render(t(self.label), True, self.color)
+		win.blit(text_surface, (self.x, self.y + 10))
+
+		# Отрисовка рамки
+		pygame.draw.rect(win, self.color, self.rect, 5)
+		pygame.draw.rect(win, self.color, self.right_rect, 5)
+		
+		# Отрисовка значения или вводимого текста
+		if self.is_active:
+			for num, option in enumerate(self.options):
+				pygame.draw.rect(win, self.color, (self.x, self.y + 66 + num * 66, self.width + self.label_width + 66, 71), 5)
+				text_surface = self.font.render(str(self.options[num]), True, self.color)
+				win.blit(text_surface, (self.x + 10, self.y + 76 + num * 66))
+
+		text_surface = self.font.render(str(self.get_value()), True, self.color)
+		win.blit(text_surface, (self.x + self.label_width + 10, self.y + 10))
+
+		text_surface = self.font.render(" V", True, self.color)
+		win.blit(text_surface, (self.x + self.label_width + self.width + 5, self.y + 10))
+		
+		# Отрисовка знака для некоторых полей
+		if self.unit != "":
+			percent = self.font.render(self.unit, True, self.color)
+			win.blit(percent, (self.x + self.label_width + self.width + 5, self.y + 10))
+	
+	def handle_click(self, mouse_x: int, mouse_y: int, release: bool) -> bool:
+
+		if (self.rect.collidepoint(mouse_x, mouse_y) or self.right_rect.collidepoint(mouse_x, mouse_y)) and release:
+			play_sound("Button click")
+			self.is_active = not self.is_active
+			return True
+
+		if self.is_active:
+			for num, option in enumerate(self.options):
+				if pygame.Rect(self.x, self.y + 66 + num * 66, self.width + self.label_width + 66, 71).collidepoint((mouse_x, mouse_y)):
+					play_sound("Button click")
+					self.set_value(self.options[num])
+					self.is_active = False
+					break
+
+		return False
+	
+	def update_text_pos(self):
+		if not self.is_active:
+			return
+		input_system.text_y = self.y + 10
+
 class ColorInputField(UIElement):
 	"""Поле ввода цвета"""
 	def __init__(self, x: int, y: int, label: str, get_value: Callable, set_value: Callable, font=bigTextInfo, color=menu_color_medium, width=None):
@@ -159,8 +224,7 @@ class ColorInputField(UIElement):
 		
 			# Отрисовка значения или вводимого текста
 			if not self.is_active or num != self.active_input_num:
-				text = str(self.get_value(num))
-				text_surface = self.font.render(text, True, self.color)
+				text_surface = self.font.render(str(self.get_value(num)), True, self.color)
 				win.blit(text_surface, (self.x + self.label_width + 10 + (self.width + 10) * num, self.y + 10))
 	
 	def handle_click(self, mouse_x: int, mouse_y: int, release: bool) -> bool:

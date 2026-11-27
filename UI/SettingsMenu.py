@@ -101,9 +101,9 @@ class SettingsMenu():
 			win.blit(bigTextInfo.render(str(self.page), True, menu_color_medium), ((Width - 415) // 2 + 391, Height - 96))
 			win.blit(load(path + "Images/Buttons/Help 2.png", 132, 64), (10, 117))
 			self.display_button.main()
-			if self.display_button.is_released: return self.display
+			if self.display_button.is_released: return self.Display
 			self.languages_button.main()
-			if self.languages_button.is_released: return self.display
+			if self.languages_button.is_released: return self.Languages
 			self.user_button.main()
 			if self.user_button.is_released: return self.User
 			self.sound_button.main()
@@ -184,7 +184,7 @@ class SettingsMenu():
 
 			pygame.display.update()
 
-	def display(self):
+	def Display(self):
 
 		bias = 0
 		max_bias = -ui_system._set_positions(bias, "Display")
@@ -270,17 +270,28 @@ class SettingsMenu():
 
 	def Languages(self):
 
+		bias = 0
+		max_bias = -ui_system._set_positions(bias, "Languages")
+		max_bias = (max_bias + Height - 103) * max_bias > Height - 103
+
 		while True:
 			
+			click = pygame.mouse.get_pressed()
 			self.game.mouse_x, self.game.mouse_y = pygame.mouse.get_pos()
+			release = False
+			events = pygame.event.get()
 			dt = clock.tick(self.game.max_fps) / 1000.0
-
-			for event in pygame.event.get():
+			
+			for event in events:
 				if event.type == pygame.QUIT:
 					Saver.save_objects(path + "Saves/Settings/Settings.save", self.Settings)
 					self.save()
 					sys.exit()
-				if event.type == pygame.KEYUP:
+				
+				elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+					release = True
+				
+				elif event.type == pygame.KEYUP:
 					if event.key == self.hot_keys["Show keys"]:
 						self.game.alt_pressed = not self.game.alt_pressed
 					if event.key == self.hot_keys["Close"]:
@@ -288,76 +299,30 @@ class SettingsMenu():
 						win_darken(win)
 						self.game.does_lighten = False
 						return self.game.main_menu.main_menu
-
-					if event.key == pygame.K_1:
-						self.Settings["Languages"][0] = "English"
-						translator.load_language("English")
-						for element_list in ui_system.elements.values():
-							for element in element_list:
-								element.label_width = element.font.size(t(element.label))[0] + 10
-								element.rect = pygame.Rect(element.x + element.label_width, element.y, element.width, element.height)
-
-					if event.key == pygame.K_2:
-						self.Settings["Languages"][0] = "Russian"
-						translator.load_language("Russian")
-						for element_list in ui_system.elements.values():
-							for element in element_list:
-								element.label_width = element.font.size(t(element.label))[0] + 10
-								element.rect = pygame.Rect(element.x + element.label_width, element.y, element.width, element.height)
-
-					if event.key == pygame.K_3:
-						self.Settings["Languages"][0] = "Kazach"
-						translator.load_language("Kazach")
-						for element_list in ui_system.elements.values():
-							for element in element_list:
-								element.label_width = element.font.size(t(element.label))[0] + 10
-								element.rect = pygame.Rect(element.x + element.label_width, element.y, element.width, element.height)
-
+				elif event.type == pygame.MOUSEWHEEL:
+					bias = max((min(bias + event.y * self.Settings["Game"]["Mouse wheel sensitivity"], 0)), max_bias)
+					ui_system._set_positions(bias, "Languages")
+			
+			# Очистка экрана
 			win.fill(menu_color_light)
-			pygame.draw.rect(win, menu_color_medium, (-8, 100, 373, Height), 8)
-			pygame.draw.line(win, menu_color_medium, (307, 103), (Width, 103), 8)
+			
+			# Обработка UI
+			ui_system.handle_events(events, self.game.mouse_x, self.game.mouse_y, release, "Languages")
+			ui_system.draw("Languages", bias, max_bias)
+
 			self.back_button.main()
+			self.show_reset_settings()
+			
 			if self.back_button.is_released:
 				Saver.save_objects(path + "Saves/Settings/Settings.save", self.Settings)
 				win_darken(win)
 				self.game.does_lighten = False
 				return self.game.main_menu.main_menu
-			self.show_reset_settings()
-
-			win.blit(bigTextInfo.render(t("You can choose one of these"), True, menu_color_medium), (385, 123))
-			win.blit(bigTextInfo.render(t("languages:"), True, menu_color_medium), (385, 153))
-
-			self.english_button.main()
-			if self.english_button.is_released:
-				self.Settings["Languages"][0] = "English"
-				translator.load_language("English")
-				for element_list in ui_system.elements.values():
-					for element in element_list:
-						element.label_width = element.font.size(t(element.label))[0] + 10
-						element.rect = pygame.Rect(element.x + element.label_width, element.y, element.width, element.height)
-
-			self.russian_button.main()
-			if self.russian_button.is_released:
-				self.Settings["Languages"][0] = "Russian"
-				translator.load_language("Russian")
-				for element_list in ui_system.elements.values():
-					for element in element_list:
-						element.label_width = element.font.size(t(element.label))[0] + 10
-						element.rect = pygame.Rect(element.x + element.label_width, element.y, element.width, element.height)
-
-			self.kazach_button.main()
-			if self.kazach_button.is_released:
-				self.Settings["Languages"][0] = "Kazach"
-				translator.load_language("Kazach")
-				for element_list in ui_system.elements.values():
-					for element in element_list:
-						element.label_width = element.font.size(t(element.label))[0] + 10
-						element.rect = pygame.Rect(element.x + element.label_width, element.y, element.width, element.height)
 
 			self.help_button.main()
 			if self.help_button.is_released: return self.Help
 			self.display_button.main()
-			if self.display_button.is_released: return self.display
+			if self.display_button.is_released: return self.Display
 			win.blit(load(path + "Images/Buttons/Languages 2.png", 272, 64), (10, 267))
 			self.user_button.main()
 			if self.user_button.is_released: return self.User
@@ -373,16 +338,18 @@ class SettingsMenu():
 			if self.color_button.is_released: return self.Color
 			
 			if self.game.alt_pressed:
-				
 				draw_key("ESC", 44, 108)
 
+			if self.back_button.is_released:
+				Saver.save_objects(path + "Saves/Settings/Settings.save", self.Settings)
+				win_darken(win)
+				self.game.does_lighten = False
+				return self.game.main_menu.main_menu
+				
+			# Анимация и эффекты
 			animate_click(dt, self.game.mouse_x, self.game.mouse_y)
-			win_fill(alpha=100 - self.Settings["Display"]["Brightness"])	# Если в настройках установлена яркость ниже 100, то экран становится темнее
-
-			if not self.game.does_lighten:
-				win_lighten(win)
-				self.game.does_lighten = True
-
+			win_fill(alpha=100 - self.Settings["Display"]["Brightness"])
+			
 			pygame.display.update()
 
 	def User(self):
@@ -440,7 +407,7 @@ class SettingsMenu():
 			self.help_button.main()
 			if self.help_button.is_released: return self.Help
 			self.display_button.main()
-			if self.display_button.is_released: return self.display
+			if self.display_button.is_released: return self.Display
 			self.languages_button.main()
 			if self.languages_button.is_released: return self.Languages
 			win.blit(load(path + "Images/Buttons/User 2.png", 132, 64), (10, 342))
@@ -530,7 +497,7 @@ class SettingsMenu():
 			self.help_button.main()
 			if self.help_button.is_released: return self.Help
 			self.display_button.main()
-			if self.display_button.is_released: return self.display
+			if self.display_button.is_released: return self.Display
 			self.languages_button.main()
 			if self.languages_button.is_released: return self.Languages
 			self.user_button.main()
@@ -614,7 +581,7 @@ class SettingsMenu():
 			self.help_button.main()
 			if self.help_button.is_released: return self.Help
 			self.display_button.main()
-			if self.display_button.is_released: return self.display
+			if self.display_button.is_released: return self.Display
 			self.languages_button.main()
 			if self.languages_button.is_released: return self.Languages
 			self.user_button.main()
@@ -818,7 +785,7 @@ class SettingsMenu():
 			self.help_button.main()
 			if self.help_button.is_released: return self.Help
 			self.display_button.main()
-			if self.display_button.is_released: return self.display
+			if self.display_button.is_released: return self.Display
 			self.languages_button.main()
 			if self.languages_button.is_released: return self.Languages
 			self.user_button.main()
@@ -966,7 +933,7 @@ class SettingsMenu():
 			self.help_button.main()
 			if self.help_button.is_released: return self.Help
 			self.display_button.main()
-			if self.display_button.is_released: return self.display
+			if self.display_button.is_released: return self.Display
 			self.languages_button.main()
 			if self.languages_button.is_released: return self.Languages
 			self.user_button.main()
@@ -1051,7 +1018,7 @@ class SettingsMenu():
 			self.help_button.main()
 			if self.help_button.is_released: return self.Help
 			self.display_button.main()
-			if self.display_button.is_released: return self.display
+			if self.display_button.is_released: return self.Display
 			self.languages_button.main()
 			if self.languages_button.is_released: return self.Languages
 			self.user_button.main()
