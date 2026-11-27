@@ -1,5 +1,6 @@
 import re
 from typing import List, Tuple
+from Classes import Slime, Spider
 from Translator import t
 
 class CommandSystem:
@@ -9,6 +10,14 @@ class CommandSystem:
 		self.game = game
 		self.player = game.player
 		self.init_commands()
+		self.clear_callbacks = {
+				"inventory": lambda: (self.game.inventory.whole_inventory.clear(), self.game.inventory.whole_inventory.extend([None] * 30)),
+				"mobs": lambda: self.game.world.mobs.clear()
+				}
+		self.spawn_mobs = {
+				"slime": Slime,
+				"spider": Spider
+				}
 	
 	def parse_command(self, command_text: str) -> Tuple[str, List[str]]:
 
@@ -136,6 +145,25 @@ class CommandSystem:
 		self.chat_message("Смори, Ришный Мцэць взломал код вселенной и скинул нам этот шифрованный список:")
 		for i in hack_list:
 			self.chat_message(i)
+
+	def clear(self, list_to_clear):
+		if list_to_clear in self.clear_callbacks:
+			self.clear_callbacks[list_to_clear]()
+		else:
+			self.chat_message("Нет такого списка: " + list_to_clear)
+
+	def spawn(self, mob, x=None, y=None):
+		if mob in self.spawn_mobs:
+			x = x or self.game.player.x
+			y = y or self.game.player.y
+			x = int(x)
+			y = int(y)
+			self.game.world.mobs.append(self.spawn_mobs[mob](x, y))
+		else:
+			self.chat_message("Нет такого моба: " + mob)
+
+	def effect(self, effect, timer=5):
+		self.game.effects.add_effect(effect, int(timer))
 	
 	def init_commands(self):
 
@@ -144,7 +172,10 @@ class CommandSystem:
 				"help": (self.command_help, "Выдаёт справку\n/help КОМАНДА"),
 				"command_list": (self.command_list, "Выдаёт список команд\n/command_list"),
 				"kukusiki_hack": (self.kukusiki_hack, "Раскрывает код вселенной\n/kukusiki_hack"),
+				"clear": (self.clear, "Очищает какой-либо игровой список. Доступны: инвентарь, мобы"),
+				"spawn": (self.spawn, "Создаёт моба на заданных координатах"),
 				"tp": (self.tp, "Телепортация игрока на указанные координаты\n tp X Y"),
+				"effect": (self.effect, "Выдаёт игроку эффект на заданное время"),
 				"give": (self.game.inventory.increate, "Выдача предмета в инвентарь\n give ПРЕДМЕТ КОЛИЧЕСТВО=1"),
 				"get_brightness": (self.game.time_system.get_brightness, "Получение текущей яркости днейвного цикла\n/get_brightness"),
 				"get_time_of_day": (self.game.time_system.get_time_of_day, "Получение текущего времени в 24-часовом формате\n/get_time_of_day"),
