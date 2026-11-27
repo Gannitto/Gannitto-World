@@ -1,6 +1,15 @@
 import random
 from dataclasses import dataclass
 import numpy as np
+# Патч для vnoise
+import sys
+import types
+import importlib.metadata
+if "pkg_resources" not in sys.modules:
+	pkg_res = types.ModuleType("pkg_resources")
+	pkg_res.get_distribution = lambda name: types.SimpleNamespace(version=importlib.metadata.version(name))
+	sys.modules["pkg_resources"] = pkg_res
+
 import vnoise
 import math
 

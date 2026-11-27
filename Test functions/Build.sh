@@ -1,7 +1,6 @@
 cd ~/Projects/
 cp -r Gannitto\ world/files Gannitto_world_build
 cd Gannitto_world_build
-sed -i "1i import\ sys\nimport\ types\nimport\ importlib.metadata\nif\ \"pkg_resources\"\ not\ in\ sys.modules:\n    pkg_res\ =\ types.ModuleType(\"pkg_resources\")\n    pkg_res.get_distribution\ =\ lambda\ name:\ types.SimpleNamespace(\n        version=importlib.metadata.version(name)\n    )\n    sys.modules[\"pkg_resources\"]\ =\ pkg_res" Gannitto_world.py
 rm -rf doc/ __pycache__/ README.md README.ru.md Saves/ Test\ functions/ .git/
 python -m venv .venv
 source .venv/bin/activate
