@@ -44,10 +44,6 @@ class SettingsMenu():
 		self.game_button = Button(10, 642, load(path + "Images/Buttons/Game.png", 132, 64), load(path + "Images/Buttons/Game 2.png", 132, 64))
 		self.color_button = Button(10, 717, load(path + "Images/Buttons/Color.png", 160, 64), load(path + "Images/Buttons/Color 2.png", 160, 64))
 		
-		self.english_button = Button(385, 198, load(path + "Images/Buttons/English.png", 220, 64), load(path + "Images/Buttons/English 2.png", 220, 64))
-		self.russian_button = Button(385, 267, load(path + "Images/Buttons/Russian.png", 220, 64), load(path + "Images/Buttons/Russian 2.png", 220, 64))
-		self.kazach_button = Button(385, 336, load(path + "Images/Buttons/Kazach.png", 188, 64), load(path + "Images/Buttons/Kazach 2.png", 188, 64))
-
 		self.page_back_button = Button(361, Height - 138, load(path + "Images/Buttons/Back.png", 128), load(path + "Images/Buttons/Back 2.png", 128), action=self.page_back)
 		self.page_next_button = Button(Width - 138, Height - 138, pygame.transform.flip(load(path + "Images/Buttons/Back.png", 128), True, False), pygame.transform.flip(load(path + "Images/Buttons/Back 2.png", 128), True, False), action=self.next_page)
 	
