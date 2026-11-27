@@ -21,6 +21,7 @@ class GameState:
 		self.item_settings_open = False
 		self.craft_list_open = False
 		self.inventory_open = False
+		self.sign_input = None
 		self.menu_open = False
 		self.alt_pressed = False
 		self.start_time = 0
@@ -41,7 +42,7 @@ class GameState:
 		self.craft_list_max_offset = -1
 
 	def check_windows(self):
-		return any((self.item_settings_open, self.ron.window[0], not not self.in_motherboard, self.craft_list_open, self.inventory_open))
+		return any((self.item_settings_open, self.ron.window[0], not not self.in_motherboard, self.craft_list_open, self.inventory_open, not not self.sign_input))
 
 	def close_sub_menus(self):
 		
@@ -55,6 +56,8 @@ class GameState:
 			self.craft_list_open = False
 		elif self.inventory_open:
 			self.inventory_open = False
+		elif self.sign_input:
+			self.sign_input = None
 		else:
 			return True
 		return False

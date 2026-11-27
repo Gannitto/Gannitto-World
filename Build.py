@@ -3,7 +3,7 @@ from Assets import select_images, wall_types, door_types
 from Functions import check_collision, win_fill
 from Sound import play_sound
 from Globals import path, Width, Height, win
-from Classes import Object, Wall, Farmland, Wire, Lever, Motherboard, RandomBox
+from Classes import Object, Sign, Wall, Farmland, Wire, Lever, Motherboard, RandomBox
 
 objects_templates = {
 	"Table": Object("Table", 0, 0, "Images/Objects/Table.png", (256, 256), is_solid=True, breakable_by_hammer=True),
@@ -12,7 +12,8 @@ objects_templates = {
 	"Spruce wood table": Object("Spruce wood table", 0, 0, "Images/Objects/Spruce wood table.png", (256, 256), is_solid=True, breakable_by_hammer=True),
 	"Wall table": Object("Wall table", 0, 0, "Images/Objects/Wall table.png", (256, 256), special_flags=1, is_solid=True, breakable_by_hammer=True),
 	"Furnace": Object("Furnace", 0, 0, "Images/Items/Furnace.png", (256, 256), special_flags=1, is_solid=True, breakable_by_hammer=True),
-	"Punch": Object("Punch", 0, 0, "Images/Objects/Punch 1.png", (256, 256), is_solid=True, breakable_by_hammer=True)
+	"Punch": Object("Punch", 0, 0, "Images/Objects/Punch 1.png", (256, 256), is_solid=True, breakable_by_hammer=True),
+	"Wooden sign": Sign("Wooden sign", 0, 0, "Images/Objects/Wooden sign.png", (128, 128), is_solid=True, breakable=True, max_break=100, drop_items=(("Wooden sign", 1, 1),))
 }
 
 for image in select_images.values():

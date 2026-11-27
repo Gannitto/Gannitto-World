@@ -1,6 +1,6 @@
 from Classes.Player import Player, Peer
 from Classes.World import World
-from Classes.Object import Object
+from Classes.Object import Object, Sign
 from Classes.Particle import Particle
 from Classes.Mobs import Slime, Spider, Butterfly
 from Classes.Projectile import Projectile, ExplodingProjectile

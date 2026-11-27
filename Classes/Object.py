@@ -2,7 +2,7 @@ import pygame
 import random
 import time
 from Cache import load
-from Functions import crack_surface, destroy_object
+from Functions import crack_surface, destroy_object, text
 from Globals import Width, Height, path, win
 from Config import Settings
 from Classes.Particle import Particle
@@ -84,7 +84,7 @@ class Object:
 			self.rect = pygame.Rect(rect[0] + self.x, rect[1] + self.y, rect[2], rect[3])
 	
 	def main(self, game, dt):
-			
+		
 		player = game.player
 
 		if not game.check_windows() and player.hovered_object is None and self.get_hovered(game):
@@ -162,4 +162,67 @@ class Object:
 			self.image = load(self.image_path, *self.scale)
 
 		self.rect = pygame.Rect(state["rect"][0], state["rect"][1], state["rect"][2], state["rect"][3])
+		
+class Sign(Object):
+	def __init__(self, name: str, object_x: int, object_y: int, image_path: str, scale: tuple[int, int] = (64, 64), image=None, special_flags: str = None, add_path=True, start_time=None, is_solid=False, rect=(), pickable=False, breakable=False, max_break=1, breakable_by_hammer=False, drop_items=()):
+		super().__init__(name, object_x, object_y, image_path, scale, image, special_flags, add_path, start_time, is_solid, rect, pickable, breakable, max_break, breakable_by_hammer, drop_items)
+		self.text = ""
+
+	def open_input_window(self, game):
+		game.sign_input = self
+		game.input_system.start_input(f"Sign {self.x} {self.y}", Width // 2, Height // 2 - 160, (0, 0, 0), 80, True, input_text=self.text)
+
+	def main(self, game, dt):
+
+		player = game.player
+
+		if not game.check_windows() and player.hovered_object is None and self.get_hovered(game):
+			player.hovered_object = self
+			if self.breakable and pygame.mouse.get_pressed()[0]:
+
+				player.breaking_object = self
+				if not player.started_break and game.multiplayer:
+					game.events.append({"event_type": "object_started_breaking", "x": self.x, "y": self.y, "name": self.name})
+				player.started_break = True
+				player.breaking_object_info = (self.x, self.y, self.name)
+				if self.damage(game, dt * 100):
+					pass
+
+		if self.get_hovered(game) and pygame.mouse.get_pressed()[2]:
+			self.open_input_window(game)
+
+		if player.x - Width // 2 - self.w // 2 <= self.x <= player.x + Width // 2 + self.w // 2 and player.y - Height // 2 - self.h // 2 <= self.y <= player.y + Height // 2 + self.h // 2:
+			win.blit(self.image, game.world_to_screen(self.x, self.y, self.w, self.h, player))
+			if self.text:
+				win.blit(self.text_image, game.world_to_screen(self.x, self.y, self.w, self.h, player))
+		if Settings["Display"]["Display hitboxes"]:
+			pygame.draw.rect(win, (0, 0, 0), (*game.world_to_screen(self.rect[0] + self.w // 2, self.rect[1] + self.h // 2, self.rect[2], self.rect[3], player), self.rect[2], self.rect[3]), 3)
+
+	def update_text_surface(self):
+		if not self.text:
+			return
+		self.text_image = text(self.text, 64, 44, (0, 0, 0), 10, True, max_width=128, max_height=128, return_surface=True)
+		# pygame.image.save(self.text_image, "1111.png")
+
+	def copy(self):
+		return Sign(self.name, self.x, self.y, self.image_path, self.scale, self.image, self.special_flags, self.add_path, self.start_time, self.is_solid, self.rect, self.is_solid, self.breakable, self.max_break, self.breakable_by_hammer, self.drop_items)
+
+	def __getstate__(self):
+		
+		state = self.__dict__.copy()
+		del state["image"]
+		del state["text_image"]
+		rect = state["rect"]
+		state["rect"] = (rect[0], rect[1], rect[2], rect[3])
+		return state
+
+	def __setstate__(self, state):
+		
+		self.__dict__.update(state)
+		if self.add_path:
+			self.image = load(path + self.image_path, *self.scale)
+		else:
+			self.image = load(self.image_path, *self.scale)
+		self.rect = pygame.Rect(state["rect"][0], state["rect"][1], state["rect"][2], state["rect"][3])
+		self.update_text_surface()
 		

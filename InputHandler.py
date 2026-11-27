@@ -37,6 +37,9 @@ class InputHandler:
 
 			elif event.type == pygame.KEYUP:
 				if self.game.input_system.inputting:
+					if self.game.sign_input and event.key == hot_keys["Close"]:
+						self.game.input_system.stop_input()
+
 					if self.game.chat_open and event.key == hot_keys["Close"]:
 						self.game.chat_open = False
 						self.game.input_system.stop_input()

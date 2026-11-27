@@ -25,7 +25,7 @@ from VisualEffects import VisualEffects
 from BarRenderer import BarRenderer
 from ModLoader import ModLoader
 from Updater import Updater
-from Assets import cave_texture, biome_textures, Inventory_slot
+from Assets import cave_texture, biome_textures, Inventory_slot, sign_images
 from Globals import path, win, Width, Height, textInfo, bigTextInfo, clock, colors
 from Config import Settings, hot_keys, text_color
 from UI import SettingsMenu, CharactersMenu, WorldsMenu, EditWorldMenu, MultiplayerSettingsMenu, MainMenu, TabMenu
@@ -517,6 +517,15 @@ Level {Backrooms.Level}""" if Backrooms.InBackrooms else ""), 10, 400 if game.in
 						game.events.append({"event_type": "object_removed", "x": object.x, "y": object.y, "name": object.name})
 						world.chunk_manager.get_chunk_at(object.x, object.y).objects.remove(object)
 						break
+
+		if game.sign_input:
+			win_fill()
+			win.blit(sign_images[game.sign_input.name], (Width // 2 - 512, Height // 2 - 512))
+			if game.input_system.inputting:
+				game.sign_input.text = game.input_system.input_text
+			else:
+				game.sign_input.update_text_surface()
+				game.sign_input = None
 
 		if mouse_object is not None and Settings["Display"]["Description of the object on hover"]:
 			# text(mouse_object, Width - textInfo.size(mouse_object)[0] - 10, 10)

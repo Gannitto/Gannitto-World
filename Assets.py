@@ -90,6 +90,11 @@ plant_images = {}
 for plant_type in plant_types:
 	plant_images[plant_type] = load_textures(f"{path}Images/Plants/{plant_type} ", 4, 128)
 
+sign_types = ("Wooden sign",)
+sign_images = {}
+for sign_type in sign_types:
+	sign_images[sign_type] = load(f"{path}Images/Objects/{sign_type}.png", 1024)
+
 biomes = ("Desert", "Field", "Forest", "Swamp", "Taiga")
 biome_textures = {}
 for biome in biomes:
